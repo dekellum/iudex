@@ -1,0 +1,12 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+pom.xml
+assembly.xml
+lib/crawler-da.rb
+lib/crawler-da/base.rb
+lib/crawler-da/commons-pool-1.4.jar
+lib/crawler-da/commons-dbcp-1.2.2.jar
+lib/crawler-da/crawler-da-1.0-SNAPSHOT.jar
+lib/crawler-da/commons-dbutils-1.1.jar
