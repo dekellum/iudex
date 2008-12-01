@@ -1,0 +1,147 @@
+
+
+Flow:
+
+URL Types
+
+POSSIBLE_FEED --> FEED
+
+
+FEED
+
+( SEED
+  ARTICLE
+  OUTLINK ) 
+
+ROBOTS
+SITEMAP
+
+Main URLs table
+
+gcid
+domain(id?)
+host(id?)
+type (FEED,...)
+url
+last_visit
+prior_visit
+yield (float)
+
+Sorting amongst feeds:
+
+* Time since last visit
+* Yield in articles per last visit interval
+* Independent priority values
+
+New domain-->robots.txt URL
+(any crawler, us)
+
+
+IN Memory
+
+MaP host -> (prority) queue
+(need to know which domains/queues qre ready.)
+Queues sorted by intra-domain priority
+(Each queue accounts for one connection kept alive.)
+
+Constrained by:
+* Total count of all URLs across all queues and domains
+
+
+Scenario 1: Read FEED
+
+fetch (conditional)
+(redirect)
+(error)
+parse feed xml
+n: URLs, title (max), pubdate
+
+
+
+== Selecting work, limiting from particular host:
+
+
+crawler_test=# \d urls
+    Table "public.urls"
+ Column | Type | Modifiers 
+--------+------+-----------
+ gcid   | text | not null
+ url    | text | not null
+Indexes:
+    "urls_pkey" PRIMARY KEY, btree (gcid)
+
+crawler_test=# select * from test;
+ key | value 
+-----+-------
+ a   | v1
+ b   | v1
+ c   | v1
+ d   | v2
+ e   | v2
+ f   | v2
+
+Limit by some number of a particular value:
+
+select * from test
+where key IN
+(select key from test b where b.value = test.value limit 2);
+ key | value 
+-----+-------
+ a   | v1
+ b   | v1
+ d   | v2
+ e   | v2
+
+See use of temporary table for condiitional insert/update:
+
+http://robbat2.livejournal.com/214267.html
+
+However using a temporary table maybe pretty slow:
+
+http://archives.postgresql.org/pgsql-hackers/2008-11/msg00342.php
+
+See original robbat article for link to suggestion to use a RULE to
+convert insert to update.
+
+
+
+Consider a transaction:
+
+Get existing uhash values
+
+SELECT uhash FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', ... )
+
+Then doing INSERT, UPDATE for the one found/not found
+
+The IN syntax above will likely need to be generated internally:
+
+http://groups.google.com/group/pgsql.interfaces.jdbc/browse_thread/thread/f4c9433a581b9912/e36acf010edaed2d?lnk=gst&q=statement+list#e36acf010edaed2d
+
+== Domain Suffix Support
+
+Useful for grouping URLs into the highest level registered domain suffix.
+
+See: 
+
+http://publicsuffix.org/list/
+
+Java Impl (primative, Mozilla Licensed):
+
+http://sourceforge.net/projects/publicsuffix/
+
+java.net.IDN (for unicode to ascii domain conversion)
+http://java.sun.com/javase/6/docs/api/java/net/IDN.html
+
+
+== URL normalization
+
+* Strip leading/trailing whitspace?
+* Decode uncessary encode portions?
+* Drop unecessary port 80?
+
+* tolower domain name
+* normalize relative paths foo/bar/../ -> foo/
+* Strip any "#anchor"
+
+
+

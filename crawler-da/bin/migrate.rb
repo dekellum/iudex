@@ -1,6 +1,8 @@
 #!/opt/bin/jruby
 
-require 'database'
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
-ActiveRecord::Migrator.migrate( File.dirname(__FILE__) + '/db',
+require 'crawler-da/ar'
+
+ActiveRecord::Migrator.migrate( File.dirname(__FILE__) + '/../db',
                                 ARGV[0] && ARGV[0].to_i )

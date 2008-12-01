@@ -28,7 +28,7 @@ class TestPoolFactory < Test::Unit::TestCase
     include ResultSetHandler
     def handle( rs )
       while rs.next
-        p [ rs.string( 'uhost' ), rs.string( 'url' ) ]
+        p [ rs.string( 'url' ) ]
       end
       nil
     end
@@ -37,7 +37,8 @@ class TestPoolFactory < Test::Unit::TestCase
   def test_query
     assert( ! @data_source.nil? )
     qrun = QueryRunner.new( @data_source )
-    qrun.query( "SELECT * FROM urls", TestHandler.new )
+    qrun.query( "SELECT url FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', 'notthere' );", 
+                TestHandler.new )
   end
 
 end
