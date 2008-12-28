@@ -103,8 +103,6 @@ http://archives.postgresql.org/pgsql-hackers/2008-11/msg00342.php
 See original robbat article for link to suggestion to use a RULE to
 convert insert to update.
 
-
-
 Consider a transaction:
 
 Get existing uhash values
