@@ -177,7 +177,6 @@ public final class VisitURL
     /**
      * Trim leading trail whitespace
      * Replace internal whitespace sequences with a single %20
-     * 
      */
     static String preEncode( CharSequence in )
     {

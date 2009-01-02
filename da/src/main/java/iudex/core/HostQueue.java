@@ -60,8 +60,8 @@ public class HostQueue
     private final String _host;
     private Date _nextVisit = new Date();
     
-    // TODO: Logically a priority queue but may be more optimal 
-    // as a simple linked list queue, as we already get work from database in
+    // FIXME: Logically a priority queue but may be more optimal 
+    // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
     private PriorityQueue<VisitOrder> _work = new PriorityQueue<VisitOrder>();
 
