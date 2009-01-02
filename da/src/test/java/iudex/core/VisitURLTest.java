@@ -1,10 +1,11 @@
-package com.gravitext.crawler;
+package iudex.core;
 
 import static org.junit.Assert.*;
+import iudex.core.VisitURL;
+import iudex.core.VisitURL.SyntaxException;
 
 import org.junit.Test;
 
-import com.gravitext.crawler.VisitURL.SyntaxException;
 
 public class VisitURLTest
 {

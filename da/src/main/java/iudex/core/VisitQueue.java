@@ -1,4 +1,4 @@
-package com.gravitext.crawler;
+package iudex.core;
 
 import java.util.Date;
 import java.util.HashMap;

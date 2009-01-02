@@ -1,4 +1,9 @@
-package com.gravitext.crawler;
+package iudex.core;
+
+import iudex.core.HostQueue;
+import iudex.core.VisitOrder;
+import iudex.core.VisitQueue;
+import iudex.core.VisitURL;
 
 import org.junit.Test;
 import static org.junit.Assert.*;

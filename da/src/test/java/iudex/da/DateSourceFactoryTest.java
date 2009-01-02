@@ -1,5 +1,8 @@
-package com.gravitext.crawler.da;
+package iudex.da;
 
+
+import iudex.core.VisitURL;
+import iudex.da.DataSourceFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,7 +17,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gravitext.crawler.VisitURL;
 
 public class DateSourceFactoryTest
 {

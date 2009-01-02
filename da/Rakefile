@@ -21,9 +21,9 @@ ENV['NODOT'] = "no thank you"
 require 'hoe'
 
 $LOAD_PATH << './lib'
-require 'crawler-da/base'
+require 'iudex/base'
 
-ASSEMBLY = "target/crawler-da-1.0-SNAPSHOT-bin.dir/"
+ASSEMBLY = "target/iudex-da-1.0-bin.dir/"
 
 desc "Update the Manifest with actual jars"
 task :manifest => [ ASSEMBLY ] do
@@ -36,11 +36,11 @@ README.txt
 Rakefile
 pom.xml
 assembly.xml
-lib/crawler-da.rb
-lib/crawler-da/base.rb
+lib/iudex.rb
+lib/iudex/base.rb
 END
     out.puts( Dir.glob( File.join( ASSEMBLY, '*.jar' ) ).map do |jar|
-                File.join( 'lib', 'crawler-da', File.basename( jar ) )
+                File.join( 'lib', 'iudex', File.basename( jar ) )
               end )
   ensure
     out.close
@@ -58,8 +58,8 @@ JAR_FILES = File.new( 'Manifest.txt' ).readlines.map { |f| f.strip }\
 JARS = JAR_FILES.map { |f| File.basename( f.strip ) }
 
 JARS.each do |jar|
-  file "lib/crawler-da/#{jar}" => [ ASSEMBLY ] do
-    cp_r( File.join( ASSEMBLY, jar ), 'lib/crawler-da' )
+  file "lib/iudex-da/#{jar}" => [ ASSEMBLY ] do
+    cp_r( File.join( ASSEMBLY, jar ), 'lib/iudex-da' )
   end
 end
 
@@ -71,7 +71,7 @@ task :mvn_clean do
 end
 task :clean => :mvn_clean 
 
-hoe = Hoe.new( "crawler-da", CrawlerDA::VERSION ) do |p|
+hoe = Hoe.new( "iudex-da", Iudex::VERSION ) do |p|
   p.developer( "David Kellum", "dek-ruby@gravitext.com" )
   p.extra_deps << [ 'jdbc-postgres', "~> 8.3" ]
   # p.rubyforge_name = "rjack"

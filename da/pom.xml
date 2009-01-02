@@ -1,17 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.gravitext</groupId>
-  <artifactId>crawler-da</artifactId>
+  <groupId>iudex</groupId>
+  <artifactId>iudex-da</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>JDBC DA for Crawler</name>
-  <url></url>
+  <version>1.0</version>
+  <name>Iudex Data Access</name>
 
   <parent>
-    <groupId>com.gravitext</groupId>
-    <artifactId>gravitext-parent</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <groupId>iudex</groupId>
+    <artifactId>iudex-parent</artifactId>
+    <version>1.0</version>
+    <relativePath>..</relativePath>
   </parent>
 
   <dependencies>
@@ -19,7 +19,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -30,7 +29,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <optional>true</optional>
     </dependency>
 
     
@@ -63,10 +61,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <!-- Parent settings -->
-        <artifactId>maven-source-plugin</artifactId>
-      </plugin>
       <plugin>
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>

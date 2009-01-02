@@ -1,4 +1,4 @@
-package com.gravitext.crawler.da;
+package iudex.da;
 
 import java.util.Map;
 import java.util.Properties;

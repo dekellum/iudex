@@ -1,4 +1,4 @@
-package com.gravitext.crawler;
+package iudex.core;
 
 public class VisitOrder implements Comparable<VisitOrder>
 {

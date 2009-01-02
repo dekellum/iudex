@@ -1,4 +1,4 @@
-package com.gravitext.util;
+package iudex.util;
 
 /**
  * URL64 encoder and decoder utility.  URL64 is identical to Base64

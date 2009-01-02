@@ -1,4 +1,6 @@
-package com.gravitext.crawler;
+package iudex.core;
+
+import iudex.util.URL64;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,7 +10,6 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import com.gravitext.util.URL64;
 
 /**
  * Immutable URL representation encapsulates URL/URI parsing, normalization, 
