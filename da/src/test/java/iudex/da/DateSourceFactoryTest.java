@@ -16,6 +16,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 
 public class DateSourceFactoryTest
@@ -39,7 +40,8 @@ public class DateSourceFactoryTest
     public static void Close()
     {
     }
-    @Test
+    
+    @Test @Ignore
     public void testUpdate() throws SQLException, VisitURL.SyntaxException
     {
         VisitURL url = 
