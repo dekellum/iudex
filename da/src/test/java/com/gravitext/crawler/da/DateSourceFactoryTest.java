@@ -1,13 +1,8 @@
 package com.gravitext.crawler.da;
 
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -15,14 +10,11 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-
-import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
-import com.gravitext.crawler.URLHash;
-
-import static org.junit.Assert.*;
+import com.gravitext.crawler.VisitURL;
 
 public class DateSourceFactoryTest
 {
@@ -38,8 +30,7 @@ public class DateSourceFactoryTest
         params.put( "user", "david" );
         //params.put( "loglevel", "2" );
         _dataSource = factory.create( params );
-        
-        
+
     }
     
     @AfterClass
@@ -47,15 +38,15 @@ public class DateSourceFactoryTest
     {
     }
     @Test
-    public void testUpdate() throws SQLException, URISyntaxException
+    public void testUpdate() throws SQLException, VisitURL.SyntaxException
     {
-        URI uri = new URI( "http://gravitext.com/blog/feed/atom.xml" );
-        uri = URLHash.normalize( uri );
+        VisitURL url = 
+            VisitURL.normalize( "http://gravitext.com/blog/feed/atom.xml" );
         
         Object[] params = new Object[] {
-            URLHash.hashURL( uri.toString() ).toString(),
-            uri.toString(),
-            uri.getHost(),
+            url.uhash(),
+            url.toString(),
+            url.host(),
             "FEED",
             1.1
         };
