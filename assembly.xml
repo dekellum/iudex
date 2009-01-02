@@ -1,0 +1,16 @@
+<assembly>
+  <id>bin</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>rrome:rrome</include>
+        <include>rome:rome</include>
+        <include>jdom:jdom</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+</assembly>
