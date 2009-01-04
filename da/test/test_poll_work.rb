@@ -5,14 +5,13 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-require 'crawler-da'
-require 'crawler-da/ar'
-
+require 'iudex'
+require 'iudex/ar'
 
 require 'test/unit'
 
 class TestPollWork < Test::Unit::TestCase
-  import 'com.gravitext.crawler.URLHash'
+  import 'iudex.core.VisitURL'
 
   def setup
     Url.delete_all
@@ -23,10 +22,11 @@ class TestPollWork < Test::Unit::TestCase
       (5..15).each do |val|
         url = Url.create! do |u|
           u.priority = ( val.to_f / 10.0 ) + (count.to_f / 50.0)
+          vurl = VisitURL.normalize( "http://#{host}/#{u.priority}" )
           u.type = "FEED"
-          u.host = host
-          u.url = "http://#{host}/#{u.priority}"
-          u.uhash = URLHash::hashURL( u.url ).to_s
+          u.host = vurl.host
+          u.url = vurl.to_s
+          u.uhash = vurl.uhash
           u.next_visit_after = Time.now
           count += 1
         end
@@ -35,12 +35,12 @@ class TestPollWork < Test::Unit::TestCase
   end
   
   def teardown
-    # Url.delete_all
+    Url.delete_all
   end
 
   # Query to get new work, with limits on work per host, and total
   # work (in descending piority order)
-  def dont_test_poll
+  def test_poll
     query = <<END
 SELECT url, host, type, priority 
 FROM ( SELECT * FROM urls
@@ -93,10 +93,10 @@ END
         priority = ( val.to_f / 10.0 ) + (count.to_f / 50.0)
           # u.priority =
           # u.type = "FEEDX"
-        host = "gravitext.com"
-        url = "http://#{host}/#{priority}"
-        uhash = URLHash::hashURL( url ).to_s
-        sql = "INSERT into mod_urls VALUES ('%s','%s','%s')" % [ uhash,url,host ]
+        vurl = VisitURL.normalize( "http://gravitext.com/#{priority}" )
+
+        sql = "INSERT into mod_urls VALUES ('%s','%s','%s')" % 
+          [ vurl.uhash, vurl.to_s, vurl.host ]
         Url.connection.execute( sql )
           # u.next_visit_after = Time.now
         count += 1

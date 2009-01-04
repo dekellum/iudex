@@ -3,12 +3,12 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-require 'crawler-da'
+require 'iudex'
 
 require 'test/unit'
 
 class TestPoolFactory < Test::Unit::TestCase
-  include CrawlerDA
+  include Iudex
   import 'org.apache.commons.dbutils.ResultSetHandler'
   import 'org.apache.commons.dbutils.QueryRunner'
 

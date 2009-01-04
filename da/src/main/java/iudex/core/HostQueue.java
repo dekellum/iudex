@@ -63,7 +63,7 @@ public class HostQueue
     }
     
     private final String _host;
-    private long _nextVisit = System.currentTimeMillis();
+    private long _nextVisit = 0; 
     
     // FIXME: Logically a priority queue but may be more optimal 
     // as a simple linked list FIFO, as we already get work from database in

@@ -1,9 +1,9 @@
 
-require 'crawler-da/base'
+require 'iudex/base'
 require 'jdbc/postgres'
 
-module CrawlerDA
-  Dir.glob( File.join( CRAWLER_DA_DIR, '*.jar' ) ).each { |jar| require jar }
+module Iudex
+  Dir.glob( File.join( IUDEX_DIR, '*.jar' ) ).each { |jar| require jar }
 
   # Factory for a DataSource using commons-dbcp and postgres driver
   class PoolDataSourceFactory

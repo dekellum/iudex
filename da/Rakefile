@@ -36,8 +36,15 @@ README.txt
 Rakefile
 pom.xml
 assembly.xml
-lib/iudex.rb
 lib/iudex/base.rb
+lib/iudex.rb
+lib/iudex/ar.rb
+db/200811282039_initial_schema.rb
+db/200811282047_add_priority.rb
+db/200811282054_add_visit_after.rb
+db/200811302009_add_feed_article_fields.rb
+test/test_poll_work.rb
+test/test_pool_factory.rb
 END
     out.puts( Dir.glob( File.join( ASSEMBLY, '*.jar' ) ).map do |jar|
                 File.join( 'lib', 'iudex', File.basename( jar ) )
@@ -58,8 +65,8 @@ JAR_FILES = File.new( 'Manifest.txt' ).readlines.map { |f| f.strip }\
 JARS = JAR_FILES.map { |f| File.basename( f.strip ) }
 
 JARS.each do |jar|
-  file "lib/iudex-da/#{jar}" => [ ASSEMBLY ] do
-    cp_r( File.join( ASSEMBLY, jar ), 'lib/iudex-da' )
+  file "lib/iudex/#{jar}" => [ ASSEMBLY ] do
+    cp_r( File.join( ASSEMBLY, jar ), 'lib/iudex' )
   end
 end
 

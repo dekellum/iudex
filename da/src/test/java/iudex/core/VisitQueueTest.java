@@ -56,6 +56,8 @@ public class VisitQueueTest
     
     private void assertTakeNext( String url ) throws InterruptedException
     {
+        Thread.sleep( 30 );
+        
         final HostQueue hq = _visitQ.take(); 
         try {
             VisitOrder order = hq.remove();
@@ -63,7 +65,7 @@ public class VisitQueueTest
             assertEquals( url, order.url().toString() );
         }
         finally {
-            hq.setNextVisit( System.currentTimeMillis() + 100 );
+            hq.setNextVisit( System.currentTimeMillis() + 50 );
             _visitQ.untake( hq );
         }
     }
