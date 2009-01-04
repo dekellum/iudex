@@ -1,7 +1,6 @@
 package iudex.core;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.PriorityQueue;
 
 public class HostQueue
@@ -10,7 +9,7 @@ public class HostQueue
     {
         public int compare( HostQueue prev, HostQueue next )
         {
-            return prev.nextVisit().compareTo( next.nextVisit() );
+            return Long.signum( prev.nextVisit() - next.nextVisit() );
         }
     }
     
@@ -27,11 +26,17 @@ public class HostQueue
         _host = host;
     }
 
-    public Date nextVisit()
+    public long nextVisit()
     {
         return _nextVisit;
     }
 
+    public void setNextVisit( long nextVisitMillis )
+    {
+        _nextVisit = nextVisitMillis;
+    }
+
+    
     public void add( VisitOrder order )
     {
         _work.add( order );
@@ -58,11 +63,10 @@ public class HostQueue
     }
     
     private final String _host;
-    private Date _nextVisit = new Date();
+    private long _nextVisit = System.currentTimeMillis();
     
     // FIXME: Logically a priority queue but may be more optimal 
     // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
     private PriorityQueue<VisitOrder> _work = new PriorityQueue<VisitOrder>();
-
 }

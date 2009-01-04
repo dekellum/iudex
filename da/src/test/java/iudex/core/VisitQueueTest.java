@@ -13,23 +13,62 @@ public class VisitQueueTest
     private VisitQueue _visitQ = new VisitQueue();
 
     @Test
-    public void test() throws VisitURL.SyntaxException, InterruptedException
+    public void testPriority() 
+        throws VisitURL.SyntaxException, InterruptedException
     {
-        add_order( "http://h1/b", 0.1 );
-        add_order( "http://h1/a", 0.2 );
-        assertEquals( 2, _visitQ.size() );
+        addOrder( "http://h1/3", 1.3 );
+        addOrder( "http://h1/1", 1.1 );
+        addOrder( "http://h1/2", 1.2 );
         
-        HostQueue hq = _visitQ.take();
-        assertEquals( "http://h1/a", hq.remove().url().toString() );
-        _visitQ.untake( hq );
-        hq = _visitQ.take();
-        assertEquals( "http://h1/b", hq.remove().url().toString() );
-        _visitQ.untake( hq );
+        assertEquals( 3, _visitQ.size() );
+        
+        assertTakeNext( "http://h1/3" );
+        assertTakeNext( "http://h1/2" );
+        assertTakeNext( "http://h1/1" );
         
         assertEquals( 0, _visitQ.size() );
     }
 
-    private void add_order( String url, double priority ) 
+    @Test
+    public void testHosts() 
+        throws VisitURL.SyntaxException, InterruptedException
+    {
+        addOrder( "http://h2/2", 2.2 );
+        addOrder( "http://h2/1", 2.1 );
+        addOrder( "http://h3/2", 3.2 );
+        addOrder( "http://h3/1", 3.1 );
+        addOrder( "http://h1/2", 1.2 );
+        addOrder( "http://h1/1", 1.1 );
+        
+        assertEquals( 6, _visitQ.size() );
+        
+        assertTakeNext( "http://h3/2" );
+        assertTakeNext( "http://h2/2" );
+        assertTakeNext( "http://h1/2" );
+        assertTakeNext( "http://h3/1" );
+        assertTakeNext( "http://h2/1" );
+        assertTakeNext( "http://h1/1" );
+        
+        assertEquals( 0, _visitQ.size() );
+    }
+
+    
+    
+    private void assertTakeNext( String url ) throws InterruptedException
+    {
+        final HostQueue hq = _visitQ.take(); 
+        try {
+            VisitOrder order = hq.remove();
+            
+            assertEquals( url, order.url().toString() );
+        }
+        finally {
+            hq.setNextVisit( System.currentTimeMillis() + 100 );
+            _visitQ.untake( hq );
+        }
+    }
+
+    private void addOrder( String url, double priority ) 
         throws VisitURL.SyntaxException
     {
         _visitQ.add( new VisitOrder( VisitURL.normalize( url ),

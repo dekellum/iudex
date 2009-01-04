@@ -1,10 +1,8 @@
 package iudex.core;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 
 /**
@@ -15,70 +13,78 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class VisitQueue
 {
     //FIXME: List<FetchOrder> orders instead.
-    public void add( VisitOrder order )
+    public synchronized void add( VisitOrder order )
     {
         String host = order.url().host();
         HostQueue queue = _hosts.get( host );
+        boolean isNew = false;
         
         if( queue == null ) {
             queue = new HostQueue( host );
-            _hosts.put( host, queue );
-            _readyHosts.add( queue );  // A new host is always ready
+            isNew = true;
         }
-        queue.add( order ); // FIXME: Before _readyHosts add?
+        
+        queue.add( order ); 
+
+        if( isNew ) {
+            _hosts.put( host, queue );
+            _readyHosts.add( queue );  
+        }
+
         ++_size;
+        notifyAll();
     }
 
-    public int size()
+    public synchronized int size()
     {
         return _size;
     }
     
-    public HostQueue take() throws InterruptedException
+    public synchronized HostQueue take() throws InterruptedException
     {
-        if( _readyHosts.isEmpty() ) makeReady();
-        HostQueue ready = _readyHosts.take();
+        HostQueue ready = null;
+        while( ( ready = _readyHosts.poll() ) == null ) {
+            final long now = System.currentTimeMillis();
+            
+            HostQueue next = null;
+            while( ( next = _sleepHosts.peek() ) != null ) {
+                if( ( now - next.nextVisit() ) >= 0 ) {
+                    _readyHosts.add( _sleepHosts.remove() );
+                }
+                else break;
+            }
+            if( _readyHosts.isEmpty() ) {
+                long delay = 
+                    ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
+                wait( delay );
+            }
+        }
         return ready;
     }
     
-    public void untake( HostQueue queue )
+    public synchronized void untake( HostQueue queue )
     {
+        --_size;
         if( queue.size() == 0 ) {
             _hosts.remove( queue.host() );
         }
         else {
             _sleepHosts.add( queue );
-        }
-        --_size;
-    }
-
-    public void makeReady()
-    {
-        Date now = new Date();
-        HostQueue next = null;
-        while( ( next = _sleepHosts.poll() ) != null ) {
-            if( now.compareTo( next.nextVisit() ) >= 0 ) {
-                _readyHosts.add( next );
-            }
-            else {
-                _sleepHosts.add( next );
-                break;
-            }
+            notifyAll();
         }
     }
     
     private final Map<String,HostQueue> _hosts = 
         new HashMap<String,HostQueue>(); 
-    //FIXME: ConcurrentHashMap?
     
     private int _size = 0;
 
-    //FIXME: Using Blocking aspect?
-    private PriorityBlockingQueue<HostQueue> _readyHosts = 
-        new PriorityBlockingQueue<HostQueue>
+    private PriorityQueue<HostQueue> _readyHosts = 
+        new PriorityQueue<HostQueue>
             ( 1024, new HostQueue.TopOrderComparator() );
 
     private PriorityQueue<HostQueue> _sleepHosts = 
         new PriorityQueue<HostQueue>
             ( 128, new HostQueue.NextVisitComparator() );
+
 }
