@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import iudex.barc.BARCFile.Record;
 import iudex.barc.BARCFile.RecordReader;
+import iudex.core.Header;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -146,7 +147,7 @@ public class BARCFileTest
     @Test
     public void testConcurrentReadWrite() throws IOException
     {
-        long count = TestExecutor.run( new ConcurrentReadWrite(), 100, 4 );
+        long count = TestExecutor.run( new ConcurrentReadWrite(), 2000, 8 );
         _log.debug( "Completed threaded run with {} iterations.", count );
     }
  
@@ -160,14 +161,12 @@ public class BARCFileTest
                 final FastRandom _rand = new FastRandom( seed );
                 public int runIteration( int run ) throws IOException
                 {
-                    int sum = 0;
-                    for( int i = 0; i < 200; ++i ) {
-                        if( _rand.nextInt( 20 ) == 0 ) {
-                            sum += write();
-                        }
-                        else {
-                            sum += read();
-                        }
+                    int sum;
+                    if( _rand.nextInt( 20 ) == 0 ) {
+                        sum = write();
+                    }
+                    else {
+                        sum = read();
                     }
                     return sum;
                 }
@@ -194,7 +193,7 @@ public class BARCFileTest
                             ++_writeCount;
                         }
                     }
-                    return -1;
+                    return 1;
                 }
                 
                 private int read() throws IOException
@@ -224,7 +223,7 @@ public class BARCFileTest
     static {
         for( int r = 0; r < FILLER.length; ++r ) {
             FILLER[r] = new byte[ r * 4 + 1 ];
-            Arrays.fill( FILLER[r], (byte) ('A' + r ) );
+            Arrays.fill( FILLER[r], (byte) ( 'A' + r ) );
         }
     }
     

@@ -1,5 +1,7 @@
 package iudex.barc;
 
+import iudex.core.Header;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;

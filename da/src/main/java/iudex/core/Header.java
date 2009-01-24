@@ -1,4 +1,4 @@
-package iudex.barc;
+package iudex.core;
 
 /**
  * A name/value pair suitable for HTTP and other header representation. All  
@@ -28,19 +28,12 @@ public final class Header
     public String toString()
     {
         StringBuilder b = new StringBuilder( 128 );
-        append( _name, b );
+        b.append( _name.toString() );
         b.append( ": " );
-        append( _value, b );
+        b.append(  _value.toString() );
         return b.toString();
     }
     
-    private void append( Object it, StringBuilder b )
-    {
-        if( it instanceof CharSequence ) b.append( (CharSequence ) it );
-        else b.append( it.toString() );
-    }
-
-
     private final Object _name;
     private final Object _value;
 }
