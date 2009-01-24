@@ -15,7 +15,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -111,7 +110,6 @@ public class BARCFileTest
                           rec.responseHeaders().get( 0 ).value().toString() );
             
         }
-        
         assertNull( reader.next() );
     }
     
@@ -153,7 +151,7 @@ public class BARCFileTest
     }
  
     
-    class ConcurrentReadWrite extends TestFactoryBase 
+    final class ConcurrentReadWrite extends TestFactoryBase 
     {
         @Override
         public TestRunnable createTestRunnable( final int seed )
@@ -177,7 +175,7 @@ public class BARCFileTest
                 private int write() throws IOException
                 {
                     synchronized( _writeLock ) {
-                        int i = _writeCount.get();
+                        int i = _writeCount;
                         Record rec = _barc.append();
                         try {
                             if( _rand.nextInt( 3 ) == 0 ) {
@@ -193,7 +191,7 @@ public class BARCFileTest
                         }
                         finally {
                             rec.close();
-                            _writeCount.getAndIncrement();
+                            ++_writeCount;
                         }
                     }
                     return -1;
@@ -204,10 +202,8 @@ public class BARCFileTest
                     final RecordReader reader = _barc.reader();
                     Record rec;
                     int i = 0;
-                    int end = Math.min( _rand.nextInt( 100 ) + 1, 
-                                        _writeCount.get() ); 
-                    while( ( i < end ) && 
-                           ( ( rec = reader.next() ) != null ) ) {
+                    int end = _rand.nextInt( 100 ) + 1;
+                    while( ( i < end ) && ( (rec = reader.next()) != null ) ) {
                         assertEquals( 1, rec.metaHeaders().size() );
                         Header h = rec.metaHeaders().get( 0 );
                         assertEquals( "RESP-" + i, h.name().toString() );
@@ -219,7 +215,7 @@ public class BARCFileTest
             };
         }
         private Object _writeLock = new Object();
-        private AtomicInteger _writeCount = new AtomicInteger(0);
+        private int _writeCount = 0;
         
     }
     

@@ -13,13 +13,26 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.gravitext.util.ResizableCharBuffer;
 
 /**
- * Basic ARChive File Reader/Writer.
+ * Basic ARChive File Reader/Writer. Supports record types, up to three
+ * HTTP-like key value header blocks ("meta", "request", and "response" ), and
+ * optional GZIP compression. 
+ *
+ * A BARCFile supports concurrent random access read by offset and concurrent
+ * sequential read sessions via multiple {@link RecordReader} instances in
+ * multiple threads. Writes are directly appended on to the end of a BARCFile by
+ * stream and thus only one thread can write at a time. This must be externally
+ * controlled. However, writes are atomically advertised on write record close, 
+ * so reading threads need not be blocked during a write operation. An external
+ * process may see an empty BARC record at the end of a BARCFile while a record
+ * append operation is in progress.
+ * 
  * @see http://upload.wikimedia.org/wikipedia/commons/a/ae/BARC-LARC-XV-2.jpeg
  */
 public final class BARCFile implements Closeable
@@ -29,7 +42,7 @@ public final class BARCFile implements Closeable
         file.createNewFile();
         _rafile = new RandomAccessFile( file, "rw" );
         _channel = _rafile.getChannel();
-        
+        _end = new AtomicLong( _channel.size() );
     }
 
     public void close() throws IOException
@@ -53,6 +66,7 @@ public final class BARCFile implements Closeable
 
     public void truncate() throws IOException
     {
+        _end.set( 0 );
         _channel.truncate( 0 );
     }
 
@@ -84,18 +98,20 @@ public final class BARCFile implements Closeable
         {
             Record record = null; //null as in end
             
-            if( _offset >= _end ) {
-                _end = BARCFile.this._channel.size();
+            if( _offset >= _rEnd ) {
+                _rEnd = _end.get();
             }
             
-            if( _offset < _end ) {
+            //FIXME: Skip empty records here? 
+            //(And/or: Don't update offset of empty close?)
+            if( _offset < _rEnd ) {
                 record = BARCFile.this.read( _offset );
                 _offset += ( HEADER_LENGTH + record.length() );
             }
             return record;
         }
 
-        private long _end = 0;
+        private long _rEnd = 0;
         private long _offset = 0;
     }
     
@@ -113,11 +129,23 @@ public final class BARCFile implements Closeable
         
         public void setCompressed( boolean doCompress )
         {
-            if( _out != null ) throw new IllegalStateException
-            ( "Invalid setCompressed() after first write." );
-            
+            if( ( _out != null ) || 
+                ( _writeState == WriteState.CLOSED ) ) {
+                throw new IllegalStateException
+                ( "Invalid setCompressed() after first write or on read." );
+            }
             _compressed = doCompress;
         }
+        
+        public void setType( char type )
+        {
+            if( _writeState == WriteState.CLOSED ) {
+                throw new IllegalStateException
+                ( "Invalid setType() on read or after close." );
+            }
+            _type = type;
+        }
+        
         
         public void writeMetaHeaders( Iterable<Header> headers ) 
             throws IOException
@@ -197,8 +225,9 @@ public final class BARCFile implements Closeable
          */
         Record() throws IOException
         {
-            _offset = _channel.size(); // Append to end
+            _offset = _end.get(); // Append to end
             writeBARCHeader(); // Initial copy
+            _channel.position( _offset + HEADER_LENGTH );
         }
         
         /**
@@ -226,12 +255,17 @@ public final class BARCFile implements Closeable
         {
             if( _writeState != WriteState.CLOSED  ) {
                 _writeState = WriteState.CLOSED;
-                _channel.write( CRLF_BYTES.duplicate() );
-                _length = ( (int) ( _channel.position() - _offset ) 
-                    - HEADER_LENGTH );
+                long end = _channel.position();
+                _length = ( (int) ( end - _offset ) - HEADER_LENGTH );
+                if( _length > 0 ) {
+                    _channel.write( CRLF_BYTES.duplicate() );
+                    end += 2;
+                    _length += 2;
+                }
                 writeBARCHeader(); // With adjusted lengths
                 _out = null;
-                _channel.force( false ); 
+                _channel.force( false );
+                _end.set( end );
             }
         }
  
@@ -352,7 +386,9 @@ public final class BARCFile implements Closeable
             ResizableCharBuffer cbuff = new ResizableCharBuffer( 256 );
             
             for( Header header : headers ) {
-                writeHeader( header, cbuff );
+                putObj( header.name(), cbuff );
+                cbuff.put( ": " );
+                putObj( header.value(), cbuff );
                 cbuff.put( CRLF );
             }
             cbuff.put( CRLF );
@@ -370,13 +406,6 @@ public final class BARCFile implements Closeable
             return length;
         }
  
-        public void writeHeader( Header h, ResizableCharBuffer b )
-        {
-            putObj( h.name(), b );
-            b.put( ": " );
-            putObj( h.value(), b );
-        }
-        
         private void openInputStream() throws IOException
         {
             if( _in == null ) {
@@ -393,7 +422,6 @@ public final class BARCFile implements Closeable
         private void openOutputStream() throws IOException
         {
             if( _out == null ) {
-                _channel.position( _offset + HEADER_LENGTH );
                 _out = new RecordOutputStream();
 
                 if( _compressed ) {
@@ -516,6 +544,8 @@ public final class BARCFile implements Closeable
     private Record _currentRecord;
     private final RandomAccessFile _rafile;
     private final FileChannel _channel;
+    private final AtomicLong _end;
+    
     
     static void putObj( Object it, ResizableCharBuffer b )
     {
