@@ -1,5 +1,10 @@
 package iudex.core;
 
+
+/**
+ * VisitURL plus: type (intended use), priority
+ *  
+ */
 public class VisitOrder implements Comparable<VisitOrder>
 {
     public static enum Type {

@@ -12,7 +12,7 @@ import java.util.PriorityQueue;
  */
 public class VisitQueue
 {
-    //FIXME: List<FetchOrder> orders instead.
+    //FIXME: List<VisitOrder> with common host orders instead?
     public synchronized void add( VisitOrder order )
     {
         String host = order.url().host();

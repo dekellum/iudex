@@ -142,4 +142,15 @@ http://java.sun.com/javase/6/docs/api/java/net/IDN.html
 * Strip any "#anchor"
 
 
+== Hetoregenous-Type-Safe-Map usage
+
+feed parse --> iterator over entries
+
+/w each entry is a Item
+
+crawl pare->processes page as item....
+
+
+
+
 

@@ -80,7 +80,9 @@ task :clean => :mvn_clean
 
 hoe = Hoe.new( "iudex-da", Iudex::VERSION ) do |p|
   p.developer( "David Kellum", "dek-ruby@gravitext.com" )
-  p.extra_deps << [ 'jdbc-postgres', "~> 8.3" ]
+  p.extra_deps << [ 'jdbc-postgres', '~> 8.3' ]
+  p.extra_deps << [ 'activerecord', '~> 2.2' ]
+  p.extra_deps << [ 'activerecord-jdbcpostgresql-adapter', '~> 0.9' ]
   # p.rubyforge_name = "rjack"
   p.rdoc_pattern = /^(lib.*\.(rb|txt))|[^\/]*\.txt$/
 end

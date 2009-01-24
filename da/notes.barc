@@ -1,0 +1,20 @@
+WARC problems:
+
+1. Uses text based Content-Length, so not possible to performed concurrent record reads.
+
+2. Bloated/complated
+
+Simpler format:
+
+"Basic Archive": BARC:
+
+
+A Human/Machine readabile header used for first record (offset zero)
+and each subsequent record.
+
+Magic payload  tt meta reqt resp 
+BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
+CRLF
+
+
+BARC1 00000000 HC 0000 0000 0000(CRLF)
