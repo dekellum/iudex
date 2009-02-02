@@ -151,6 +151,89 @@ feed parse --> iterator over entries
 crawl pare->processes page as item....
 
 
+== TODO ==
+
+Revise modules?
+
+iudex-core
+  barc
+  http abstraction
+  (content)
+  Work Queue (-RDBMS)
+   Extraction (abstraction)
+  
+iudex-postgres (or iudex-da)
+
+iudex-parsers (?)
+  robots
+  feed
+  html
+  sitemap
+
+iudex-httpclient3 (?)
+
+
+== HTTP write through file approach ==
+
+Open temp barc individual file, write record (uncompressed) off of http stream.
+(Might use truncate and existing pool of files, faster?)
+
+Reopen for read (TODO: Cache parsed headers on write):
+
+(Process: parse, etc., decide to keep or terminate)
+
+Copy (compressed) to final pool of persistent/large BARC files.
+
+PROS:
+
+Avoid OOM concerns on http read (not bufferd in memory)
+Avoid compression cost on HTTP fetch (and overhead of uncompress for read back.)
+
+CONS:
+
+More to implement.
+
+Alternative: In memory initial read
+
+Read in to memory
+(process)
+Write compressed if keeping
+
+PROS:
+
+Faster if memory not an issue
+Simpler to implement
+Avoid compression cost on HTTP fetch
+
+
+BARCDirectory (file pool):
+
+v1: 
+BARC File ID scheme: 000000.barc ... 012345.barc ... 999999.barc
+
+Simplified with one open barc file
+   get record for append (indicate file "ID" + OFFset for DB)
+   write (all other threads block on get record)
+   record.close() or "pool" equivelent.
+Cap on file size
+Write compressed "default"?
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
 
 
 

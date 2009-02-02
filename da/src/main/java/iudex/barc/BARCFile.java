@@ -32,8 +32,8 @@ import com.gravitext.util.ResizableCharBuffer;
  * stream and thus only one thread can write at a time. This must be externally
  * controlled. However, writes are atomically advertised on write record close, 
  * so reading threads need not be blocked during a write operation. An external
- * process may see an empty BARC record at the end of a BARCFile while a record
- * append operation is in progress.
+ * process may see an empty or partial BARC record at the end of a 
+ * BARCFile while a record append operation is in progress.
  * 
  * @see http://upload.wikimedia.org/wikipedia/commons/a/ae/BARC-LARC-XV-2.jpeg
  */
@@ -85,7 +85,11 @@ public final class BARCFile implements Closeable
     {
         return new RecordReader();
     }
-
+    
+    public long size()
+    {
+        return _end.get();
+    }
     
     /**
      * Provides sequential access to each record in a BARC File.  
@@ -101,7 +105,7 @@ public final class BARCFile implements Closeable
             Record record = null; //null as in end
             
             if( _offset >= _rEnd ) {
-                _rEnd = _end.get();
+                _rEnd = size();
             }
             
             //FIXME: Skip empty records here? 
@@ -129,6 +133,11 @@ public final class BARCFile implements Closeable
             return _length;
         }
         
+        public boolean isCompressed()
+        {
+            return _compressed;
+        }
+        
         public void setCompressed( boolean doCompress )
         {
             if( ( _out != null ) || 
@@ -138,6 +147,12 @@ public final class BARCFile implements Closeable
             }
             _compressed = doCompress;
         }
+        
+        public char type()
+        {
+            return _type;
+        }
+        
         
         public void setType( char type )
         {
@@ -212,6 +227,32 @@ public final class BARCFile implements Closeable
             checkState( WriteState.BODY );
             openOutputStream(); // if not already
             return _out;
+        }
+
+        /**
+         * Copy from other record (open for read) to this record (open for
+         * write). This records isCompressed flag is used for the write 
+         * (instead of being copied). 
+         */
+        public void copyFrom( Record other ) throws IOException
+        {
+            setType( other.type() );
+            openOutputStream();
+            
+            checkState( WriteState.META_HEADER );
+            other.openInputStream();
+            
+            _metaHeaderLength = writeHeaderBlock( other._metaHeadBytes );
+            checkState( WriteState.RQST_HEADER );
+            _rqstHeaderLength = writeHeaderBlock( other._rqstHeadBytes );
+            checkState( WriteState.RESP_HEADER );
+            _respHeaderLength = writeHeaderBlock( other._respHeadBytes );
+
+            copy( other.bodyInputStream(), bodyOutputStream() );
+            close();
+            
+            //FIXME: Optimize to single buffer copy in case where other and this
+            //have same compressed setting.
         }
         
         public void close() throws IOException
@@ -407,6 +448,19 @@ public final class BARCFile implements Closeable
             
             return length;
         }
+
+        private int writeHeaderBlock( ByteBuffer block ) 
+            throws IOException
+        {
+           int length = block.remaining();
+           openOutputStream(); // if not already
+           
+           _out.write( block.array(), 
+                       block.arrayOffset() + block.position(), 
+                       block.remaining() );
+           
+           return length;
+        }
  
         private void openInputStream() throws IOException
         {
@@ -548,7 +602,23 @@ public final class BARCFile implements Closeable
     private final FileChannel _channel;
     private final AtomicLong _end;
     
-    
+    static int copy( InputStream in, OutputStream out ) 
+        throws IOException
+    {
+        int total = 0;
+        int len = 0;
+        final byte[] buff = new byte[ BUFFER_SIZE ];
+        while( true ) {
+            len = in.read( buff );
+            if( len < 0 ) break;
+            if( len > 0 ) {
+                out.write( buff, 0, len );
+                total += len;
+            }
+        }
+        return total;
+    }
+     
     static void putObj( Object it, ResizableCharBuffer b )
     {
         if( it instanceof CharSequence ) b.put( (CharSequence ) it );
@@ -587,4 +657,5 @@ public final class BARCFile implements Closeable
     }
     
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+
 }

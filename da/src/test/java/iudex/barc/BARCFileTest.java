@@ -36,7 +36,7 @@ public class BARCFileTest
     {
         
         Record rec = _barc.append();
-        //rec.setCompressed( true );        
+        rec.setCompressed( true );        
         assertEquals( 0L, rec.offset() );
 
         rec = _barc.append();
@@ -81,6 +81,64 @@ public class BARCFileTest
         assertEquals( "Line two.", in.readLine() );
         rec.close();
     }
+    
+    @Test
+    public void testCopy() throws IOException
+    {
+        Record rec = _barc.append();
+            
+        rec.writeMetaHeaders( 
+            Arrays.asList( new Header( "Name-1", "value-1"),
+                           new Header( "Name-2", "value-2") ) );
+        rec.writeRequestHeaders( 
+            Arrays.asList( new Header( "RQST-1", "request-value-1" ) ) );
+            
+        Writer writer = 
+            new OutputStreamWriter( rec.bodyOutputStream(), "UTF-8" );
+        writer.write( "This is the entity body.\r\n" );
+        writer.write( "Line two just in the middle in this case.\r\n" );
+        writer.write( "Line three for some extra length filler business." );
+        writer.close(); //will also close record.
+
+        rec = _barc.read( rec.offset() );
+        BARCFile barc2 = new BARCFile( new File( "./target/copy.barc" ) );
+        try {
+            barc2.truncate();
+            Record crec = barc2.append();
+            crec.setCompressed( true );
+            crec.copyFrom( rec );
+            
+        }
+        finally {
+            rec.close();
+            barc2.close();
+        }
+        
+        barc2 = new BARCFile( new File( "./target/copy.barc" ) );
+        try {
+            rec = barc2.read( 0 );
+            
+            List<Header> headers = rec.metaHeaders();
+            assertEquals( 2, headers.size() );
+            assertEquals( "Name-1", headers.get(0).name().toString() );
+            assertEquals( "Name-2", headers.get(1).name().toString() );
+            assertEquals( "value-2", headers.get(1).value().toString() );
+            
+            headers = rec.requestHeaders();
+            assertEquals( 1, headers.size() );
+            assertEquals( "request-value-1", 
+                          headers.get(0).value().toString() );
+            BufferedReader in = new BufferedReader( 
+                new InputStreamReader( rec.bodyInputStream(), "UTF-8" ), 128 );
+            assertEquals( "This is the entity body.", in.readLine() );
+            rec.close();
+        }
+        finally {
+            barc2.close();
+        }
+    }
+
+    
     
     @Test
     public void testReader() throws IOException
@@ -152,7 +210,7 @@ public class BARCFileTest
     }
  
     
-    final class ConcurrentReadWrite extends TestFactoryBase 
+    private final class ConcurrentReadWrite extends TestFactoryBase 
     {
         @Override
         public TestRunnable createTestRunnable( final int seed )
@@ -161,15 +219,8 @@ public class BARCFileTest
                 final FastRandom _rand = new FastRandom( seed );
                 public int runIteration( int run ) throws IOException
                 {
-                    int sum;
-                    if( _rand.nextInt( 20 ) == 0 ) {
-                        sum = write();
-                    }
-                    else {
-                        sum = read();
-                    }
-                    return sum;
-                }
+                    return ( _rand.nextInt(7) == 0 ) ? write() : read();
+                } 
                 
                 private int write() throws IOException
                 {
@@ -201,15 +252,18 @@ public class BARCFileTest
                     final RecordReader reader = _barc.reader();
                     Record rec;
                     int i = 0;
-                    int end = _rand.nextInt( 100 ) + 1;
-                    while( ( i < end ) && ( (rec = reader.next()) != null ) ) {
-                        assertEquals( 1, rec.metaHeaders().size() );
-                        Header h = rec.metaHeaders().get( 0 );
-                        assertEquals( "RESP-" + i, h.name().toString() );
+                    int r = 0;
+                    while( ( rec = reader.next() ) != null ) {
+                        if( _rand.nextInt( 4 ) == 0 ) {
+                            assertEquals( 1, rec.metaHeaders().size() );
+                            Header h = rec.metaHeaders().get( 0 );
+                            assertEquals( "RESP-" + i, h.name().toString() );
+                            ++r;
+                        }
                         rec.close();
                         ++i;
                     }
-                    return i;
+                    return r;
                 }
             };
         }
