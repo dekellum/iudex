@@ -9,10 +9,12 @@
   <name>Iudex Parent</name>
 
   <modules>
-    <module>da</module>
-    <module>jetty-httpclient</module>
-    <module>nfeedparser</module>
-    <module>rrome</module>
+    <module>iudex-core</module>
+    <module>iudex-da</module>
+    <!-- DISABLED for now:
+         <module>jetty-httpclient</module>
+         <module>nfeedparser</module>
+         <module>rrome</module> -->
   </modules>
 
   <dependencyManagement>
@@ -35,7 +37,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>0.9.13</version>
+        <version>0.9.15</version>
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
