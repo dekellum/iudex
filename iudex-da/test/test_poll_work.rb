@@ -5,8 +5,9 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-require 'iudex'
-require 'iudex/ar'
+require 'iudex-core'
+require 'iudex-da'
+require 'iudex-da/ar'
 
 require 'test/unit'
 

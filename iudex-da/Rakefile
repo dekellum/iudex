@@ -21,7 +21,7 @@ ENV['NODOT'] = "no thank you"
 require 'hoe'
 
 $LOAD_PATH << './lib'
-require 'iudex/base'
+require 'iudex-da/base'
 
 ASSEMBLY = "target/iudex-da-1.0-bin.dir/"
 
@@ -36,9 +36,9 @@ README.txt
 Rakefile
 pom.xml
 assembly.xml
-lib/iudex/base.rb
+lib/iudex-da/base.rb
 lib/iudex.rb
-lib/iudex/ar.rb
+lib/iudex-da/ar.rb
 db/200811282039_initial_schema.rb
 db/200811282047_add_priority.rb
 db/200811282054_add_visit_after.rb
@@ -47,7 +47,7 @@ test/test_poll_work.rb
 test/test_pool_factory.rb
 END
     out.puts( Dir.glob( File.join( ASSEMBLY, '*.jar' ) ).map do |jar|
-                File.join( 'lib', 'iudex', File.basename( jar ) )
+                File.join( 'lib', 'iudex-da', File.basename( jar ) )
               end )
   ensure
     out.close
@@ -65,8 +65,8 @@ JAR_FILES = File.new( 'Manifest.txt' ).readlines.map { |f| f.strip }\
 JARS = JAR_FILES.map { |f| File.basename( f.strip ) }
 
 JARS.each do |jar|
-  file "lib/iudex/#{jar}" => [ ASSEMBLY ] do
-    cp_r( File.join( ASSEMBLY, jar ), 'lib/iudex' )
+  file "lib/iudex-da/#{jar}" => [ ASSEMBLY ] do
+    cp_r( File.join( ASSEMBLY, jar ), 'lib/iudex-da' )
   end
 end
 
@@ -78,11 +78,12 @@ task :mvn_clean do
 end
 task :clean => :mvn_clean 
 
-hoe = Hoe.new( "iudex-da", Iudex::VERSION ) do |p|
-  p.developer( "David Kellum", "dek-ruby@gravitext.com" )
+hoe = Hoe.new( "iudex-da", Iudex::DA::VERSION ) do |p|
+  p.developer( "David Kellum", "dek-oss@gravitext.com" )
+  p.extra_deps << [ 'iudex-core', '~> 1.0' ]
   p.extra_deps << [ 'jdbc-postgres', '~> 8.3' ]
   p.extra_deps << [ 'activerecord', '~> 2.2' ]
   p.extra_deps << [ 'activerecord-jdbcpostgresql-adapter', '~> 0.9' ]
-  # p.rubyforge_name = "rjack"
+  # p.rubyforge_name = "iudex"
   p.rdoc_pattern = /^(lib.*\.(rb|txt))|[^\/]*\.txt$/
 end
