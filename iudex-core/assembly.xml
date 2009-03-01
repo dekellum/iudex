@@ -7,10 +7,7 @@
   <dependencySets>
     <dependencySet>
       <includes>
-        <include>iudex:iudex-da</include>
-        <include>commons-dbcp:commons-dbcp</include>
-        <include>commons-dbutils:commons-dbutils</include>
-        <include>commons-pool:commons-pool</include>
+        <include>iudex:iudex-core</include>
       </includes>
     </dependencySet>
   </dependencySets>
