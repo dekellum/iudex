@@ -1,5 +1,7 @@
 package iudex.core;
 
+import java.util.Date;
+
 import com.gravitext.htmap.Key;
 
 public class ContentKeys
@@ -17,4 +19,8 @@ public class ContentKeys
     
     public static final Key<ContentSource> CONTENT =
         create( "CONTENT", ContentSource.class );
+    
+    public static final Key<Date> PUBLISHED_DATE = 
+        create( "PUBLISHED_DATE", Date.class );
+
 }

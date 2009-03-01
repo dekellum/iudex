@@ -132,7 +132,6 @@ public final class VisitURL
         String host = uri.getHost();
         //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
         if( host != null ) host = host.toLowerCase();
-
         
         // Drop superfluous port assignments
         int port = uri.getPort();

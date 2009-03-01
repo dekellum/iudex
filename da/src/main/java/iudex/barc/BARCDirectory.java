@@ -173,11 +173,11 @@ public final class BARCDirectory implements Closeable
     }
 
     private final File _path;
-    private int _maxFnum = -1;
 
+    private long _targetBARCLength = 1L * ( 1024L ^ 3 ); //1GB    
     private BARCFile _writeFile = null;
     private WriteSession _currentSession = null;
-    
+
+    private int _maxFnum = -1;
     private ArrayList<BARCFile> _barcs = new ArrayList<BARCFile>( 64 );
-    private long _targetBARCLength = 1L * ( 1024L ^ 3 ); //1GB    
 }
