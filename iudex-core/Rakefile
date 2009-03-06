@@ -23,7 +23,7 @@ require 'hoe'
 $LOAD_PATH << './lib'
 require 'iudex-core/base'
 
-ASSEMBLY = "target/iudex-core-1.0-bin.dir/"
+ASSEMBLY = "target/iudex-core-#{Iudex::Core::VERSION}-bin.dir/"
 
 desc "Update the Manifest with actual jars"
 task :manifest => [ ASSEMBLY ] do
@@ -71,7 +71,7 @@ task :mvn_clean do
 end
 task :clean => :mvn_clean 
 
-hoe = Hoe.new( "iudex-core", Iudex::VERSION ) do |p|
+hoe = Hoe.new( "iudex-core", Iudex::Core::VERSION ) do |p|
   p.developer( "David Kellum", "dek-oss@gravitext.com" )
   p.extra_deps << [ 'gravitext-util', '~> 1.3' ]
   p.extra_deps << [ 'hc-httpclient', '~> 3.1.1' ]
