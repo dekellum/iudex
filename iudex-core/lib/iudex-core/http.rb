@@ -14,13 +14,13 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
-
-require 'gravitext-util'
-require 'iudex-core/base'
+require 'iudex-core'
+require 'hc-httpclient'
 
 module Iudex
   module Core
-    Dir.glob( File.join( IUDEX_CORE_DIR, '*.jar' ) ).each { |jar| require jar }
-  end
+    class HTTP
+      #FIXME: move stuff from bin/http-record?
+    end
+  end   
 end

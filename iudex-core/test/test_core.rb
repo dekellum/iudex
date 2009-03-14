@@ -14,13 +14,11 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
+#!/usr/bin/env jruby
 
-require 'gravitext-util'
-require 'iudex-core/base'
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
-module Iudex
-  module Core
-    Dir.glob( File.join( IUDEX_CORE_DIR, '*.jar' ) ).each { |jar| require jar }
-  end
-end
+require 'iudex-core'
+require 'iudex-core/console_logback' 
+
+require 'test/unit'

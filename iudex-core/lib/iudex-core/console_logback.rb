@@ -15,12 +15,15 @@
 #++
 
 require 'rubygems'
+require 'logback'
 
-require 'gravitext-util'
-require 'iudex-core/base'
-
-module Iudex
-  module Core
-    Dir.glob( File.join( IUDEX_CORE_DIR, '*.jar' ) ).each { |jar| require jar }
+Logback.configure do
+  console = Logback::ConsoleAppender.new do |a|
+    a.target = "System.err"
+    a.layout = Logback::PatternLayout.new do |p|
+      p.pattern = "%-4r %-5level %logger{35} - %msg %ex%n"
+    end
   end
+  Logback.root.add_appender( console )
+  Logback.root.level = Logback::INFO
 end
