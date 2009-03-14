@@ -39,6 +39,7 @@ assembly.xml
 lib/iudex-da/base.rb
 lib/iudex.rb
 lib/iudex-da/ar.rb
+lib/iudex-da/pool_date_source_factory.rb
 db/200811282039_initial_schema.rb
 db/200811282047_add_priority.rb
 db/200811282054_add_visit_after.rb
@@ -82,7 +83,7 @@ hoe = Hoe.new( "iudex-da", Iudex::DA::VERSION ) do |p|
   p.developer( "David Kellum", "dek-oss@gravitext.com" )
   p.extra_deps << [ 'iudex-core', '~> 1.0' ]
   p.extra_deps << [ 'jdbc-postgres', '~> 8.3' ]
-  p.extra_deps << [ 'activerecord', '~> 2.2' ]
+  p.extra_deps << [ 'activerecord', '~> 2.2.2' ]
   p.extra_deps << [ 'activerecord-jdbcpostgresql-adapter', '~> 0.9' ]
   # p.rubyforge_name = "iudex"
   p.rdoc_pattern = /^(lib.*\.(rb|txt))|[^\/]*\.txt$/

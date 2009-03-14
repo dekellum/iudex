@@ -4,3 +4,7 @@
 
 == Synopsis
 
+== Postgresql Setup
+
+ % createuser iudex
+ % createdb iudex_test -O iudex

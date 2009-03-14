@@ -7,6 +7,7 @@ assembly.xml
 lib/iudex-da/base.rb
 lib/iudex.rb
 lib/iudex-da/ar.rb
+lib/iudex-da/pool_date_source_factory.rb
 db/200811282039_initial_schema.rb
 db/200811282047_add_priority.rb
 db/200811282054_add_visit_after.rb

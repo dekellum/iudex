@@ -14,28 +14,29 @@
 # permissions and limitations under the License.
 #++
 
-
-# Active record setup for crawler_test
-
 require 'rubygems'
-require 'slf4j'
-require 'logback'
+require 'slf4j' 
+require 'iudex-da'
 require 'activerecord'
 
-database = { 'host'     => 'localhost',
-             'adapter'  => 'jdbcpostgresql',
-             'database' => 'crawler_test',
-             'username' => 'david' }
+module Iudex::DA
+    
+  LOG = SLF4J[ "Iudex.DA.ActiveRecord" ]
+  ActiveRecord::Base.logger = LOG
 
-# ActiveRecord::Base.default_timezone = :utc
-# ActiveRecord::Base.connection.query_cache_enabled = false
+  LOG.info { "Connecting: #{CONFIG.inspect}" }
+  ActiveRecord::Base.establish_connection( CONFIG )
 
-ActiveRecord::Base.establish_connection( database )
-ActiveRecord::Base.logger = SLF4J::Logger.new( "state_db" )
+  def migrate( target_version = nil )
+    ActiveRecord::Migrator.migrate( File.join( IUDEX_DA_DIR, '..', '..', 'db' ),
+                                    target_version )
+  end
 
-Logback[ "state_db" ].level = Logback::DEBUG
+  module_function :migrate
 
-class Url < ActiveRecord::Base
-  set_primary_key :uhash
-  self.inheritance_column = "object_type" 
+  class Url < ActiveRecord::Base
+    set_primary_key :uhash
+    set_inheritance_column :object_type # since "type" used already
+  end
+  
 end

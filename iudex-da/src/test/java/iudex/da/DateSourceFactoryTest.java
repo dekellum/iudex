@@ -45,8 +45,8 @@ public class DateSourceFactoryTest
         DataSourceFactory factory = new DataSourceFactory();
         HashMap<String,String> params = new HashMap<String,String>();
         params.put( "dsf.driver.class", "org.postgresql.Driver" );
-        params.put( "dsf.uri", "jdbc:postgresql:crawler_test");
-        params.put( "user", "david" );
+        params.put( "dsf.uri", "jdbc:postgresql:iudex_test");
+        params.put( "user", "iudex" );
         //params.put( "loglevel", "2" );
         _dataSource = factory.create( params );
 
