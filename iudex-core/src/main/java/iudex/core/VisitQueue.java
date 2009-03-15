@@ -28,9 +28,9 @@ import java.util.PriorityQueue;
 public class VisitQueue
 {
     //FIXME: List<VisitOrder> with common host orders instead?
-    public synchronized void add( VisitOrder order )
+    public synchronized void add( Content order )
     {
-        String host = order.url().host();
+        String host = order.get( ContentKeys.URL ).host();
         HostQueue queue = _hosts.get( host );
         boolean isNew = false;
         

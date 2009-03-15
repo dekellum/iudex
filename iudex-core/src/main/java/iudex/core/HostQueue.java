@@ -32,10 +32,10 @@ public class HostQueue
     {
         public int compare( HostQueue prev, HostQueue next )
         {
-            return prev.peek().compareTo( next.peek() );
+            return PRIORITY_COMPARATOR.compare( prev.peek(), next.peek() );
         }
     }
-
+    
     public HostQueue( String host )
     {
         _host = host;
@@ -52,7 +52,7 @@ public class HostQueue
     }
 
     
-    public void add( VisitOrder order )
+    public void add( Content order )
     {
         _work.add( order );
     }
@@ -67,21 +67,37 @@ public class HostQueue
         return _work.size();
     }
 
-    public VisitOrder peek()
+    public Content peek()
     {
         return _work.peek();
     }
     
-    public VisitOrder remove()
+    public Content remove()
     {
         return _work.remove();
     }
-    
+
+    /**
+     * Order by descending priority. 
+     */
+    private static final class PriorityComparator 
+        implements Comparator<Content>
+    {
+        public int compare( Content prev, Content next )
+        {
+            return Double.compare( next.get( ContentKeys.PRIORITY ),
+                                   prev.get( ContentKeys.PRIORITY ) );
+        }
+        
+    }
+    private static final PriorityComparator PRIORITY_COMPARATOR =
+        new PriorityComparator();
     private final String _host;
     private long _nextVisit = 0; 
     
     // FIXME: Logically a priority queue but may be more optimal 
     // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
-    private PriorityQueue<VisitOrder> _work = new PriorityQueue<VisitOrder>();
+    private PriorityQueue<Content> _work = 
+        new PriorityQueue<Content>( 256, PRIORITY_COMPARATOR );
 }

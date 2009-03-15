@@ -37,5 +37,21 @@ public class ContentKeys
     
     public static final Key<Date> PUBLISHED_DATE = 
         create( "PUBLISHED_DATE", Date.class );
+    
+    /**
+     * Highest priority wins.
+     */
+    public static final Key<Double> PRIORITY = 
+        create( "PRIORITY", Double.class );
 
+    public static enum Type {
+        FEED,
+        PAGE,
+        ROBOTS_TXT,
+        SITE_MAP
+    }
+
+    public static final Key<Type> TYPE = 
+        create( "TYPE", Type.class );
+    
 }

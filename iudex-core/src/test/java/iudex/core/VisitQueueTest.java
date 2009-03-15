@@ -16,7 +16,6 @@
 package iudex.core;
 
 import iudex.core.HostQueue;
-import iudex.core.VisitOrder;
 import iudex.core.VisitQueue;
 import iudex.core.VisitURL;
 
@@ -75,9 +74,8 @@ public class VisitQueueTest
         
         final HostQueue hq = _visitQ.take(); 
         try {
-            VisitOrder order = hq.remove();
-            
-            assertEquals( url, order.url().toString() );
+            Content order = hq.remove();
+            assertEquals( url, order.get( ContentKeys.URL ).toString() );
         }
         finally {
             hq.setNextVisit( System.currentTimeMillis() + 50 );
@@ -88,8 +86,11 @@ public class VisitQueueTest
     private void addOrder( String url, double priority ) 
         throws VisitURL.SyntaxException
     {
-        _visitQ.add( new VisitOrder( VisitURL.normalize( url ),
-                                     VisitOrder.Type.PAGE,
-                                     priority ) );
+        Content content = new Content();
+        content.set( ContentKeys.URL, VisitURL.normalize( url ) );
+        content.set( ContentKeys.TYPE, ContentKeys.Type.PAGE );
+        content.set( ContentKeys.PRIORITY, priority );
+        
+        _visitQ.add( content );
     }
 }
