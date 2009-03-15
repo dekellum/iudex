@@ -16,7 +16,6 @@
 
 require 'rubygems'
 require 'iudex-da/base'
-require 'jdbc/postgres'
 
 module Iudex
   module DA

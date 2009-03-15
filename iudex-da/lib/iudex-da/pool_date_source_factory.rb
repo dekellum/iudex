@@ -17,6 +17,7 @@
 require 'iudex-da'
 require 'slf4j'
 require 'java'
+require 'jdbc/postgres'
 
 module Iudex::DA
 
@@ -32,10 +33,8 @@ module Iudex::DA
 
     def initialize( properties = {} )
       @properties = properties.dup
-      @properties[ 'username' ] ||= Iudex::DA::CONFIG[ :username ]
-      @properties[ 'user' ]       = @properties[ 'username' ]
-
-      @properties[ 'host' ]     ||= Iudex::DA::CONFIG[ :host ]
+      @properties[ 'user' ]     ||= Iudex::DA::CONFIG[ :username ]
+      @properties[ 'host' ]     ||= Iudex::DA::CONFIG[ :host     ]
       @properties[ 'database' ] ||= Iudex::DA::CONFIG[ :database ]
 
       SLF4J[ 'Iudex.DA.PoolDataSourceFactory' ].info do

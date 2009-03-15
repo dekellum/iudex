@@ -27,7 +27,9 @@ import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
-//FIXME: Best if all of this in ruby?
+/**
+ * Minimal DataSource for standalone junit testing
+ */
 public class DataSourceFactory
 {
     public DataSource create( Map<String,String> params )
