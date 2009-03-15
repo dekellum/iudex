@@ -23,15 +23,17 @@ require 'rubygems'
 require 'iudex-core/console_logback' 
 require 'iudex-da'
 
-Logback[ "Iudex.DA" ].level = Logback::DEBUG
-
 require 'optparse'
 
 OptionParser.new do |opts|
-  opts.on( "-c", "--config name=value", String, 
+  opts.banner = "Usage: migrate [options] [target-version]"
+  opts.on( "-s", "--set name=value", String, 
            "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
     name,value = nv.split('=').map { |t| t.strip }
     Iudex::DA::CONFIG[ name.to_sym ] = value
+  end
+  opts.on( "-v", "--verbose" ) do 
+    Logback[ "Iudex.DA" ].level = Logback::DEBUG
   end
 end.parse!
 

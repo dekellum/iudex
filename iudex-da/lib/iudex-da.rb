@@ -21,7 +21,7 @@ require 'jdbc/postgres'
 module Iudex
   module DA
     
-    # Configuration hash for ActiveRecord (adjust before requiring iudex-da/ar)
+    # Configuration for ActiveRecord (adjust before requiring iudex-da/ar)
     # and defaults for PoolDataSourceFactory.new( properties )
     CONFIG = { 
       :host     => 'localhost',
