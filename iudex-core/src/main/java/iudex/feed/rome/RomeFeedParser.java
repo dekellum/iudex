@@ -116,7 +116,8 @@ public class RomeFeedParser implements FeedParser
                 //FIXME: Or getLink()?  
             }   
             catch( SyntaxException x ) {
-                x.printStackTrace(); // FIXME:
+                throw new RuntimeException( x );
+                //FIXME: A bit harsh, build array in advance?
             }
             return c;
         }
