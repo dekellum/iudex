@@ -218,11 +218,16 @@ Simplified with one open barc file
 Cap on file size
 Write compressed "default"?
 
+------
+
+http://jdbc.postgresql.org/documentation/83/connect.html#connection-parameters
+
+loglevel = int
+
+    Set the amount of logging information printed to the DriverManager's current value for LogStream or LogWriter. It currently supports values of org.postgresql.Driver.DEBUG (2) and org.postgresql.Driver.INFO (1). INFO will log very little information while DEBUG will produce significant detail. This property is only really useful if you are a developer or are having problems with the driver. 
 
 
-
-
-
+http://java.sun.com/javase/6/docs/api/java/sql/DriverManager.html#getLogWriter()
 
 
 

@@ -1,3 +1,6 @@
+#!/usr/bin/env jruby
+#.hashdot.profile += jruby-shortlived
+
 #--
 # Copyright (C) 2008-2009 David Kellum
 #
@@ -14,11 +17,26 @@
 # permissions and limitations under the License.
 #++
 
-#!/usr/bin/env jruby
-
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'iudex-core'
 require 'iudex-core/console_logback' 
 
 require 'test/unit'
+
+class TestLogWriter < Test::Unit::TestCase
+  import 'java.io.PrintWriter'
+  import 'iudex.util.LogWriter'
+  import 'java.util.regex.Pattern'
+
+  def test_log_writter
+    Logback['TestLogWriter'].level = Logback::DEBUG
+    lw = LogWriter.new( 'TestLogWriter' )
+    lw.remove_pattern = Pattern.compile( '(^test)|(\s+$)' )
+    pw = PrintWriter.new( lw, true )
+    pw.print( "test 1   \n\r" )
+    pw.println( "test 2   \n\r" )
+    pw.print( "test 3" )
+  end
+
+end

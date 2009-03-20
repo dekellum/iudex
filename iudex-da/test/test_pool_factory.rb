@@ -32,7 +32,8 @@ class TestPoolFactory < Test::Unit::TestCase
   import 'org.apache.commons.dbutils.QueryRunner'
 
   def setup
-    @factory = PoolDataSourceFactory.new
+    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 ) 
+    Logback['Iudex.DA'].level = Logback::DEBUG
     @data_source = @factory.create                                           
   end
   

@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-da'
+require 'iudex-core'
 require 'slf4j'
 require 'java'
 require 'jdbc/postgres'
@@ -23,19 +24,24 @@ module Iudex::DA
 
   # Factory for a DataSource using commons-dbcp and postgres driver
   class PoolDataSourceFactory
+    import 'java.io.PrintWriter'
+    import 'java.sql.DriverManager'
     import 'java.util.Properties'
+    import 'java.util.regex.Pattern'
     import 'org.apache.commons.dbcp.DriverManagerConnectionFactory'
     import 'org.apache.commons.dbcp.PoolableConnectionFactory'
     import 'org.apache.commons.dbcp.PoolingDataSource'
     import 'org.apache.commons.pool.impl.GenericObjectPool'
+    import 'iudex.util.LogWriter'
 
     attr_accessor :data_source 
 
     def initialize( properties = {} )
       @properties = properties.dup
-      @properties[ 'user' ]     ||= Iudex::DA::CONFIG[ :username ]
-      @properties[ 'host' ]     ||= Iudex::DA::CONFIG[ :host     ]
+      @properties[ 'user'     ] ||= Iudex::DA::CONFIG[ :username ]
+      @properties[ 'host'     ] ||= Iudex::DA::CONFIG[ :host     ]
       @properties[ 'database' ] ||= Iudex::DA::CONFIG[ :database ]
+      @properties[ 'loglevel' ] ||= 1
 
       SLF4J[ 'Iudex.DA.PoolDataSourceFactory' ].info do
         "Init properties: #{@properties.inspect}"
@@ -57,6 +63,10 @@ module Iudex::DA
 
     def load_driver
       import 'org.postgresql.Driver'
+      lw = LogWriter.new( 'Iudex.DA.Driver' )
+      # Remove postgres time stamp, trailing whitespace.
+      lw.remove_pattern = Pattern.compile( '(^\d\d:\d\d:\d\d\.\d\d\d\s\(\d\)\s)|(\s+$)' )
+      DriverManager::set_log_writer( PrintWriter.new( lw, true ) )
     end
 
     def create_connection_factory

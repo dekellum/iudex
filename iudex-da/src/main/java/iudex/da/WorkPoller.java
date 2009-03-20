@@ -23,6 +23,7 @@ public class WorkPoller
                       new Object[] { new Date( System.currentTimeMillis() ), 
                                      URLS_PER_HOST, TOTAL_URLS }, 
                                      new PollHandler() );
+        //FIXME: Use TimeStamp for date/time
     }
 
     private class PollHandler implements ResultSetHandler
