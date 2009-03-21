@@ -16,7 +16,7 @@
 
 class AddVisitAfter < ActiveRecord::Migration
   def self.up
-    add_column 'urls', 'next_visit_after', :datetime
+    add_column 'urls',   'next_visit_after', :timestamp
     add_index( 'urls', [ 'next_visit_after' ] )
   end
 

@@ -14,7 +14,7 @@
 # permissions and limitations under the License.
 #++
 
-class AddFeedArticleFields < ActiveRecord::Migration
+class AddFeedMetadata < ActiveRecord::Migration
   def self.up
     add_column 'urls',  'title',          :text
     add_column 'urls',  'published_date', :timestamp

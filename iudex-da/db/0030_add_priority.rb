@@ -14,23 +14,14 @@
 # permissions and limitations under the License.
 #++
 
-# http://api.rubyonrails.org/classes/ActiveRecord/Migration.html
-# http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html
-
-class InitialSchema < ActiveRecord::Migration
+class AddPriority < ActiveRecord::Migration
   def self.up
-    create_table  'urls', :id => false do |t|
-      t.text      'uhash',     :null => false  # ASCII 23B, but no :limit needed
-      t.text      'url',       :null => false 
-      t.text      'host',      :null => false
-      t.text      'type',      :null => false
-      t.timestamp 'last_visit'
-    end
-    execute "ALTER TABLE urls ADD PRIMARY KEY (uhash)"
-    add_index 'urls', [ 'host' ]
+    add_column 'urls',   'priority', :float, :null => false, :default => 0.0
+    add_index( 'urls', [ 'priority' ] )
   end
 
   def self.down
-    drop_table 'urls'
+    remove_index  'urls', 'priority'
+    remove_column 'urls', 'priority'
   end
 end
