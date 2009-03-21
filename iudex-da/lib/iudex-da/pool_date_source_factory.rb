@@ -65,13 +65,14 @@ module Iudex::DA
       import 'org.postgresql.Driver'
       lw = LogWriter.new( 'Iudex.DA.Driver' )
       # Remove postgres time stamp, trailing whitespace.
-      lw.remove_pattern = Pattern.compile( '(^\d\d:\d\d:\d\d\.\d\d\d\s\(\d\)\s)|(\s+$)' )
+      lw.remove_pattern = 
+        Pattern.compile( '(^\d\d:\d\d:\d\d\.\d\d\d\s\(\d\)\s)|(\s+$)' )
       DriverManager::set_log_writer( PrintWriter.new( lw, true ) )
     end
 
     def create_connection_factory
-      uri = "jdbc:postgresql://#{ @properties[ 'host' ] }/" + 
-        "#{ @properties[ 'database' ] }"
+      uri = "jdbc:postgresql://%s/%s" % 
+        [ @properties[ 'host' ], @properties[ 'database' ] ]
 
       props = Properties.new
       @properties.each do | key, value | 
