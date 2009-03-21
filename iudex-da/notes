@@ -230,6 +230,17 @@ loglevel = int
 http://java.sun.com/javase/6/docs/api/java/sql/DriverManager.html#getLogWriter()
 
 
+---------
+
+activerecord-jdbc-adaptor 0.9.1
+activerecord-jdbcpostgresql-adapter 0.9.1
+activerecord 2.3.2 or 2.2.2
+
+BUG: Fails on urls table (uhash primary key not a sequence)
+
+Workaround: Stay on 0.9 for now.
+
+
 
 
 
