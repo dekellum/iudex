@@ -16,12 +16,12 @@
 
 class AddFeedArticleFields < ActiveRecord::Migration
   def self.up
-    add_column 'urls',  'feed_title', :text
-    add_column 'urls',  'publish_date', :datetime
+    add_column 'urls',  'title',          :text
+    add_column 'urls',  'published_date', :timestamp
   end
 
   def self.down
-    remove_column 'urls', 'feed_title'
-    remove_column 'urls', 'publish_date'
+    remove_column 'urls', 'title'
+    remove_column 'urls', 'published_date'
   end
 end
