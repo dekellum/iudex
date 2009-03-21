@@ -27,22 +27,22 @@ public class ContentKeys
     }
 
     public static final Key<VisitURL> URL = 
-        create( "URL", VisitURL.class ); 
+        create( "url", VisitURL.class ); 
 
     public static final Key<CharSequence> TITLE = 
-        create( "TITLE", CharSequence.class );
+        create( "title", CharSequence.class );
     
     public static final Key<ContentSource> CONTENT =
-        create( "CONTENT", ContentSource.class );
+        create( "content", ContentSource.class );
     
     public static final Key<Date> PUBLISHED_DATE = 
-        create( "PUBLISHED_DATE", Date.class );
+        create( "published_date", Date.class );
     
     /**
      * Highest priority wins.
      */
     public static final Key<Double> PRIORITY = 
-        create( "PRIORITY", Double.class );
+        create( "priority", Double.class );
 
     public static enum Type {
         FEED,
@@ -52,6 +52,6 @@ public class ContentKeys
     }
 
     public static final Key<Type> TYPE = 
-        create( "TYPE", Type.class );
+        create( "type", Type.class );
     
 }
