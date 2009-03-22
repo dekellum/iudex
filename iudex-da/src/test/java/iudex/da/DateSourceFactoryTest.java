@@ -23,7 +23,6 @@ import iudex.da.DataSourceFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 import javax.sql.DataSource;
 
@@ -42,14 +41,7 @@ public class DateSourceFactoryTest
     @BeforeClass
     public static void Setup()
     {      
-        DataSourceFactory factory = new DataSourceFactory();
-        HashMap<String,String> params = new HashMap<String,String>();
-        params.put( "dsf.driver.class", "org.postgresql.Driver" );
-        params.put( "dsf.uri", "jdbc:postgresql:iudex_test");
-        params.put( "user", "iudex" );
-        //params.put( "loglevel", "2" );
-        _dataSource = factory.create( params );
-
+        _dataSource = DataSourceFactory.create();
     }
     
     @AfterClass

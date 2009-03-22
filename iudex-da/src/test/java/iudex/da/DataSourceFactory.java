@@ -16,6 +16,7 @@
 
 package iudex.da;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -32,6 +33,17 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  */
 public class DataSourceFactory
 {
+    public static DataSource create()
+    {
+        DataSourceFactory factory = new DataSourceFactory();
+        HashMap<String,String> params = new HashMap<String,String>();
+        params.put( "dsf.driver.class", "org.postgresql.Driver" );
+        params.put( "dsf.uri", "jdbc:postgresql:iudex_test");
+        params.put( "user", "iudex" );
+        params.put( "loglevel", "0" );
+        return factory.create( params );
+    }
+    
     public DataSource create( Map<String,String> params )
     {
         String className = params.remove( "dsf.driver.class" );
@@ -60,10 +72,11 @@ public class DataSourceFactory
         // Sets self on conPool
         new PoolableConnectionFactory( conFactory, conPool,
                                        null, //stmtPoolFactory
-                                       params.get( "dsf.validation.query" ), 
-                                       params.containsKey( "dsf.default.read.only" ),
-                                       params.containsKey( "dsf.default.auto.commit" ) );
+                                       null, 
+                                       false,
+                                       true );
         
         return new PoolingDataSource( conPool );
     }
+
 }

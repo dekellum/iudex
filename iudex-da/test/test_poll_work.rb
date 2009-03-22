@@ -28,6 +28,8 @@ require 'iudex-da/ar'
 
 require 'test/unit'
 
+Logback['Iudex.DA'].level = Logback::DEBUG
+
 class TestPollWork < Test::Unit::TestCase
   include Iudex::DA
   import 'iudex.core.VisitURL'
@@ -64,6 +66,7 @@ class TestPollWork < Test::Unit::TestCase
 SELECT url, host, type, priority 
 FROM ( SELECT * FROM urls
        WHERE next_visit_after <= ? 
+       AND status NOT IN ( 'REDIRECT', 'REJECT' )
        AND uhash IN ( SELECT uhash FROM urls o 
                       WHERE o.host = urls.host 
                       ORDER BY priority DESC LIMIT ? )
