@@ -50,6 +50,21 @@ public final class Content
             return remove( key );
         }
     }
+
+    /**
+     * {@inheritDoc}  In this implementation, if a null value is given then 
+     * the key is removed.
+     */
+    public Object put( Key<?> key, Object value )
+    {
+        if( value != null ) {
+            return _fields.put( key, value );
+        }
+        else {
+            return remove( key );
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -65,4 +80,5 @@ public final class Content
     }
     
     private ArrayHTMap _fields = new ArrayHTMap( KEY_SPACE );
+
 }
