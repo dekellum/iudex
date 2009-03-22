@@ -17,15 +17,53 @@
 # http://api.rubyonrails.org/classes/ActiveRecord/Migration.html
 # http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html
 
+
+# Base Urls table schema
 class BaseUrls < ActiveRecord::Migration
   def self.up
-    create_table  'urls', :id => false do |t|
-      t.text      'uhash',     :null => false  # ASCII 23B, no :limit needed
-      t.text      'url',       :null => false 
-      t.text      'host',      :null => false
-      t.text      'type',      :null => false
+    create_table  'urls',  :id => false do |t|
+
+      t.text      'uhash', :null => false  
+      # 23 byte ASCII PRIMARY KEY SHA-1 hash fragment of URL 
+      # (Note :limit not useful.)
+      
+      t.text      'url',   :null => false 
+      # Complete normalized url (exactly as used for uhash)
+
+      t.text      'host',  :null => false
+      # Normalized host portion of URL
+
+      t.text      'type',  :null => false  
+      # FEED, PAGE, ROBOTS, SITEMAP 
+      # Potentially speculative (i.e. "PAGE" before visited)
+
+      t.text      'etag'
+      # HTTP ETag header used for subsequent conditional GET
+
       t.timestamp 'last_visit'
+      # Time of last visit (and thus last type,status,reason,etc.)
+      
+      t.text      'status'                     
+      # null      : Not yet visited
+      # ACCEPT    : Accepted, processed successfully
+      # REJECT    : Rejected, processing failed (reason has why)
+      # REDIRECT  : Was an HTTP 30x redirect (see referent)
+      # TRANSIENT : Last/first visit failed with transient error, retry
+      # ACCEPT_TRANSIENT : Last visit failed with transient error, use prior visit
+
+      t.text      'reason'
+      # null      : None
+      #  999      : HTTP status code     
+      # DUPE      : Duplicate of referent
+      # rejection filter (intended as key)
+
+      t.text      'referent'
+      # null      : None
+      # uhash of url this is refering to
+      # (includes status:REDIRECT, reason:DUPE, etc.)
+
     end
+
     execute "ALTER TABLE urls ADD PRIMARY KEY (uhash)"
     add_index 'urls', [ 'host' ]
   end

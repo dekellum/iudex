@@ -1,32 +1,3 @@
-
-
-Flow:
-
-URL Types
-
-POSSIBLE_FEED --> FEED
-
-
-FEED
-
-( SEED
-  ARTICLE
-  OUTLINK ) 
-
-ROBOTS
-SITEMAP
-
-Main URLs table
-
-gcid
-domain(id?)
-host(id?)
-type (FEED,...)
-url
-last_visit
-prior_visit
-yield (float)
-
 Sorting amongst feeds:
 
 * Time since last visit
@@ -162,15 +133,15 @@ iudex-core
   Work Queue (-RDBMS)
    Extraction (abstraction)
   
-iudex-postgres (or iudex-da)
+iudex-da
 
-iudex-parsers (?)
+iudex-parsers (iudex-core for now)
   robots
   feed
   html
   sitemap
 
-iudex-httpclient3 (?)
+iudex-httpclient3 (iudex-core for nw)
 
 
 == HTTP write through file approach ==

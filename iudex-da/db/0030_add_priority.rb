@@ -15,13 +15,17 @@
 #++
 
 class AddPriority < ActiveRecord::Migration
+
   def self.up
-    add_column 'urls',   'priority', :float, :null => false, :default => 0.0
-    add_index( 'urls', [ 'priority' ] )
+    add_column    'urls',   'priority',  :float, :null => false, :default => 0.0
+    # Prioritization of next visit, range -INF,+INF
+
+    add_index     'urls', [ 'priority' ] 
   end
 
   def self.down
-    remove_index  'urls', 'priority'
-    remove_column 'urls', 'priority'
+    remove_index  'urls',   'priority'
+    remove_column 'urls',   'priority'
   end
+
 end

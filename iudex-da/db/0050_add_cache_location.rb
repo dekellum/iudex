@@ -14,18 +14,19 @@
 # permissions and limitations under the License.
 #++
 
-class AddVisitAfter < ActiveRecord::Migration
+class AddCacheLocation < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',   'next_visit_after', :timestamp
-    # Don't visit again before the specified date.
-    
-    add_index     'urls', [ 'next_visit_after' ] 
+    add_column    'urls',   'cache_file',         :integer, :limit => 4 
+    # 32-bit file number
+
+    add_column    'urls',   'cache_file_offset',  :integer, :limit => 8
+    # 64-bit byte offset within file
   end
 
   def self.down
-    remove_index  'urls', 'next_visit_after'
-    remove_column 'urls', 'next_visit_after'
+    remove_column 'urls',   'cache_file'
+    remove_column 'urls',   'cache_file_offset'
   end
 
 end
