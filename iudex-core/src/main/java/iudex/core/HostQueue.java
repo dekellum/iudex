@@ -85,8 +85,8 @@ public class HostQueue
     {
         public int compare( Content prev, Content next )
         {
-            return Double.compare( next.get( ContentKeys.PRIORITY ),
-                                   prev.get( ContentKeys.PRIORITY ) );
+            return Float.compare( next.get( ContentKeys.PRIORITY ),
+                                  prev.get( ContentKeys.PRIORITY ) );
         }
         
     }

@@ -30,9 +30,9 @@ public class VisitQueueTest
     public void testPriority() 
         throws VisitURL.SyntaxException, InterruptedException
     {
-        addOrder( "http://h1/3", 1.3 );
-        addOrder( "http://h1/1", 1.1 );
-        addOrder( "http://h1/2", 1.2 );
+        addOrder( "http://h1/3", 1.3F );
+        addOrder( "http://h1/1", 1.1F );
+        addOrder( "http://h1/2", 1.2F );
         
         assertEquals( 3, _visitQ.size() );
         
@@ -47,12 +47,12 @@ public class VisitQueueTest
     public void testHosts() 
         throws VisitURL.SyntaxException, InterruptedException
     {
-        addOrder( "http://h2/2", 2.2 );
-        addOrder( "http://h2/1", 2.1 );
-        addOrder( "http://h3/2", 3.2 );
-        addOrder( "http://h3/1", 3.1 );
-        addOrder( "http://h1/2", 1.2 );
-        addOrder( "http://h1/1", 1.1 );
+        addOrder( "http://h2/2", 2.2F );
+        addOrder( "http://h2/1", 2.1F );
+        addOrder( "http://h3/2", 3.2F );
+        addOrder( "http://h3/1", 3.1F );
+        addOrder( "http://h1/2", 1.2F );
+        addOrder( "http://h1/1", 1.1F );
         
         assertEquals( 6, _visitQ.size() );
         
@@ -83,12 +83,12 @@ public class VisitQueueTest
         }
     }
 
-    private void addOrder( String url, double priority ) 
+    private void addOrder( String url, float priority ) 
         throws VisitURL.SyntaxException
     {
         Content content = new Content();
         content.set( ContentKeys.URL, VisitURL.normalize( url ) );
-        content.set( ContentKeys.TYPE, ContentKeys.Type.PAGE );
+        content.set( ContentKeys.TYPE, ContentKeys.TYPE_PAGE );
         content.set( ContentKeys.PRIORITY, priority );
         
         _visitQ.add( content );
