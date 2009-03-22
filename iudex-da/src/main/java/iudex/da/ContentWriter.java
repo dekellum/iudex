@@ -31,6 +31,7 @@ public class ContentWriter
         sql.append( ");" );
         
         Connection conn = _dsource.getConnection();
+        conn.setAutoCommit( false );
         PreparedStatement statement = null;
         try {
             statement = conn.prepareStatement( sql.toString() );
@@ -41,7 +42,7 @@ public class ContentWriter
             }
             int[] rows = statement.executeBatch();
             
-            //FIXME: Good idea even with auto commit? conn.commit();
+            conn.commit();
             
             int sum = 0;
             for( int row : rows ) {

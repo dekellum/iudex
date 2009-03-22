@@ -86,13 +86,15 @@ public final class ContentMapper
             }
             else {
                 statement.setObject( i, content.get( key ) );
-                //Null should be ok.
+                //NULL ok, at least with PostgreSQL
             }
             
             i++;
         }
     }
 
+    // An alternative KEY_SPACE for "special" keys defined for purposes of
+    // uniform database mapping (and shouldn't exist in Content).
     private static final KeySpace ALT_KEY_SPACE = new KeySpace();
 
     static final Key<String> UHASH = 

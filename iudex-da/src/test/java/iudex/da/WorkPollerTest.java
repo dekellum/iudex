@@ -55,6 +55,12 @@ public class WorkPollerTest
     }
     
     @Test
+    public void testAutoCommit() throws SQLException
+    {
+        assertTrue( _dataSource.getConnection().getAutoCommit() );
+    }
+    
+    @Test
     public void test() throws SQLException, SyntaxException
     {
         ContentWriter writer = new ContentWriter( _dataSource );
@@ -69,6 +75,7 @@ public class WorkPollerTest
             assertEquals( 1, writer.write( contents ) );
         }
         catch( SQLException x ) {
+            //FIXME: Move to ContentWriter?
             _log.error( x.getMessage() );
             SQLException n = x;
             while( (n = n.getNextException() ) != null ) {
