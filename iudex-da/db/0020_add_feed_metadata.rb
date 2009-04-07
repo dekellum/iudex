@@ -19,15 +19,21 @@ class AddFeedMetadata < ActiveRecord::Migration
   def self.up
     add_column    'urls',  'title',          :text
     # PAGE,FEED title
-    
-    add_column    'urls',  'published_date', :timestamp
-    # (Latest) published date as provided from feed
+
+    add_column    'urls',  'ref_pub_date', :timestamp
+    # (Latest) published date as provided from feed (may be ahead of
+    # or set before pub_date, above).
+
+    add_column    'urls',  'pub_date', :timestamp
+    # (Latest) published date as processed
+   
 
   end
 
   def self.down
     remove_column 'urls', 'title'
-    remove_column 'urls', 'published_date'
+    remove_column 'urls', 'pub_date'
+    remove_column 'urls', 'ref_pub_date'
   end
 
 end

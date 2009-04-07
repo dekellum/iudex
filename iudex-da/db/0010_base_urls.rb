@@ -62,6 +62,10 @@ class BaseUrls < ActiveRecord::Migration
       # uhash of url this is refering to
       # (includes status:REDIRECT, reason:DUPE, etc.)
 
+      t.text      'referer'
+      # null      : None
+      # uhash of url this was refered from. (i.e. the feed URL)
+
     end
 
     execute "ALTER TABLE urls ADD PRIMARY KEY (uhash)"

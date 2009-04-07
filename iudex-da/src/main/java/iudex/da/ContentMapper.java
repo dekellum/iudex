@@ -54,9 +54,8 @@ public final class ContentMapper
         Content content = new Content();
         int i = 1;
         for( Key<?> key : _fields ) {
-            if( key == ContentKeys.URL ) {
-                content.set( ContentKeys.URL, 
-                             VisitURL.trust( rset.getString( i ) ) );
+            if( key == URL ) {
+                content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
             else {
                 // FIXME: intern type,status,reason strings? { "x".intern(); }

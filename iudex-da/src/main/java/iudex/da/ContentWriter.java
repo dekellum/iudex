@@ -66,7 +66,8 @@ public class ContentWriter
             STATUS,
             REASON,
             TITLE,
-            PUBLISHED_DATE,
+            PUB_DATE,
+            REF_PUB_DATE,
             PRIORITY,
             NEXT_VISIT_AFTER } ) );
     

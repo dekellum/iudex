@@ -54,9 +54,13 @@ public class ContentKeys
 
     public static final Key<CharSequence> TITLE = 
         create( "title", CharSequence.class );
+
+    public static final Key<Date> REF_PUB_DATE = 
+        create( "ref_pub_date", Date.class );
     
-    public static final Key<Date> PUBLISHED_DATE = 
-        create( "published_date", Date.class );
+    
+    public static final Key<Date> PUB_DATE = 
+        create( "pub_date", Date.class );
 
     /**
      * Highest priority wins.

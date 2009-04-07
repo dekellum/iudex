@@ -211,11 +211,11 @@ BUG: Fails on urls table (uhash primary key not a sequence)
 
 Workaround: Stay on 0.9 for now.
 
+------------------
 
+Conditional insert/update in postgres:
 
-
-
-
+http://archives.postgresql.org//pgsql-sql/2007-04/msg00167.php
 
  
 

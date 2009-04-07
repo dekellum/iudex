@@ -107,7 +107,7 @@ public class RomeFeedParser implements FeedParser
             SyndEntry se = (SyndEntry) _iter.next();
             Content c = new Content();
             c.set( ContentKeys.TITLE, se.getTitle() );
-            c.set( ContentKeys.PUBLISHED_DATE, se.getPublishedDate() );
+            c.set( ContentKeys.PUB_DATE, se.getPublishedDate() );
             //se.getDescription();
             // Or: se.getContents()
             
