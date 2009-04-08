@@ -65,6 +65,7 @@ public class WorkPoller
         "                      ORDER BY priority DESC LIMIT ? ) " +
         "       ORDER BY priority DESC LIMIT ? ) AS sub " +
         "ORDER BY host, priority DESC;"; 
+    // Don't include REDIRECT based on: always revisit referent.
     
     private static final ContentMapper POLL_MAPPER =  
         new ContentMapper( Arrays.asList( new Key<?>[] { 

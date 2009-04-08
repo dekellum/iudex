@@ -36,9 +36,11 @@ class BaseUrls < ActiveRecord::Migration
       t.text      'type',  :null => false  
       # FEED, PAGE, ROBOTS, SITEMAP 
       # Potentially speculative (i.e. "PAGE" before visited)
+      # FIXME: Or REDIRECT here instead of status?
 
       t.text      'etag'
       # HTTP ETag header used for subsequent conditional GET
+      # Should only be on 200 and related HTTP status, not redirect
 
       t.timestamp 'last_visit'
       # Time of last visit (and thus last type,status,reason,etc.)

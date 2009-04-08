@@ -219,8 +219,58 @@ http://archives.postgresql.org//pgsql-sql/2007-04/msg00167.php
 
  
 
+=== 301 vs 302 redirect handling: ===
+
+In theory:
+    301 - use referent on subsequent requests 
+    302 - use referer (redirect) on subsquent requests
+
+Refinements by Yahoo:
+
+http://help.yahoo.com/l/us/yahoo/search/webcrawler/slurp-11.html
+
+Most interestingly, cross domain 30x always indexes the referent (as if 301)
+
+Options:
+
+a. Always revisit referer (as if 302).
+
+Con: Since page is indexed via referent, this approach can orphan
+referent, unless we detech referent change and delete referent.
+
+Con: Susceptible to cache thwarting constantly new referer URLs.
+
+This approach might suggest sticking with refernent for index.
+
+b. Always revisit referent (as if 301)  <--- WINNER
+
+Pro: Not susceptible to cache thwarting constantly new referer URLs.
+
+Con: Could cause loss of update in referer changes referent?
+
+ANALYSIS:
+  if feed url (referer) pub_date change: follow referer:
+    if new referent: insert/update
+      ( subsequent dupe detection may DELETE old referent)
+      ( subsequent scheduled revisit of old referent may find 404, 500: DELETE)
+    else increase existing referent revisit priority
+
+Not too bad.
+
+IMPLEMENTATION: 
+(1) On poll, don't include prior REDIRECTs
 
 
+c. As "In Theory" full solution (possible /w yahoo style cross-domain as 301)
 
+Con: Certainly more complicated.
 
+Con: What people do: feedburner uses 302 redirect to keep click tracks
+flowing. Any real motivation for that?
 
+Con: Same problem in 302 case as (a).
+
+IMPLEMENTATION:
+REDIRECT_FINAL vs REDIRECT codes
+
+Different prioritization?
