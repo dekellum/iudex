@@ -42,13 +42,9 @@ public class ContentKeys
     public static final Key<Date> LAST_VISIT = 
         create( "last_visit", Date.class );
 
-    public static final Key<String> STATUS = 
-        create( "status", String.class );
+    public static final Key<Integer> STATUS = 
+        create( "status", Integer.class );
 
-    public static final String STATUS_ACCEPT   = "ACCEPT";
-    public static final String STATUS_REJECT   = "REJECT";
-    public static final String STATUS_REDIRECT = "REDIRECT";
-    
     public static final Key<String> REASON = 
         create( "reason", String.class );
     

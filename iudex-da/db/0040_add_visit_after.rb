@@ -18,6 +18,8 @@ class AddVisitAfter < ActiveRecord::Migration
 
   def self.up
     add_column    'urls',   'next_visit_after', :timestamp
+    execute 'ALTER TABLE urls ALTER COLUMN next_visit_after SET DEFAULT now()'
+    # null: never visit (terminal result)
     # Don't visit again before the specified date.
     
     add_index     'urls', [ 'next_visit_after' ] 

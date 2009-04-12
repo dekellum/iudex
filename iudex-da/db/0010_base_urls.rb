@@ -45,17 +45,25 @@ class BaseUrls < ActiveRecord::Migration
       t.timestamp 'last_visit'
       # Time of last visit (and thus last type,status,reason,etc.)
       
-      t.text      'status'                     
-      # null      : Not yet visited
-      # ACCEPT    : Accepted, processed successfully
-      # REJECT    : Rejected, processing failed (reason has why)
-      # REDIRECT  : Was an HTTP 30x redirect (see referent)
-      # TRANSIENT : Last/first visit failed with transient error, retry
-      # ACCEPT_TRANSIENT : Last visit failed with transient error, use prior visit
+      t.integer   'status'
+      # HTTP status code or special (negative) status mapping
+      # null     : Not yet visited
+      #  -1      : Connection Failed
+      # 4xx      : Permanent Failures
+      # 5xx      : Transient server error
+      # 200      : Success
+      # 304      : Not Modified
+      # 301,302  : Redirect
+      # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+      # Compare to: http://crawler.archive.org/articles/user_manual/glossary.html#statuscodes
+
+      t.boolean   'pass'
+      # null     : Not yet processed (i.e. visit failed)
+      # false    : Rejected by processing (for reason), DELETE required
+      # true     : Fully Processed 
 
       t.text      'reason'
       # null      : None
-      #  999      : HTTP status code     
       # DUPE      : Duplicate of referent
       # rejection filter (intended as key)
 

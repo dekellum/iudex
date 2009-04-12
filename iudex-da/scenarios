@@ -34,12 +34,13 @@ WRITE references ->
 For each reference (R):
   if R exists (gcid)
     if pub_date != prior pub_date
-      UPDATE ref_pub_date, title, priority(-update,date), next_visit_after=NOW, [referer (C:gcid)]
+      UPDATE ref_pub_date, title, priority(-update,date), next_visit_after=now(), [referer (C:gcid)]
     else 
       ignore (gcid,pub_date equal; title difference ignored)
     end 
   else 
-    INSERT gcid, url, host, ref_pub_date, title, priority(date), next_visit_after=NOW, referer (C:gcid)
+    INSERT gcid, url, host, ref_pub_date, title, priority(date), [next_visit_after=now()], 
+           referer (C:gcid)
   end 
 
 IMPLEMENTATION: 
@@ -71,7 +72,7 @@ C: url=page-url-1, type=PAGE, ref_pub_date=1, title=t1, referer=gcid(feed-url-1)
 FETCH (url, referer, etag=null, last_visit=null) -> 302
 
 C: url=page-url-1-redirect, [last_visit=NOW]
-   referer: url=page-url-1, status=REDIRECT, ref_pub_date=1 (copy from C?), [referent=gcid(feed-url-1)]
+   referer: url=page-url-1, status=302, ref_pub_date=1 (copy from C?), [referent=gcid(feed-url-1)]
 
 PROCESS, WRITE ->
 
@@ -96,4 +97,4 @@ Note: On update, old cache_file, cache_file_offset lost (ok, I think).
 
 (TRANSACTION END)
 
-
+== SCENARIO 2c: PAGE, HTTP 404

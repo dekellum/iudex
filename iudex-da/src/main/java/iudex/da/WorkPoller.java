@@ -58,14 +58,12 @@ public class WorkPoller
     private static final String POLL_QUERY = 
         "SELECT %s " + 
         "FROM ( SELECT * FROM urls " +
-        "       WHERE (next_visit_after <= now() OR next_visit_after IS NULL) "+
-        "       AND (status IS NULL OR status NOT IN ('REDIRECT', 'REJECT'))" +
+        "       WHERE next_visit_after <= now() " +
         "       AND uhash IN ( SELECT uhash FROM urls o " + 
         "                      WHERE o.host = urls.host " +
         "                      ORDER BY priority DESC LIMIT ? ) " +
         "       ORDER BY priority DESC LIMIT ? ) AS sub " +
         "ORDER BY host, priority DESC;"; 
-    // Don't include REDIRECT based on: always revisit referent.
     
     private static final ContentMapper POLL_MAPPER =  
         new ContentMapper( Arrays.asList( new Key<?>[] { 

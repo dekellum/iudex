@@ -21,6 +21,8 @@ class AddPriority < ActiveRecord::Migration
     # Prioritization of next visit, range -INF,+INF
 
     add_index     'urls', [ 'priority' ] 
+    # FIXME: Consider partial index, e.g. WHERE next_visit_after IS NOT NULL?
+    # FIXME: Consider a combined index 'host', 'priority'?
   end
 
   def self.down

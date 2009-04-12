@@ -65,15 +65,14 @@ class TestPollWork < Test::Unit::TestCase
     query = <<END
 SELECT url, host, type, priority 
 FROM ( SELECT * FROM urls
-       WHERE next_visit_after <= ? 
-       AND status NOT IN ( 'REDIRECT', 'REJECT' )
+       WHERE next_visit_after <= now()
        AND uhash IN ( SELECT uhash FROM urls o 
                       WHERE o.host = urls.host 
                       ORDER BY priority DESC LIMIT ? )
        ORDER BY priority DESC LIMIT ? ) AS sub
 ORDER BY host, priority DESC;
 END
-    res = Url.find_by_sql( [ query, Time.now, 5, 18 ] )
+    res = Url.find_by_sql( [ query, 5, 18 ] )
 
     def check_host_subset( byhost )
       assert( byhost.length <= 5 )
