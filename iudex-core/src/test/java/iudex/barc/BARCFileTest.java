@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import iudex.barc.BARCFile.Record;
 import iudex.barc.BARCFile.RecordReader;
-import iudex.core.Header;
+import iudex.http.Header;
 
 import java.io.BufferedReader;
 import java.io.File;

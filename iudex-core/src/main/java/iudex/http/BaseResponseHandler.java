@@ -69,5 +69,6 @@ public class BaseResponseHandler implements ResponseHandler
         }
     }
 
-    private Logger _log = LoggerFactory.getLogger( getClass() );
+    private static final Logger _log = 
+         LoggerFactory.getLogger( BaseResponseHandler.class );
 }

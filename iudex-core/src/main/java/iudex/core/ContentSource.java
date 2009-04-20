@@ -15,16 +15,37 @@
  */
 package iudex.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 public class ContentSource
 {
     
+    public ContentSource( ByteBuffer buffer )
+    {
+        _source = buffer;
+    }
+    
+    public ContentSource( InputStream in )
+    {
+        _source = in;
+    }
+
     public InputStream stream()
     {
-        return ( ( _source instanceof InputStream ) ? 
-                 (InputStream) _source : null );
+        if( _source instanceof InputStream ) {
+            return (InputStream) _source;
+        }
+        else if( _source instanceof ByteBuffer ) {
+            ByteBuffer buf = (ByteBuffer) _source;
+            return new ByteArrayInputStream( buf.array(),
+                                             buf.arrayOffset() + buf.position(),
+                                             buf.remaining() );
+            //FIXME: Replace with more optimized (non-synchronized) stream?
+        }
+        return null;
     }
 
     public CharSequence characters()

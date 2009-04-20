@@ -15,15 +15,13 @@
  */
 package iudex.core;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import com.gravitext.htmap.Key;
 
 public class ContentKeys
 {
-    private static <T> Key<T> create( String name, Class<T> valueType )
+    protected static <T> Key<T> create( String name, Class<T> valueType )
     {
         return Content.KEY_SPACE.create( name, valueType );
     }
@@ -72,7 +70,13 @@ public class ContentKeys
     public static final Key<ContentSource> CONTENT =
         create( "content", ContentSource.class );
     
+    /**
+     * FIXME: Or single "REFERENT" Key<Content>? 
+     */
     public static final Key<ContentList> REFERENCES =
         create( "references", ContentList.class );
+    
+    public static final Key<Content> REFERER =
+        create( "referer", Content.class );
     
 }

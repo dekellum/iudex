@@ -22,9 +22,9 @@ import java.util.Arrays;
 
 import iudex.barc.BARCFile;
 import iudex.barc.BARCFile.Record;
-import iudex.core.Header;
 import iudex.http.BaseResponseHandler;
 import iudex.http.HTTPSession;
+import iudex.http.Header;
 
 public class BARCResponseHandler extends BaseResponseHandler
 {

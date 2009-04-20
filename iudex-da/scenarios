@@ -71,7 +71,7 @@ C: url=page-url-1, type=PAGE, ref_pub_date=1, title=t1, referer=gcid(feed-url-1)
 
 FETCH (url, referer, etag=null, last_visit=null) -> 302
 
-C: url=page-url-1-redirect, [last_visit=NOW]
+C: url=page-url-1-redirect, [last_visit=NOW], 
    referer: url=page-url-1, status=302, ref_pub_date=1 (copy from C?), [referent=gcid(feed-url-1)]
 
 PROCESS, WRITE ->
@@ -82,7 +82,7 @@ DB WRITE ->
 
 (TRANSACTION BEGIN)
 
-referer: UPDATE status, ref_pub_date, last_visit, next_visit_after(last_visit), priority, referent
+referer: UPDATE status, ref_pub_date, last_visit, next_visit_after=null, priority, referent
 
 C: 
 if C exists (gcid)

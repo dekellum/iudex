@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.http;
 
-import java.util.List;
+import com.gravitext.htmap.Key;
 
-//FIXME: Demonstrative, but useful?
-public interface ContentList extends List<Content>
+import iudex.core.ContentKeys;
+
+public class HTTPKeys extends ContentKeys
 {
+    public static final Key<HeaderSet> REQUEST_HEADERS = 
+        create( "request_headers", HeaderSet.class );
 
+    public static final Key<HeaderSet> RESPONSE_HEADERS = 
+        create( "response_headers", HeaderSet.class );
 }

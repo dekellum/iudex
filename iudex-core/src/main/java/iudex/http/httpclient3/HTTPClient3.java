@@ -15,14 +15,14 @@
  */
 package iudex.http.httpclient3;
 
-import iudex.core.Header;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
+import iudex.http.Header;
+import iudex.http.HeaderSet;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -52,12 +52,11 @@ public class HTTPClient3 implements HTTPClient
     
     private class Session extends HTTPSession 
     {
-        public Iterable<Header> requestHeaders()
+        public HeaderSet requestHeaders()
         {
             org.apache.commons.httpclient.Header[] inHeaders = 
                 _httpMethod.getRequestHeaders();
-            List<Header> outHeaders = 
-                new ArrayList<Header>( inHeaders.length + 1 );
+            HeaderSet outHeaders = new HeaderSet( inHeaders.length + 1 );
             
             outHeaders.add( new Header( "Request-Line", 
                                         reconstructRequestLine() ) );
@@ -86,12 +85,11 @@ public class HTTPClient3 implements HTTPClient
             return _httpMethod.getStatusText();
         }
 
-        public Iterable<Header> responseHeaders()
+        public HeaderSet responseHeaders()
         {
             org.apache.commons.httpclient.Header[] inHeaders = 
                 _httpMethod.getResponseHeaders();
-            List<Header> outHeaders = 
-                new ArrayList<Header>( inHeaders.length + 1 );
+            HeaderSet outHeaders = new HeaderSet( inHeaders.length + 1 );
 
             outHeaders.add( new Header( "Status-Line", 
                                         _httpMethod.getStatusLine() ) );
@@ -107,6 +105,13 @@ public class HTTPClient3 implements HTTPClient
             return _httpMethod.getResponseBodyAsStream();
         }
        
+        
+        public void abort() throws IOException
+        {
+            _httpMethod.abort();
+            close(); //FIXME: Good idea to also close?
+        }
+        
         public void close() throws IOException
         {
             super.close(); //FIXME: Or abstract?

@@ -18,7 +18,7 @@ package iudex.barc;
 import static org.junit.Assert.assertEquals;
 import iudex.barc.BARCDirectory.WriteSession;
 import iudex.barc.BARCFile.Record;
-import iudex.core.Header;
+import iudex.http.Header;
 
 import java.io.File;
 import java.io.IOException;

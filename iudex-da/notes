@@ -166,11 +166,11 @@ More to implement.
 
 Alternative: In memory initial read
 
-Read in to memory
+Read in to memory <--WINNER
 (process)
 Write compressed if keeping
 
-PROS:
+PROS 
 
 Faster if memory not an issue
 Simpler to implement
