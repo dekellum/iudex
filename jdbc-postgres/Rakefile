@@ -6,13 +6,15 @@ task :manifest do
 end
 Rake::Task['manifest'].invoke # Always regen manifest, so Hoe has up-to-date list of files
 
+ENV['NODOT'] = "no thank you"
+
+
 $LOAD_PATH << "lib"
 require "jdbc/postgres"
 begin
   require 'hoe'
-  Hoe.new("jdbc-postgres", Jdbc::Postgres::VERSION) do |p|
+  Hoe.new("jdbc-postgres", Jdbc::Postgres::VERSION + ".0" ) do |p|
     p.rubyforge_name = "jruby-extras"
-    p.url = "http://jruby-extras.rubyforge.org/ActiveRecord-JDBC"
     p.author = "Nick Sieger, Ola Bini, David Kellum and JRuby contributors"
     p.email = "nick@nicksieger.com, ola.bini@gmail.com, dek-ruby@gravitext.com"
     p.summary = "PostgreSQL JDBC driver for Java and PostgreSQL/ActiveRecord-JDBC."

@@ -4,7 +4,7 @@ module Jdbc
   end
 end
 if RUBY_PLATFORM =~ /java/
-  require "postgresql-#{Jdbc::Postgres::VERSION}-603.jdbc4.jar"
+  require "postgresql-#{Jdbc::Postgres::VERSION}-604.jdbc4.jar"
 else
   warn "jdbc-postgres is only for use with JRuby"
 end

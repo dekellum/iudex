@@ -1,0 +1,2 @@
+=== 8.3.0
+* Updated to PostgreSQL version 8.3-604 (JDBC 4).

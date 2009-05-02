@@ -2,6 +2,6 @@ Manifest.txt
 Rakefile
 README.txt
 LICENSE.txt
+lib/postgresql-8.3-604.jdbc4.jar
 lib/jdbc
-lib/postgresql-8.3-603.jdbc4.jar
 lib/jdbc/postgres.rb
