@@ -20,8 +20,12 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
+
+require 'logback'
+Logback.config_console
+Logback['Iudex.DA'].level = Logback::DEBUG
+
 require 'iudex-da'
-require 'iudex-core/console_logback'
 require 'iudex-da/pool_date_source_factory'
 
 require 'test/unit'
@@ -32,17 +36,16 @@ class TestPoolFactory < Test::Unit::TestCase
   import 'org.apache.commons.dbutils.QueryRunner'
 
   def setup
-    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 ) 
-    Logback['Iudex.DA'].level = Logback::DEBUG
-    @data_source = @factory.create                                           
+    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 )
+    @data_source = @factory.create
   end
-  
+
   def teardown
     @factory.close
     @data_source = nil
   end
 
-  class TestHandler 
+  class TestHandler
     include ResultSetHandler
     def handle( rs )
       while rs.next
@@ -55,7 +58,7 @@ class TestPoolFactory < Test::Unit::TestCase
   def test_query
     assert( ! @data_source.nil? )
     qrun = QueryRunner.new( @data_source )
-    qrun.query( "SELECT url FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', 'notthere' );", 
+    qrun.query( "SELECT url FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', 'notthere' );",
                 TestHandler.new )
   end
 

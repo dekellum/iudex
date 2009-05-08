@@ -19,7 +19,11 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'iudex-core'
-require 'iudex-core/console_logback' 
+
+require 'rubygems'
+require 'logback'
+Logback.config_console
+
 #Logback[ "org.apache.commons.httpclient" ].level = Logback::INFO
 #Logback[ "iudex" ].level = Logback::DEBUG
 

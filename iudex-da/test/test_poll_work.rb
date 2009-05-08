@@ -21,14 +21,14 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
+require 'logback'
+Logback.config_console
+Logback['Iudex.DA'].level = Logback::DEBUG
+
 require 'iudex-core'
-require 'iudex-core/console_logback'
-
 require 'iudex-da/ar'
-
 require 'test/unit'
 
-Logback['Iudex.DA'].level = Logback::DEBUG
 
 class TestPollWork < Test::Unit::TestCase
   include Iudex::DA
@@ -54,7 +54,7 @@ class TestPollWork < Test::Unit::TestCase
       end
     end
   end
-  
+
   def teardown
     Url.delete_all
   end
@@ -63,11 +63,11 @@ class TestPollWork < Test::Unit::TestCase
   # work (in descending piority order)
   def test_poll
     query = <<END
-SELECT url, host, type, priority 
+SELECT url, host, type, priority
 FROM ( SELECT * FROM urls
        WHERE next_visit_after <= now()
-       AND uhash IN ( SELECT uhash FROM urls o 
-                      WHERE o.host = urls.host 
+       AND uhash IN ( SELECT uhash FROM urls o
+                      WHERE o.host = urls.host
                       ORDER BY priority DESC LIMIT ? )
        ORDER BY priority DESC LIMIT ? ) AS sub
 ORDER BY host, priority DESC;
@@ -95,9 +95,9 @@ END
 
   def test_insert
 
-    Url.transaction do 
+    Url.transaction do
       sql = <<END
-CREATE TEMPORARY TABLE mod_urls 
+CREATE TEMPORARY TABLE mod_urls
   ( uhash text,
     url text,
     host text );
@@ -116,7 +116,7 @@ END
           # u.type = "FEEDX"
         vurl = VisitURL.normalize( "http://gravitext.com/#{priority}" )
 
-        sql = "INSERT into mod_urls VALUES ('%s','%s','%s')" % 
+        sql = "INSERT into mod_urls VALUES ('%s','%s','%s')" %
           [ vurl.uhash, vurl.to_s, vurl.host ]
         Url.connection.execute( sql )
           # u.next_visit_after = Time.now
@@ -124,16 +124,16 @@ END
       end
       insert_query = <<END
 INSERT INTO urls (uhash,url,host,type,priority)
-  ( SELECT uhash,url,host,'FEEDX',4.78 FROM mod_urls 
+  ( SELECT uhash,url,host,'FEEDX',4.78 FROM mod_urls
     WHERE uhash NOT IN ( SELECT uhash FROM urls ) );
 END
       Url.connection.execute( insert_query )
 
       Url.connection.execute( "DROP TABLE mod_urls;" )
-      
+
       # Url.set_table_name "urls"
     end
- 
+
   end
 
 end

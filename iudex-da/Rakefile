@@ -87,5 +87,4 @@ hoe = Hoe.new( "iudex-da", Iudex::DA::VERSION ) do |p|
   p.extra_deps << [ 'activerecord', '~> 2.2.2' ]
   p.extra_deps << [ 'activerecord-jdbcpostgresql-adapter', '= 0.9' ]
   # p.rubyforge_name = "iudex"
-  p.rdoc_pattern = /^(lib.*\.(rb|txt))|[^\/]*\.txt$/
 end

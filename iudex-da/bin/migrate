@@ -20,19 +20,21 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-require 'iudex-core/console_logback' 
+require 'logback'
+Logback.config_console
+
 require 'iudex-da'
 
 require 'optparse'
 
 OptionParser.new do |opts|
   opts.banner = "Usage: migrate [options] [target-version]"
-  opts.on( "-s", "--set name=value", String, 
+  opts.on( "-s", "--set name=value", String,
            "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
     name,value = nv.split('=').map { |t| t.strip }
     Iudex::DA::CONFIG[ name.to_sym ] = value
   end
-  opts.on( "-v", "--verbose" ) do 
+  opts.on( "-v", "--verbose" ) do
     Logback[ "Iudex.DA" ].level = Logback::DEBUG
   end
 end.parse!
