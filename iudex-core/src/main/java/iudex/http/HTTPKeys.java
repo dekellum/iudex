@@ -16,15 +16,17 @@
 
 package iudex.http;
 
+import java.util.List;
+
 import com.gravitext.htmap.Key;
 
 import iudex.core.ContentKeys;
 
 public class HTTPKeys extends ContentKeys
 {
-    public static final Key<HeaderSet> REQUEST_HEADERS = 
-        create( "request_headers", HeaderSet.class );
+    public static final Key<List<Header>> REQUEST_HEADERS = 
+        createListKey( "request_headers" );
 
-    public static final Key<HeaderSet> RESPONSE_HEADERS = 
-        create( "response_headers", HeaderSet.class );
+    public static final Key<List<Header>> RESPONSE_HEADERS = 
+        createListKey( "response_headers" );
 }

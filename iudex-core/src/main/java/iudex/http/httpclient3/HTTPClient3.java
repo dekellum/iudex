@@ -18,11 +18,11 @@ package iudex.http.httpclient3;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
-import iudex.http.HeaderSet;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -52,11 +52,12 @@ public class HTTPClient3 implements HTTPClient
     
     private class Session extends HTTPSession 
     {
-        public HeaderSet requestHeaders()
+        public List<Header> requestHeaders()
         {
             org.apache.commons.httpclient.Header[] inHeaders = 
                 _httpMethod.getRequestHeaders();
-            HeaderSet outHeaders = new HeaderSet( inHeaders.length + 1 );
+            List<Header> outHeaders = 
+                new ArrayList<Header>( inHeaders.length + 1 );
             
             outHeaders.add( new Header( "Request-Line", 
                                         reconstructRequestLine() ) );
@@ -85,11 +86,13 @@ public class HTTPClient3 implements HTTPClient
             return _httpMethod.getStatusText();
         }
 
-        public HeaderSet responseHeaders()
+        public List<Header> responseHeaders()
         {
             org.apache.commons.httpclient.Header[] inHeaders = 
                 _httpMethod.getResponseHeaders();
-            HeaderSet outHeaders = new HeaderSet( inHeaders.length + 1 );
+            
+            List<Header> outHeaders = 
+                new ArrayList<Header>( inHeaders.length + 1 );
 
             outHeaders.add( new Header( "Status-Line", 
                                         _httpMethod.getStatusLine() ) );

@@ -16,30 +16,17 @@
 
 package iudex.http;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
-public class HeaderSet 
-    extends ArrayList<Header>
+/**
+ * Utility methods for List<Header> 
+ */
+public final class Headers 
 {
-    public HeaderSet()
+     public static Header getFirst( final List<Header> headers, 
+                                    final String name )
     {
-        super();
-    }
-
-    public HeaderSet( Collection<? extends Header> c )
-    {
-        super( c );
-    }
-
-    public HeaderSet( int initialCapacity )
-    {
-        super( initialCapacity );
-    }
-
-    public Header getFirst( String name )
-    {
-        for( Header h : this ) {
+        for( Header h : headers ) {
             if( name.equalsIgnoreCase( h.name().toString() ) ) {
                 return h;
             }
@@ -49,12 +36,12 @@ public class HeaderSet
     
     /**
      * Returns parsed integer value of any specified Content-Length header
-     * or -1, if not specified or invalid
+     * or -1, if not specified or invalid.
      */
-    public int contentLength()
+    public static int contentLength( final List<Header> headers )
     {
         int length = -1;
-        Header h = getFirst( "Content-Length" );
+        Header h = getFirst( headers, "Content-Length" );
         if( h != null ) {
            try {
                length = Integer.parseInt( h.value().toString().trim() );
@@ -67,16 +54,16 @@ public class HeaderSet
         return length;
     }
 
-    public ContentType contentType()
+    public static ContentType contentType( final List<Header> headers  )
     {
-        Header h = getFirst( "Content-Type" );
+        Header h = getFirst( headers, "Content-Type" );
 
         CharSequence tvalue = asCharSequence( h.value() );
         if( tvalue != null ) return ContentType.parse( tvalue );
         return null;
     }
     
-    public CharSequence asCharSequence( Object in )
+    public static CharSequence asCharSequence( Object in )
     {
         if( in instanceof CharSequence ) return (CharSequence) in;
         if( in != null )                 return in.toString();

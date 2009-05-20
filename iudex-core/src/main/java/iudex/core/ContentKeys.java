@@ -16,6 +16,7 @@
 package iudex.core;
 
 import java.util.Date;
+import java.util.List;
 
 import com.gravitext.htmap.Key;
 
@@ -24,6 +25,11 @@ public class ContentKeys
     protected static <T> Key<T> create( String name, Class<T> valueType )
     {
         return Content.KEY_SPACE.create( name, valueType );
+    }
+    
+    protected static <T> Key<List<T>> createListKey( String name )
+    {
+        return Content.KEY_SPACE.createListKey( name );
     }
 
     public static final Key<VisitURL> URL = 
@@ -73,8 +79,8 @@ public class ContentKeys
     /**
      * FIXME: Or single "REFERENT" Key<Content>? 
      */
-    public static final Key<ContentList> REFERENCES =
-        create( "references", ContentList.class );
+    public static final Key<List<Content>> REFERENCES =
+        createListKey( "references" );
     
     public static final Key<Content> REFERER =
         create( "referer", Content.class );

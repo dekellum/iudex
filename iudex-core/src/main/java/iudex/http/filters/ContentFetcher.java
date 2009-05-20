@@ -32,8 +32,9 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPKeys;
 import iudex.http.HTTPSession;
 import iudex.http.ContentType;
+import iudex.http.Headers;
 
-public class ContentFetcher 
+public class ContentFetcher
     implements ContentFilter
 {
     public ContentFetcher( HTTPClient client, ContentFilter receiver )
@@ -43,7 +44,7 @@ public class ContentFetcher
     }
 
     /**
-     * Set the set of accepted mime types. 
+     * Set the set of accepted mime types.
      * Types should be normalized: trimmed, lower case, i.e. "text/html" ).
      */
     public void setAcceptedContentTypes( Collection<String> types )
@@ -55,19 +56,19 @@ public class ContentFetcher
     {
         return _acceptedContentTypes;
     }
-    
+
     public boolean filter( Content content )
     {
         HTTPSession session = _client.createSession();
         session.setMethod( HTTPSession.Method.GET );
         session.setUrl( content.get( ContentKeys.URL ).toString() );
 
-        //FIXME: Set ETAG? 
+        //FIXME: Set ETAG?
         //FIXME: Set Since (from LAST_VISIT)
         //FIXME: Set REFERER (URL)?
-        
+
         _client.request( session, new Handler( content ) );
-        
+
         return true;
     }
     private final class Handler extends BaseResponseHandler
@@ -75,7 +76,7 @@ public class ContentFetcher
         public Handler( Content content )
         {
             _content = content;
-            
+
         }
 
         @Override
@@ -89,40 +90,42 @@ public class ContentFetcher
                 handleError( session, -20 );
                 return;
             }
-            
-            int len = _content.get( HTTPKeys.RESPONSE_HEADERS ).contentLength();
-            if( len != 0 ) { 
+
+            int len = Headers.contentLength(
+                _content.get( HTTPKeys.RESPONSE_HEADERS ) );
+            if( len != 0 ) {
                 if( len > _maxContentLength ){
                     session.abort();
                     handleError( session, -10 );
                     return;
                 }
-                
-                ResizableByteBuffer buffer 
+
+                ResizableByteBuffer buffer
                     = new ResizableByteBuffer( (len > 0) ? len : 16 * 1024 );
-            
-                buffer.putFromStream( session.responseStream(), 
+
+                buffer.putFromStream( session.responseStream(),
                                       _maxContentLength + 1, 8 * 1024 );
-                
+
                 if( buffer.position() > _maxContentLength ) {
                     session.abort();
                     handleError( session, -10 );
                     return;
                 }
-                
-                ContentSource cs = 
+
+                ContentSource cs =
                     new ContentSource( buffer.flipAsByteBuffer() );
-                
+
                 _content.set( ContentKeys.CONTENT, cs );
             }
             // FIXME: Catch IO Exception, handle and pass to _receiver?
             _receiver.filter( _content );
         }
-        
+
         private boolean testContentType( HTTPSession session )
         {
             if( _acceptedContentTypes != null ) {
-                ContentType ctype = session.responseHeaders().contentType();
+                ContentType ctype =
+                    Headers.contentType( session.responseHeaders() );
                 if( ( ctype != null ) && ctype.type() != null ) {
                     return _acceptedContentTypes.contains( ctype.type() );
                 }
@@ -149,9 +152,9 @@ public class ContentFetcher
     }
 
     private final int _maxContentLength = 1024 * 1024 - 1;
-    
+
     private final HTTPClient _client;
     private ContentFilter _receiver;
     private Set<String> _acceptedContentTypes = null;
-    
+
 }
