@@ -222,7 +222,7 @@ http://archives.postgresql.org//pgsql-sql/2007-04/msg00167.php
 === 301 vs 302 redirect handling: ===
 
 In theory:
-    301 - use referent on subsequent requests 
+    301 - use referent on subsequent requests
     302 - use referer (redirect) on subsquent requests
 
 Refinements by Yahoo:
@@ -257,7 +257,7 @@ ANALYSIS:
 
 Not too bad.
 
-IMPLEMENTATION: 
+IMPLEMENTATION:
 (1) On poll, don't include prior REDIRECTs
 
 

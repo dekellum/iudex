@@ -26,8 +26,6 @@ class AddFeedMetadata < ActiveRecord::Migration
 
     add_column    'urls',  'pub_date', :timestamp
     # (Latest) published date as processed
-   
-
   end
 
   def self.down

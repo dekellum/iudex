@@ -35,15 +35,15 @@ For each reference (R):
   if R exists (gcid)
     if pub_date != prior pub_date
       UPDATE ref_pub_date, title, priority(-update,date), next_visit_after=now(), [referer (C:gcid)]
-    else 
+    else
       ignore (gcid,pub_date equal; title difference ignored)
-    end 
-  else 
-    INSERT gcid, url, host, ref_pub_date, title, priority(date), [next_visit_after=now()], 
+    end
+  else
+    INSERT gcid, url, host, ref_pub_date, title, priority(date), [next_visit_after=now()],
            referer (C:gcid)
-  end 
+  end
 
-IMPLEMENTATION: 
+IMPLEMENTATION:
 
 (a) 1. query for gcid,pub_date where gcid in (references), Update this set, insert the remainder
 
@@ -84,7 +84,7 @@ DB WRITE ->
 
 referer: UPDATE status, ref_pub_date, last_visit, next_visit_after=null, priority, referent
 
-C: 
+C:
 if C exists (gcid)
     UPDATE (ref_pub_date), pub_date, title, next_visit_after(last_visit), priority(-),
            cache_file=f, cache_file_offest=o
