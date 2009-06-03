@@ -19,10 +19,10 @@ require 'iudex-da/base'
 
 module Iudex
   module DA
-    
+
     # Configuration for ActiveRecord (adjust before requiring iudex-da/ar)
     # and defaults for PoolDataSourceFactory.new( properties )
-    CONFIG = { 
+    CONFIG = {
       :host     => 'localhost',
       :adapter  => 'jdbcpostgresql',
       :database => 'iudex_test',
