@@ -17,5 +17,5 @@ test/test_poll_work.rb
 test/test_pool_factory.rb
 lib/iudex-da/iudex-da-1.0.jar
 lib/iudex-da/commons-pool-1.4.jar
+lib/iudex-da/commons-dbutils-1.2.jar
 lib/iudex-da/commons-dbcp-1.2.2.jar
-lib/iudex-da/commons-dbutils-1.1.jar
