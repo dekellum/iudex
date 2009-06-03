@@ -19,8 +19,6 @@ package iudex.da;
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
-import iudex.core.Content;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -29,6 +27,7 @@ import java.util.Arrays;
 import javax.sql.DataSource;
 
 import com.gravitext.htmap.Key;
+import com.gravitext.htmap.UniMap;
 
 public class ContentWriter
 {
@@ -36,7 +35,7 @@ public class ContentWriter
     {
         _dsource = source;
     }
-    public int write( Iterable<Content> contents ) 
+    public int write( Iterable<UniMap> contents ) 
         throws SQLException
     {
         StringBuilder sql = new StringBuilder(128);
@@ -52,7 +51,7 @@ public class ContentWriter
         try {
             statement = conn.prepareStatement( sql.toString() );
 
-            for( Content content : contents ) {
+            for( UniMap content : contents ) {
                 POLL_MAPPER.toStatement( content, statement );
                 statement.addBatch();
             }

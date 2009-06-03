@@ -22,8 +22,6 @@ import static iudex.core.ContentKeys.REASON;
 import static iudex.core.ContentKeys.STATUS;
 import static iudex.core.ContentKeys.TYPE;
 import static iudex.core.ContentKeys.URL;
-import iudex.core.Content;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,6 +34,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.gravitext.htmap.Key;
+import com.gravitext.htmap.UniMap;
 
 public class WorkPoller
 {
@@ -45,7 +44,7 @@ public class WorkPoller
     }
 
     @SuppressWarnings("unchecked")
-    public List<Content> poll() throws SQLException
+    public List<UniMap> poll() throws SQLException
     {
         QueryRunner runner = new QueryRunner( _dsource );
         
@@ -53,16 +52,16 @@ public class WorkPoller
 
         Object[] params = new Object[] { _urlsPerHost, _totalUrls };
         
-        return (List<Content>)
+        return (List<UniMap>)
             runner.query( query, params, new PollHandler() );
     }
 
     private class PollHandler implements ResultSetHandler
     {
         @Override
-        public List<Content> handle( ResultSet rset ) throws SQLException
+        public List<UniMap> handle( ResultSet rset ) throws SQLException
         {
-            ArrayList<Content> contents = new ArrayList<Content>( _totalUrls );
+            ArrayList<UniMap> contents = new ArrayList<UniMap>( _totalUrls );
             while( rset.next() ) {
                 contents.add( POLL_MAPPER.fromResultSet( rset ) );
             }

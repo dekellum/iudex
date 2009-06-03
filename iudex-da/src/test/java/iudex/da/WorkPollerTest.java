@@ -17,7 +17,6 @@
 package iudex.da;
 
 
-import iudex.core.Content;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 
@@ -33,6 +32,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.gravitext.htmap.UniMap;
 
 import static org.junit.Assert.*;
 import static iudex.core.ContentKeys.*;
@@ -64,8 +65,8 @@ public class WorkPollerTest
     public void test() throws SQLException, SyntaxException
     {
         ContentWriter writer = new ContentWriter( _dataSource );
-        List<Content> contents = new ArrayList<Content>();
-        Content c = new Content();
+        List<UniMap> contents = new ArrayList<UniMap>();
+        UniMap c = new UniMap();
         c.set( URL, 
                VisitURL.normalize( "http://gravitext.com/blog/feed/atom.xml" ) );
         c.set( TYPE, TYPE_FEED );
@@ -88,7 +89,7 @@ public class WorkPollerTest
         contents = wpoller.poll();
         _log.info( "Work poll returned {} contents", contents.size() );
         
-        for( Content w : contents ) {
+        for( UniMap w : contents ) {
             _log.info( w.toString() );
         }
         assertNotNull( contents );

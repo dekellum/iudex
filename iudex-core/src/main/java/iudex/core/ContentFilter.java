@@ -16,7 +16,9 @@
 
 package iudex.core;
 
+import com.gravitext.htmap.UniMap;
+
 public interface ContentFilter
 {
-    public boolean filter( Content content );
+    public boolean filter( UniMap content );
 }

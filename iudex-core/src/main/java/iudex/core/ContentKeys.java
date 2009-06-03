@@ -19,17 +19,18 @@ import java.util.Date;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
+import com.gravitext.htmap.UniMap;
 
 public class ContentKeys
 {
     protected static <T> Key<T> create( String name, Class<T> valueType )
     {
-        return Content.KEY_SPACE.create( name, valueType );
+        return UniMap.KEY_SPACE.create( name, valueType );
     }
     
     protected static <T> Key<List<T>> createListKey( String name )
     {
-        return Content.KEY_SPACE.createListKey( name );
+        return UniMap.KEY_SPACE.createListKey( name );
     }
 
     public static final Key<VisitURL> URL = 
@@ -79,10 +80,10 @@ public class ContentKeys
     /**
      * FIXME: Or single "REFERENT" Key<Content>? 
      */
-    public static final Key<List<Content>> REFERENCES =
+    public static final Key<List<UniMap>> REFERENCES =
         createListKey( "references" );
     
-    public static final Key<Content> REFERER =
-        create( "referer", Content.class );
+    public static final Key<UniMap> REFERER =
+        create( "referer", UniMap.class );
     
 }

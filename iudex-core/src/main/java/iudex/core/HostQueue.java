@@ -18,6 +18,8 @@ package iudex.core;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+import com.gravitext.htmap.UniMap;
+
 public class HostQueue
 {
     public static class NextVisitComparator implements Comparator<HostQueue>
@@ -52,7 +54,7 @@ public class HostQueue
     }
 
     
-    public void add( Content order )
+    public void add( UniMap order )
     {
         _work.add( order );
     }
@@ -67,12 +69,12 @@ public class HostQueue
         return _work.size();
     }
 
-    public Content peek()
+    public UniMap peek()
     {
         return _work.peek();
     }
     
-    public Content remove()
+    public UniMap remove()
     {
         return _work.remove();
     }
@@ -81,9 +83,9 @@ public class HostQueue
      * Order by descending priority. 
      */
     private static final class PriorityComparator 
-        implements Comparator<Content>
+        implements Comparator<UniMap>
     {
-        public int compare( Content prev, Content next )
+        public int compare( UniMap prev, UniMap next )
         {
             return Float.compare( next.get( ContentKeys.PRIORITY ),
                                   prev.get( ContentKeys.PRIORITY ) );
@@ -98,6 +100,6 @@ public class HostQueue
     // FIXME: Logically a priority queue but may be more optimal 
     // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
-    private PriorityQueue<Content> _work = 
-        new PriorityQueue<Content>( 256, PRIORITY_COMPARATOR );
+    private PriorityQueue<UniMap> _work = 
+        new PriorityQueue<UniMap>( 256, PRIORITY_COMPARATOR );
 }

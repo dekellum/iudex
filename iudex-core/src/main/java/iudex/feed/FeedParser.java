@@ -15,15 +15,16 @@
  */
 package iudex.feed;
 
-import iudex.core.Content;
 import iudex.core.ParseException;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.gravitext.htmap.UniMap;
+
 public interface FeedParser
 {
-    public Iterator<Content> parse( Content feed ) 
+    public Iterator<UniMap> parse( UniMap feed ) 
         throws ParseException, IOException;
     // parse input: 
     // IOStream, Chars (Bytes)

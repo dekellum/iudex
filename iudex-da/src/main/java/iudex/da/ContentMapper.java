@@ -16,7 +16,6 @@
 
 package iudex.da;
 
-import iudex.core.Content;
 import iudex.core.VisitURL;
 
 import java.sql.ResultSet;
@@ -26,6 +25,7 @@ import java.util.List;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.KeySpace;
+import com.gravitext.htmap.UniMap;
 
 import static iudex.core.ContentKeys.*;
 
@@ -64,9 +64,9 @@ public final class ContentMapper
         }
     }
     
-    public Content fromResultSet( ResultSet rset ) throws SQLException
+    public UniMap fromResultSet( ResultSet rset ) throws SQLException
     {
-        Content content = new Content();
+        UniMap content = new UniMap();
         int i = 1;
         for( Key<?> key : _fields ) {
             if( key == URL ) {
@@ -83,7 +83,7 @@ public final class ContentMapper
         return content;
     }
 
-    public void toStatement( Content content, PreparedStatement statement ) 
+    public void toStatement( UniMap content, PreparedStatement statement ) 
         throws SQLException
     {
         int i = 1;
@@ -108,7 +108,7 @@ public final class ContentMapper
     }
 
     // An alternative KEY_SPACE for "special" keys defined for purposes of
-    // uniform database mapping (and shouldn't exist in Content).
+    // uniform database mapping (and shouldn't exist in UniMap).
     private static final KeySpace ALT_KEY_SPACE = new KeySpace();
 
     static final Key<String> UHASH = 

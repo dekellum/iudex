@@ -20,6 +20,9 @@ import iudex.core.VisitQueue;
 import iudex.core.VisitURL;
 
 import org.junit.Test;
+
+import com.gravitext.htmap.UniMap;
+
 import static org.junit.Assert.*;
 
 public class VisitQueueTest
@@ -74,7 +77,7 @@ public class VisitQueueTest
         
         final HostQueue hq = _visitQ.take(); 
         try {
-            Content order = hq.remove();
+            UniMap order = hq.remove();
             assertEquals( url, order.get( ContentKeys.URL ).toString() );
         }
         finally {
@@ -86,7 +89,7 @@ public class VisitQueueTest
     private void addOrder( String url, float priority ) 
         throws VisitURL.SyntaxException
     {
-        Content content = new Content();
+        UniMap content = new UniMap();
         content.set( ContentKeys.URL, VisitURL.normalize( url ) );
         content.set( ContentKeys.TYPE, ContentKeys.TYPE_PAGE );
         content.set( ContentKeys.PRIORITY, priority );

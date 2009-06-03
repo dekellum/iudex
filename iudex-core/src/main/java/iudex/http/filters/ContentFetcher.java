@@ -21,9 +21,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gravitext.htmap.UniMap;
 import com.gravitext.util.ResizableByteBuffer;
 
-import iudex.core.Content;
 import iudex.core.ContentFilter;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
@@ -57,7 +57,7 @@ public class ContentFetcher
         return _acceptedContentTypes;
     }
 
-    public boolean filter( Content content )
+    public boolean filter( UniMap content )
     {
         HTTPSession session = _client.createSession();
         session.setMethod( HTTPSession.Method.GET );
@@ -73,7 +73,7 @@ public class ContentFetcher
     }
     private final class Handler extends BaseResponseHandler
     {
-        public Handler( Content content )
+        public Handler( UniMap content )
         {
             _content = content;
 
@@ -148,7 +148,7 @@ public class ContentFetcher
             _content.set( HTTPKeys.RESPONSE_HEADERS, session.responseHeaders() );
         }
 
-        private final Content _content;
+        private final UniMap _content;
     }
 
     private final int _maxContentLength = 1024 * 1024 - 1;

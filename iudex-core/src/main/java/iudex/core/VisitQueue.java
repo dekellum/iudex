@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import com.gravitext.htmap.UniMap;
 
 /**
  * 
@@ -27,8 +28,8 @@ import java.util.PriorityQueue;
  */
 public class VisitQueue
 {
-    //FIXME: List<Content> with common host orders instead?
-    public synchronized void add( Content order )
+    //FIXME: List<UniMap> with common host orders instead?
+    public synchronized void add( UniMap order )
     {
         String host = order.get( ContentKeys.URL ).host();
         HostQueue queue = _hosts.get( host );

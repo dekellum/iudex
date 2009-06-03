@@ -23,13 +23,13 @@ import java.nio.CharBuffer;
 import java.util.Iterator;
 import java.util.List;
 
+import com.gravitext.htmap.UniMap;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 
-import iudex.core.Content;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
 import iudex.core.ParseException;
@@ -40,7 +40,7 @@ import iudex.feed.FeedParser;
 public class RomeFeedParser implements FeedParser
 {
     @Override
-    public Iterator<Content> parse( Content inContent ) 
+    public Iterator<UniMap> parse( UniMap inContent ) 
         throws ParseException, IOException
     {
         try {
@@ -89,7 +89,7 @@ public class RomeFeedParser implements FeedParser
         return null; //FIXME.
     }
 
-    private class EntryIterator implements Iterator<Content>
+    private class EntryIterator implements Iterator<UniMap>
     {
 
         public EntryIterator( List<?> entries )
@@ -102,10 +102,10 @@ public class RomeFeedParser implements FeedParser
             return _iter.hasNext();
         }
 
-        public Content next()
+        public UniMap next()
         {
             SyndEntry se = (SyndEntry) _iter.next();
-            Content c = new Content();
+            UniMap c = new UniMap();
             c.set( ContentKeys.TITLE, se.getTitle() );
             c.set( ContentKeys.PUB_DATE, se.getPublishedDate() );
             //se.getDescription();

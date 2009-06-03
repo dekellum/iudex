@@ -15,10 +15,11 @@
  */
 package iudex.sitemap;
 
-import iudex.core.Content;
 import iudex.core.ParseException;
 
 import java.util.Iterator;
+
+import com.gravitext.htmap.UniMap;
 
 /**
  * @see http://www.sitemaps.org/protocol.php
@@ -26,7 +27,7 @@ import java.util.Iterator;
 public interface SiteMapParser
 {
     
-    public Iterator<Content> parse( Content sitemap ) throws ParseException;
+    public Iterator<UniMap> parse( UniMap sitemap ) throws ParseException;
     
     /*
      * Sitemap input: CONTENT_SOURCE, URL, Content-Type, etc.
