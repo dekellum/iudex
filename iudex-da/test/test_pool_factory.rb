@@ -26,7 +26,7 @@ Logback.config_console
 Logback['Iudex.DA'].level = Logback::DEBUG
 
 require 'iudex-da'
-require 'iudex-da/pool_date_source_factory'
+require 'iudex-da/pool_data_source_factory'
 
 require 'test/unit'
 
