@@ -53,7 +53,7 @@ public class WorkPoller
         Object[] params = new Object[] { _urlsPerHost, _totalUrls };
         
         return (List<UniMap>)
-            runner.query( query, params, new PollHandler() );
+            runner.query( query, new PollHandler(), params );
     }
 
     private class PollHandler implements ResultSetHandler
