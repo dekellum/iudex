@@ -35,7 +35,22 @@ public class ContentWriter
     {
         _dsource = source;
     }
+    
     public int write( Iterable<UniMap> contents ) 
+        throws SQLException
+    {
+        Connection conn = _dsource.getConnection();
+        try {
+            conn.setAutoCommit( false );
+            return write( contents, conn );
+        }
+        finally {
+            if( conn != null ) conn.close();
+        }
+    }
+
+    protected int write( Iterable<UniMap> contents, 
+                         Connection conn )
         throws SQLException
     {
         StringBuilder sql = new StringBuilder(128);
@@ -45,8 +60,7 @@ public class ContentWriter
         POLL_MAPPER.appendQArray( sql );
         sql.append( ");" );
         
-        Connection conn = _dsource.getConnection();
-        conn.setAutoCommit( false );
+
         PreparedStatement statement = null;
         try {
             statement = conn.prepareStatement( sql.toString() );
@@ -86,5 +100,5 @@ public class ContentWriter
             PRIORITY,
             NEXT_VISIT_AFTER } ) );
     
-    private final DataSource _dsource;
+    protected final DataSource _dsource;
 }

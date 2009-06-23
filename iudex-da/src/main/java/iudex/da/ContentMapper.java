@@ -21,6 +21,7 @@ import iudex.core.VisitURL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
@@ -72,9 +73,11 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
+            else if( key == UHASH ) {
+                // ignore on input
+            }
             else {
                 // FIXME: intern type,status,reason strings? { "x".intern(); }
-
                 content.put( key, rset.getObject( i ) );
             }
             i++;
@@ -82,31 +85,64 @@ public final class ContentMapper
         
         return content;
     }
+    
+    public void updateResultSet( UniMap content, ResultSet rset ) 
+        throws SQLException
+    {
+        for( Key<?> key : _fields ) {
+            final String name = key.name();
+            
+            if( key == URL ) {
+                //NPE on missing URL (required)
+                rset.updateString( name, content.get( URL ).toString() );
+            }
+            else if( key == UHASH ) {
+                rset.updateString( name, content.get( URL ).uhash() );
+            }
+            else if( key == HOST ) {
+                rset.updateString( name, content.get( URL ).host() );
+            }
+            else {
+                rset.updateObject( name, content.get( key ) );
+                //NULL ok, at least with PostgreSQL
+            }
 
-    public void toStatement( UniMap content, PreparedStatement statement ) 
+        }
+    }
+    
+    public void toStatement( UniMap content, PreparedStatement stmt )
         throws SQLException
     {
         int i = 1;
         for( Key<?> key : _fields ) {
             if( key == URL ) {
                 //NPE on missing URL (required)
-                statement.setString( i, content.get( URL ).toString() );
+                stmt.setString( i, content.get( URL ).toString() );
             }
             else if( key == UHASH ) {
-                statement.setString( i, content.get( URL ).uhash() );
+                stmt.setString( i, content.get( URL ).uhash() );
             }
             else if( key == HOST ) {
-                statement.setString( i, content.get( URL ).host() );
+                stmt.setString( i, content.get( URL ).host() );
             }
             else {
-                statement.setObject( i, content.get( key ) );
+                if( key.valueType().equals( java.util.Date.class ) ) {
+                    stmt.setTimestamp( i, 
+                        convertDate( (java.util.Date) content.get( key ) ) );
+                }
+                else {
+                    stmt.setObject( i, content.get( key ) );
+                }
                 //NULL ok, at least with PostgreSQL
             }
             
             i++;
         }
     }
-
+    private static final Timestamp convertDate( java.util.Date date ) {
+        return ( date == null ) ? null : new Timestamp( date.getTime() );
+    }
+    
     // An alternative KEY_SPACE for "special" keys defined for purposes of
     // uniform database mapping (and shouldn't exist in UniMap).
     private static final KeySpace ALT_KEY_SPACE = new KeySpace();

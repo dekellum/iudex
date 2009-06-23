@@ -39,7 +39,7 @@ import com.gravitext.htmap.UniMap;
 import static org.junit.Assert.*;
 import static iudex.core.ContentKeys.*;
 
-public class WorkPollerTest
+public class ContentUpdaterTest
 {
     private static DataSource _dataSource = null;
 
@@ -54,28 +54,34 @@ public class WorkPollerTest
     @AfterClass
     public static void Close()
     {
+        //FIXME: Delete?
     }
     
-    @Test
-    public void testAutoCommit() throws SQLException
-    {
-        assertTrue( _dataSource.getConnection().getAutoCommit() );
-    }
-    
+   
     @Test
     public void test() throws SQLException, SyntaxException
     {
-        ContentWriter writer = new ContentWriter( _dataSource );
+        ContentUpdater updater = new ContentUpdater( _dataSource );
         List<UniMap> contents = new ArrayList<UniMap>();
         UniMap c = new UniMap();
         c.set( URL, 
                VisitURL.normalize( "http://gravitext.com/blog/feed/atom.xml" ) );
         c.set( TYPE, TYPE_FEED );
-        c.set(  PRIORITY, 1.5f );
+        c.set( PRIORITY, 1f );
         c.set( NEXT_VISIT_AFTER, new Date() );
+        //FIXME: Shouldn't need to set, express default?
         contents.add( c );
         try {
-            assertEquals( 1, writer.write( contents ) );
+            assertEquals( 1, updater.write( contents ) );
+            
+            c = new UniMap();
+            c.set( URL, 
+                   VisitURL.normalize( "http://gravitext.com/content" ) );
+            c.set( TYPE, TYPE_PAGE );
+            c.set( PRIORITY, 1f );
+            c.set( NEXT_VISIT_AFTER, new Date() );
+            contents.add( c );
+            updater.update( contents );
         }
         catch( SQLException x ) {
             //FIXME: Move to ContentWriter?
@@ -90,11 +96,11 @@ public class WorkPollerTest
         WorkPoller wpoller = new WorkPoller( _dataSource );
         contents = wpoller.poll();
         _log.info( "Work poll returned {} contents", contents.size() );
-
-        assertNotNull( contents );
+        
         for( UniMap w : contents ) {
             _log.info( w.toString() );
         }
+        assertNotNull( contents );
     }
     public final Logger _log = LoggerFactory.getLogger( getClass() );
     
