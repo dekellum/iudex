@@ -22,27 +22,47 @@ import static iudex.da.ContentMapper.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 import javax.sql.DataSource;
 
-import com.gravitext.htmap.Key;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gravitext.htmap.UniMap;
 
 public class ContentWriter
 {
-    public ContentWriter( DataSource source )
+    public ContentWriter( DataSource source, ContentMapper mapper )
     {
-        _dsource = source;
+        _dataSource = source;
+        _mapper = mapper;
+    }
+   
+    public ContentMapper mapper()
+    {
+        return _mapper;
+    }
+
+    public DataSource dataSource()
+    {
+        return _dataSource;
     }
     
     public int write( Iterable<UniMap> contents ) 
         throws SQLException
     {
-        Connection conn = _dsource.getConnection();
+        Connection conn = _dataSource.getConnection();
         try {
             conn.setAutoCommit( false );
             return write( contents, conn );
+        }
+        catch( SQLException orig ) {
+            _log.error( "On write: " + orig.getMessage() );
+            SQLException x = orig;
+            while( ( x = x.getNextException() ) != null ) {
+                _log.error( x.getMessage() );
+            }
+            throw orig;
         }
         finally {
             if( conn != null ) conn.close();
@@ -55,21 +75,21 @@ public class ContentWriter
     {
         StringBuilder sql = new StringBuilder(128);
         sql.append( "INSERT INTO urls (" );
-        POLL_MAPPER.appendFieldNames( sql );
+        mapper().appendFieldNames( sql );
         sql.append( ") VALUES (" );
-        POLL_MAPPER.appendQArray( sql );
+        mapper().appendQArray( sql );
         sql.append( ");" );
         
 
-        PreparedStatement statement = null;
+        PreparedStatement stmt = null;
         try {
-            statement = conn.prepareStatement( sql.toString() );
+            stmt = conn.prepareStatement( sql.toString() );
 
             for( UniMap content : contents ) {
-                POLL_MAPPER.toStatement( content, statement );
-                statement.addBatch();
+                mapper().toStatement( content, stmt );
+                stmt.addBatch();
             }
-            int[] rows = statement.executeBatch();
+            int[] rows = stmt.executeBatch();
             
             conn.commit();
             
@@ -80,25 +100,30 @@ public class ContentWriter
             return sum;
         } 
         finally {
-            if( statement != null ) statement.close();
+            if( stmt != null ) stmt.close();
         }
     }
     
     //FIXME: Set from ruby for extensibility
+    /*
     private static final ContentMapper POLL_MAPPER =  
-        new ContentMapper( Arrays.asList( new Key<?>[] {
-            UHASH,
-            URL,
-            HOST,
-            TYPE,
-            LAST_VISIT,
-            STATUS,
-            REASON,
-            TITLE,
-            PUB_DATE,
-            REF_PUB_DATE,
-            PRIORITY,
-            NEXT_VISIT_AFTER } ) );
+        new ContentMapper( UHASH,
+                           URL,
+                           HOST,
+                           TYPE,
+                           LAST_VISIT,
+                           STATUS,
+                           REASON,
+                           TITLE,
+                           PUB_DATE,
+                           REF_PUB_DATE,
+                           PRIORITY,
+                           NEXT_VISIT_AFTER );
+                           */
     
-    protected final DataSource _dsource;
+    private final DataSource _dataSource;
+    private final ContentMapper _mapper;
+    
+    protected static final Logger _log = 
+        LoggerFactory.getLogger( ContentWriter.class  );
 }

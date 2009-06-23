@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
@@ -32,9 +33,24 @@ import static iudex.core.ContentKeys.*;
 
 public final class ContentMapper
 {
-    public ContentMapper( List<Key<?>> fields )
+    // An alternative KEY_SPACE for "special" keys defined for purposes of
+    // uniform database mapping (and shouldn't exist in UniMap).
+    private static final KeySpace ALT_KEY_SPACE = new KeySpace();
+
+    public static final Key<String> UHASH = 
+        ALT_KEY_SPACE.create( "uhash", String.class );
+    
+    public static final Key<String> HOST = 
+        ALT_KEY_SPACE.create( "host", String.class );
+    
+    public ContentMapper( List<Key> fields )
     {
         _fields = fields;
+    }
+
+    public ContentMapper( Key... fields ) 
+    {
+        this( Arrays.asList( fields ) );
     }
     
     public CharSequence fieldNames()
@@ -73,7 +89,7 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
-            else if( key == UHASH ) {
+            else if( ( key == UHASH ) || ( key == HOST ) ){
                 // ignore on input
             }
             else {
@@ -143,16 +159,7 @@ public final class ContentMapper
         return ( date == null ) ? null : new Timestamp( date.getTime() );
     }
     
-    // An alternative KEY_SPACE for "special" keys defined for purposes of
-    // uniform database mapping (and shouldn't exist in UniMap).
-    private static final KeySpace ALT_KEY_SPACE = new KeySpace();
 
-    static final Key<String> UHASH = 
-        ALT_KEY_SPACE.create( "uhash", String.class );
-    
-    static final Key<String> HOST = 
-        ALT_KEY_SPACE.create( "host", String.class );
-
-    private final List<Key<?>> _fields;
+    private final List<Key> _fields;
 
 }

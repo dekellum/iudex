@@ -16,20 +16,12 @@
 
 package iudex.da;
 
-
-import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbutils.QueryRunner;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,69 +30,34 @@ import com.gravitext.htmap.UniMap;
 
 import static org.junit.Assert.*;
 import static iudex.core.ContentKeys.*;
+import static iudex.da.ContentMapper.*;
 
 public class ContentUpdaterTest
+    extends TestHelper
 {
-    private static DataSource _dataSource = null;
-
-    @BeforeClass
-    public static void Setup() throws SQLException
-    {      
-        _dataSource = DataSourceFactory.create();
-        QueryRunner runner = new QueryRunner( _dataSource );
-        runner.update( "DELETE from urls;" );
-    }
-    
-    @AfterClass
-    public static void Close()
-    {
-        //FIXME: Delete?
-    }
-    
-   
     @Test
     public void test() throws SQLException, SyntaxException
     {
-        ContentUpdater updater = new ContentUpdater( _dataSource );
-        List<UniMap> contents = new ArrayList<UniMap>();
-        UniMap c = new UniMap();
-        c.set( URL, 
-               VisitURL.normalize( "http://gravitext.com/blog/feed/atom.xml" ) );
-        c.set( TYPE, TYPE_FEED );
-        c.set( PRIORITY, 1f );
-        c.set( NEXT_VISIT_AFTER, new Date() );
-        //FIXME: Shouldn't need to set, express default?
-        contents.add( c );
-        try {
-            assertEquals( 1, updater.write( contents ) );
-            
-            c = new UniMap();
-            c.set( URL, 
-                   VisitURL.normalize( "http://gravitext.com/content" ) );
-            c.set( TYPE, TYPE_PAGE );
-            c.set( PRIORITY, 1f );
-            c.set( NEXT_VISIT_AFTER, new Date() );
-            contents.add( c );
-            updater.update( contents );
-        }
-        catch( SQLException x ) {
-            //FIXME: Move to ContentWriter?
-            _log.error( x.getMessage() );
-            SQLException n = x;
-            while( (n = n.getNextException() ) != null ) {
-                _log.error(  n.getMessage() );
-            }
-            throw x;
-        }
+        ContentMapper kmap =
+            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE, 
+                               PRIORITY, NEXT_VISIT_AFTER );
+                                                  
+        ContentUpdater updater = new ContentUpdater( dataSource(), kmap );
+        List<UniMap> in = new ArrayList<UniMap>();
+        in.add( content( "http://gravitext.com/blog/feed/atom.xml", 
+                               TYPE_FEED, 1f ) );
         
-        WorkPoller wpoller = new WorkPoller( _dataSource );
-        contents = wpoller.poll();
-        _log.info( "Work poll returned {} contents", contents.size() );
+        assertEquals( 1, updater.write( in ) );
         
-        for( UniMap w : contents ) {
-            _log.info( w.toString() );
-        }
-        assertNotNull( contents );
+        in.add( content( "http://gravitext.com/content", TYPE_PAGE, 1f ));
+        
+        updater.update( in );
+
+        ContentReader reader = new ContentReader( dataSource(), kmap );
+        List<UniMap> out = reader.select( "SELECT " + kmap.fieldNames() + 
+                           " FROM urls ORDER BY priority desc"  );
+
+        assertEquals( in, out );
     }
     public final Logger _log = LoggerFactory.getLogger( getClass() );
     

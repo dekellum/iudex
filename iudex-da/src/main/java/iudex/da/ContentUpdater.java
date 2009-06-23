@@ -25,9 +25,9 @@ import com.gravitext.htmap.UniMap;
 public class ContentUpdater
     extends ContentWriter
 {
-    public ContentUpdater( DataSource source )
+    public ContentUpdater( DataSource source, ContentMapper mapper )
     {
-        super( source );
+        super( source, mapper );
     }
 
     //FIXME: Transform interface as param?
@@ -38,7 +38,7 @@ public class ContentUpdater
 
         final String qry = formatSelect( references, hashes );
         
-        Connection conn = _dsource.getConnection();
+        Connection conn = dataSource().getConnection();
         try { 
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             //FIXME: Correct isolation?
@@ -69,7 +69,7 @@ public class ContentUpdater
         
         final StringBuilder qb = new StringBuilder( 512 );
         qb.append( "SELECT " );
-        UPDATE_MAPPER.appendFieldNames( qb );
+        mapper().appendFieldNames( qb );
         qb.append( " FROM urls WHERE uhash IN (" );
         boolean first = true;
         for( UniMap r : references ) {
@@ -110,7 +110,7 @@ public class ContentUpdater
         public Object handle( ResultSet rs ) throws SQLException
         {
             while( rs.next() ) {
-                UniMap found = UPDATE_MAPPER.fromResultSet( rs );
+                UniMap found = mapper().fromResultSet( rs );
                 String uhash = rs.getString( "uhash" );
                 UniMap ref = _hashes.remove( uhash );
                 UniMap out = transform( ref, found );
@@ -140,16 +140,17 @@ public class ContentUpdater
     }
     
     //FIXME: Set from ruby for extensibility
+    /*
     private static final ContentMapper UPDATE_MAPPER =  
-        new ContentMapper( Arrays.asList( new Key<?>[] {
-            UHASH,
-            TYPE,
-            STATUS,
-            REASON,
-            TITLE,
-            REF_PUB_DATE,
-            REFERER,
-            PRIORITY,
-            NEXT_VISIT_AFTER } ) );
+        new ContentMapper( UHASH,
+                           TYPE, 
+                           STATUS,
+                           REASON,
+                           TITLE,
+                           REF_PUB_DATE,
+                           REFERER,
+                           PRIORITY,
+                           NEXT_VISIT_AFTER );
+    */
 
 }

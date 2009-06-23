@@ -50,7 +50,6 @@ public class DataSourceFactory
         if( className != null ) {
             try {
                assert( Class.forName( className ) != null );
-               System.out.println( "Success with: " + className );
             }
             catch( ClassNotFoundException x ) {
                 throw new RuntimeException( x );

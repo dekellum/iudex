@@ -16,58 +16,34 @@
 
 package iudex.da;
 
-import static iudex.core.ContentKeys.LAST_VISIT;
-import static iudex.core.ContentKeys.PRIORITY;
-import static iudex.core.ContentKeys.REASON;
-import static iudex.core.ContentKeys.STATUS;
-import static iudex.core.ContentKeys.TYPE;
-import static iudex.core.ContentKeys.URL;
-import java.sql.ResultSet;
+import static iudex.core.ContentKeys.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-public class WorkPoller
+public class WorkPoller 
+    extends ContentReader
 {
     public WorkPoller( DataSource source )
     {
-        _dsource = source;
+        this( source, POLL_MAPPER );
     }
 
-    @SuppressWarnings("unchecked")
+    public WorkPoller( DataSource dataSource, ContentMapper mapper )
+    {
+        super( dataSource, mapper );
+    }
+
     public List<UniMap> poll() throws SQLException
     {
-        QueryRunner runner = new QueryRunner( _dsource );
-        
-        String query = String.format( POLL_QUERY, POLL_MAPPER.fieldNames() );
+        String query = String.format( POLL_QUERY, mapper().fieldNames() );
 
-        Object[] params = new Object[] { _urlsPerHost, _totalUrls };
-        
-        return (List<UniMap>)
-            runner.query( query, new PollHandler(), params );
-    }
-
-    private class PollHandler implements ResultSetHandler
-    {
-        @Override
-        public List<UniMap> handle( ResultSet rset ) throws SQLException
-        {
-            ArrayList<UniMap> contents = new ArrayList<UniMap>( _totalUrls );
-            while( rset.next() ) {
-                contents.add( POLL_MAPPER.fromResultSet( rset ) );
-            }
-            return contents;
-        }
-        
+        return select( query, _urlsPerHost, _totalUrls );
     }
     
     private static final String POLL_QUERY = 
@@ -81,16 +57,14 @@ public class WorkPoller
         "ORDER BY host, priority DESC;"; 
     
     private static final ContentMapper POLL_MAPPER =  
-        new ContentMapper( Arrays.asList( new Key<?>[] { 
-            URL,
-            TYPE,
-            LAST_VISIT,
-            STATUS,
-            REASON,
-            PRIORITY } ) );
+        new ContentMapper( URL,
+                           TYPE,
+                           LAST_VISIT,
+                           STATUS,
+                           REASON,
+                           PRIORITY );
     //FIXME: Set from ruby for extensibility
     
-    private final DataSource _dsource;
     private int _urlsPerHost = 100;
     private int _totalUrls = 10000;
 }
