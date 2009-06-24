@@ -40,7 +40,7 @@ public class DataSourceFactory
         params.put( "dsf.driver.class", "org.postgresql.Driver" );
         params.put( "dsf.uri", "jdbc:postgresql:iudex_test");
         params.put( "user", "iudex" );
-        params.put( "loglevel", "0" );
+        params.put( "loglevel", "2" );
         return factory.create( params );
     }
     

@@ -1,8 +1,5 @@
 package iudex.da;
 
-import static iudex.core.ContentKeys.*;
-import static iudex.da.ContentMapper.*;
-
 import iudex.core.ContentKeys;
 
 import java.sql.Connection;
@@ -10,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,7 +15,6 @@ import javax.sql.DataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 public class ContentUpdater
@@ -28,6 +23,7 @@ public class ContentUpdater
     public ContentUpdater( DataSource source, ContentMapper mapper )
     {
         super( source, mapper );
+        //FIXME: uhash required
     }
 
     //FIXME: Transform interface as param?
@@ -89,12 +85,13 @@ public class ContentUpdater
     }
     
     
-    private UniMap transform( UniMap ref, UniMap found )
+    protected UniMap transform( final UniMap reference, final UniMap in )
     {
-        if( found == null ) return ref;
+        if( in == null ) return reference;
         
-        UniMap t = found.clone();
-        t.putAll( ref );
+        // Fold ref over top of found.
+        UniMap t = in.clone();
+        t.putAll( reference );
         return t;
     }
     
@@ -110,13 +107,14 @@ public class ContentUpdater
         public Object handle( ResultSet rs ) throws SQLException
         {
             while( rs.next() ) {
-                UniMap found = mapper().fromResultSet( rs );
-                String uhash = rs.getString( "uhash" );
-                UniMap ref = _hashes.remove( uhash );
+                final UniMap found = mapper().fromResultSet( rs );
+                final UniMap ref = _hashes.remove( rs.getString( "uhash" ) );
+                
                 UniMap out = transform( ref, found );
-                //FIXME: Generalize based on out, transform
-                rs.updateObject( "priority", 22.2F ); //FIXME: Testing
-                rs.updateRow();
+                
+                if( mapper().update( rs, found, out ) ) {
+                    rs.updateRow();
+                }
             }
             return null;
         }

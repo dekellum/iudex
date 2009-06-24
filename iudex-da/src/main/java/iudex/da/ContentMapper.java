@@ -89,7 +89,7 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
-            else if( ( key == UHASH ) || ( key == HOST ) ){
+            else if( ( key == UHASH ) || ( key == HOST ) ) {
                 // ignore on input
             }
             else {
@@ -102,30 +102,58 @@ public final class ContentMapper
         return content;
     }
     
-    public void updateResultSet( UniMap content, ResultSet rset ) 
+    public void update( ResultSet rset, UniMap out )
         throws SQLException
     {
         for( Key<?> key : _fields ) {
-            final String name = key.name();
-            
-            if( key == URL ) {
-                //NPE on missing URL (required)
-                rset.updateString( name, content.get( URL ).toString() );
-            }
-            else if( key == UHASH ) {
-                rset.updateString( name, content.get( URL ).uhash() );
-            }
-            else if( key == HOST ) {
-                rset.updateString( name, content.get( URL ).host() );
-            }
-            else {
-                rset.updateObject( name, content.get( key ) );
-                //NULL ok, at least with PostgreSQL
-            }
-
+            update( rset, key, out );
         }
     }
+
+    public void update( ResultSet rset, Key<?> key, UniMap out )
+        throws SQLException
+    {
+        final String name = key.name();
+        if( key == URL ) {
+            // NPE on missing URL (required)
+            rset.updateString( name, out.get( URL ).toString() );
+        }
+        else if( key == UHASH ) {
+            // FIXME: Ignore on update?
+            rset.updateString( name, out.get( URL ).uhash() );
+        }
+        else if( key == HOST ) {
+            // FIXME: Ignore on update?
+            rset.updateString( name, out.get( URL ).host() );
+        }
+        else {
+            rset.updateObject( name, convert( key, out.get( key ) ) );
+            // NULL ok, at least with PostgreSQL
+        }
+    }
+
+    public boolean update( ResultSet rs, UniMap in, UniMap out ) 
+        throws SQLException
+    {
+        boolean change = false;
+        for( Key<?> key : _fields ) {
+            if( key.space() != ALT_KEY_SPACE ) { 
+                if( update( rs, key, in, out ) ) change = true;
+            }
+        }
+        return change;
+    }
     
+    public boolean update( ResultSet rs, Key<?> key, UniMap in, UniMap out ) 
+        throws SQLException
+    {
+        if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
+            update( rs, key, out );
+            return true;
+        }
+        return false;
+    }
+
     public void toStatement( UniMap content, PreparedStatement stmt )
         throws SQLException
     {
@@ -142,24 +170,31 @@ public final class ContentMapper
                 stmt.setString( i, content.get( URL ).host() );
             }
             else {
-                if( key.valueType().equals( java.util.Date.class ) ) {
-                    stmt.setTimestamp( i, 
-                        convertDate( (java.util.Date) content.get( key ) ) );
-                }
-                else {
-                    stmt.setObject( i, content.get( key ) );
-                }
+                stmt.setObject( i, convert( key, content.get( key ) ) );
                 //NULL ok, at least with PostgreSQL
             }
             
             i++;
         }
     }
+
+    private boolean equalOrNull( Object first, Object second )
+    {
+        return ( ( first == second ) || 
+                 ( ( first != null ) && first.equals( second ) ) );
+    }
+    private Object convert( Key<?> key, Object value )
+    {
+        if( key.valueType().equals( java.util.Date.class ) ) {
+            return convertDate( (java.util.Date) value );
+        }
+        return value;
+    }
+    
+    
     private static final Timestamp convertDate( java.util.Date date ) {
         return ( date == null ) ? null : new Timestamp( date.getTime() );
     }
-    
 
     private final List<Key> _fields;
-
 }
