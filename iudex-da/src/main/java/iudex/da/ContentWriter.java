@@ -16,9 +16,6 @@
 
 package iudex.da;
 
-import static iudex.core.ContentKeys.*;
-import static iudex.da.ContentMapper.*;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -104,26 +101,9 @@ public class ContentWriter
         }
     }
     
-    //FIXME: Set from ruby for extensibility
-    /*
-    private static final ContentMapper POLL_MAPPER =  
-        new ContentMapper( UHASH,
-                           URL,
-                           HOST,
-                           TYPE,
-                           LAST_VISIT,
-                           STATUS,
-                           REASON,
-                           TITLE,
-                           PUB_DATE,
-                           REF_PUB_DATE,
-                           PRIORITY,
-                           NEXT_VISIT_AFTER );
-                           */
-    
-    private final DataSource _dataSource;
-    private final ContentMapper _mapper;
-    
     protected static final Logger _log = 
         LoggerFactory.getLogger( ContentWriter.class  );
+
+    private final DataSource _dataSource;
+    private final ContentMapper _mapper;
 }

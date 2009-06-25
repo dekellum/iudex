@@ -23,30 +23,30 @@ public class ContentUpdater
     public ContentUpdater( DataSource source, ContentMapper mapper )
     {
         super( source, mapper );
-        //FIXME: uhash required
+        //FIXME: uhash, others? required
     }
 
     //FIXME: Transform interface as param?
     public void update( List<UniMap> references ) throws SQLException
     {
-        final HashMap<String,UniMap> hashes = 
+        final HashMap<String,UniMap> uhashes =
             new HashMap<String,UniMap>( references.size() );
 
-        final String qry = formatSelect( references, hashes );
-        
+        final String qry = formatSelect( references, uhashes );
+
         Connection conn = dataSource().getConnection();
-        try { 
+        try {
+            conn.setAutoCommit( false );
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             //FIXME: Correct isolation?
-            conn.setAutoCommit( false );
 
             UpdateQueryRunner runner = new UpdateQueryRunner();
-            runner.query( conn, qry, new UpdateHandler( hashes ) );
-            
-            final ArrayList<UniMap> remains = 
-                new ArrayList<UniMap>( hashes.size() );
-            for( UniMap rem : hashes.values() ) {
-                 remains.add( transform( rem, null ) );
+            runner.query( conn, qry, new UpdateHandler( uhashes ) );
+
+            final ArrayList<UniMap> remains =
+                new ArrayList<UniMap>( uhashes.size() );
+            for( UniMap rem : uhashes.values() ) {
+                remains.add( transform( rem, null ) );
             }
 
             write( remains, conn );
@@ -59,42 +59,40 @@ public class ContentUpdater
     }
 
     private String formatSelect( final List<UniMap> references,
-                                 final HashMap<String, UniMap> hashes )
+                                 final HashMap<String, UniMap> uhashes )
     {
-        //FIXME: Pass in hashes as input for values of "IN" clause
-        
         final StringBuilder qb = new StringBuilder( 512 );
         qb.append( "SELECT " );
         mapper().appendFieldNames( qb );
         qb.append( " FROM urls WHERE uhash IN (" );
         boolean first = true;
         for( UniMap r : references ) {
-            if( first ) first = false; 
+            if( first ) first = false;
             else qb.append( ", " );
-            
+
             final String uhash = r.get( ContentKeys.URL ).uhash();
-            hashes.put( uhash, r );
-            
+            uhashes.put( uhash, r );
+
             qb.append( '\'' );
             qb.append( uhash );
             qb.append( '\'' );
         }
-        qb.append( ");" );
+        qb.append( ") FOR UPDATE;" );
 
         return qb.toString();
     }
-    
-    
+
+
     protected UniMap transform( final UniMap reference, final UniMap in )
     {
         if( in == null ) return reference;
-        
+
         // Fold ref over top of found.
         UniMap t = in.clone();
         t.putAll( reference );
         return t;
     }
-    
+
     private final class UpdateHandler implements ResultSetHandler
     {
 
@@ -107,23 +105,23 @@ public class ContentUpdater
         public Object handle( ResultSet rs ) throws SQLException
         {
             while( rs.next() ) {
-                final UniMap found = mapper().fromResultSet( rs );
+                final UniMap in = mapper().fromResultSet( rs );
                 final UniMap ref = _hashes.remove( rs.getString( "uhash" ) );
-                
-                UniMap out = transform( ref, found );
-                
-                if( mapper().update( rs, found, out ) ) {
+
+                UniMap out = transform( ref, in );
+
+                if( mapper().update( rs, in, out ) ) {
                     rs.updateRow();
                 }
             }
             return null;
         }
-        
+
 
         private HashMap<String, UniMap> _hashes;
     }
 
-    
+
     private static final class UpdateQueryRunner extends QueryRunner
     {
         @Override
@@ -131,24 +129,9 @@ public class ContentUpdater
                                                       String sql )
             throws SQLException
         {
-            return conn.prepareStatement( sql, 
-                                          ResultSet.TYPE_FORWARD_ONLY, 
+            return conn.prepareStatement( sql,
+                                          ResultSet.TYPE_FORWARD_ONLY,
                                           ResultSet.CONCUR_UPDATABLE );
         }
     }
-    
-    //FIXME: Set from ruby for extensibility
-    /*
-    private static final ContentMapper UPDATE_MAPPER =  
-        new ContentMapper( UHASH,
-                           TYPE, 
-                           STATUS,
-                           REASON,
-                           TITLE,
-                           REF_PUB_DATE,
-                           REFERER,
-                           PRIORITY,
-                           NEXT_VISIT_AFTER );
-    */
-
 }

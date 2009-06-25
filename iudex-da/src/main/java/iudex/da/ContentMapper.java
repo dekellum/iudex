@@ -31,35 +31,48 @@ import com.gravitext.htmap.UniMap;
 
 import static iudex.core.ContentKeys.*;
 
+/**
+ * Automagical mapping between UniMap values and JDBC ResultSets and
+ * Statements.
+ */
 public final class ContentMapper
 {
-    // An alternative KEY_SPACE for "special" keys defined for purposes of
-    // uniform database mapping (and shouldn't exist in UniMap).
-    private static final KeySpace ALT_KEY_SPACE = new KeySpace();
+    /**
+     * An alternative key space for "logical" keys defined for
+     * purposes of uniform database mapping, but which should not
+     * exist directly in a UniMap instance.
+     */
+    public static final KeySpace LOGICAL_KEYS = new KeySpace();
 
-    public static final Key<String> UHASH = 
-        ALT_KEY_SPACE.create( "uhash", String.class );
-    
-    public static final Key<String> HOST = 
-        ALT_KEY_SPACE.create( "host", String.class );
-    
+    /**
+     * Logical key UHASH mapped to URL->VisitURL.uhash()
+     */
+    public static final Key<String> UHASH =
+        LOGICAL_KEYS.create( "uhash", String.class );
+
+    /**
+     * Logical key UHASH mapped to URL->VisitURL.host()
+     */
+    public static final Key<String> HOST =
+        LOGICAL_KEYS.create( "host", String.class );
+
     public ContentMapper( List<Key> fields )
     {
         _fields = fields;
     }
 
-    public ContentMapper( Key... fields ) 
+    public ContentMapper( Key... fields )
     {
         this( Arrays.asList( fields ) );
     }
-    
+
     public CharSequence fieldNames()
     {
         StringBuilder builder = new StringBuilder( 64 );
         appendFieldNames( builder );
         return builder;
     }
-    
+
     public void appendFieldNames( StringBuilder out )
     {
         boolean first = true;
@@ -69,7 +82,7 @@ public final class ContentMapper
             out.append( key.name() );
         }
     }
-    
+
     public void appendQArray( StringBuilder out )
     {
         boolean first = true;
@@ -80,7 +93,7 @@ public final class ContentMapper
             out.append( '?' );
         }
     }
-    
+
     public UniMap fromResultSet( ResultSet rset ) throws SQLException
     {
         UniMap content = new UniMap();
@@ -98,10 +111,10 @@ public final class ContentMapper
             }
             i++;
         }
-        
+
         return content;
     }
-    
+
     public void update( ResultSet rset, UniMap out )
         throws SQLException
     {
@@ -114,17 +127,8 @@ public final class ContentMapper
         throws SQLException
     {
         final String name = key.name();
-        if( key == URL ) {
-            // NPE on missing URL (required)
-            rset.updateString( name, out.get( URL ).toString() );
-        }
-        else if( key == UHASH ) {
-            // FIXME: Ignore on update?
-            rset.updateString( name, out.get( URL ).uhash() );
-        }
-        else if( key == HOST ) {
-            // FIXME: Ignore on update?
-            rset.updateString( name, out.get( URL ).host() );
+        if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
+            rset.updateString( name, convertURL( key, out.get( URL ) ) );
         }
         else {
             rset.updateObject( name, convert( key, out.get( key ) ) );
@@ -132,19 +136,19 @@ public final class ContentMapper
         }
     }
 
-    public boolean update( ResultSet rs, UniMap in, UniMap out ) 
+    public boolean update( ResultSet rs, UniMap in, UniMap out )
         throws SQLException
     {
         boolean change = false;
         for( Key<?> key : _fields ) {
-            if( key.space() != ALT_KEY_SPACE ) { 
+            if( key.space() != LOGICAL_KEYS ) {
                 if( update( rs, key, in, out ) ) change = true;
             }
         }
         return change;
     }
-    
-    public boolean update( ResultSet rs, Key<?> key, UniMap in, UniMap out ) 
+
+    public boolean update( ResultSet rs, Key<?> key, UniMap in, UniMap out )
         throws SQLException
     {
         if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
@@ -159,30 +163,17 @@ public final class ContentMapper
     {
         int i = 1;
         for( Key<?> key : _fields ) {
-            if( key == URL ) {
-                //NPE on missing URL (required)
-                stmt.setString( i, content.get( URL ).toString() );
-            }
-            else if( key == UHASH ) {
-                stmt.setString( i, content.get( URL ).uhash() );
-            }
-            else if( key == HOST ) {
-                stmt.setString( i, content.get( URL ).host() );
+            if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
+                stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
             else {
                 stmt.setObject( i, convert( key, content.get( key ) ) );
-                //NULL ok, at least with PostgreSQL
+
             }
-            
             i++;
         }
     }
 
-    private boolean equalOrNull( Object first, Object second )
-    {
-        return ( ( first == second ) || 
-                 ( ( first != null ) && first.equals( second ) ) );
-    }
     private Object convert( Key<?> key, Object value )
     {
         if( key.valueType().equals( java.util.Date.class ) ) {
@@ -190,10 +181,26 @@ public final class ContentMapper
         }
         return value;
     }
-    
-    
-    private static final Timestamp convertDate( java.util.Date date ) {
+
+    private String convertURL( Key<?> key, VisitURL url )
+    {
+        if( key == URL   ) return url.toString();
+        if( key == UHASH ) return url.uhash();
+        if( key == HOST  ) return url.host();
+
+        throw new IllegalArgumentException
+            ( "Non URL derived logical key: " + key );
+    }
+
+    private static final Timestamp convertDate( java.util.Date date )
+    {
         return ( date == null ) ? null : new Timestamp( date.getTime() );
+    }
+
+    private static boolean equalOrNull( Object first, Object second )
+    {
+        return ( ( first == second ) ||
+                 ( ( first != null ) && first.equals( second ) ) );
     }
 
     private final List<Key> _fields;

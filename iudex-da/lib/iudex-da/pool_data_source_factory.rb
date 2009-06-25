@@ -34,7 +34,7 @@ module Iudex::DA
     import 'org.apache.commons.pool.impl.GenericObjectPool'
     import 'iudex.util.LogWriter'
 
-    attr_accessor :data_source 
+    attr_accessor :data_source
 
     def initialize( properties = {} )
       @properties = properties.dup
@@ -65,20 +65,20 @@ module Iudex::DA
       import 'org.postgresql.Driver'
       lw = LogWriter.new( 'Iudex.DA.Driver' )
       # Remove postgres time stamp, trailing whitespace.
-      lw.remove_pattern = 
+      lw.remove_pattern =
         Pattern.compile( '(^\d\d:\d\d:\d\d\.\d\d\d\s\(\d\)\s)|(\s+$)' )
       DriverManager::set_log_writer( PrintWriter.new( lw, true ) )
     end
 
     def create_connection_factory
-      uri = "jdbc:postgresql://%s/%s" % 
+      uri = "jdbc:postgresql://%s/%s" %
         [ @properties[ 'host' ], @properties[ 'database' ] ]
 
       props = Properties.new
-      @properties.each do | key, value | 
+      @properties.each do | key, value |
         props.set_property( key.to_s, value.to_s )
       end
-      
+
       DriverManagerConnectionFactory.new( uri, props )
     end
 
@@ -88,7 +88,7 @@ module Iudex::DA
       # Defaults to 8 max
 
       # This sets self on con_pool
-      PoolableConnectionFactory.new( con_factory, 
+      PoolableConnectionFactory.new( con_factory,
                                      con_pool,
                                      nil, #stmtPoolFactory
                                      nil, #validationQuery

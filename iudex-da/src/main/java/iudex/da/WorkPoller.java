@@ -16,24 +16,16 @@
 
 package iudex.da;
 
-import static iudex.core.ContentKeys.*;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-public class WorkPoller 
+public class WorkPoller
     extends ContentReader
 {
-    public WorkPoller( DataSource source )
-    {
-        this( source, POLL_MAPPER );
-    }
-
     public WorkPoller( DataSource dataSource, ContentMapper mapper )
     {
         super( dataSource, mapper );
@@ -45,26 +37,17 @@ public class WorkPoller
 
         return select( query, _urlsPerHost, _totalUrls );
     }
-    
-    private static final String POLL_QUERY = 
-        "SELECT %s " + 
+
+    private static final String POLL_QUERY =
+        "SELECT %s " +
         "FROM ( SELECT * FROM urls " +
         "       WHERE next_visit_after <= now() " +
-        "       AND uhash IN ( SELECT uhash FROM urls o " + 
+        "       AND uhash IN ( SELECT uhash FROM urls o " +
         "                      WHERE o.host = urls.host " +
         "                      ORDER BY priority DESC LIMIT ? ) " +
         "       ORDER BY priority DESC LIMIT ? ) AS sub " +
-        "ORDER BY host, priority DESC;"; 
-    
-    private static final ContentMapper POLL_MAPPER =  
-        new ContentMapper( URL,
-                           TYPE,
-                           LAST_VISIT,
-                           STATUS,
-                           REASON,
-                           PRIORITY );
-    //FIXME: Set from ruby for extensibility
-    
+        "ORDER BY host, priority DESC;";
+
     private int _urlsPerHost = 100;
     private int _totalUrls = 10000;
 }

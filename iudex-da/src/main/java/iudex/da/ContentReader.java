@@ -14,6 +14,12 @@ import com.gravitext.htmap.UniMap;
 
 public class ContentReader
 {
+    public ContentReader( DataSource source, ContentMapper mapper )
+    {
+        _mapper = mapper;
+        _dsource = source;
+    }
+
     public ContentMapper mapper()
     {
         return _mapper;
@@ -24,22 +30,16 @@ public class ContentReader
         return _dsource;
     }
 
-    public ContentReader( DataSource source, ContentMapper mapper )
-    {
-        _mapper = mapper;
-        _dsource = source;
-    }
-
     @SuppressWarnings("unchecked")
     public List<UniMap> select( String query, Object... params )
         throws SQLException
     {
         QueryRunner runner = new QueryRunner( _dsource );
-        
+
         return (List<UniMap>) runner.query( query, new MapHandler(), params );
     }
-    
-    protected class MapHandler implements ResultSetHandler
+
+    protected final class MapHandler implements ResultSetHandler
     {
         @Override
         public List<UniMap> handle( ResultSet rset ) throws SQLException
@@ -52,7 +52,7 @@ public class ContentReader
         }
 
     }
-    
+
     private final DataSource _dsource;
     private final ContentMapper _mapper;
 }

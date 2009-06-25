@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.gravitext.htmap.UniMap;
 
@@ -22,24 +23,29 @@ public class TestHelper
 {
     @BeforeClass
     public static void setup() throws SQLException
-    {      
+    {
         _dataSource = DataSourceFactory.create();
         QueryRunner runner = new QueryRunner( _dataSource );
         runner.update( "DELETE from urls;" );
     }
-    
+
     @AfterClass
     public static void close()
     {
-        
     }
-    
-    protected static DataSource dataSource() 
+
+    @Test
+    public void testEmpty()
+    {
+        // make mvn/junit happy.
+    }
+
+    protected static DataSource dataSource()
     {
         return _dataSource;
     }
-    
-    protected static UniMap content( String url, String type, float priority ) 
+
+    protected static UniMap content( String url, String type, float priority )
         throws SyntaxException
     {
         UniMap content = new UniMap();
@@ -49,6 +55,6 @@ public class TestHelper
         content.set( NEXT_VISIT_AFTER, new Date() );
         return content;
     }
-    
+
     private static DataSource _dataSource = null;
 }

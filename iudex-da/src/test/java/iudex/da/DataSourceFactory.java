@@ -16,9 +16,14 @@
 
 package iudex.da;
 
+import iudex.util.LogWriter;
+
+import java.io.PrintWriter;
+import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -33,6 +38,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  */
 public class DataSourceFactory
 {
+
     public static DataSource create()
     {
         DataSourceFactory factory = new DataSourceFactory();
@@ -49,12 +55,15 @@ public class DataSourceFactory
         String className = params.remove( "dsf.driver.class" );
         if( className != null ) {
             try {
-               assert( Class.forName( className ) != null );
+               Class<?> driverClass = Class.forName( className ); 
+               assert( driverClass != null );
             }
             catch( ClassNotFoundException x ) {
                 throw new RuntimeException( x );
             }
         }
+        setLogWriter();
+        
         String uri = params.remove( "dsf.uri" );
         
         Properties props = new Properties();
@@ -77,5 +86,17 @@ public class DataSourceFactory
         
         return new PoolingDataSource( conPool );
     }
-
+    
+    public void setLogWriter()
+    {
+        LogWriter lw = new LogWriter( "iudex.da.driver" );
+        lw.setRemovePattern( 
+           LOG_REMOVE_PATTERN );
+        
+        DriverManager.setLogWriter( new PrintWriter( lw, true ) );
+    }
+    
+    private static final Pattern LOG_REMOVE_PATTERN = 
+        Pattern.compile( 
+            "(^\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d\\s\\(\\d\\)\\s)|(\\s+$)" );
 }
