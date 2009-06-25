@@ -52,7 +52,7 @@ public final class URL64
                                  final int length )
     {
     
-        char[] out = new char[( (length + 2) / 3) * 4 ];
+        final char[] out = new char[ ( (length + 2) / 3 ) * 4 ];
 
         // 3 bytes encode to 4 chars.  Output is always an even
         // multiple of 4 characters.

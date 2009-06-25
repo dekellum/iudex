@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Writer logs each writer to given SLF4J writer at DEBUG level.
+ * Writer logs each write block to a given SLF4J writer at DEBUG level.
  */
 public final class LogWriter
     extends java.io.Writer
