@@ -66,6 +66,11 @@ public final class ContentMapper
         this( Arrays.asList( fields ) );
     }
 
+    public List<Key> fields()
+    {
+        return _fields;
+    }
+    
     public CharSequence fieldNames()
     {
         StringBuilder builder = new StringBuilder( 64 );

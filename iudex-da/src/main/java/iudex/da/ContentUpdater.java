@@ -23,7 +23,10 @@ public class ContentUpdater
     public ContentUpdater( DataSource source, ContentMapper mapper )
     {
         super( source, mapper );
-        //FIXME: uhash, others? required
+        if( ! mapper.fields().contains( ContentMapper.UHASH ) ) {
+            throw new IllegalArgumentException(
+               "ContentUpdater needs mapper with UHASH included." );
+        }
     }
 
     //FIXME: Transform interface as param?
