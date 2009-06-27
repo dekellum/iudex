@@ -60,7 +60,6 @@ module Iudex::DA
       @con_pool = @data_source = nil
     end
 
-
     def load_driver
       import 'org.postgresql.Driver'
       lw = LogWriter.new( 'Iudex.DA.Driver' )

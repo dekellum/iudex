@@ -34,7 +34,7 @@ public class ContentWriter
         _dataSource = source;
         _mapper = mapper;
     }
-   
+
     public ContentMapper mapper()
     {
         return _mapper;
@@ -44,21 +44,18 @@ public class ContentWriter
     {
         return _dataSource;
     }
-    
-    public int write( Iterable<UniMap> contents ) 
-        throws SQLException
+
+    public int write( Iterable<UniMap> contents ) throws SQLException
     {
         Connection conn = _dataSource.getConnection();
         try {
             conn.setAutoCommit( false );
-            return write( contents, conn );
+            int count = write( contents, conn );
+            conn.commit();
+            return count;
         }
         catch( SQLException orig ) {
-            _log.error( "On write: " + orig.getMessage() );
-            SQLException x = orig;
-            while( ( x = x.getNextException() ) != null ) {
-                _log.error( x.getMessage() );
-            }
+            logError( orig );
             throw orig;
         }
         finally {
@@ -66,9 +63,62 @@ public class ContentWriter
         }
     }
 
-    protected int write( Iterable<UniMap> contents, 
-                         Connection conn )
+    public int write( UniMap content ) throws SQLException
+    {
+        Connection conn = _dataSource.getConnection();
+        try {
+            return write( content, conn );
+        }
+        catch( SQLException orig ) {
+            logError( orig );
+            throw orig;
+        }
+        finally {
+            if( conn != null ) conn.close();
+        }
+    }
+
+    protected int write( UniMap content, Connection conn ) throws SQLException
+    {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement( formatInsert() );
+            mapper().toStatement( content, stmt );
+            int count = stmt.executeUpdate();
+            conn.commit();
+            return count;
+        }
+        finally {
+            if( stmt != null ) stmt.close();
+        }
+    }
+
+    protected int write( Iterable<UniMap> contents, Connection conn )
         throws SQLException
+    {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement( formatInsert() );
+
+            for( UniMap content : contents ) {
+                mapper().toStatement( content, stmt );
+                stmt.addBatch();
+                //FIXME: needed? : stmt.clearParameters();
+            }
+            int[] rows = stmt.executeBatch();
+
+            int sum = 0;
+            for( int row : rows ) {
+                sum += row;
+            }
+            return sum;
+        }
+        finally {
+            if( stmt != null ) stmt.close();
+        }
+    }
+
+    private String formatInsert()
     {
         StringBuilder sql = new StringBuilder(128);
         sql.append( "INSERT INTO urls (" );
@@ -76,32 +126,19 @@ public class ContentWriter
         sql.append( ") VALUES (" );
         mapper().appendQArray( sql );
         sql.append( ");" );
-        
+        return sql.toString();
+    }
 
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement( sql.toString() );
-
-            for( UniMap content : contents ) {
-                mapper().toStatement( content, stmt );
-                stmt.addBatch();
-            }
-            int[] rows = stmt.executeBatch();
-            
-            conn.commit();
-            
-            int sum = 0;
-            for( int row : rows ) {
-                sum += row;
-            }
-            return sum;
-        } 
-        finally {
-            if( stmt != null ) stmt.close();
+    private void logError( SQLException orig )
+    {
+        _log.error( "On write: " + orig.getMessage() );
+        SQLException x = orig;
+        while( ( x = x.getNextException() ) != null ) {
+            _log.error( x.getMessage() );
         }
     }
-    
-    protected static final Logger _log = 
+
+    protected static final Logger _log =
         LoggerFactory.getLogger( ContentWriter.class  );
 
     private final DataSource _dataSource;

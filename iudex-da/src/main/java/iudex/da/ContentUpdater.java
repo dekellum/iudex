@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2008-2009 David Kellum
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package iudex.da;
 
 import iudex.core.ContentKeys;
@@ -29,36 +45,81 @@ public class ContentUpdater
         }
     }
 
-    //FIXME: Transform interface as param?
-    public void update( List<UniMap> references ) throws SQLException
+    /**
+     * Update both content record and any attached REFERENCES.
+     */
+    public void update( UniMap content )
+        throws SQLException
     {
-        final HashMap<String,UniMap> uhashes =
-            new HashMap<String,UniMap>( references.size() );
-
-        final String qry = formatSelect( references, uhashes );
-
         Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             //FIXME: Correct isolation?
 
-            UpdateQueryRunner runner = new UpdateQueryRunner();
-            runner.query( conn, qry, new UpdateHandler( uhashes ) );
+            update( content, conn );
 
-            final ArrayList<UniMap> remains =
-                new ArrayList<UniMap>( uhashes.size() );
-            for( UniMap rem : uhashes.values() ) {
-                remains.add( transform( rem, null ) );
+            List<UniMap> refs = content.get( ContentKeys.REFERENCES );
+            if( refs != null ) {
+                update( refs, conn );
             }
-
-            write( remains, conn );
 
             conn.commit();
         }
         finally {
             if( conn != null ) conn.close();
         }
+    }
+
+    //FIXME: Transform interface as param?
+    public void update( List<UniMap> references ) throws SQLException
+    {
+        Connection conn = dataSource().getConnection();
+        try {
+            conn.setAutoCommit( false );
+            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+            update( references, conn );
+
+            conn.commit();
+        }
+        finally {
+            if( conn != null ) conn.close();
+        }
+    }
+
+    protected void update( UniMap content, Connection conn )
+        throws SQLException
+    {
+        final StringBuilder qb = new StringBuilder( 256 );
+        qb.append( "SELECT " );
+        mapper().appendFieldNames( qb );
+        qb.append( " FROM urls WHERE uhash = ? FOR UPDATE;" );
+
+        UpdateQueryRunner runner = new UpdateQueryRunner();
+        int update = (Integer)
+            runner.query( conn, qb.toString(),
+                          new OneUpdateHandler( content ),
+                new Object[] { content.get( ContentKeys.URL ).uhash() } );
+
+        if( update == 0 ) write( transform( content, null ), conn );
+    }
+
+    protected void update( List<UniMap> references, Connection conn )
+        throws SQLException
+    {
+        final HashMap<String,UniMap> uhashes =
+            new HashMap<String,UniMap>( references.size() );
+        final String qry = formatSelect( references, uhashes );
+        final UpdateQueryRunner runner = new UpdateQueryRunner();
+        runner.query( conn, qry, new RefUpdateHandler( uhashes ) );
+
+        final ArrayList<UniMap> remains =
+            new ArrayList<UniMap>( uhashes.size() );
+        for( UniMap rem : uhashes.values() ) {
+            remains.add( transform( rem, null ) );
+        }
+        if( remains.size() > 0 ) write( remains, conn );
     }
 
     private String formatSelect( final List<UniMap> references,
@@ -85,7 +146,6 @@ public class ContentUpdater
         return qb.toString();
     }
 
-
     protected UniMap transform( final UniMap reference, final UniMap in )
     {
         if( in == null ) return reference;
@@ -96,10 +156,10 @@ public class ContentUpdater
         return t;
     }
 
-    private final class UpdateHandler implements ResultSetHandler
+    private final class RefUpdateHandler
+        implements ResultSetHandler
     {
-
-        public UpdateHandler( HashMap<String, UniMap> hashes )
+        public RefUpdateHandler( HashMap<String, UniMap> hashes )
         {
             _hashes = hashes;
         }
@@ -120,10 +180,35 @@ public class ContentUpdater
             return null;
         }
 
-
         private HashMap<String, UniMap> _hashes;
     }
 
+    private final class OneUpdateHandler
+        implements ResultSetHandler
+    {
+        public OneUpdateHandler( UniMap content )
+        {
+            _content = content;
+        }
+
+        @Override
+        public Integer handle( ResultSet rs ) throws SQLException
+        {
+            while( rs.next() ) {
+                final UniMap in = mapper().fromResultSet( rs );
+
+                UniMap out = transform( _content, in );
+
+                if( mapper().update( rs, in, out ) ) {
+                    rs.updateRow();
+                }
+                return 1;
+            }
+            return 0;
+        }
+
+        private UniMap _content;
+    }
 
     private static final class UpdateQueryRunner extends QueryRunner
     {

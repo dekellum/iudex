@@ -37,34 +37,47 @@ public class ContentUpdaterTest
     extends Helper
 {
     @Test
-    public void test() throws SQLException, SyntaxException
+    public void testRefUpdate() throws SQLException, SyntaxException
     {
-        ContentMapper kmap =
-            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE, 
-                               PRIORITY, NEXT_VISIT_AFTER );
-                               
-        
         List<UniMap> in = new ArrayList<UniMap>();
-        UniMap first = content( "http://gravitext.com/blog/feed/atom.xml", 
-                                TYPE_FEED, 1f ); 
+        UniMap first = content( "http://gravitext.com/blog/feed/atom.xml",
+                                TYPE_FEED, 1f );
         in.add( first );
-        ContentUpdater updater = new ContentUpdater( dataSource(), kmap );
+        ContentUpdater updater = new ContentUpdater( dataSource(), _kmap );
         assertEquals( 1, updater.write( in ) );
 
         first.set( PRIORITY, 22.2f );
-        first.set( NEXT_VISIT_AFTER, 
+        first.set( NEXT_VISIT_AFTER,
                    new Date( System.currentTimeMillis() + 5000 ) );
-        
-        in.add( content( "http://gravitext.com/content", TYPE_PAGE, 1f ));
+
+        in.add( content( "http://gravitext.com/content", TYPE_PAGE, 22.1f ));
         updater.update( in );
 
-        ContentReader reader = new ContentReader( dataSource(), kmap );
-        List<UniMap> out = reader.select( "SELECT " + kmap.fieldNames() + 
-                           " FROM urls ORDER BY priority desc"  );
+        ContentReader reader = new ContentReader( dataSource(), _kmap );
+        List<UniMap> out = reader.select(
+            "SELECT " + _kmap.fieldNames() +
+            " FROM urls ORDER BY priority desc"  );
 
         assertEquals( in, out );
     }
-    public final Logger _log = LoggerFactory.getLogger( getClass() );
 
-    
+    @Test
+    public void testContentUpdate() throws SQLException, SyntaxException
+    {
+        ContentUpdater updater = new ContentUpdater( dataSource(), _kmap );
+        UniMap in = content( "http://gravitext.com/content2", TYPE_PAGE, 1f );
+        assertEquals( 1, updater.write( in ) );
+        in.set( PRIORITY, 11.3f );
+
+        updater.update( in );
+
+        ContentReader reader = new ContentReader( dataSource(), _kmap );
+        UniMap out = reader.read( in.get(  URL ) );
+        assertEquals( in, out );
+    }
+
+    private final Logger _log = LoggerFactory.getLogger( getClass() );
+    private final ContentMapper _kmap =
+        new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
+                           PRIORITY, NEXT_VISIT_AFTER );
 }

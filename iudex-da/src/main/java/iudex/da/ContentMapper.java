@@ -70,7 +70,7 @@ public final class ContentMapper
     {
         return _fields;
     }
-    
+
     public CharSequence fieldNames()
     {
         StringBuilder builder = new StringBuilder( 64 );
@@ -205,7 +205,20 @@ public final class ContentMapper
     private static boolean equalOrNull( Object first, Object second )
     {
         return ( ( first == second ) ||
-                 ( ( first != null ) && first.equals( second ) ) );
+                 ( ( first != null ) && equalsDateAware( first, second ) ) );
+    }
+
+    private static boolean equalsDateAware( Object first, Object second )
+    {
+        // Needed to avoid false negative from util.Date, sql.Date/Timestamp
+        // incompatibility.
+        if( first instanceof java.util.Date ) {
+            if( second instanceof java.util.Date ) {
+                return ( ((java.util.Date)first).getTime() ==
+                         ((java.util.Date)second).getTime() );
+            }
+        }
+        return first.equals( second );
     }
 
     private final List<Key> _fields;
