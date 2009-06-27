@@ -15,7 +15,7 @@
  */
 package iudex.core;
 
-import iudex.util.URL64;
+import com.gravitext.util.URL64;
 
 import java.io.IOException;
 import java.net.URI;
