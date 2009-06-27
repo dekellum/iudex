@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.gravitext.htmap.UniMap;
 
-public class TestHelper
+public class Helper
 {
     @BeforeClass
     public static void setup() throws SQLException
@@ -34,7 +34,6 @@ public class TestHelper
     {
     }
 
-    @Test
     public void testEmpty()
     {
         // make mvn/junit happy.

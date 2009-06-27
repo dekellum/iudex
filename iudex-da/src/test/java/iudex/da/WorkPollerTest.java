@@ -35,7 +35,7 @@ import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
 public class WorkPollerTest 
-    extends TestHelper
+    extends Helper
 {
     @Test
     public void testAutoCommit() throws SQLException

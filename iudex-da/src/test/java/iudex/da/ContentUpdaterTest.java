@@ -34,7 +34,7 @@ import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
 public class ContentUpdaterTest
-    extends TestHelper
+    extends Helper
 {
     @Test
     public void test() throws SQLException, SyntaxException
