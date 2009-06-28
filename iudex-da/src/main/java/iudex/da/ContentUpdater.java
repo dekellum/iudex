@@ -194,7 +194,7 @@ public class ContentUpdater
         @Override
         public Integer handle( ResultSet rs ) throws SQLException
         {
-            while( rs.next() ) {
+            if( rs.next() ) {
                 final UniMap in = mapper().fromResultSet( rs );
 
                 UniMap out = transform( _content, in );
@@ -203,6 +203,11 @@ public class ContentUpdater
                     rs.updateRow();
                 }
                 return 1;
+            }
+            if( rs.next() ) {
+                throw new IllegalStateException(
+                   "Multiple url rows returned for uhash=" +
+                   _content.get( ContentKeys.URL ).uhash() );
             }
             return 0;
         }

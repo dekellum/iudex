@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
 
@@ -76,7 +74,6 @@ public class ContentUpdaterTest
         assertEquals( in, out );
     }
 
-    private final Logger _log = LoggerFactory.getLogger( getClass() );
     private final ContentMapper _kmap =
         new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
                            PRIORITY, NEXT_VISIT_AFTER );

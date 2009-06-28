@@ -31,7 +31,6 @@ import javax.sql.DataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.gravitext.htmap.UniMap;
 
