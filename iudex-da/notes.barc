@@ -11,7 +11,7 @@ Simpler format:
 A Human/Machine readable header used for first record (offset zero)
 and each subsequent record:
 
-Magic  rlength tt meta reqt resp 
+Magic  rlength tt meta reqt resp
 BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
 CRLF
 
@@ -33,16 +33,15 @@ B. HTTP fetch
    * Display instead of write?
 
 barc [-z] [-t] url outfile
-   
+
 C. Copy/Concatenate record to file
    * Target compressed or not
 
-barc [-zt] infile outfile  
+barc [-zt] infile outfile
 
 (last file implicit write)
 
-
-D. Human input/output to/from BARC? 
+D. Human input/output to/from BARC?
 
 Format:
 
@@ -58,14 +57,14 @@ Request
 Response
 
 =BODY=
-<html> 
+<html>
 ...
 ...
 ...
 
 Other records?
 
-IDML style: DELETE 
+IDML style: DELETE
 
 @BARC1 D
 =META=
@@ -76,6 +75,3 @@ UHASH: 98ASDz798a782hasfd79jbz
 =META=
 URL: http://foobar/framis
 FROM: http://foobar
-
-
-

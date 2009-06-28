@@ -17,24 +17,23 @@
 # http://api.rubyonrails.org/classes/ActiveRecord/Migration.html
 # http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html
 
-
 # Base Urls table schema
 class BaseUrls < ActiveRecord::Migration
   def self.up
     create_table  'urls',  :id => false do |t|
 
-      t.text      'uhash', :null => false  
-      # 23 byte ASCII PRIMARY KEY SHA-1 hash fragment of URL 
+      t.text      'uhash', :null => false
+      # 23 byte ASCII PRIMARY KEY SHA-1 hash fragment of URL
       # (Note :limit not useful.)
-      
-      t.text      'url',   :null => false 
+
+      t.text      'url',   :null => false
       # Complete normalized url (exactly as used for uhash)
 
       t.text      'host',  :null => false
       # Normalized host portion of URL
 
-      t.text      'type',  :null => false  
-      # FEED, PAGE, ROBOTS, SITEMAP 
+      t.text      'type',  :null => false
+      # FEED, PAGE, ROBOTS, SITEMAP
       # Potentially speculative (i.e. "PAGE" before visited)
       # FIXME: Or REDIRECT here instead of status?
 
@@ -44,7 +43,7 @@ class BaseUrls < ActiveRecord::Migration
 
       t.timestamp 'last_visit'
       # Time of last visit (and thus last type,status,reason,etc.)
-      
+
       t.integer   'status'
       # HTTP status code or special (negative) status mapping
       # null     : Not yet visited
@@ -60,7 +59,7 @@ class BaseUrls < ActiveRecord::Migration
       t.boolean   'pass'
       # null     : Not yet processed (i.e. visit failed)
       # false    : Rejected by processing (for reason), DELETE required
-      # true     : Fully Processed 
+      # true     : Fully Processed
 
       t.text      'reason'
       # null      : None

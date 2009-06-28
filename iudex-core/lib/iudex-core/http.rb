@@ -22,5 +22,5 @@ module Iudex
     class HTTP
       #FIXME: move stuff from bin/http-record?
     end
-  end   
+  end
 end

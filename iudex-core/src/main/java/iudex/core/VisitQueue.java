@@ -22,9 +22,9 @@ import java.util.PriorityQueue;
 import com.gravitext.htmap.UniMap;
 
 /**
- * 
+ *
  * The readyHosts queue is prioritized by the top FetchOrder in each ready host.
- * The sleeping host queue is prioritize by least next visit. 
+ * The sleeping host queue is prioritize by least next visit.
  */
 public class VisitQueue
 {
@@ -34,17 +34,17 @@ public class VisitQueue
         String host = order.get( ContentKeys.URL ).host();
         HostQueue queue = _hosts.get( host );
         boolean isNew = false;
-        
+
         if( queue == null ) {
             queue = new HostQueue( host );
             isNew = true;
         }
-        
-        queue.add( order ); 
+
+        queue.add( order );
 
         if( isNew ) {
             _hosts.put( host, queue );
-            _readyHosts.add( queue );  
+            _readyHosts.add( queue );
         }
 
         ++_size;
@@ -55,13 +55,13 @@ public class VisitQueue
     {
         return _size;
     }
-    
+
     public synchronized HostQueue take() throws InterruptedException
     {
         HostQueue ready = null;
         while( ( ready = _readyHosts.poll() ) == null ) {
             final long now = System.currentTimeMillis();
-            
+
             HostQueue next = null;
             while( ( next = _sleepHosts.peek() ) != null ) {
                 if( ( now - next.nextVisit() ) >= 0 ) {
@@ -70,14 +70,14 @@ public class VisitQueue
                 else break;
             }
             if( _readyHosts.isEmpty() ) {
-                long delay = 
+                long delay =
                     ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
                 wait( delay );
             }
         }
         return ready;
     }
-    
+
     public synchronized void untake( HostQueue queue )
     {
         --_size;
@@ -89,17 +89,17 @@ public class VisitQueue
             notifyAll();
         }
     }
-    
-    private final Map<String,HostQueue> _hosts = 
-        new HashMap<String,HostQueue>(); 
-    
+
+    private final Map<String,HostQueue> _hosts =
+        new HashMap<String,HostQueue>();
+
     private int _size = 0;
 
-    private PriorityQueue<HostQueue> _readyHosts = 
+    private PriorityQueue<HostQueue> _readyHosts =
         new PriorityQueue<HostQueue>
             ( 1024, new HostQueue.TopOrderComparator() );
 
-    private PriorityQueue<HostQueue> _sleepHosts = 
+    private PriorityQueue<HostQueue> _sleepHosts =
         new PriorityQueue<HostQueue>
             ( 128, new HostQueue.NextVisitComparator() );
 

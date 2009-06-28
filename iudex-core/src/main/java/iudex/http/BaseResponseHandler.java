@@ -45,7 +45,6 @@ public class BaseResponseHandler implements ResponseHandler
         closeSession( session );
     }
 
-
     @Override
     public void handleException( HTTPSession session, Exception x )
     {
@@ -53,22 +52,22 @@ public class BaseResponseHandler implements ResponseHandler
         closeSession( session );
     }
 
-    protected void handleSuccessUnsafe( HTTPSession session ) 
+    protected void handleSuccessUnsafe( HTTPSession session )
         throws IOException
     {
     }
-    
+
     protected void closeSession( HTTPSession session )
     {
         try {
             session.close();
-            //FIXME: Catch in close() instead?        
+            //FIXME: Catch in close() instead?
         }
         catch( IOException x ) {
             _log.warn( "On session close: ", x );
         }
     }
 
-    private static final Logger _log = 
+    private static final Logger _log =
          LoggerFactory.getLogger( BaseResponseHandler.class );
 }

@@ -33,7 +33,7 @@ public final class LogWriter
     {
         _log = LoggerFactory.getLogger( name );
     }
-    
+
     /**
      * Set a pattern to use for removing text from each write call.
      */
@@ -41,7 +41,7 @@ public final class LogWriter
     {
         _removePattern = pattern;
     }
-    
+
     @Override
     public void close()
     {
@@ -58,7 +58,7 @@ public final class LogWriter
     public void write( final char[] buffer, final int offset, int length )
     {
         if( ! _log.isDebugEnabled() ) return;
-        
+
         String msg = null;
         if( _removePattern != null ) {
             CharBuffer b = CharBuffer.wrap( buffer, offset, length );
@@ -68,11 +68,11 @@ public final class LogWriter
         else {
             msg = String.valueOf( buffer, offset, length );
         }
-        
+
         if( msg.length() > 0 ) _log.debug( msg );
     }
-    
+
     private final Logger _log;
     private Pattern _removePattern = null;
-    
+
 }

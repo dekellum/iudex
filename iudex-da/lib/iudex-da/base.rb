@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-
 module Iudex
   module DA
     VERSION = '1.0'

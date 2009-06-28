@@ -7,7 +7,6 @@ Sorting amongst feeds:
 New domain-->robots.txt URL
 (any crawler, us)
 
-
 IN Memory
 
 MaP host -> (prority) queue
@@ -18,7 +17,6 @@ Queues sorted by intra-domain priority
 Constrained by:
 * Total count of all URLs across all queues and domains
 
-
 Scenario 1: Read FEED
 
 fetch (conditional)
@@ -27,14 +25,11 @@ fetch (conditional)
 parse feed xml
 n: URLs, title (max), pubdate
 
-
-
 == Selecting work, limiting from particular host:
-
 
 crawler_test=# \d urls
     Table "public.urls"
- Column | Type | Modifiers 
+ Column | Type | Modifiers
 --------+------+-----------
  gcid   | text | not null
  url    | text | not null
@@ -42,7 +37,7 @@ Indexes:
     "urls_pkey" PRIMARY KEY, btree (gcid)
 
 crawler_test=# select * from test;
- key | value 
+ key | value
 -----+-------
  a   | v1
  b   | v1
@@ -56,7 +51,7 @@ Limit by some number of a particular value:
 select * from test
 where key IN
 (select key from test b where b.value = test.value limit 2);
- key | value 
+ key | value
 -----+-------
  a   | v1
  b   | v1
@@ -90,7 +85,7 @@ http://groups.google.com/group/pgsql.interfaces.jdbc/browse_thread/thread/f4c943
 
 Useful for grouping URLs into the highest level registered domain suffix.
 
-See: 
+See:
 
 http://publicsuffix.org/list/
 
@@ -100,7 +95,6 @@ http://sourceforge.net/projects/publicsuffix/
 
 java.net.IDN (for unicode to ascii domain conversion)
 http://java.sun.com/javase/6/docs/api/java/net/IDN.html
-
 
 == URL normalization
 
@@ -112,7 +106,6 @@ http://java.sun.com/javase/6/docs/api/java/net/IDN.html
 * normalize relative paths foo/bar/../ -> foo/
 * Strip any "#anchor"
 
-
 == Hetoregenous-Type-Safe-Map usage
 
 feed parse --> iterator over entries
@@ -120,7 +113,6 @@ feed parse --> iterator over entries
 /w each entry is a Item
 
 crawl pare->processes page as item....
-
 
 == TODO ==
 
@@ -132,7 +124,7 @@ iudex-core
   (content)
   Work Queue (-RDBMS)
    Extraction (abstraction)
-  
+
 iudex-da
 
 iudex-parsers (iudex-core for now)
@@ -142,7 +134,6 @@ iudex-parsers (iudex-core for now)
   sitemap
 
 iudex-httpclient3 (iudex-core for nw)
-
 
 == HTTP write through file approach ==
 
@@ -170,16 +161,15 @@ Read in to memory <--WINNER
 (process)
 Write compressed if keeping
 
-PROS 
+PROS
 
 Faster if memory not an issue
 Simpler to implement
 Avoid compression cost on HTTP fetch
 
-
 BARCDirectory (file pool):
 
-v1: 
+v1:
 BARC File ID scheme: 000000.barc ... 012345.barc ... 999999.barc
 
 Simplified with one open barc file
@@ -195,11 +185,9 @@ http://jdbc.postgresql.org/documentation/83/connect.html#connection-parameters
 
 loglevel = int
 
-    Set the amount of logging information printed to the DriverManager's current value for LogStream or LogWriter. It currently supports values of org.postgresql.Driver.DEBUG (2) and org.postgresql.Driver.INFO (1). INFO will log very little information while DEBUG will produce significant detail. This property is only really useful if you are a developer or are having problems with the driver. 
-
+    Set the amount of logging information printed to the DriverManager's current value for LogStream or LogWriter. It currently supports values of org.postgresql.Driver.DEBUG (2) and org.postgresql.Driver.INFO (1). INFO will log very little information while DEBUG will produce significant detail. This property is only really useful if you are a developer or are having problems with the driver.
 
 http://java.sun.com/javase/6/docs/api/java/sql/DriverManager.html#getLogWriter()
-
 
 ---------
 
@@ -216,8 +204,6 @@ Workaround: Stay on 0.9 for now.
 Conditional insert/update in postgres:
 
 http://archives.postgresql.org//pgsql-sql/2007-04/msg00167.php
-
- 
 
 === 301 vs 302 redirect handling: ===
 
@@ -259,7 +245,6 @@ Not too bad.
 
 IMPLEMENTATION:
 (1) On poll, don't include prior REDIRECTs
-
 
 c. As "In Theory" full solution (possible /w yahoo style cross-domain as 301)
 

@@ -43,29 +43,29 @@ public class HTTPClient3 implements HTTPClient
     {
         return new Session();
     }
-    
+
     @Override
     public void request( HTTPSession session, ResponseHandler handler )
     {
         ((Session) session).execute( handler );
     }
-    
-    private class Session extends HTTPSession 
+
+    private class Session extends HTTPSession
     {
         public List<Header> requestHeaders()
         {
-            org.apache.commons.httpclient.Header[] inHeaders = 
+            org.apache.commons.httpclient.Header[] inHeaders =
                 _httpMethod.getRequestHeaders();
-            List<Header> outHeaders = 
+            List<Header> outHeaders =
                 new ArrayList<Header>( inHeaders.length + 1 );
-            
-            outHeaders.add( new Header( "Request-Line", 
+
+            outHeaders.add( new Header( "Request-Line",
                                         reconstructRequestLine() ) );
-            
+
             copyHeaders( inHeaders, outHeaders );
-            
+
             return outHeaders;
-            
+
             //FIXME: Adapter? Lazy Cache?
         }
 
@@ -75,12 +75,12 @@ public class HTTPClient3 implements HTTPClient
             return _httpMethod.getURI();
         }
         **/
-        
+
         public int responseCode()
         {
             return _httpMethod.getStatusCode();
         }
-        
+
         public String statusText()
         {
             return _httpMethod.getStatusText();
@@ -88,15 +88,15 @@ public class HTTPClient3 implements HTTPClient
 
         public List<Header> responseHeaders()
         {
-            org.apache.commons.httpclient.Header[] inHeaders = 
+            org.apache.commons.httpclient.Header[] inHeaders =
                 _httpMethod.getResponseHeaders();
-            
-            List<Header> outHeaders = 
+
+            List<Header> outHeaders =
                 new ArrayList<Header>( inHeaders.length + 1 );
 
-            outHeaders.add( new Header( "Status-Line", 
+            outHeaders.add( new Header( "Status-Line",
                                         _httpMethod.getStatusLine() ) );
-            
+
             copyHeaders( inHeaders, outHeaders );
 
             return outHeaders;
@@ -107,25 +107,23 @@ public class HTTPClient3 implements HTTPClient
         {
             return _httpMethod.getResponseBodyAsStream();
         }
-       
-        
+
         public void abort() throws IOException
         {
             _httpMethod.abort();
             close(); //FIXME: Good idea to also close?
         }
-        
+
         public void close() throws IOException
         {
             super.close(); //FIXME: Or abstract?
-            
+
             if( _httpMethod != null ) {
                 _httpMethod.releaseConnection();
                 _httpMethod = null;
             }
         }
 
-        
         void execute( ResponseHandler handler )
         {
             try {
@@ -136,7 +134,7 @@ public class HTTPClient3 implements HTTPClient
                     _httpMethod = new HeadMethod( url() );
                 }
                 //FIXME: Set Headers from session?
-                
+
                 int code = _client.executeMethod( _httpMethod );
                 if( ( code >= 200 ) && ( code < 300 ) ) {
                     handler.handleSuccess( this );
@@ -149,7 +147,7 @@ public class HTTPClient3 implements HTTPClient
                 handler.handleException( this, e );
             }
         }
-        
+
         private CharSequence reconstructRequestLine()
         {
             StringBuilder reqLine = new StringBuilder( 128 );
@@ -172,13 +170,12 @@ public class HTTPClient3 implements HTTPClient
             }
             return outHeaders;
         }
-        
+
         HttpMethod _httpMethod;
     }
 
-                                              
     // FIXME: Conditional GET (If-Modified-Since, ETags?)
-    // FIXME: Record all redirects 
+    // FIXME: Record all redirects
 
     private HttpClient _client;
 }

@@ -26,13 +26,13 @@ import com.gravitext.htmap.UniMap;
  */
 public interface SiteMapParser
 {
-    
+
     public Iterator<UniMap> parse( UniMap sitemap ) throws ParseException;
-    
+
     /*
      * Sitemap input: CONTENT_SOURCE, URL, Content-Type, etc.
      * (either an index or a sitemap)
-     * Returns list of SITEMAP(or FEED) or individual PAGE references, each 
+     * Returns list of SITEMAP(or FEED) or individual PAGE references, each
      * with:
      * (URL, LAST_MODIFIED_DATE (?), CHANGE_FREQUENCY, SITEMAP_PRIORITY)
      */

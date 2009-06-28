@@ -24,14 +24,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Manages concurrent reads and exclusive write sessions to a directory of 
- * BARC files.   
+ * Manages concurrent reads and exclusive write sessions to a directory of
+ * BARC files.
  */
 public final class BARCDirectory implements Closeable
 {
     /**
-     * Scan's path for existing BARCFiles ("012345.barc") or creates a new 
-     * directory at this path. 
+     * Scan's path for existing BARCFiles ("012345.barc") or creates a new
+     * directory at this path.
      */
     public BARCDirectory( File path ) throws IOException
     {
@@ -45,13 +45,13 @@ public final class BARCDirectory implements Closeable
         }
     }
 
-    public BARCFile.Record read( int fileNumber, long offset ) 
+    public BARCFile.Record read( int fileNumber, long offset )
         throws IOException
     {
         BARCFile barc = openBarc( fileNumber, false );
         return barc.read( offset );
     }
-    
+
     /**
      *  Set target length after which new BARCFile will be opened for write.
      *  Default: 1GB
@@ -61,33 +61,32 @@ public final class BARCDirectory implements Closeable
         _targetBARCLength = length;
     }
 
-    public synchronized WriteSession startWriteSession() 
+    public synchronized WriteSession startWriteSession()
         throws InterruptedException, IOException
     {
         // Wait for no current session.
         // FIXME: Optimize by pooling a controlled number of simultaneous write
         // files instead of just one.
         while( _currentSession != null ) wait();
-        
+
         // If no _writeFile yet then try to use the last file in the directory
         if( ( _writeFile == null ) && ( _maxFnum >= 0 ) ) {
             _writeFile = openBarc( _maxFnum, false );
         }
-        
+
         // If _writeFile is too large then stop using it.
         if( ( _writeFile != null ) &&
             ( _writeFile.size() >= _targetBARCLength ) ) {
             _writeFile = null;
         }
-        
+
         // If no _writeFile, then create a new one.
         if( _writeFile == null ) _writeFile = openBarc( _maxFnum + 1, true );
 
         _currentSession = new WriteSession( _writeFile, _maxFnum );
         return _currentSession;
     }
-    
-    
+
     @Override
     public synchronized void close() throws IOException
     {
@@ -101,7 +100,7 @@ public final class BARCDirectory implements Closeable
 
     /**
      * An exclusive write session to a single BARC file.  Multiple append()'s
-     * may be called in a single session. Insure session.close() is called to 
+     * may be called in a single session. Insure session.close() is called to
      * allow the next thread to write.
      */
     public final class WriteSession implements Closeable
@@ -130,7 +129,7 @@ public final class BARCDirectory implements Closeable
                 _currentRecord.close();
                 _currentRecord = null;
             }
-            
+
             _barc = null;
 
             closeSession();
@@ -146,8 +145,8 @@ public final class BARCDirectory implements Closeable
         private final int _fnum;
         private Record _currentRecord = null;
     }
-    
-    private synchronized BARCFile openBarc( int fnum, boolean create ) 
+
+    private synchronized BARCFile openBarc( int fnum, boolean create )
         throws IOException
     {
         BARCFile barc = null;
@@ -170,13 +169,13 @@ public final class BARCDirectory implements Closeable
     private void scanBARCFiles()
     {
         for( String fname : _path.list() ) {
-            try { 
+            try {
                 if( fname.length() == "012345.barc".length() ) {
                     int fnum = Integer.parseInt( fname.substring( 0, 6 ) );
                     //  FIXME: Save map?
                     _maxFnum = Math.max( _maxFnum, fnum );
                 }
-            }                
+            }
             catch( NumberFormatException x ) {}  // skip to next file
         }
     }
@@ -189,7 +188,7 @@ public final class BARCDirectory implements Closeable
 
     private final File _path;
 
-    private long _targetBARCLength = 1L * ( 1024L ^ 3 ); //1GB    
+    private long _targetBARCLength = 1L * ( 1024L ^ 3 ); //1GB
     private BARCFile _writeFile = null;
     private WriteSession _currentSession = null;
 

@@ -49,7 +49,6 @@ END
   end
 end
 
-
 file ASSEMBLY => [ 'pom.xml', 'assembly.xml' ] do
   sh( 'mvn package' )
 end

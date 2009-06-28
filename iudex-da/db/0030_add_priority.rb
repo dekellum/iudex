@@ -20,7 +20,7 @@ class AddPriority < ActiveRecord::Migration
     add_column    'urls',   'priority',  :float, :null => false, :default => 0.0
     # Prioritization of next visit, range -INF,+INF
 
-    add_index     'urls', [ 'priority' ] 
+    add_index     'urls', [ 'priority' ]
     # FIXME: Consider partial index, e.g. WHERE next_visit_after IS NOT NULL?
     # FIXME: Consider a combined index 'host', 'priority'?
   end

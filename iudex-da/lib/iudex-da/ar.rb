@@ -15,12 +15,12 @@
 #++
 
 require 'rubygems'
-require 'slf4j' 
+require 'slf4j'
 require 'iudex-da'
 require 'activerecord'
 
 module Iudex::DA
-    
+
   LOG = SLF4J[ "Iudex.DA.ActiveRecord" ]
   ActiveRecord::Base.logger = LOG
 
@@ -38,5 +38,5 @@ module Iudex::DA
     set_primary_key :uhash
     set_inheritance_column :object_type # since "type" used already
   end
-  
+
 end

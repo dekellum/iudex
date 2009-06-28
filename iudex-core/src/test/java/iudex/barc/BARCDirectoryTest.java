@@ -45,31 +45,30 @@ public class BARCDirectoryTest
 
         Record rec = session.append();
         long offset = rec.offset();
-        rec.writeMetaHeaders( Arrays.asList( 
+        rec.writeMetaHeaders( Arrays.asList(
             new Header( "META-1", "meta-value-1" ) ) );
         rec.close();
-        
+
         session.close();
-        
+
         close();
         open();
-        
+
         rec = _barcs.read( fnum, offset );
         List<Header> headers = rec.metaHeaders();
         assertEquals( 1, headers.size() );
         assertEquals( "META-1", headers.get( 0 ).name().toString() );
     }
-    
+
     @Test
     public void testConcurrentWrite() throws IOException
     {
         _barcs.setTargetBARCLength( 200 ); //~3 records/file
-        
+
         long count = TestExecutor.run( new ConcurrentWriter(), 200, 3 );
         _log.debug( "Completed threaded run with {} iterations.", count );
     }
- 
-    
+
     @Before
     public void start() throws IOException
     {
@@ -78,10 +77,10 @@ public class BARCDirectoryTest
             for( File bfile : bfiles ) bfile.delete();
         }
         BARC_DIR.delete();
-        
+
         open();
     }
-    
+
     @After
     public void close() throws IOException
     {
@@ -94,23 +93,22 @@ public class BARCDirectoryTest
     {
         _barcs = new BARCDirectory( BARC_DIR );
     }
-    
-    
-    private final class ConcurrentWriter extends TestFactoryBase 
+
+    private final class ConcurrentWriter extends TestFactoryBase
     {
         @Override
         public TestRunnable createTestRunnable( final int seed )
         {
             return new TestRunnable() {
-                public int runIteration( int run ) 
+                public int runIteration( int run )
                     throws IOException, InterruptedException
                 {
                     WriteSession session = _barcs.startWriteSession();
                     Record rec = session.append();
-                    rec.writeMetaHeaders( Arrays.asList( 
+                    rec.writeMetaHeaders( Arrays.asList(
                         new Header( "File-Number", session.fileNumber() ),
                         new Header( "Offset", rec.offset() ) ) );
-                    
+
                     rec.close();
                     session.close();
                     return 1;
@@ -118,7 +116,7 @@ public class BARCDirectoryTest
             };
         }
     }
-    
+
     private BARCDirectory _barcs;
     private static final File BARC_DIR = new File( "./target/test_barc_dir" );
     private Logger _log = LoggerFactory.getLogger( getClass() );

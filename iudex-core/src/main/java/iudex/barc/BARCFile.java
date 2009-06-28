@@ -39,17 +39,17 @@ import com.gravitext.util.ResizableCharBuffer;
 /**
  * Basic ARChive File Reader/Writer. Supports record types, up to three
  * HTTP-like key value header blocks ("meta", "request", and "response" ), and
- * optional GZIP compression. 
+ * optional GZIP compression.
  *
  * A BARCFile supports concurrent random access read by offset and concurrent
  * sequential read sessions via multiple {@link RecordReader} instances in
  * multiple threads. Writes are directly appended on to the end of a BARCFile by
  * stream and thus only one thread can write at a time. This must be externally
- * controlled. However, writes are atomically advertised on write record close, 
+ * controlled. However, writes are atomically advertised on write record close,
  * so reading threads need not be blocked during a write operation. An external
- * process may see an empty or partial BARC record at the end of a 
+ * process may see an empty or partial BARC record at the end of a
  * BARCFile while a record append operation is in progress.
- * 
+ *
  * @see http://upload.wikimedia.org/wikipedia/commons/a/ae/BARC-LARC-XV-2.jpeg
  */
 public final class BARCFile implements Closeable
@@ -72,7 +72,7 @@ public final class BARCFile implements Closeable
         _rafile.close();
     }
 
-    public Record append() throws IOException 
+    public Record append() throws IOException
     {
         if( _currentRecord != null ) _currentRecord.close();
 
@@ -91,23 +91,23 @@ public final class BARCFile implements Closeable
     {
         return new Record( offset );
     }
-    
+
     /**
-     * Returns a new and independent RecordReader over each Record in this 
+     * Returns a new and independent RecordReader over each Record in this
      * BARC file.
      */
     public RecordReader reader()
     {
         return new RecordReader();
     }
-    
+
     public long size()
     {
         return _end.get();
     }
-    
+
     /**
-     * Provides sequential access to each record in a BARC File.  
+     * Provides sequential access to each record in a BARC File.
      */
     public final class RecordReader
     {
@@ -118,12 +118,12 @@ public final class BARCFile implements Closeable
         Record next() throws IOException
         {
             Record record = null; //null as in end
-            
+
             if( _offset >= _rEnd ) {
                 _rEnd = size();
             }
-            
-            //FIXME: Skip empty records here? 
+
+            //FIXME: Skip empty records here?
             //(And/or: Don't update offset of empty close?)
             if( _offset < _rEnd ) {
                 record = BARCFile.this.read( _offset );
@@ -135,40 +135,39 @@ public final class BARCFile implements Closeable
         private long _rEnd = 0;
         private long _offset = 0;
     }
-    
+
     public final class Record implements Closeable
     {
         public long offset()
         {
             return _offset;
         }
-        
+
         public int length()
         {
             return _length;
         }
-        
+
         public boolean isCompressed()
         {
             return _compressed;
         }
-        
+
         public void setCompressed( boolean doCompress )
         {
-            if( ( _out != null ) || 
+            if( ( _out != null ) ||
                 ( _writeState == WriteState.CLOSED ) ) {
                 throw new IllegalStateException
                 ( "Invalid setCompressed() after first write or on read." );
             }
             _compressed = doCompress;
         }
-        
+
         public char type()
         {
             return _type;
         }
-        
-        
+
         public void setType( char type )
         {
             if( _writeState == WriteState.CLOSED ) {
@@ -177,31 +176,29 @@ public final class BARCFile implements Closeable
             }
             _type = type;
         }
-        
-        
-        public void writeMetaHeaders( Iterable<Header> headers ) 
+
+        public void writeMetaHeaders( Iterable<Header> headers )
             throws IOException
         {
             checkState( WriteState.META_HEADER );
             _metaHeaderLength = writeHeaderBlock( headers );
         }
-        
-        public void writeRequestHeaders( Iterable<Header> headers ) 
+
+        public void writeRequestHeaders( Iterable<Header> headers )
             throws IOException
         {
             checkState( WriteState.RQST_HEADER );
             _rqstHeaderLength = writeHeaderBlock( headers );
         }
- 
-        public void writeResponseHeaders( Iterable<Header> headers ) 
+
+        public void writeResponseHeaders( Iterable<Header> headers )
             throws IOException
         {
             checkState( WriteState.RESP_HEADER );
             _respHeaderLength = writeHeaderBlock( headers );
         }
-        
 
-        public List<Header> metaHeaders() throws IOException  
+        public List<Header> metaHeaders() throws IOException
         {
             if( _metaHeaders == null ) {
                 openInputStream();
@@ -210,8 +207,8 @@ public final class BARCFile implements Closeable
             }
             return _metaHeaders;
         }
-        
-        public List<Header> requestHeaders() throws IOException  
+
+        public List<Header> requestHeaders() throws IOException
         {
             if( _rqstHeaders == null ) {
                 openInputStream();
@@ -221,7 +218,7 @@ public final class BARCFile implements Closeable
             return _rqstHeaders;
         }
 
-        public List<Header> responseHeaders() throws IOException  
+        public List<Header> responseHeaders() throws IOException
         {
             if( _respHeaders == null ) {
                 openInputStream();
@@ -230,13 +227,13 @@ public final class BARCFile implements Closeable
             }
             return _respHeaders;
         }
-        
+
         public InputStream bodyInputStream() throws IOException
         {
             openInputStream(); // if not already
             return _in;
         }
-        
+
         public OutputStream bodyOutputStream() throws IOException
         {
             checkState( WriteState.BODY );
@@ -246,17 +243,17 @@ public final class BARCFile implements Closeable
 
         /**
          * Copy from other record (open for read) to this record (open for
-         * write). This records isCompressed flag is used for the write 
-         * (instead of being copied). 
+         * write). This records isCompressed flag is used for the write
+         * (instead of being copied).
          */
         public void copyFrom( Record other ) throws IOException
         {
             setType( other.type() );
             openOutputStream();
-            
+
             checkState( WriteState.META_HEADER );
             other.openInputStream();
-            
+
             _metaHeaderLength = writeHeaderBlock( other._metaHeadBytes );
             checkState( WriteState.RQST_HEADER );
             _rqstHeaderLength = writeHeaderBlock( other._rqstHeadBytes );
@@ -265,21 +262,21 @@ public final class BARCFile implements Closeable
 
             copy( other.bodyInputStream(), bodyOutputStream() );
             close();
-            
+
             //FIXME: Optimize to single buffer copy in case where other and this
             //have same compressed setting.
         }
-        
+
         public void close() throws IOException
         {
             if( _out != null ) _out.close();
             else               closeOutput();
-            
+
             if( _in != null ) _in.close();
         }
 
         /**
-         * Open for write. 
+         * Open for write.
          */
         Record() throws IOException
         {
@@ -287,7 +284,7 @@ public final class BARCFile implements Closeable
             writeBARCHeader(); // Initial copy
             _channel.position( _offset + HEADER_LENGTH );
         }
-        
+
         /**
          * Open for read.
          */
@@ -308,7 +305,7 @@ public final class BARCFile implements Closeable
             _rqstHeadBytes = null;
             _respHeadBytes = null;
         }
-        
+
         private void closeOutput() throws IOException
         {
             if( _writeState != WriteState.CLOSED  ) {
@@ -326,9 +323,8 @@ public final class BARCFile implements Closeable
                 _end.set( end );
             }
         }
- 
-        
-        private void checkState( WriteState nextState ) 
+
+        private void checkState( WriteState nextState )
         {
             if( _writeState.ordinal() >= nextState.ordinal() ) {
                 throw new IllegalStateException
@@ -336,21 +332,21 @@ public final class BARCFile implements Closeable
             }
             _writeState = nextState;
         }
-        
+
         private void readBARCHeader() throws IOException
         {
-            
+
             ByteBuffer bbuff = ByteBuffer.allocate( HEADER_LENGTH );
             if( _channel.read( bbuff, _offset ) != HEADER_LENGTH ) {
-                throw new IOException( "Incomplete header read at offset: " + 
+                throw new IOException( "Incomplete header read at offset: " +
                                        _offset );
             }
             bbuff.flip();
-            
+
             CharBuffer cbuff = ASCII.decode( bbuff );
-            
+
             if( ! "BARC1 ".contentEquals( cbuff.subSequence( 0, 6 ) ) ) {
-                throw new IOException( "Not a header at read offset:" + 
+                throw new IOException( "Not a header at read offset:" +
                                        _offset );
                 //FIXME: Custom IOException derivative?
             }
@@ -366,15 +362,14 @@ public final class BARCFile implements Closeable
             cbuff.get(); // skip space
             _respHeaderLength = getHex( cbuff, 4 );
         }
-        
-        
+
         private void writeBARCHeader() throws IOException
         {
             CharBuffer cbuff = CharBuffer.allocate( HEADER_LENGTH );
             cbuff.put( "BARC1 " );
             putHex( _length, 8, cbuff );
             cbuff.put( ' ' );
-            cbuff.put( _type ).put( _compressed ? 'C' : 'P' ); 
+            cbuff.put( _type ).put( _compressed ? 'C' : 'P' );
             cbuff.put( ' ' );
             putHex( _metaHeaderLength, 4, cbuff );
             cbuff.put( ' ' );
@@ -386,7 +381,7 @@ public final class BARCFile implements Closeable
 
             _channel.write( ASCII.encode( cbuff ),  _offset );
         }
-        
+
         private ByteBuffer readHeaderBlock( int headerLength )
             throws IOException
         {
@@ -403,7 +398,7 @@ public final class BARCFile implements Closeable
             return hbuff;
         }
 
-        private List<Header> parseHeaderBlock( ByteBuffer buffer ) 
+        private List<Header> parseHeaderBlock( ByteBuffer buffer )
             throws IOException
         {
             CharBuffer cbuff = UTF8.decode( buffer );
@@ -411,7 +406,7 @@ public final class BARCFile implements Closeable
             int i = cbuff.position();
             final int end = cbuff.limit() - 2; //-2 for end CRLF
             int last = i;
-            CharSequence name = null;  
+            CharSequence name = null;
             while( i < end ) {
                 final char c = cbuff.get( i );
                 if( name == null ) {
@@ -422,27 +417,27 @@ public final class BARCFile implements Closeable
                     else ++i;
                 }
                 else if( c == '\r' ) {
-                    headers.add( 
+                    headers.add(
                         new Header( name, cbuff.subSequence( last, i ) ) );
                     name = null;
-                     
+
                     if ( cbuff.get( ++i ) != '\n' ) {
-                        throw new IOException( 
+                        throw new IOException(
                             "Invalid header content: \\r, !=\\n" );
                     }
                     last = ++i;
                 }
                 else ++i;
             }
-            
+
             return headers;
         }
-        
-        private int writeHeaderBlock( Iterable<Header> headers ) 
+
+        private int writeHeaderBlock( Iterable<Header> headers )
             throws IOException
         {
             ResizableCharBuffer cbuff = new ResizableCharBuffer( 256 );
-            
+
             for( Header header : headers ) {
                 putObj( header.name(), cbuff );
                 cbuff.put( ": " );
@@ -450,40 +445,40 @@ public final class BARCFile implements Closeable
                 cbuff.put( CRLF );
             }
             cbuff.put( CRLF );
-            
+
             ByteBuffer bbuff = UTF8.encode( cbuff.flipAsCharBuffer() );
 
             int length = bbuff.remaining();
-            
+
             openOutputStream(); // if not already
-                        
-            _out.write( bbuff.array(), 
-                        bbuff.arrayOffset() + bbuff.position(), 
+
+            _out.write( bbuff.array(),
+                        bbuff.arrayOffset() + bbuff.position(),
                         bbuff.remaining() );
-            
+
             return length;
         }
 
-        private int writeHeaderBlock( ByteBuffer block ) 
+        private int writeHeaderBlock( ByteBuffer block )
             throws IOException
         {
            int length = block.remaining();
            openOutputStream(); // if not already
-           
-           _out.write( block.array(), 
-                       block.arrayOffset() + block.position(), 
+
+           _out.write( block.array(),
+                       block.arrayOffset() + block.position(),
                        block.remaining() );
-           
+
            return length;
         }
- 
+
         private void openInputStream() throws IOException
         {
             if( _in == null ) {
-                _in = new RecordInputStream( _offset + HEADER_LENGTH, 
-                                             _length - 2 ); //-2 for end CRLF 
+                _in = new RecordInputStream( _offset + HEADER_LENGTH,
+                                             _length - 2 ); //-2 for end CRLF
                 if( _compressed ) _in = new GZIPInputStream( _in, BUFFER_SIZE );
-                
+
                 _metaHeadBytes = readHeaderBlock( _metaHeaderLength );
                 _rqstHeadBytes = readHeaderBlock( _rqstHeaderLength );
                 _respHeadBytes = readHeaderBlock( _respHeaderLength );
@@ -500,7 +495,7 @@ public final class BARCFile implements Closeable
                 }
             }
         }
-        
+
         private final class RecordOutputStream extends OutputStream
         {
             @Override
@@ -510,7 +505,7 @@ public final class BARCFile implements Closeable
             }
 
             @Override
-            public void write( byte[] bytes, int offset, int length ) 
+            public void write( byte[] bytes, int offset, int length )
                 throws IOException
             {
                 _channel.write( ByteBuffer.wrap( bytes, offset, length ) );
@@ -522,7 +517,7 @@ public final class BARCFile implements Closeable
                 _channel.write( ByteBuffer.wrap( new byte [] { (byte) b } ) );
             }
         }
-        
+
         private final class RecordInputStream extends InputStream
         {
             RecordInputStream( long offset, int length )
@@ -530,15 +525,15 @@ public final class BARCFile implements Closeable
                 _offset = offset;
                 _end = _offset + length;
             }
-            
+
             @Override
             public void close() throws IOException
             {
                 Record.this.closeInput();
             }
-            
+
             @Override
-            public int read( byte[] b, int offset, int length ) 
+            public int read( byte[] b, int offset, int length )
                 throws IOException
             {
                 if( ( _offset + length ) > _end ) {
@@ -569,18 +564,18 @@ public final class BARCFile implements Closeable
             private long _offset;
             private final long _end;
         }
-        
-        private final long _offset;        
+
+        private final long _offset;
         private int _length = 0;
         private char _type = 'H';
         private boolean _compressed = false;
         private int _metaHeaderLength = 0;
         private int _rqstHeaderLength = 0;
         private int _respHeaderLength = 0;
-        
+
         private OutputStream _out = null;
         private WriteState _writeState = WriteState.BEGIN;
-        
+
         private InputStream _in = null;
         private ByteBuffer _metaHeadBytes = null;
         private ByteBuffer _rqstHeadBytes = null;
@@ -589,20 +584,20 @@ public final class BARCFile implements Closeable
         private List<Header> _rqstHeaders = null;
         private List<Header> _respHeaders = null;
     }
-    
+
     static final int HEADER_LENGTH = 36;
-    
+
     private static final Charset ASCII = Charset.forName( "US-ASCII" );
     private static final Charset UTF8 = Charset.forName( "UTF-8" );
     private static final List<Header> EMPTY_HEADERS = Collections.emptyList();
-    
+
     private static final String CRLF = "\r\n";
 
-    private static final ByteBuffer CRLF_BYTES = 
+    private static final ByteBuffer CRLF_BYTES =
         ASCII.encode( CharBuffer.wrap( CRLF ) );
-    
+
     private static final int BUFFER_SIZE = 2048;
-  
+
     private static enum WriteState {
         BEGIN,
         META_HEADER,
@@ -611,13 +606,13 @@ public final class BARCFile implements Closeable
         BODY,
         CLOSED
     };
-        
+
     private Record _currentRecord;
     private final RandomAccessFile _rafile;
     private final FileChannel _channel;
     private final AtomicLong _end;
-    
-    static int copy( InputStream in, OutputStream out ) 
+
+    static int copy( InputStream in, OutputStream out )
         throws IOException
     {
         int total = 0;
@@ -633,7 +628,7 @@ public final class BARCFile implements Closeable
         }
         return total;
     }
-     
+
     static void putObj( Object it, ResizableCharBuffer b )
     {
         if( it instanceof CharSequence ) b.put( (CharSequence ) it );
@@ -652,8 +647,8 @@ public final class BARCFile implements Closeable
             ++i;
         }
     }
-    
-    static int getHex( CharBuffer cbuff, int digits ) 
+
+    static int getHex( CharBuffer cbuff, int digits )
         throws IOException
     {
         int value = 0;
@@ -666,11 +661,11 @@ public final class BARCFile implements Closeable
             else if( ( d >= 'a' ) && ( d <= 'f' ) ) {
                 value += 10 + ( d - 'a' );
             }
-            else throw new IOException( "Illegal hex digit: [" + d + "]." ); 
+            else throw new IOException( "Illegal hex digit: [" + d + "]." );
         }
         return value;
     }
-    
+
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
 }

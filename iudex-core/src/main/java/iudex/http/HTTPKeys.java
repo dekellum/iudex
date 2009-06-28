@@ -24,9 +24,9 @@ import iudex.core.ContentKeys;
 
 public class HTTPKeys extends ContentKeys
 {
-    public static final Key<List<Header>> REQUEST_HEADERS = 
+    public static final Key<List<Header>> REQUEST_HEADERS =
         createListKey( "request_headers" );
 
-    public static final Key<List<Header>> RESPONSE_HEADERS = 
+    public static final Key<List<Header>> RESPONSE_HEADERS =
         createListKey( "response_headers" );
 }

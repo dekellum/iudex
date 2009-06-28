@@ -49,13 +49,13 @@ public class DataSourceFactory
         params.put( "loglevel", "2" );
         return factory.create( params );
     }
-    
+
     public DataSource create( Map<String,String> params )
     {
         String className = params.remove( "dsf.driver.class" );
         if( className != null ) {
             try {
-               Class<?> driverClass = Class.forName( className ); 
+               Class<?> driverClass = Class.forName( className );
                assert( driverClass != null );
             }
             catch( ClassNotFoundException x ) {
@@ -63,40 +63,39 @@ public class DataSourceFactory
             }
         }
         setLogWriter();
-        
+
         String uri = params.remove( "dsf.uri" );
-        
+
         Properties props = new Properties();
         for( Map.Entry<String, String> e : params.entrySet() ) {
             props.setProperty( e.getKey(), e.getValue() );
         }
-        DriverManagerConnectionFactory conFactory = 
+        DriverManagerConnectionFactory conFactory =
             new DriverManagerConnectionFactory( uri, props );
 
-
-        ObjectPool conPool = new GenericObjectPool(null); 
+        ObjectPool conPool = new GenericObjectPool(null);
         //min, max, etc. connections
 
         // Sets self on conPool
         new PoolableConnectionFactory( conFactory, conPool,
                                        null, //stmtPoolFactory
-                                       null, 
+                                       null,
                                        false,
                                        true );
-        
+
         return new PoolingDataSource( conPool );
     }
-    
+
     public void setLogWriter()
     {
         LogWriter lw = new LogWriter( "iudex.da.driver" );
-        lw.setRemovePattern( 
+        lw.setRemovePattern(
            LOG_REMOVE_PATTERN );
-        
+
         DriverManager.setLogWriter( new PrintWriter( lw, true ) );
     }
-    
-    private static final Pattern LOG_REMOVE_PATTERN = 
-        Pattern.compile( 
+
+    private static final Pattern LOG_REMOVE_PATTERN =
+        Pattern.compile(
             "(^\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d\\s\\(\\d\\)\\s)|(\\s+$)" );
 }

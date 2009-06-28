@@ -16,7 +16,6 @@
 
 package iudex.da;
 
-
 import iudex.core.VisitURL.SyntaxException;
 
 import java.sql.Connection;
@@ -34,7 +33,7 @@ import static org.junit.Assert.*;
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
-public class WorkPollerTest 
+public class WorkPollerTest
     extends Helper
 {
     @Test
@@ -44,21 +43,21 @@ public class WorkPollerTest
         assertTrue( conn.getAutoCommit() );
         conn.close();
     }
-    
+
     @Test
     public void test() throws SQLException, SyntaxException
     {
         ContentMapper mapper =
-            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE, 
+            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
                                PRIORITY, NEXT_VISIT_AFTER );
 
         ContentWriter writer = new ContentWriter( dataSource(), mapper );
         List<UniMap> in = new ArrayList<UniMap>();
-        in.add( content( "http://gravitext.com/blog/feed/atom.xml", 
+        in.add( content( "http://gravitext.com/blog/feed/atom.xml",
                          TYPE_FEED, 1.5f ) );
 
         assertEquals( 1, writer.write( in ) );
-        
+
         WorkPoller wpoller = new WorkPoller( dataSource(), mapper );
         List<UniMap> out = wpoller.poll();
         assertNotNull( out );
@@ -69,5 +68,5 @@ public class WorkPollerTest
         }
     }
     public final Logger _log = LoggerFactory.getLogger( getClass() );
-    
+
 }

@@ -33,17 +33,17 @@ public class BARCResponseHandler extends BaseResponseHandler
     {
         _barcFile = barcFile;
     }
-    
+
     public void setDoCompress( boolean doCompress )
     {
         _doCompress = doCompress;
     }
-    
-    public boolean copyComplete() 
+
+    public boolean copyComplete()
     {
         return _complete;
     }
-    
+
     @Override
     protected void handleSuccessUnsafe( HTTPSession session )
         throws IOException
@@ -51,19 +51,19 @@ public class BARCResponseHandler extends BaseResponseHandler
         Record rec = _barcFile.append();
         try {
             rec.setCompressed( _doCompress );
-            rec.writeMetaHeaders( Arrays.asList( 
+            rec.writeMetaHeaders( Arrays.asList(
                 new Header( "url", session.url() ) ) );
             rec.writeRequestHeaders( session.requestHeaders() );
             rec.writeResponseHeaders( session.responseHeaders() );
-            _complete = copy( session.responseStream(), 
+            _complete = copy( session.responseStream(),
                               rec.bodyOutputStream() );
         }
         finally {
             rec.close();
         }
     }
-    
-    private boolean copy( InputStream in, OutputStream out ) 
+
+    private boolean copy( InputStream in, OutputStream out )
         throws IOException
     {
         int len = 0;
@@ -73,12 +73,12 @@ public class BARCResponseHandler extends BaseResponseHandler
             len = in.read( buff );
             if( len <= 0 ) break;
             out.write( buff, 0, len );
-            if( ( total += len ) > _maxBodyLength ) return false; 
+            if( ( total += len ) > _maxBodyLength ) return false;
         }
         return true;
     }
-    
-    private int _maxBodyLength = 10 * 1024 * 1024; //10M default 
+
+    private int _maxBodyLength = 10 * 1024 * 1024; //10M default
     private static final int BUFFER_SIZE = 2048;
     private final BARCFile _barcFile;
     private boolean _doCompress = false;

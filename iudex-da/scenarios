@@ -1,7 +1,6 @@
 Need a short hand to respresent various FEED/PAGE fetch/update scenarios.
 
-
-== SCENARIO 1: First time feed == 
+== SCENARIO 1: First time feed ==
 
 POLL->
 
@@ -11,7 +10,7 @@ FETCH-> 200
 C: etag, cache_file, cache_offset, last_visit (prior_last_visit)
 PARSE-> success
 
-C: type=FEED, 
+C: type=FEED,
    references={
       url=page-url-1, type=PAGE, ref_pub_date=1, title=t1
       url=page-url-2, type=PAGE, ref_pub_date=2, title=t2
@@ -21,9 +20,8 @@ PriorityFilter-> priority, next_visit_after
 
 FILTER->
 For each reference (R):
-   Title normalize 
+   Title normalize
    pub_date tester (not future, etc.)
-
 
 DB WRITE ->
 
@@ -71,7 +69,7 @@ C: url=page-url-1, type=PAGE, ref_pub_date=1, title=t1, referer=gcid(feed-url-1)
 
 FETCH (url, referer, etag=null, last_visit=null) -> 302
 
-C: url=page-url-1-redirect, [last_visit=NOW], 
+C: url=page-url-1-redirect, [last_visit=NOW],
    referer: url=page-url-1, status=302, ref_pub_date=1 (copy from C?), [referent=gcid(feed-url-1)]
 
 PROCESS, WRITE ->
@@ -90,7 +88,7 @@ if C exists (gcid)
            cache_file=f, cache_file_offest=o
 else
     INSERT gcid, url, host, (ref_pub_date), pub_date, title, next_visit_after(last_visit), priority(-)
-           referer, cache_file=f, cache_file_offest=o 
+           referer, cache_file=f, cache_file_offest=o
 end
 
 Note: On update, old cache_file, cache_file_offset lost (ok, I think).

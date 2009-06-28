@@ -19,11 +19,9 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
-
 import org.junit.Test;
 
 import com.gravitext.util.FastRandom;
-
 
 public class HeaderValueTest
 {
@@ -35,7 +33,7 @@ public class HeaderValueTest
         assertEquals( "token", value( " token  ", 0 ) );
         assertEquals( "token", value( "token; other", 0 ) );
         assertEquals( "other", value( "token; other", 1 ) );
-        
+
         assertEquals( "two  tokens", value( "\"two  tokens\"", 0 ) );
         assertEquals( "two\" tokens ", value( "\"two\\\" tokens \"", 0 ) );
 
@@ -43,7 +41,7 @@ public class HeaderValueTest
         assertEquals( "token", value( "token,", 0 ) );
 
     }
-    
+
     @Test
     public void testNameValue()
     {
@@ -62,12 +60,12 @@ public class HeaderValueTest
         assertEquals( "va;ue", value( "x=\"\\\";,y\";name=\"va;ue\"", 1 ) );
         assertEquals( "\";,y", value( "x=\"\\\";,y\";name=\"va;ue\"", 0 ) );
     }
-    
+
     @Test
     public void testCompound()
     {
         assertEquals( "W/\"two  tokens\"", value( "W/\"two  tokens\"", 0 ) );
-        assertEquals( "one \"two  tokens\"", 
+        assertEquals( "one \"two  tokens\"",
                       value( "one \"two  tokens\"", 0 ) );
     }
     @Test
@@ -84,7 +82,7 @@ public class HeaderValueTest
         assertNull( HeaderValue.parseFirst( ",t" ).first() );
         assertNull( HeaderValue.parseFirst( ",t" ).firstValue() );
     }
-    @Test 
+    @Test
     public void testNonTerminatedString()
     {
         assertEquals( "\"badness", value( "\"badness", 0 ) );
@@ -97,7 +95,7 @@ public class HeaderValueTest
     {
         final char[] chars = " \t\n\rnpx=,;\\\"\'".toCharArray();
         assertEquals( 13, chars.length );
-        
+
         FastRandom rand = new FastRandom(666);
         for( int runs = 0; runs < 7919; ++runs ) {
             int len = rand.nextInt( 67 );
@@ -106,7 +104,7 @@ public class HeaderValueTest
                 b.append( chars[ rand.nextInt( chars.length ) ] );
                 --len;
             }
-            
+
             List<HeaderValue> hvals = HeaderValue.parseAll( b );
             for( HeaderValue hv : hvals ) {
                 assertFalse( hv.parameters().isEmpty() );
@@ -117,19 +115,18 @@ public class HeaderValueTest
             }
         }
     }
-    
+
     private String value( String in, int i )
     {
         HeaderValue v = HeaderValue.parseAll( in ).get( 0 );
-        
+
         return v.parameters().get( i ).value.toString();
     }
     private String name( String in, int i )
     {
         HeaderValue v = HeaderValue.parseAll( in ).get( 0 );
-        
+
         return v.parameters().get( i ).name;
     }
-    
+
 }
-    

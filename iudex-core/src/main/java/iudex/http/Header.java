@@ -16,7 +16,7 @@
 package iudex.http;
 
 /**
- * A name/value pair suitable for HTTP and other header representation. All  
+ * A name/value pair suitable for HTTP and other header representation. All
  * name and value instances must support toString() as serialized from.
  */
 public final class Header
@@ -25,7 +25,7 @@ public final class Header
     {
         if( name == null ) throw new NullPointerException( "name" );
         if( value == null ) throw new NullPointerException( "value" );
-        
+
         _name = name;
         _value = value;
     }
@@ -48,7 +48,7 @@ public final class Header
         b.append(  _value.toString() );
         return b.toString();
     }
-    
+
     private final Object _name;
     private final Object _value;
 }

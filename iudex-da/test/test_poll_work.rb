@@ -29,7 +29,6 @@ require 'iudex-core'
 require 'iudex-da/ar'
 require 'test/unit'
 
-
 class TestPollWork < Test::Unit::TestCase
   include Iudex::DA
   import 'iudex.core.VisitURL'

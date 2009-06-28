@@ -27,16 +27,16 @@ public class ContentKeys
     {
         return UniMap.KEY_SPACE.create( name, valueType );
     }
-    
+
     protected static <T> Key<List<T>> createListKey( String name )
     {
         return UniMap.KEY_SPACE.createListKey( name );
     }
 
-    public static final Key<VisitURL> URL = 
-        create( "url", VisitURL.class ); 
+    public static final Key<VisitURL> URL =
+        create( "url", VisitURL.class );
 
-    public static final Key<String> TYPE = 
+    public static final Key<String> TYPE =
         create( "type", String.class );
 
     public static final String TYPE_FEED    = "FEED";
@@ -44,46 +44,45 @@ public class ContentKeys
     public static final String TYPE_ROBOTS  = "ROBOTS";
     public static final String TYPE_SITEMAP = "SITEMAP";
 
-    public static final Key<Date> LAST_VISIT = 
+    public static final Key<Date> LAST_VISIT =
         create( "last_visit", Date.class );
 
-    public static final Key<Integer> STATUS = 
+    public static final Key<Integer> STATUS =
         create( "status", Integer.class );
 
-    public static final Key<String> REASON = 
+    public static final Key<String> REASON =
         create( "reason", String.class );
-    
+
     public static final String REASON_DUPE = "DUPE";
 
-    public static final Key<CharSequence> TITLE = 
+    public static final Key<CharSequence> TITLE =
         create( "title", CharSequence.class );
 
-    public static final Key<Date> REF_PUB_DATE = 
+    public static final Key<Date> REF_PUB_DATE =
         create( "ref_pub_date", Date.class );
-    
-    
-    public static final Key<Date> PUB_DATE = 
+
+    public static final Key<Date> PUB_DATE =
         create( "pub_date", Date.class );
 
     /**
      * Highest priority wins.
      */
-    public static final Key<Float> PRIORITY = 
+    public static final Key<Float> PRIORITY =
         create( "priority", Float.class );
 
-    public static final Key<Date> NEXT_VISIT_AFTER = 
+    public static final Key<Date> NEXT_VISIT_AFTER =
         create( "next_visit_after", Date.class );
 
     public static final Key<ContentSource> CONTENT =
         create( "content", ContentSource.class );
-    
+
     /**
-     * FIXME: Or single "REFERENT" Key<Content>? 
+     * FIXME: Or single "REFERENT" Key<Content>?
      */
     public static final Key<List<UniMap>> REFERENCES =
         createListKey( "references" );
-    
+
     public static final Key<UniMap> REFERER =
         create( "referer", UniMap.class );
-    
+
 }

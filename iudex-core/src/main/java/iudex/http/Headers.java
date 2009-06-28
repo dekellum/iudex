@@ -19,11 +19,11 @@ package iudex.http;
 import java.util.List;
 
 /**
- * Utility methods for List<Header> 
+ * Utility methods for List<Header>
  */
-public final class Headers 
+public final class Headers
 {
-     public static Header getFirst( final List<Header> headers, 
+     public static Header getFirst( final List<Header> headers,
                                     final String name )
     {
         for( Header h : headers ) {
@@ -33,7 +33,7 @@ public final class Headers
         }
         return null;
     }
-    
+
     /**
      * Returns parsed integer value of any specified Content-Length header
      * or -1, if not specified or invalid.
@@ -62,14 +62,14 @@ public final class Headers
         if( tvalue != null ) return ContentType.parse( tvalue );
         return null;
     }
-    
+
     public static CharSequence asCharSequence( Object in )
     {
         if( in instanceof CharSequence ) return (CharSequence) in;
         if( in != null )                 return in.toString();
         return null;
     }
-    
+
     private static final long serialVersionUID = 1L;
 
 }

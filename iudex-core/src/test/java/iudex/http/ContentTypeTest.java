@@ -17,9 +17,7 @@ package iudex.http;
 
 import static org.junit.Assert.*;
 
-
 import org.junit.Test;
-
 
 public class ContentTypeTest
 {
@@ -29,19 +27,19 @@ public class ContentTypeTest
         assertEquals( "text/html", type( "text/html" ) );
         assertEquals( "text/html", type( " text/Html " ) );
     }
-    
+
     @Test
     public void testNoCharSet()
     {
         assertNull( charset( ",text/html" ) );
         assertNull( charset( " text/html  " ) );
         assertNull( charset( " text/html;" ));
-        
+
         assertEquals( "text/html", type(" text/html; name=value") );
         assertNull( charset( " text/html; name=value" ) );
         assertNull( charset( " text/html; charset=  " ) );
     }
-    
+
     @Test
     public void testCharset()
     {
@@ -55,18 +53,16 @@ public class ContentTypeTest
         assertEquals( "UTF-8", charset("Text/html;qs=0.8;charset= \"UTF-8\"") );
     }
 
-    
     private String type( CharSequence in )
     {
         ContentType ctype = ContentType.parse( in );
         return ctype.type();
     }
-    
+
     private String charset( CharSequence in )
     {
         ContentType ctype = ContentType.parse( in );
         return ctype.charset();
     }
-    
+
 }
-    

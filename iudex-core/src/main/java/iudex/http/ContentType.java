@@ -17,49 +17,49 @@
 package iudex.http;
 
 /**
- * Extends HeaderValue with custom parser and accessors for the 
+ * Extends HeaderValue with custom parser and accessors for the
  * Content-Type header.
  */
 public class ContentType extends HeaderValue
 {
     /**
-     * Returns (mime) type/sub-type trimmed and normalized 
+     * Returns (mime) type/sub-type trimmed and normalized
      * (from first header element).
      */
     public final String type()
     {
         return _type;
     }
-    
+
     /**
-     * Return "charset" parameter value if specified (trimmed of whitespace 
-     * or quotes.) 
+     * Return "charset" parameter value if specified (trimmed of whitespace
+     * or quotes.)
      */
     public final String charset()
     {
         return _charset;
     }
-    
+
     public static ContentType parse( final CharSequence in )
     {
         ContentType ctype = new ContentType();
-        
+
         parseNext( in, 0, ctype );
-        
+
         CharSequence type = ctype.firstValue();
         if( type != null ) {
-            ctype._type = type.toString().toLowerCase(); 
+            ctype._type = type.toString().toLowerCase();
         }
-        
+
         Parameter charset = ctype.findAnyCase( "charset" );
         if( charset != null ) {
             CharSequence cvalue = trimSQuote( charset.value ); //Leniency++
             if( cvalue != null ) ctype._charset = cvalue.toString();
         }
-        
+
         return ctype;
     }
-    
+
     private String _type = null;
     private String _charset = null;
 }

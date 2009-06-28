@@ -15,7 +15,6 @@
  */
 package iudex.http;
 
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,13 +43,13 @@ public abstract class HTTPSession implements Closeable
     {
         _method = method;
     }
-    
+
     public abstract List<Header> requestHeaders();
     public abstract int responseCode();
     public abstract String statusText();
     public abstract List<Header> responseHeaders();
     public abstract InputStream responseStream() throws IOException;
-    
+
     public void close() throws IOException
     {
     }
@@ -58,7 +57,7 @@ public abstract class HTTPSession implements Closeable
     public void abort() throws IOException
     {
     }
-    
+
     private String _url;
     private Method _method = Method.GET;
 }

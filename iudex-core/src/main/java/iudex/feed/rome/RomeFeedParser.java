@@ -40,7 +40,7 @@ import iudex.feed.FeedParser;
 public class RomeFeedParser implements FeedParser
 {
     @Override
-    public Iterator<UniMap> parse( UniMap inContent ) 
+    public Iterator<UniMap> parse( UniMap inContent )
         throws ParseException, IOException
     {
         try {
@@ -49,19 +49,19 @@ public class RomeFeedParser implements FeedParser
                 SyndFeedInput input = new SyndFeedInput();
                 SyndFeed feed = null;
                 if( content.stream() != null ) {
-                    XmlReader reader = 
-                        new XmlReader( content.stream(), true, 
+                    XmlReader reader =
+                        new XmlReader( content.stream(), true,
                                        content.defaultEncoding().name() );
                     feed = input.build( reader );
                 }
                 else if( content.characters() != null ) {
                     CharSequence source = content.characters();
-                    Reader reader = null; 
+                    Reader reader = null;
                     if( source instanceof CharBuffer ) {
                         CharBuffer inBuff = (CharBuffer) source;
                         if( inBuff.hasArray() ) {
-                            reader = new CharArrayReader( 
-                                inBuff.array(), 
+                            reader = new CharArrayReader(
+                                inBuff.array(),
                                 inBuff.arrayOffset() + inBuff.position(),
                                 inBuff.remaining() );
                         }
@@ -73,11 +73,11 @@ public class RomeFeedParser implements FeedParser
                 }
                 else {
                     throw new IllegalArgumentException
-                    ( "content source type [" + 
-                      content.source().getClass().getName() +  
+                    ( "content source type [" +
+                      content.source().getClass().getName() +
                       "] not supported" );
                 }
-                
+
                 List<?> entries = feed.getEntries();
                 return new EntryIterator( entries );
             }
@@ -110,11 +110,11 @@ public class RomeFeedParser implements FeedParser
             c.set( ContentKeys.PUB_DATE, se.getPublishedDate() );
             //se.getDescription();
             // Or: se.getContents()
-            
+
             try {
                 c.set( ContentKeys.URL, VisitURL.normalize( se.getUri() ) );
-                //FIXME: Or getLink()?  
-            }   
+                //FIXME: Or getLink()?
+            }
             catch( SyntaxException x ) {
                 throw new RuntimeException( x );
                 //FIXME: A bit harsh, build array in advance?

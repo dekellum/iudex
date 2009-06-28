@@ -24,12 +24,12 @@ import com.gravitext.htmap.UniMap;
 
 public interface FeedParser
 {
-    public Iterator<UniMap> parse( UniMap feed ) 
+    public Iterator<UniMap> parse( UniMap feed )
         throws ParseException, IOException;
-    // parse input: 
+    // parse input:
     // IOStream, Chars (Bytes)
     // Content-Type
     // Feed URL
     // Other feed information.. (priorities, etc.?)
-    
+
 }

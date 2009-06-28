@@ -22,12 +22,12 @@ import java.nio.charset.Charset;
 
 public class ContentSource
 {
-    
+
     public ContentSource( ByteBuffer buffer )
     {
         _source = buffer;
     }
-    
+
     public ContentSource( InputStream in )
     {
         _source = in;
@@ -50,10 +50,10 @@ public class ContentSource
 
     public CharSequence characters()
     {
-        return ( ( _source instanceof CharSequence ) ? 
-                 (CharSequence) _source : null ); 
+        return ( ( _source instanceof CharSequence ) ?
+                 (CharSequence) _source : null );
     }
-    
+
     public Charset defaultEncoding()
     {
         return _defaultEncoding;

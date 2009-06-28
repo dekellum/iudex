@@ -21,7 +21,6 @@ import iudex.core.VisitURL.SyntaxException;
 
 import org.junit.Test;
 
-
 public class VisitURLTest
 {
     @Test
@@ -33,7 +32,7 @@ public class VisitURLTest
         CharSequence ohash = VisitURL.hashURL( "http://gravitext.com/blog/x/y" );
         assertFalse( hash.toString().equals( ohash.toString() ) );
     }
-    
+
     @Test
     public void testHashDomain()
     {
@@ -42,7 +41,7 @@ public class VisitURLTest
         CharSequence ohash = VisitURL.hashURL( "other.com" );
         assertFalse( hash.toString().equals( ohash.toString() ) );
     }
-    
+
     @Test
     public void testNormalize() throws SyntaxException
     {
@@ -52,16 +51,16 @@ public class VisitURLTest
             { "http://h.c/", "http://h.c" },
 
             { "http://h.c/foo", " \thttp://h.c/foo\n\r\t" },
-            { "http://h.c/foo?q=x%20y", 
-                "http://h.c/foo?q=x y", 
-                "http://h.c/foo?q=x  y", 
+            { "http://h.c/foo?q=x%20y",
+                "http://h.c/foo?q=x y",
+                "http://h.c/foo?q=x  y",
                 " http://h.c/foo?q=x\t y#anchor\t" },
-                
+
             { "http://h.c/foo", "HTTP://H.C:80/foo" },
-            { "http://h.c/foo", 
+            { "http://h.c/foo",
               "HTTP://h.c/bar/../foo",
               "http://h.c/./foo" },
-              
+
             { "http://h.c/?x=a%26b", "http://h.c/?x=a%26b" },
             { "http://h.c/a%20b", "http://h.c/a%20b" },
             //FIXME: { "http://h.c/?x=a%3Ab", "http://h.c/?x=a%3ab" },
@@ -73,19 +72,18 @@ public class VisitURLTest
             { "http://h.c/foo?query=a+b", "HTTP://h.c/foo?query=a+b#anchor" },
             //FIXME: IDN { "http://xn--bcher-kva.ch/", "http://Bücher.ch" }
         };
-        
+
         for( String[] row : sameURLs ) {
             for( int i = 1; i < row.length; ++i ) {
                 assertNormal( row[0], row[i] );
             }
         }
     }
-    
-    public void assertNormal( String norm, String raw ) 
+
+    public void assertNormal( String norm, String raw )
         throws SyntaxException
     {
         assertEquals( norm, VisitURL.normalize( raw ).toString() );
     }
-   
+
 }
-    
