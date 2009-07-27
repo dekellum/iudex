@@ -39,7 +39,7 @@ assembly.xml
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
-lib/iudex-da/pool_date_source_factory.rb
+lib/iudex-da/pool_data_source_factory.rb
 db/0010_base_urls.rb
 db/0020_add_feed_metadata.rb
 db/0030_add_priority.rb
