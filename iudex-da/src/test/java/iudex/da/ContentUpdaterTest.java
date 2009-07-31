@@ -41,7 +41,9 @@ public class ContentUpdaterTest
         UniMap first = content( "http://gravitext.com/blog/feed/atom.xml",
                                 TYPE_FEED, 1f );
         in.add( first );
-        ContentUpdater updater = new ContentUpdater( dataSource(), _kmap );
+        ContentUpdater updater = new ContentUpdater( dataSource(),
+                                                     _kmap,
+                                                     new BaseTransformer() );
         assertEquals( 1, updater.write( in ) );
 
         first.set( PRIORITY, 22.2f );
@@ -62,7 +64,10 @@ public class ContentUpdaterTest
     @Test
     public void testContentUpdate() throws SQLException, SyntaxException
     {
-        ContentUpdater updater = new ContentUpdater( dataSource(), _kmap );
+        ContentUpdater updater = new ContentUpdater( dataSource(),
+                                                     _kmap,
+                                                     new BaseTransformer() );
+
         UniMap in = content( "http://gravitext.com/content2", TYPE_PAGE, 1f );
         assertEquals( 1, updater.write( in ) );
         in.set( PRIORITY, 11.3f );

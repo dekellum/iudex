@@ -36,13 +36,16 @@ import com.gravitext.htmap.UniMap;
 public class ContentUpdater
     extends ContentWriter
 {
-    public ContentUpdater( DataSource source, ContentMapper mapper )
+    public ContentUpdater( DataSource source,
+                           ContentMapper mapper,
+                           Transformer transformer )
     {
         super( source, mapper );
         if( ! mapper.fields().contains( ContentMapper.UHASH ) ) {
             throw new IllegalArgumentException(
                "ContentUpdater needs mapper with UHASH included." );
         }
+        _transformer = transformer;
     }
 
     /**
@@ -71,7 +74,6 @@ public class ContentUpdater
         }
     }
 
-    //FIXME: Transform interface as param?
     public void update( List<UniMap> references ) throws SQLException
     {
         Connection conn = dataSource().getConnection();
@@ -102,7 +104,9 @@ public class ContentUpdater
                           new OneUpdateHandler( content ),
                 new Object[] { content.get( ContentKeys.URL ).uhash() } );
 
-        if( update == 0 ) write( transform( content, null ), conn );
+        if( update == 0 ) {
+            write( _transformer.transformContent( content, null ), conn );
+        }
     }
 
     protected void update( List<UniMap> references, Connection conn )
@@ -117,7 +121,7 @@ public class ContentUpdater
         final ArrayList<UniMap> remains =
             new ArrayList<UniMap>( uhashes.size() );
         for( UniMap rem : uhashes.values() ) {
-            remains.add( transform( rem, null ) );
+            remains.add( _transformer.transformReference( rem, null ) );
         }
         if( remains.size() > 0 ) write( remains, conn );
     }
@@ -146,16 +150,6 @@ public class ContentUpdater
         return qb.toString();
     }
 
-    protected UniMap transform( final UniMap reference, final UniMap in )
-    {
-        if( in == null ) return reference;
-
-        // Fold ref over top of found.
-        UniMap t = in.clone();
-        t.putAll( reference );
-        return t;
-    }
-
     private final class RefUpdateHandler
         implements ResultSetHandler
     {
@@ -171,7 +165,7 @@ public class ContentUpdater
                 final UniMap in = mapper().fromResultSet( rs );
                 final UniMap ref = _hashes.remove( rs.getString( "uhash" ) );
 
-                UniMap out = transform( ref, in );
+                UniMap out = _transformer.transformReference( ref, in );
 
                 if( mapper().update( rs, in, out ) ) {
                     rs.updateRow();
@@ -197,7 +191,7 @@ public class ContentUpdater
             if( rs.next() ) {
                 final UniMap in = mapper().fromResultSet( rs );
 
-                UniMap out = transform( _content, in );
+                UniMap out = _transformer.transformContent( _content, in );
 
                 if( mapper().update( rs, in, out ) ) {
                     rs.updateRow();
@@ -227,4 +221,5 @@ public class ContentUpdater
                                           ResultSet.CONCUR_UPDATABLE );
         }
     }
+    private final Transformer _transformer;
 }
