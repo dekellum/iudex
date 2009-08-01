@@ -49,7 +49,7 @@ public class ContentUpdater
     }
 
     /**
-     * Update both content record and any attached REFERENCES.
+     * Update first any content REFERENCES and then the content itself.
      */
     public void update( UniMap content )
         throws SQLException
@@ -60,12 +60,12 @@ public class ContentUpdater
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             //FIXME: Correct isolation?
 
-            update( content, conn );
-
             List<UniMap> refs = content.get( ContentKeys.REFERENCES );
             if( refs != null ) {
                 update( refs, conn );
             }
+
+            update( content, conn );
 
             conn.commit();
         }
@@ -105,7 +105,8 @@ public class ContentUpdater
                 new Object[] { content.get( ContentKeys.URL ).uhash() } );
 
         if( update == 0 ) {
-            write( _transformer.transformContent( content, null ), conn );
+            UniMap out = _transformer.transformContent( content, null );
+            if( out != null ) write( out, conn );
         }
     }
 
@@ -121,7 +122,8 @@ public class ContentUpdater
         final ArrayList<UniMap> remains =
             new ArrayList<UniMap>( uhashes.size() );
         for( UniMap rem : uhashes.values() ) {
-            remains.add( _transformer.transformReference( rem, null ) );
+            UniMap out = _transformer.transformReference( rem, null );
+            if( out != null ) remains.add( out );
         }
         if( remains.size() > 0 ) write( remains, conn );
     }
@@ -167,7 +169,7 @@ public class ContentUpdater
 
                 UniMap out = _transformer.transformReference( ref, in );
 
-                if( mapper().update( rs, in, out ) ) {
+                if( ( out != null ) && mapper().update( rs, in, out ) ) {
                     rs.updateRow();
                 }
             }
@@ -193,7 +195,7 @@ public class ContentUpdater
 
                 UniMap out = _transformer.transformContent( _content, in );
 
-                if( mapper().update( rs, in, out ) ) {
+                if( ( out != null ) && mapper().update( rs, in, out ) ) {
                     rs.updateRow();
                 }
                 return 1;
