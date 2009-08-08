@@ -26,7 +26,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +34,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.gravitext.util.ResizableCharBuffer;
+import static com.gravitext.util.Charsets.*;
 
 /**
  * Basic ARChive File Reader/Writer. Supports record types, up to three
@@ -401,7 +401,7 @@ public final class BARCFile implements Closeable
         private List<Header> parseHeaderBlock( ByteBuffer buffer )
             throws IOException
         {
-            CharBuffer cbuff = UTF8.decode( buffer );
+            CharBuffer cbuff = UTF_8.decode( buffer );
             List<Header> headers = new ArrayList<Header>( 6 );
             int i = cbuff.position();
             final int end = cbuff.limit() - 2; //-2 for end CRLF
@@ -446,7 +446,7 @@ public final class BARCFile implements Closeable
             }
             cbuff.put( CRLF );
 
-            ByteBuffer bbuff = UTF8.encode( cbuff.flipAsCharBuffer() );
+            ByteBuffer bbuff = UTF_8.encode( cbuff.flipAsCharBuffer() );
 
             int length = bbuff.remaining();
 
@@ -587,8 +587,6 @@ public final class BARCFile implements Closeable
 
     static final int HEADER_LENGTH = 36;
 
-    private static final Charset ASCII = Charset.forName( "US-ASCII" );
-    private static final Charset UTF8 = Charset.forName( "UTF-8" );
     private static final List<Header> EMPTY_HEADERS = Collections.emptyList();
 
     private static final String CRLF = "\r\n";

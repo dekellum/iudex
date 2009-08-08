@@ -15,10 +15,11 @@
  */
 package iudex.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+
+import com.gravitext.util.Streams;
 
 public class ContentSource
 {
@@ -39,11 +40,7 @@ public class ContentSource
             return (InputStream) _source;
         }
         else if( _source instanceof ByteBuffer ) {
-            ByteBuffer buf = (ByteBuffer) _source;
-            return new ByteArrayInputStream( buf.array(),
-                                             buf.arrayOffset() + buf.position(),
-                                             buf.remaining() );
-            //FIXME: Replace with more optimized (non-synchronized) stream?
+            return Streams.inputStream( (ByteBuffer) _source );
         }
         return null;
     }

@@ -21,9 +21,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static com.gravitext.util.Charsets.UTF_8;
 
 /**
  * Immutable URL representation encapsulates URL/URI parsing, normalization,
@@ -220,7 +221,7 @@ public final class VisitURL
     {
         try {
             MessageDigest md = MessageDigest.getInstance( "SHA-1" );
-            md.update( UTF8.encode( CharBuffer.wrap( input ) ) );
+            md.update( UTF_8.encode( CharBuffer.wrap( input ) ) );
             return md.digest();
 
         }
@@ -232,5 +233,4 @@ public final class VisitURL
     private final URI _uri;
     private String _uhash = null;
 
-    private static final Charset UTF8 = Charset.forName( "UTF-8" );
 }

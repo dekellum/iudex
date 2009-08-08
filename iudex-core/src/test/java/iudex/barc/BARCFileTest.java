@@ -42,6 +42,7 @@ import com.gravitext.concurrent.TestExecutor;
 import com.gravitext.concurrent.TestFactoryBase;
 import com.gravitext.concurrent.TestRunnable;
 import com.gravitext.util.FastRandom;
+import static com.gravitext.util.Charsets.UTF_8;
 
 public class BARCFileTest
 {
@@ -74,7 +75,7 @@ public class BARCFileTest
             Arrays.asList( new Header( "RQST-1", "request-value-1" ) ) );
 
         Writer writer =
-            new OutputStreamWriter( rec.bodyOutputStream(), "UTF-8" );
+            new OutputStreamWriter( rec.bodyOutputStream(), UTF_8 );
         writer.write( "This is the entity body.\r\n" );
         writer.write( "Line two." );
         writer.close(); //will also close record.
@@ -91,7 +92,7 @@ public class BARCFileTest
         assertEquals( "request-value-1",
                       headers.get(0).value().toString() );
         BufferedReader in = new BufferedReader(
-            new InputStreamReader( rec.bodyInputStream(), "UTF-8" ), 128 );
+            new InputStreamReader( rec.bodyInputStream(), UTF_8 ), 128 );
         assertEquals( "This is the entity body.", in.readLine() );
         assertEquals( "Line two.", in.readLine() );
         rec.close();
@@ -109,7 +110,7 @@ public class BARCFileTest
             Arrays.asList( new Header( "RQST-1", "request-value-1" ) ) );
 
         Writer writer =
-            new OutputStreamWriter( rec.bodyOutputStream(), "UTF-8" );
+            new OutputStreamWriter( rec.bodyOutputStream(), UTF_8 );
         writer.write( "This is the entity body.\r\n" );
         writer.write( "Line two just in the middle in this case.\r\n" );
         writer.write( "Line three for some extra length filler business." );
@@ -144,7 +145,7 @@ public class BARCFileTest
             assertEquals( "request-value-1",
                           headers.get(0).value().toString() );
             BufferedReader in = new BufferedReader(
-                new InputStreamReader( rec.bodyInputStream(), "UTF-8" ), 128 );
+                new InputStreamReader( rec.bodyInputStream(), UTF_8 ), 128 );
             assertEquals( "This is the entity body.", in.readLine() );
             rec.close();
         }
