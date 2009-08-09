@@ -17,6 +17,8 @@ package iudex.core;
 
 import com.gravitext.util.URL64;
 
+import iudex.util.Characters;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -188,33 +190,12 @@ public final class VisitURL
     }
 
     /**
-     * Trim leading trail whitespace
+     * Trim leading/trailing isCtrlWS().
      * Replace internal whitespace sequences with a single %20
      */
     static String preEncode( CharSequence in )
     {
-        final StringBuilder clean = new StringBuilder( in.length() );
-        int i = 0;
-        int last = i;
-        boolean inWhitespace = false;
-        final int end = in.length();
-        while( i < end ) {
-            char c = in.charAt(i);
-            if( Character.isWhitespace( c ) || Character.isSpaceChar( c ) ) {
-                if( !inWhitespace ) {
-                    clean.append( in, last, i);
-                    inWhitespace = true;
-                }
-            }
-            else if( inWhitespace ) {
-                if( clean.length() > 0 ) clean.append( "%20" );
-                last = i;
-                inWhitespace = false;
-            }
-            ++i;
-        }
-        if( !inWhitespace ) clean.append( in, last, i );
-        return clean.toString();
+        return Characters.replaceCtrlWS( in, "%20" ).toString();
     }
 
     private static byte[] hash( CharSequence input )
