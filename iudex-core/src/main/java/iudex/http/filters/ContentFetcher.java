@@ -26,8 +26,8 @@ import java.util.Set;
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.ResizableByteBuffer;
 
-import iudex.core.ContentFilter;
-import iudex.core.ContentFilterContainer;
+import iudex.core.Filter;
+import iudex.core.FilterContainer;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
 import iudex.http.BaseResponseHandler;
@@ -37,9 +37,9 @@ import iudex.http.HTTPSession;
 import iudex.http.ContentType;
 import iudex.http.Headers;
 
-public class ContentFetcher implements ContentFilterContainer
+public class ContentFetcher implements FilterContainer
 {
-    public ContentFetcher( HTTPClient client, ContentFilterContainer receiver )
+    public ContentFetcher( HTTPClient client, FilterContainer receiver )
     {
         _client = client;
         _receiver = receiver;
@@ -75,9 +75,9 @@ public class ContentFetcher implements ContentFilterContainer
     }
 
     @Override
-    public List<ContentFilter> children()
+    public List<Filter> children()
     {
-        return Arrays.asList( new ContentFilter[] { _receiver } );
+        return Arrays.asList( new Filter[] { _receiver } );
     }
 
     @Override
@@ -169,6 +169,6 @@ public class ContentFetcher implements ContentFilterContainer
     private final int _maxContentLength = 1024 * 1024 - 1;
 
     private final HTTPClient _client;
-    private ContentFilterContainer _receiver;
+    private FilterContainer _receiver;
     private Set<String> _acceptedContentTypes = null;
 }

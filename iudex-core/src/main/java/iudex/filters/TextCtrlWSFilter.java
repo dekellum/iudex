@@ -22,12 +22,12 @@ import java.util.List;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.ContentFilter;
+import iudex.core.Filter;
 import iudex.core.Described;
 import iudex.util.Characters;
 
 public final class TextCtrlWSFilter
-    implements ContentFilter, Described
+    implements Filter, Described
 {
     public TextCtrlWSFilter( Key<CharSequence> field )
     {

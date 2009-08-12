@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.gravitext.htmap.UniMap;
 
-public class NoOpFilter implements ContentFilterContainer
+public class NoOpFilter implements FilterContainer
 {
     @Override
     public boolean filter( UniMap content )
@@ -30,7 +30,7 @@ public class NoOpFilter implements ContentFilterContainer
     }
 
     @Override
-    public List<ContentFilter> children()
+    public List<Filter> children()
     {
         return Collections.emptyList();
     }

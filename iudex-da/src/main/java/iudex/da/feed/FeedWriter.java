@@ -11,8 +11,8 @@ import javax.sql.DataSource;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.ContentFilter;
-import iudex.core.ContentFilterContainer;
+import iudex.core.Filter;
+import iudex.core.FilterContainer;
 import iudex.core.NoOpFilter;
 import iudex.da.BaseTransformer;
 import iudex.da.ContentMapper;
@@ -21,7 +21,7 @@ import iudex.da.ContentUpdater;
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
-public class FeedWriter implements ContentFilterContainer
+public class FeedWriter implements FilterContainer
 {
     public FeedWriter( DataSource source,
                        List<Key> fields )
@@ -33,12 +33,12 @@ public class FeedWriter implements ContentFilterContainer
         _mapper = new ContentMapper( new ArrayList<Key>( mergedKeys ) );
     }
 
-    public void setUpdateRefFilter( ContentFilterContainer updateRefFilter )
+    public void setUpdateRefFilter( FilterContainer updateRefFilter )
     {
         _updateRefFilter = updateRefFilter;
     }
 
-    public void setNewRefFilter( ContentFilterContainer newRefFilter )
+    public void setNewRefFilter( FilterContainer newRefFilter )
     {
         _newRefFilter = newRefFilter;
     }
@@ -109,10 +109,10 @@ public class FeedWriter implements ContentFilterContainer
     }
 
     @Override
-    public List<ContentFilter> children()
+    public List<Filter> children()
     {
         return Arrays.asList(
-            new ContentFilter[] { this._updateRefFilter,
+            new Filter[] { this._updateRefFilter,
                                   this._newRefFilter } );
     }
 
@@ -134,6 +134,6 @@ public class FeedWriter implements ContentFilterContainer
     private DataSource _dsource;
     private ContentMapper _mapper;
 
-    private ContentFilterContainer _updateRefFilter = new NoOpFilter();
-    private ContentFilterContainer _newRefFilter    = new NoOpFilter();
+    private FilterContainer _updateRefFilter = new NoOpFilter();
+    private FilterContainer _newRefFilter    = new NoOpFilter();
 }

@@ -21,7 +21,7 @@ import com.gravitext.htmap.UniMap;
 /**
  * Interface for filters over Content/Reference instances.
  */
-public interface ContentFilter
+public interface Filter
 {
     /**
      * Accept, transform, or reject content.

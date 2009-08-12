@@ -24,14 +24,14 @@ import java.util.List;
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 
-public class ContentFilterChain
-    implements ContentFilterContainer, Described
+public class FilterChain
+    implements FilterContainer, Described
 {
-    public ContentFilterChain( String description,
-                               List<ContentFilter> filters )
+    public FilterChain( String description,
+                               List<Filter> filters )
     {
         _description = description;
-        _filters = new ArrayList<ContentFilter>( filters );
+        _filters = new ArrayList<Filter>( filters );
     }
 
     public boolean filter( UniMap content )
@@ -41,7 +41,7 @@ public class ContentFilterChain
     }
 
     @Override
-    public List<ContentFilter> children()
+    public List<Filter> children()
     {
         return Collections.unmodifiableList( _filters );
     }
@@ -49,7 +49,7 @@ public class ContentFilterChain
     @Override
     public void close()
     {
-        for( ContentFilter f : _filters ) {
+        for( Filter f : _filters ) {
             if( f instanceof Closeable ) ( (Closeable) f ).close();
         }
     }
@@ -61,5 +61,5 @@ public class ContentFilterChain
     }
 
     private final String _description;
-    private final ArrayList<ContentFilter> _filters;
+    private final ArrayList<Filter> _filters;
 }

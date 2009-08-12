@@ -17,7 +17,7 @@
 package iudex.core;
 
 /**
- * Exception thrown by a {@link ContentFilter} signaling content reject by
+ * Exception thrown by a {@link Filter} signaling content reject by
  * failure.
  */
 public class FilterException extends Exception
