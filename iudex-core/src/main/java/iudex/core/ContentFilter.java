@@ -18,7 +18,20 @@ package iudex.core;
 
 import com.gravitext.htmap.UniMap;
 
+/**
+ * Note: ContentFilter.toString() may be used to describe filters.
+ * @author David Kellum
+ *
+ */
 public interface ContentFilter
 {
-    public boolean filter( UniMap content );
+    /**
+     * Accept, transform, or reject content.
+     * @throws FilterException to indicate rejection based on failure, to be
+     * logged upstream.
+     * @throws RuntimeException for more serious errors which should generally
+     * terminate processing.
+     * @return true if the Item should be kept, false otherwise.
+     */
+    public boolean filter( UniMap content ) throws FilterException;
 }

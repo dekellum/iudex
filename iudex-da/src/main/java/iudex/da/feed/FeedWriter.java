@@ -12,6 +12,7 @@ import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 import iudex.core.ContentFilter;
+import iudex.core.ContentFilterContainer;
 import iudex.core.NoOpFilter;
 import iudex.da.BaseTransformer;
 import iudex.da.ContentMapper;
@@ -20,7 +21,7 @@ import iudex.da.ContentUpdater;
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 
-public class FeedWriter implements ContentFilter
+public class FeedWriter implements ContentFilterContainer
 {
     public FeedWriter( DataSource source,
                        List<Key> fields )
@@ -32,12 +33,12 @@ public class FeedWriter implements ContentFilter
         _mapper = new ContentMapper( new ArrayList<Key>( mergedKeys ) );
     }
 
-    public void setUpdateRefFilter( ContentFilter updateRefFilter )
+    public void setUpdateRefFilter( ContentFilterContainer updateRefFilter )
     {
         _updateRefFilter = updateRefFilter;
     }
 
-    public void setNewRefFilter( ContentFilter newRefFilter )
+    public void setNewRefFilter( ContentFilterContainer newRefFilter )
     {
         _newRefFilter = newRefFilter;
     }
@@ -107,6 +108,21 @@ public class FeedWriter implements ContentFilter
         private int _updatedReferences = 0;
     }
 
+    @Override
+    public List<ContentFilter> children()
+    {
+        return Arrays.asList(
+            new ContentFilter[] { this._updateRefFilter,
+                                  this._newRefFilter } );
+    }
+
+    @Override
+    public void close()
+    {
+        _updateRefFilter.close();
+        _newRefFilter.close();
+    }
+
     private static final List<Key> BASE_KEYS =
         Arrays.asList( new Key[] { UHASH, HOST, URL,
                                    TYPE,
@@ -118,6 +134,6 @@ public class FeedWriter implements ContentFilter
     private DataSource _dsource;
     private ContentMapper _mapper;
 
-    private ContentFilter _updateRefFilter = new NoOpFilter();
-    private ContentFilter _newRefFilter    = new NoOpFilter();
+    private ContentFilterContainer _updateRefFilter = new NoOpFilter();
+    private ContentFilterContainer _newRefFilter    = new NoOpFilter();
 }

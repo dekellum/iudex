@@ -17,14 +17,17 @@
 package iudex.http.filters;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.ResizableByteBuffer;
 
 import iudex.core.ContentFilter;
+import iudex.core.ContentFilterContainer;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
 import iudex.http.BaseResponseHandler;
@@ -34,10 +37,9 @@ import iudex.http.HTTPSession;
 import iudex.http.ContentType;
 import iudex.http.Headers;
 
-public class ContentFetcher
-    implements ContentFilter
+public class ContentFetcher implements ContentFilterContainer
 {
-    public ContentFetcher( HTTPClient client, ContentFilter receiver )
+    public ContentFetcher( HTTPClient client, ContentFilterContainer receiver )
     {
         _client = client;
         _receiver = receiver;
@@ -71,6 +73,19 @@ public class ContentFetcher
 
         return true;
     }
+
+    @Override
+    public List<ContentFilter> children()
+    {
+        return Arrays.asList( new ContentFilter[] { _receiver } );
+    }
+
+    @Override
+    public void close()
+    {
+        _receiver.close();
+    }
+
     private final class Handler extends BaseResponseHandler
     {
         public Handler( UniMap content )
@@ -154,7 +169,6 @@ public class ContentFetcher
     private final int _maxContentLength = 1024 * 1024 - 1;
 
     private final HTTPClient _client;
-    private ContentFilter _receiver;
+    private ContentFilterContainer _receiver;
     private Set<String> _acceptedContentTypes = null;
-
 }
