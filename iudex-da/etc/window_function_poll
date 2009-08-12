@@ -1,0 +1,160 @@
+iudex_test=# EXPLAIN ANALYZE ELECT url, host, type, priority
+FROM ( SELECT * FROM urls
+       WHERE next_visit_after <= now()
+       AND uhash IN ( SELECT uhash FROM urls o
+                      WHERE o.host = urls.host
+                      ORDER BY priority DESC LIMIT 5 )
+       ORDER BY priority DESC LIMIT 18 ) AS sub
+ORDER BY host, priority DESC;
+iudex_test=# \e
+                                                    QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=112.29..112.33 rows=18 width=100)
+   Sort Key: sub.host, sub.priority
+   ->  Subquery Scan sub  (cost=0.00..111.91 rows=18 width=100)
+         ->  Limit  (cost=0.00..111.73 rows=18 width=272)
+               ->  Index Scan Backward using index_urls_on_priority on urls  (cost=0.00..136.56 rows=22 width=272)
+                     Filter: ((next_visit_after <= now()) AND (SubPlan 1))
+                     SubPlan 1
+                       ->  Limit  (cost=2.73..2.75 rows=5 width=28)
+                             ->  Sort  (cost=2.73..2.76 rows=11 width=28)
+                                   Sort Key: o.priority
+                                   ->  Seq Scan on urls o  (cost=0.00..2.55 rows=11 width=28)
+                                         Filter: (host = $0)
+(12 rows)
+
+iudex_test=# EXPLAIN SELECT url, host, type, priority
+FROM ( SELECT *,
+         row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) AS hpos,
+         row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM urls
+       WHERE next_visit_after <= now() ) AS sub
+WHERE hpos <= 5 AND ppos <= 18
+ORDER BY host, priority DESC;
+                                        QUERY PLAN
+-------------------------------------------------------------------------------------------
+ Sort  (cost=7.43..7.44 rows=5 width=100)
+   Sort Key: sub.host, sub.priority
+   ->  Subquery Scan sub  (cost=5.94..7.37 rows=5 width=100)
+         Filter: ((sub.hpos <= 5) AND (sub.ppos <= 18))
+         ->  WindowAgg  (cost=5.94..6.71 rows=44 width=272)
+               ->  Sort  (cost=5.94..6.05 rows=44 width=272)
+                     Sort Key: urls.priority
+                     ->  WindowAgg  (cost=3.86..4.74 rows=44 width=272)
+                           ->  Sort  (cost=3.86..3.97 rows=44 width=272)
+                                 Sort Key: urls.host, urls.priority
+                                 ->  Seq Scan on urls  (cost=0.00..2.66 rows=44 width=272)
+                                       Filter: (next_visit_after <= now())
+(12 rows)
+
+iudex_test=# SELECT url, host, type, priority
+FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM ( SELECT *,
+              row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) AS hpos
+              FROM urls
+              WHERE next_visit_after <= now() ) AS subh
+       WHERE hpos <= 5 ) as subp
+WHERE ppos <= 18
+ORDER BY host, priority DESC;
+iudex_test=# EXPLAIN SELECT url, host, type, priority
+FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM ( SELECT *,
+              row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) AS hpos
+              FROM urls
+              WHERE next_visit_after <= now() ) AS subh
+       WHERE hpos <= 5 ) as subp
+WHERE ppos <= 18
+ORDER BY host, priority DESC;
+                                           QUERY PLAN
+-------------------------------------------------------------------------------------------------
+ Sort  (cost=6.09..6.10 rows=5 width=100)
+   Sort Key: subp.host, subp.priority
+   ->  Subquery Scan subp  (cost=5.58..6.03 rows=5 width=100)
+         Filter: (subp.ppos <= 18)
+         ->  WindowAgg  (cost=5.58..5.85 rows=15 width=349)
+               ->  Sort  (cost=5.58..5.62 rows=15 width=349)
+                     Sort Key: subh.priority
+                     ->  Subquery Scan subh  (cost=3.86..5.29 rows=15 width=349)
+                           Filter: (subh.hpos <= 5)
+                           ->  WindowAgg  (cost=3.86..4.74 rows=44 width=272)
+                                 ->  Sort  (cost=3.86..3.97 rows=44 width=272)
+                                       Sort Key: urls.host, urls.priority
+                                       ->  Seq Scan on urls  (cost=0.00..2.66 rows=44 width=272)
+                                             Filter: (next_visit_after <= now())
+(14 rows)
+
+(TRY large data set, "EXPLAIN ANALYZE")
+
+EXPLAIN SELECT url, host, type, priority
+FROM ( SELECT *,
+       ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) ) ,
+
+         row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM urls
+       WHERE next_visit_after <= now() ) AS sub
+WHERE hpos <= 5 AND ppos <= 18
+ORDER BY host, priority DESC;
+
+OR, simple discount priority as a function of host rank:
+
+SELECT url, host, type, priority, adj_priority
+FROM ( SELECT *,
+       row_number() OVER( ORDER BY adj_priority DESC ) as apos
+       FROM ( SELECT *,
+              ( priority - ( ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) - 1 ) / 8.0 ) ) as adj_priority
+              FROM urls
+              WHERE next_visit_after <= now() ) AS sub1 ) as sub2
+WHERE apos <= 18
+ORDER BY host, priority DESC;
+
+           url            |     host      | type | priority |   adj_priority
+---------------------------+---------------+------+----------+------------------
+ http://foo.org/1.7        | foo.org       | FEED |      1.7 | 1.70000004768372
+ http://foo.org/1.58       | foo.org       | FEED |     1.58 | 1.45500004291534
+ http://foo.org/1.46       | foo.org       | FEED |     1.46 | 1.21000003814697
+ http://gravitext.com/2.14 | gravitext.com | FEED |     2.14 | 2.14000010490417
+ http://gravitext.com/2.02 | gravitext.com | FEED |     2.02 | 1.89499998092651
+ http://gravitext.com/1.9  | gravitext.com | FEED |      1.9 | 1.64999997615814
+ http://gravitext.com/1.78 | gravitext.com | FEED |     1.78 | 1.40499997138977
+ http://gravitext.com/1.66 | gravitext.com | FEED |     1.66 |  1.1599999666214
+ http://one.at/2.36        | one.at        | FEED |     2.36 | 2.35999989509583
+ http://one.at/2.24        | one.at        | FEED |     2.24 | 2.11500000953674
+ http://one.at/2.12        | one.at        | FEED |     2.12 | 1.86999988555908
+ http://one.at/2.0         | one.at        | FEED |        2 |            1.625
+ http://one.at/1.88        | one.at        | FEED |     1.88 | 1.37999999523163
+ http://one.at/1.76        | one.at        | FEED |     1.76 | 1.13499999046326
+ http://other.net/1.92     | other.net     | FEED |     1.92 | 1.91999995708466
+ http://other.net/1.8      | other.net     | FEED |      1.8 | 1.67499995231628
+ http://other.net/1.68     | other.net     | FEED |     1.68 | 1.42999994754791
+ http://other.net/1.56     | other.net     | FEED |     1.56 | 1.18499994277954
+(18 rows)
+
+SELECT url, host, type, priority
+FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM ( SELECT *,
+              row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) AS hpos
+              FROM urls
+              WHERE next_visit_after <= now() ) AS subh
+       WHERE hpos <= 5 ) as subp
+WHERE ppos <= 18
+            url            |     host      | type | priority
+---------------------------+---------------+------+----------
+ http://foo.org/1.7        | foo.org       | FEED |      1.7
+ http://foo.org/1.58       | foo.org       | FEED |     1.58
+ http://foo.org/1.46       | foo.org       | FEED |     1.46
+ http://gravitext.com/2.14 | gravitext.com | FEED |     2.14
+ http://gravitext.com/2.02 | gravitext.com | FEED |     2.02
+ http://gravitext.com/1.9  | gravitext.com | FEED |      1.9
+ http://gravitext.com/1.78 | gravitext.com | FEED |     1.78
+ http://gravitext.com/1.66 | gravitext.com | FEED |     1.66
+ http://one.at/2.36        | one.at        | FEED |     2.36
+ http://one.at/2.24        | one.at        | FEED |     2.24
+ http://one.at/2.12        | one.at        | FEED |     2.12
+ http://one.at/2.0         | one.at        | FEED |        2
+ http://one.at/1.88        | one.at        | FEED |     1.88
+ http://other.net/1.92     | other.net     | FEED |     1.92
+ http://other.net/1.8      | other.net     | FEED |      1.8
+ http://other.net/1.68     | other.net     | FEED |     1.68
+ http://other.net/1.56     | other.net     | FEED |     1.56
+ http://other.net/1.44     | other.net     | FEED |     1.44
+(18 rows)
