@@ -63,12 +63,13 @@ class TestPollWork < Test::Unit::TestCase
   def test_poll
     query = <<END
 SELECT url, host, type, priority
-FROM ( SELECT * FROM urls
-       WHERE next_visit_after <= now()
-       AND uhash IN ( SELECT uhash FROM urls o
-                      WHERE o.host = urls.host
-                      ORDER BY priority DESC LIMIT ? )
-       ORDER BY priority DESC LIMIT ? ) AS sub
+FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM ( SELECT *, row_number() OVER ( PARTITION BY host
+                                            ORDER BY priority DESC ) AS hpos
+              FROM urls
+              WHERE next_visit_after <= now() ) AS subh
+       WHERE hpos <= ? ) AS subp
+WHERE ppos <= ?
 ORDER BY host, priority DESC;
 END
     res = Url.find_by_sql( [ query, 5, 18 ] )
