@@ -13,10 +13,10 @@ import com.gravitext.htmap.UniMap;
 
 import iudex.core.Filter;
 import iudex.core.FilterContainer;
-import iudex.core.NoOpFilter;
 import iudex.da.BaseTransformer;
 import iudex.da.ContentMapper;
 import iudex.da.ContentUpdater;
+import iudex.filters.NoOpFilter;
 
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
