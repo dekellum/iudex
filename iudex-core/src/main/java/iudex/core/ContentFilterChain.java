@@ -1,6 +1,7 @@
 package iudex.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -8,10 +9,12 @@ import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 
 public class ContentFilterChain
-    implements ContentFilterContainer
+    implements ContentFilterContainer, Described
 {
-    public ContentFilterChain( List<ContentFilter> filters )
+    public ContentFilterChain( String description,
+                               List<ContentFilter> filters )
     {
+        _description = description;
         _filters = new ArrayList<ContentFilter>( filters );
     }
 
@@ -35,5 +38,12 @@ public class ContentFilterChain
         }
     }
 
+    @Override
+    public List<Object> describe()
+    {
+        return Arrays.asList( (Object) _description );
+    }
+
+    private final String _description;
     private final ArrayList<ContentFilter> _filters;
 }

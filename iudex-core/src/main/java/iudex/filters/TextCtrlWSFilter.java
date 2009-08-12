@@ -1,16 +1,27 @@
 package iudex.filters;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 import iudex.core.ContentFilter;
+import iudex.core.Described;
 import iudex.util.Characters;
 
-public class TextCtrlWSFilter implements ContentFilter
+public final class TextCtrlWSFilter
+    implements ContentFilter, Described
 {
-    TextCtrlWSFilter( Key<CharSequence> field )
+    public TextCtrlWSFilter( Key<CharSequence> field )
     {
         _field = field;
+    }
+
+    @Override
+    public List<Object> describe()
+    {
+        return Arrays.asList( (Object) _field );
     }
 
     @Override
