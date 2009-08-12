@@ -19,9 +19,7 @@ package iudex.core;
 import com.gravitext.htmap.UniMap;
 
 /**
- * Note: ContentFilter.toString() may be used to describe filters.
- * @author David Kellum
- *
+ * Interface for filters over Content/Reference instances.
  */
 public interface ContentFilter
 {
