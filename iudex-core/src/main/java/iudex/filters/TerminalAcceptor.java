@@ -24,8 +24,6 @@ import com.gravitext.htmap.UniMap;
  * Added to the end of series of multiple FilterChains to pass the
  * accepted() event (all prior filters passed) to the specified
  * listener.
- *
- * @author David Kellum
  */
 public class TerminalAcceptor implements Filter
 {
