@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.filters;
+
+import iudex.core.Filter;
 
 import com.gravitext.htmap.UniMap;
 
 /**
- * Interface for filters over Content/Reference instances.
+ * Added to the end of series of multiple FilterChains to pass the
+ * accepted() event (all prior filters passed) to the specified
+ * listener.
+ *
+ * @author David Kellum
  */
-public interface Filter
+public class TerminalAcceptor implements Filter
 {
-    /**
-     * Accept, transform, or reject content.
-     * @throws FilterException to indicate rejection based on failure, to be
-     * logged upstream.
-     * @throws RuntimeException for more serious errors which should generally
-     * terminate processing.
-     * @return true if the Item should be kept, false otherwise.
-     */
-    boolean filter( UniMap content ) throws FilterException;
+    public TerminalAcceptor( FilterListener listener )
+    {
+        _listener = listener;
+    }
+
+    @Override
+    public boolean filter( UniMap content )
+    {
+        _listener.accepted( content );
+        return true;
+    }
+
+    private final FilterListener _listener;
 }

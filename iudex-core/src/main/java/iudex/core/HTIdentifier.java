@@ -16,20 +16,9 @@
 
 package iudex.core;
 
-import com.gravitext.htmap.UniMap;
+import com.gravitext.htmap.HTAccess;
 
-/**
- * Interface for filters over Content/Reference instances.
- */
-public interface Filter
+public interface HTIdentifier
 {
-    /**
-     * Accept, transform, or reject content.
-     * @throws FilterException to indicate rejection based on failure, to be
-     * logged upstream.
-     * @throws RuntimeException for more serious errors which should generally
-     * terminate processing.
-     * @return true if the Item should be kept, false otherwise.
-     */
-    boolean filter( UniMap content ) throws FilterException;
+    public CharSequence id( HTAccess map );
 }

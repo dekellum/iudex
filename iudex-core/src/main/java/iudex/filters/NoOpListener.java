@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.filters;
+
+import iudex.core.Filter;
+import iudex.core.FilterException;
 
 import com.gravitext.htmap.UniMap;
 
 /**
- * Interface for filters over Content/Reference instances.
+ * No-op implementation of FilterListener.
+ *
+ *
  */
-public interface Filter
+public class NoOpListener implements FilterListener
 {
-    /**
-     * Accept, transform, or reject content.
-     * @throws FilterException to indicate rejection based on failure, to be
-     * logged upstream.
-     * @throws RuntimeException for more serious errors which should generally
-     * terminate processing.
-     * @return true if the Item should be kept, false otherwise.
-     */
-    boolean filter( UniMap content ) throws FilterException;
+    @Override
+    public void accepted( UniMap result )
+    {
+    }
+
+    @Override
+    public void failed( Filter filter, UniMap reject, FilterException x )
+    {
+    }
+
+    @Override
+    public void rejected( Filter filter, UniMap reject )
+    {
+    }
 }

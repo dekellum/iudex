@@ -19,6 +19,7 @@ package iudex.filters;
 import iudex.core.Described;
 import iudex.core.Filter;
 import iudex.core.FilterContainer;
+import iudex.core.FilterException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,22 +27,43 @@ import java.util.Collections;
 import java.util.List;
 
 import com.gravitext.htmap.UniMap;
-import com.gravitext.util.Closeable;
+import com.gravitext.util.Closeables;
 
 public class FilterChain
     implements FilterContainer, Described
 {
     public FilterChain( String description,
-                               List<Filter> filters )
+                        List<Filter> filters )
     {
         _description = description;
         _filters = new ArrayList<Filter>( filters );
     }
 
-    public boolean filter( UniMap content )
+    public void setListener( FilterListener listener )
     {
-        // TODO Auto-generated method stub
-        return false;
+        _listener = listener;
+    }
+
+    @Override
+    public boolean filter( UniMap in )
+    {
+        boolean passed = true;
+        final int end = _filters.size();
+        Filter filter = null;
+        try {
+            for( int i = 0; passed && i < end; ++i ) {
+                filter = _filters.get( i );
+                passed = filter.filter( in );
+            }
+
+            if( passed ) _listener.accepted( in );
+            else         _listener.rejected( filter, in );
+        }
+        catch( FilterException x ) {
+            _listener.failed( filter, in, x );
+            passed = false;
+        }
+        return passed;
     }
 
     @Override
@@ -54,7 +76,7 @@ public class FilterChain
     public void close()
     {
         for( Filter f : _filters ) {
-            if( f instanceof Closeable ) ( (Closeable) f ).close();
+            Closeables.closeIf( f );
         }
     }
 
@@ -66,4 +88,5 @@ public class FilterChain
 
     private final String _description;
     private final ArrayList<Filter> _filters;
+    private FilterListener _listener = new NoOpListener();
 }
