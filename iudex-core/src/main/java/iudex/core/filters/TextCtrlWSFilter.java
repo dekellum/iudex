@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.core.filters;
 
 import java.util.Arrays;
 import java.util.List;

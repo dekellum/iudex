@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.core.filters;
+
+import iudex.core.HTIdentifier;
+import iudex.core.VisitURL;
 
 import com.gravitext.htmap.HTAccess;
 
