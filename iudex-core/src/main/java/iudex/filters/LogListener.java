@@ -21,34 +21,31 @@ import org.slf4j.LoggerFactory;
 
 import iudex.core.Filter;
 import iudex.core.FilterException;
-import iudex.core.HTIdentifier;
 
 import com.gravitext.htmap.UniMap;
 
 public class LogListener implements FilterListener
 {
     public LogListener( String logBase,
-                        FilterIndex index,
-                        HTIdentifier ident )
+                        FilterIndex index )
     {
         _logAccept = LoggerFactory.getLogger( logBase + ".accept" );
         _logReject = LoggerFactory.getLogger( logBase + ".reject" );
         _logFailed = LoggerFactory.getLogger( logBase + ".failed" );
 
         _index = index;
-        _ident = ident;
     }
 
     @Override
     public void accepted( final UniMap result )
     {
-        _logAccept.debug( "{}", id( result ) );
+        _logAccept.debug( "" );
     }
 
     @Override
     public void rejected( final Filter filter, final UniMap reject )
     {
-        _logReject.debug( "{} by {}", id( reject ), name( filter ) );
+        _logReject.debug( "by {}", name( filter ) );
     }
 
     @Override
@@ -56,14 +53,8 @@ public class LogListener implements FilterListener
                         final UniMap reject,
                         final FilterException x )
     {
-        _logFailed.warn( "{} from {} : {}",
-                         new Object[] { id( reject ), name( filter ), x } );
+        _logFailed.warn( "from {} : {}", name( filter ), x  );
         _logFailed.debug( "Stack: ", x );
-    }
-
-    private CharSequence id( final UniMap in )
-    {
-        return _ident.id( in );
     }
 
     private String name( final Filter filter )
@@ -75,5 +66,4 @@ public class LogListener implements FilterListener
     private final Logger _logReject;
     private final Logger _logFailed;
     private final FilterIndex _index;
-    private final HTIdentifier _ident;
 }
