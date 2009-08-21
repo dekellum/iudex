@@ -16,6 +16,7 @@
 
 package iudex.filters;
 
+import iudex.core.AsyncFilterContainer;
 import iudex.core.Described;
 import iudex.core.Filter;
 import iudex.core.FilterContainer;
@@ -37,6 +38,25 @@ public class FilterChain
     {
         _description = description;
         _filters = new ArrayList<Filter>( filters );
+
+        final int end = _filters.size();
+        Filter filter = null;
+        int i = 0;
+        boolean foundAsync = false;
+        while( i < end ) {
+            filter = _filters.get( i++ );
+            if( filter instanceof AsyncFilterContainer ) {
+                foundAsync = true;
+                break;
+            }
+        }
+        if( foundAsync && ( i != end ) ) {
+            throw new IllegalArgumentException(
+                "Attempt to create chain with async. filter" +
+                filter.toString() +
+                " not at end of chain.");
+        }
+        _notifyPassed = !foundAsync;
     }
 
     public void setListener( FilterListener listener )
@@ -56,8 +76,10 @@ public class FilterChain
                 passed = filter.filter( in );
             }
 
-            if( passed ) _listener.accepted( in );
-            else         _listener.rejected( filter, in );
+            if( passed ) {
+                if( _notifyPassed ) _listener.accepted( in );
+            }
+            else                    _listener.rejected( filter, in );
         }
         catch( FilterException x ) {
             _listener.failed( filter, in, x );
@@ -88,5 +110,6 @@ public class FilterChain
 
     private final String _description;
     private final ArrayList<Filter> _filters;
+    private final boolean _notifyPassed;
     private FilterListener _listener = new NoOpListener();
 }

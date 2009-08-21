@@ -28,6 +28,7 @@ import com.gravitext.util.ResizableByteBuffer;
 
 import iudex.core.Filter;
 import iudex.core.FilterContainer;
+import iudex.core.AsyncFilterContainer;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
 import iudex.http.BaseResponseHandler;
@@ -37,7 +38,7 @@ import iudex.http.HTTPSession;
 import iudex.http.ContentType;
 import iudex.http.Headers;
 
-public class ContentFetcher implements FilterContainer
+public class ContentFetcher implements AsyncFilterContainer
 {
     public ContentFetcher( HTTPClient client, FilterContainer receiver )
     {
