@@ -23,8 +23,6 @@ import com.gravitext.htmap.UniMap;
 
 /**
  * No-op implementation of FilterListener.
- *
- *
  */
 public class NoOpListener implements FilterListener
 {
