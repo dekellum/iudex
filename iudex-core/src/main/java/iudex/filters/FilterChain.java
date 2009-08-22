@@ -36,7 +36,7 @@ public class FilterChain
     public FilterChain( String description,
                         List<Filter> filters )
     {
-        _description = description;
+        _description = Arrays.asList( (Object) description );
         _filters = new ArrayList<Filter>( filters );
 
         final int end = _filters.size();
@@ -52,9 +52,9 @@ public class FilterChain
         }
         if( foundAsync && ( i != end ) ) {
             throw new IllegalArgumentException(
-                "Attempt to create chain with async. filter" +
+                "Attempt to create chain with async. filter [" +
                 filter.toString() +
-                " not at end of chain.");
+                "] not at end of chain.");
         }
         _notifyPassed = !foundAsync;
     }
@@ -105,10 +105,10 @@ public class FilterChain
     @Override
     public List<Object> describe()
     {
-        return Arrays.asList( (Object) _description );
+        return _description;
     }
 
-    private final String _description;
+    private final List<Object> _description;
     private final ArrayList<Filter> _filters;
     private final boolean _notifyPassed;
     private FilterListener _listener = new NoOpListener();
