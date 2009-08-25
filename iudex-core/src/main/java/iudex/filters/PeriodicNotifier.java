@@ -17,39 +17,38 @@
 package iudex.filters;
 
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 
+ * Notify on a target time period given variable input tick events. The
+ * implementation is thread safe and high concurrency based on atomic counters.
  * @author David Kellum
  */
 public class PeriodicNotifier
 {
     /**
-     * Construct given target notification period in seconds. Actual 
-     * notification time may vary from [⅔∙period_s, ∞] depending on input
-     * tick rate. In general high tick()/period ratio yields more stable
-     * notifications.
+     * Construct given target notification period in seconds. Actual
+     * notification interval may vary in the range [⅔∙period_s, ∞] depending on
+     * input tick rate. In general high tick rate/period ratio yields more
+     * accurate interval.
      */
     PeriodicNotifier( double period_s )
     {
         _period    = (long) ( period_s * 1e9d );                   //ns
         _minPeriod = (long) ( period_s * 1e9d * ( 2.0d / 3.0d ) ); //ns
     }
-    
+
     /**
-     * Increment count and possibly call notify. 
+     * Increment count and possibly call notify.
      */
     public final void tick()
     {
         final long tick = _count.incrementAndGet();
-        final State state = _state.get();
 
-        if( ( ( tick - state.prior ) % state.next ) == 0 ) {
+        if( tick >= _next.get() ) {
             if( _checkLock.tryLock() ) {
                 try {
-                    check( tick, state );
+                    check( _count.get(), false );
                 }
                 finally {
                     _checkLock.unlock();
@@ -59,11 +58,25 @@ public class PeriodicNotifier
     }
 
     /**
+     * Force immediate notify.
+     */
+    public final void notifyNow()
+    {
+        _checkLock.lock();
+        try {
+            check( _count.get(), true );
+        }
+        finally {
+            _checkLock.unlock();
+        }
+    }
+
+    /**
      * Perform some periodic action. This implementation does nothing. This
-     * call is guaranteed synchronized by an internal lock. 
-     * @param tick The absolute count of calls to tick() on which this notify 
+     * call is guaranteed synchronized by an internal lock.
+     * @param tick The absolute count of calls to tick() on which this notify
      * was called.
-     * @param ticks The number of ticks since the last call to notify. 
+     * @param ticks The number of ticks since the last call to notify.
      * @param duration The time in nanoseconds since the last call to notify.
      */
     protected void notify( long tick, long ticks, long duration )
@@ -71,51 +84,36 @@ public class PeriodicNotifier
     }
 
     /**
-     * Check if time to notify, and update tick state. 
+     * Check if time to notify, and update tick state.
      * Guarded via _checkLock
      */
-    private final void check( final long tick, final State state )
+    private final void check( final long tick, final boolean force )
     {
-        final long ticks = tick - state.prior;
+        final long ticks = tick - _lastTick;
         final long now = System.nanoTime();
-        final long duration = now - _beginning;
+        final long duration = now - _start;
 
-        if( duration >= _minPeriod ) {
-            long next = ticks * _period / duration;
-            _state.set( new State( tick, next ) );
-            _beginning = now;
+        if( force || ( duration >= _minPeriod ) ) {
+            _next.set( tick + ( ticks * _period / duration ) );
+
+            _start = now;
+            _lastTick = tick;
+
             notify( tick, ticks, duration );
         }
         else {
-            long next = ticks * ( _period - duration ) / duration;
-            _state.set( new State( state.prior, next ) );        
+            _next.set( tick + ( ticks * ( _period - duration ) / duration ) );
         }
     }
 
-    private final static class State
-    {
-        State()
-        {
-            this( 0L, 1L );
-        }
-        
-        State( long prior, long next )
-        {
-            this.prior = prior;
-            this.next = next;
-        }
-
-        final long prior;
-        final long next;
-    }
-    
     private final long _period;    //ns
     private final long _minPeriod;
 
-    private final ReentrantLock _checkLock = new ReentrantLock( false );
-    private long _beginning = System.nanoTime();
-    
     private final AtomicLong _count = new AtomicLong(0);
-    private final AtomicReference<State> _state =
-        new AtomicReference<State>( new State() );
+    private final AtomicLong _next  = new AtomicLong(1);
+
+    private final ReentrantLock _checkLock = new ReentrantLock( false );
+    private long _start = System.nanoTime();
+    private long _lastTick = 0;
+
 }
