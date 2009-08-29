@@ -43,7 +43,6 @@ public class SummaryReporter implements FilterListener, Closeable
     @Override
     public void accepted( UniMap result )
     {
-        // FIXME: _accepted.incrementAndGet();
         _notifier.tick();
     }
 
@@ -102,10 +101,9 @@ public class SummaryReporter implements FilterListener, Closeable
         private long _lastAccepted = 0;
     }
 
-    // private final AtomicLong _accepted = new AtomicLong(0);
     private final AtomicLong _rejected = new AtomicLong(0);
     private final AtomicLong _failed   = new AtomicLong(0);
 
-    private final Notifier _notifier;
+    private final Notifier _notifier; //and accepted count
     private Logger _log;
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Notify on a target time period given variable input tick events. The
- * implementation is thread safe and high concurrency based on atomic counters.
+ * implementation is thread safe, high concurrency, low overhead.
  * @author David Kellum
  */
 public class PeriodicNotifier
@@ -46,6 +46,9 @@ public class PeriodicNotifier
         final long tick = _count.incrementAndGet();
 
         if( tick >= _next.get() ) {
+
+            // If another thread has already picked this check up, then ignore.
+            // Otherwise, this is the thread to check
             if( _checkLock.tryLock() ) {
                 try {
                     check( _count.get(), false );
@@ -115,5 +118,4 @@ public class PeriodicNotifier
     private final ReentrantLock _checkLock = new ReentrantLock( false );
     private long _start = System.nanoTime();
     private long _lastTick = 0;
-
 }
