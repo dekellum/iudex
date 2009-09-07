@@ -16,11 +16,13 @@
 
 package iudex.filters;
 
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 import iudex.core.Described;
 import iudex.core.Filter;
+import iudex.core.Named;
 
 /**
  * Maintains an index of Filter instances (by identity) to descriptive unique
@@ -45,8 +47,8 @@ public class FilterIndex
             String base = baseName( filter );
             name = base;
             int count = 1;
-            while( _filters.values().contains( name ) ) {
-                name = base + '-' + count++;
+            while( contains( name ) ) {
+                name = base + '#' + ++count;
             }
             _filters.put( filter, name );
         }
@@ -62,6 +64,11 @@ public class FilterIndex
         return name;
     }
 
+    public Collection<Filter> filters()
+    {
+        return _filters.keySet();
+    }
+
     private String unregisteredName( Filter filter )
     {
         return filter.getClass().getName() + '@' +
@@ -72,7 +79,12 @@ public class FilterIndex
     {
         StringBuilder name = new StringBuilder( 128 );
 
-        name.append( compactClassName( filter ) );
+        if( filter instanceof Named ) {
+            name.append( ( (Named) filter ).name() );
+        }
+        else {
+            name.append( compactClassName( filter ) );
+        }
 
         if( filter instanceof Described ) {
             for( Object value : ( (Described) filter ).describe() ) {
@@ -82,6 +94,14 @@ public class FilterIndex
         }
 
         return name.toString();
+    }
+
+    private boolean contains( String name )
+    {
+        for( String v : _filters.values() ) {
+            if( v.equals( name ) ) return true;
+        }
+        return false;
     }
 
     private String compactClassName( Object o )
