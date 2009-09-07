@@ -8,45 +8,154 @@ module Iudex
     import 'iudex.filters.FilterIndex'
     import 'iudex.filters.LogListener'
     import 'iudex.filters.SummaryReporter'
+    import 'iudex.filters.ByFilterReporter'
+    import 'iudex.core.FilterContainer'
 
     class FilterChainFactory
-      attr_accessor :filters, :listeners
+      attr_reader :description, :filters, :listeners
 
-      def initialize( description )
+      def initialize( description = "default" )
         @filters = []
-
-        @log = SLF4J::Logger.new( self.class )
-
-        @index = FilterIndex.new
-        ll = LogListener.new( [ FilterChain.name, description ].join( '.' ),
-                              @index )
-
-        @listeners = [ ll ]
-
         @description = description
-      end
 
-      def create
-        @chain = FilterChain.new( @description, @filters )
-        @listener = ListenerChain.new( @listeners )
-        @chain.listener = @listener
+        # @lname =
+        @log = SLF4J[ "iudex.filters.FilterChain.#{description}" ]
 
-        @chain, @listener
-      end
+        @listeners = []
 
-      def close
-        @chain.close unless @chain.nil?
+        @summery_period = nil
+        @by_filter_period = nil
+
+        @index = nil
         @chain = nil
-
-        @listener.close unless @listener.nil?
         @listener = nil
       end
 
-      def do_filter
-        chain, listener = create
-        yield chain
+      def add_summary_reporter( period_s = 10.0 )
+        @summary_period = period_s
+      end
+
+      def add_by_filter_reporter( period_s = 60 * 10.0 )
+        @by_filter_period = period_s
+      end
+
+      def open
+        close if open?
+
+        @index = FilterIndex.new
+        log_and_register( @filters )
+
+        create_listener_chain
+
+        @chain = FilterChain.new( @description, @filters )
+
+        @chain.listener = @listener
+
+        nil
+      end
+
+      def create_listener_chain
+        ll = []
+
+        ll << LogListener.new( @log.name, @index )
+
+        if @summary_period
+          ll << SummaryReporter.new( description, @summary_period )
+        end
+
+        if @by_filter_period
+          ll << ByFilterReporter.new( @index,
+                                      ByFilterLogger.new( @index ),
+                                      @by_filter_period )
+        end
+
+        ll += @listeners #FIXME: Or better as factory method overload?
+
+        @listener = ListenerChain.new( ll )
+      end
+
+      def open?
+        @chain != nil
+      end
+
+      def close
+        if @chain
+          @chain.close
+          @chain = nil
+        end
+
+        if @listener
+          @listener.close
+          @listener = nil
+        end
+      end
+
+      # Yields chain to block, bounded by open/close if not already open
+      def filter
+        opened = unless open?
+                   open
+                   true
+                 end
+
+        yield @chain
+
       ensure
-        close
+        close if opened
+      end
+
+      private
+
+      def log_and_register( filters, depth = 0 )
+        filters.each do |filter|
+          name = @index.register( filter )
+          @log.info { "<< " + "< " * depth + name }
+          if filter.kind_of?( FilterContainer )
+            log_and_register( filter.children, depth + 1 )
+          end
+        end
+      end
+
+    end
+
+    class ByFilterLogger
+      include ByFilterReporter::ReportWriter
+
+      import 'com.gravitext.util.Metric'
+
+      def initialize( index )
+        @log = SLF4J[ self.class ]
+        @index = index
+        @nlength = index.filters.map { |f| index.name( f ).length }.max
+      end
+
+      def report( total, delta, duration_ns, counters )
+        out = StringIO.new
+
+        out << "Report total: %s ::\n" % [ fmt( total ) ]
+        out << "  %-#{@nlength}s %6s %4s %6s %4s" % %w{ Filter Reject % Failed % }
+
+        # sort counters by descending rejected + failed
+        counts = counters.sort { |p,n| dropped( n[1] ) <=> dropped( p[1] ) }
+
+        counts.each do |f,c|
+          out << ( "\n  %#{@nlength}s %6s %3.0f%% %6s %3.0f%%" %
+                   [ @index.name( f ),
+                     fmt( c.rejected ), prc( c.rejected, total ),
+                     fmt( c.failed   ), prc( c.failed, total ) ] )
+        end
+        @log.info( out.string )
+      end
+
+      def dropped( c )0
+        c.rejected + c.failed
+      end
+
+      def fmt( v )
+        Metric::format( v )
+      end
+
+      def prc( v, t )
+        ( t > 0 ) ? v.to_f / t * 100.0 : 0.0
       end
 
     end
