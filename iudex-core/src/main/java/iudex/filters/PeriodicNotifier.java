@@ -60,6 +60,11 @@ public class PeriodicNotifier
         }
     }
 
+    public long count()
+    {
+        return _count.get();
+    }
+
     /**
      * Force immediate notify.
      */

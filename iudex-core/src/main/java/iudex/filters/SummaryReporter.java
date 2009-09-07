@@ -28,7 +28,7 @@ import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.Metric;
 
-public class SummaryReporter implements FilterListener, Closeable
+public final class SummaryReporter implements FilterListener, Closeable
 {
 
     /**
@@ -60,6 +60,26 @@ public class SummaryReporter implements FilterListener, Closeable
         _notifier.tick();
     }
 
+    public long totalCount()
+    {
+        return _notifier.count();
+    }
+
+    public long acceptedCount()
+    {
+        return totalCount() - rejectedCount() - failedCount();
+    }
+
+    public long rejectedCount()
+    {
+        return _rejected.get();
+    }
+
+    public long failedCount()
+    {
+        return _failed.get();
+    }
+
     @Override
     public void close()
     {
@@ -81,14 +101,14 @@ public class SummaryReporter implements FilterListener, Closeable
             long accepted = total - rejected - failed;
 
             long aDelta = accepted - _lastAccepted;
-            //FIXME: Needed? if( aDelta < 0 ) aDelta = 0;
+            _lastAccepted = accepted;
 
             double tRate  = ( (double) tDelta   ) / duration * 1e9d;
             double aRate  = ( (double) aDelta   ) / duration * 1e9d;
             double aRatio = ( (double) accepted ) / total * 100.0d;
 
             _log.info( String.format(
-                "T: %s %s/s A: %s %3f% %s/s R: %s F: %s",
+                "T: %s %s/s A: %s %3.0f%% %s/s R: %s F: %s",
                 Metric.format( total ),
                 Metric.format( tRate ),
                 Metric.format( accepted ),
