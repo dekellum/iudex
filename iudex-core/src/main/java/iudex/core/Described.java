@@ -25,11 +25,11 @@ import java.util.List;
 public interface Described
 {
     /**
-     * Return a list of objects that are descriptive and identifying,
-     * either by type, or via toString(). This list should not include class or
+     * Return a list of objects that are descriptive and identifying
+     * via toString(). This list should not include class or
      * class name, which can be externally obtained. When applied to a
      * {@link Filter} should provide short details such as
      * input/output key variables but not any child filters.
      */
-    List<Object> describe();
+    List<?> describe();
 }

@@ -36,7 +36,7 @@ public class FilterChain
     public FilterChain( String description,
                         List<Filter> filters )
     {
-        _description = Arrays.asList( (Object) description );
+        _description = Arrays.asList( description );
         _filters = new ArrayList<Filter>( filters );
 
         final int end = _filters.size();
@@ -103,12 +103,12 @@ public class FilterChain
     }
 
     @Override
-    public List<Object> describe()
+    public List<?> describe()
     {
         return _description;
     }
 
-    private final List<Object> _description;
+    private final List<String> _description;
     private final ArrayList<Filter> _filters;
     private final boolean _notifyPassed;
     private FilterListener _listener = new NoOpListener();

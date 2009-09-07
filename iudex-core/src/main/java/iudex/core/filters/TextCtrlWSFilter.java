@@ -35,9 +35,9 @@ public final class TextCtrlWSFilter
     }
 
     @Override
-    public List<Object> describe()
+    public List<?> describe()
     {
-        return Arrays.asList( (Object) _field );
+        return Arrays.asList( _field.toString() );
     }
 
     @Override

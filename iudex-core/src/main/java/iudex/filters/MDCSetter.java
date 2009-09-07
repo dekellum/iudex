@@ -16,19 +16,29 @@
 
 package iudex.filters;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.MDC;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
+import iudex.core.Described;
 import iudex.core.Filter;
 
-public class MDCSetter implements Filter
+public class MDCSetter implements Filter, Described
 {
 
     MDCSetter( Key field )
     {
         _field = field;
+    }
+
+    @Override
+    public List<?> describe()
+    {
+        return Arrays.asList( _field );
     }
 
     @Override
@@ -41,4 +51,5 @@ public class MDCSetter implements Filter
     }
 
     private Key _field;
+
 }
