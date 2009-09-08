@@ -62,25 +62,26 @@ class TestFilterChainFactory < Test::Unit::TestCase
     fcf.add_summary_reporter( 1.0 )
     fcf.add_by_filter_reporter( 2.5 )
 
-    fcf.filters << MDCSetter.new( TKEY )
+    fcf.filters   << MDCSetter.new(   TKEY )
+    fcf.listeners << MDCUnsetter.new( TKEY )
 
     [ 6, 4, 6, 6 ].each { |p| fcf.filters << RandomFilter.new( p ) }
 
-    fcf.listeners << MDCUnsetter.new( TKEY )
-    assert( ! fcf.open? )
+    2.times do |r|
+      assert( ! fcf.open? )
 
-    2.times do
       fcf.filter do |chain|
         1000.times do |t|
-          sleep( rand( 10 ) / 1000.0 )
+          sleep( rand( 10 ) / 1000.0 / ( r + 1 ) )
           map = UniMap.new
           map.tkey = t
           chain.filter( map )
         end
       end
+
+      assert( ! fcf.open? )
     end
 
-    assert( ! fcf.open? )
 
   end
 
