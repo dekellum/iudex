@@ -16,47 +16,49 @@
 
 package iudex.filters;
 
-import java.util.Arrays;
-import java.util.List;
+import iudex.core.Filter;
+import iudex.core.FilterException;
+
+import com.gravitext.htmap.UniMap;
 
 import org.slf4j.MDC;
 
-import com.gravitext.htmap.Key;
-import com.gravitext.htmap.UniMap;
-
-import iudex.core.Described;
-import iudex.core.Filter;
-
 /**
- * Apply specified key as a SLF4J Mapped Diagnostic Context key/value.
+ * Remove specified key from SLF4J Mapped Diagnostic Context as it exits a
+ * filter chain.
  */
-public class MDCSetter implements Filter, Described
+public final class MDCUnsetter implements FilterListener
 {
-
-    public MDCSetter( Key key )
+    /**
+     * Construct given key.toString() to remove from MDC.
+     */
+    public MDCUnsetter( Object key )
     {
-        _key = key;
+        _key = key.toString();
     }
 
     @Override
-    public List<?> describe()
+    public void accepted( UniMap result )
     {
-        return Arrays.asList( _key );
+        unset();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public boolean filter( UniMap content )
+    public void failed( Filter filter, UniMap reject, FilterException x )
     {
-        Object value = content.get( _key );
-        if( value != null ) {
-            MDC.put( _key.name(), value.toString() );
-        } else {
-            MDC.remove( _key.name() );
-        }
-        return true;
+        unset();
     }
 
-    private Key _key;
+    @Override
+    public void rejected( Filter filter, UniMap reject )
+    {
+        unset();
+    }
 
+    public void unset()
+    {
+        MDC.remove( _key );
+    }
+
+    private final String _key;
 }

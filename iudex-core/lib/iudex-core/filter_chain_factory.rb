@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-
 require 'iudex-core'
 
 module Iudex
@@ -34,7 +33,6 @@ module Iudex
         @filters = []
         @description = description
 
-        # @lname =
         @log = SLF4J[ "iudex.filters.FilterChain.#{description}" ]
 
         @listeners = []
@@ -81,8 +79,8 @@ module Iudex
 
         if @by_filter_period
           ll << ByFilterReporter.new( @index,
-                                      ByFilterLogger.new( @index ),
-                                      @by_filter_period )
+                  ByFilterLogger.new( @description, @index ),
+                  @by_filter_period )
         end
 
         ll += @listeners #FIXME: Or better as factory method overload?
@@ -138,8 +136,9 @@ module Iudex
 
       import 'com.gravitext.util.Metric'
 
-      def initialize( index )
-        @log = SLF4J[ self.class ]
+      def initialize( desc, index )
+        @log = SLF4J[ SLF4J.ruby_to_java_logger_name( self.class ) +
+                      '.' + desc ]
         @index = index
         @nlength = index.filters.map { |f| index.name( f ).length }.max
       end
@@ -154,15 +153,17 @@ module Iudex
         counts = counters.sort { |p,n| dropped( n[1] ) <=> dropped( p[1] ) }
 
         counts.each do |f,c|
-          out << ( "\n  %#{@nlength}s %6s %3.0f%% %6s %3.0f%%" %
-                   [ @index.name( f ),
-                     fmt( c.rejected ), prc( c.rejected, total ),
-                     fmt( c.failed   ), prc( c.failed, total ) ] )
+          if ( c.rejected + c.failed ) > 0
+            out << ( "\n  %#{@nlength}s %6s %3.0f%% %6s %3.0f%%" %
+                     [ @index.name( f ),
+                       fmt( c.rejected ), prc( c.rejected, total ),
+                       fmt( c.failed   ), prc( c.failed, total ) ] )
+          end
         end
         @log.info( out.string )
       end
 
-      def dropped( c )0
+      def dropped( c )
         c.rejected + c.failed
       end
 

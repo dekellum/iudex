@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 require 'logback'
-Logback.config_console
+Logback.config_console( :mdc => "tkey" )
 
 # Logback[ "iudex.filters.FilterChain.test.reject" ].level = Logback::DEBUG
 
@@ -35,6 +35,12 @@ require 'test/unit'
 class TestFilterChainFactory < Test::Unit::TestCase
   include Iudex::Filters
   include Gravitext::HTMap
+
+  import 'iudex.filters.MDCSetter'
+  import 'iudex.filters.MDCUnsetter'
+
+  TKEY = UniMap.create_key( 'tkey' );
+  UniMap.define_accessors
 
   class RandomFilter < FilterBase
 
@@ -55,18 +61,21 @@ class TestFilterChainFactory < Test::Unit::TestCase
     fcf = FilterChainFactory.new( "test" )
     fcf.add_summary_reporter( 1.0 )
     fcf.add_by_filter_reporter( 2.5 )
-    fcf.filters << RandomFilter.new( 6 )
-    fcf.filters << RandomFilter.new( 4 )
-    fcf.filters << RandomFilter.new( 6 )
-    fcf.filters << RandomFilter.new( 6 )
 
+    fcf.filters << MDCSetter.new( TKEY )
+
+    [ 6, 4, 6, 6 ].each { |p| fcf.filters << RandomFilter.new( p ) }
+
+    fcf.listeners << MDCUnsetter.new( TKEY )
     assert( ! fcf.open? )
 
     2.times do
       fcf.filter do |chain|
-        1000.times do
+        1000.times do |t|
           sleep( rand( 10 ) / 1000.0 )
-          chain.filter( UniMap.new )
+          map = UniMap.new
+          map.tkey = t
+          chain.filter( map )
         end
       end
     end
