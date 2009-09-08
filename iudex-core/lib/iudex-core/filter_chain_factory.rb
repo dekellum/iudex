@@ -147,18 +147,20 @@ module Iudex
         out = StringIO.new
 
         out << "Report total: %s ::\n" % [ fmt( total ) ]
-        out << ( "  %-#{@nlength}s %6s %4s %6s %4s" %
-                 %w{ Filter Reject % Failed % } )
+        out << ( "  %-#{@nlength}s %6s %5s %6s %6s" %
+                 %w{ Filter Accept % Reject Failed } )
 
-        # sort counters by descending rejected + failed
-        counts = counters.sort { |p,n| dropped( n[1] ) <=> dropped( p[1] ) }
-
-        counts.each do |f,c|
-          if ( c.rejected + c.failed ) > 0
-            out << ( "\n  %-#{@nlength}s %6s %3.0f%% %6s %3.0f%%" %
+        accepted = total
+        @index.filters.each do |f|
+          c = counters[ f ]
+          d = dropped( c )
+          if d > 0
+            p = prc( -d, accepted )
+            accepted -= d
+            out << ( "\n  %-#{@nlength}s %6s %4.0f%% %6s %6s" %
                      [ @index.name( f ),
-                       fmt( c.rejected ), prc( c.rejected, total ),
-                       fmt( c.failed   ), prc( c.failed, total ) ] )
+                       fmt( accepted ), p,
+                       fmt( c.rejected ), fmt( c.failed ) ] )
           end
         end
         @log.info( out.string )

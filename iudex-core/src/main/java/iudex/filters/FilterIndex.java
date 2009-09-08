@@ -16,8 +16,9 @@
 
 package iudex.filters;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 import iudex.core.Described;
@@ -51,6 +52,7 @@ public class FilterIndex
                 name = base + '#' + ++count;
             }
             _filters.put( filter, name );
+            _order.add( filter );
         }
         return name;
     }
@@ -64,9 +66,12 @@ public class FilterIndex
         return name;
     }
 
-    public Collection<Filter> filters()
+    /**
+     * Return filters in order registered.
+     */
+    public List<Filter> filters()
     {
-        return _filters.keySet();
+        return _order;
     }
 
     private String unregisteredName( Filter filter )
@@ -111,4 +116,6 @@ public class FilterIndex
 
     private final Map<Filter,String> _filters =
         new IdentityHashMap<Filter,String>( 71 );
+    private final ArrayList<Filter> _order = new ArrayList<Filter>();
+
 }
