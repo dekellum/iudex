@@ -17,7 +17,7 @@
 require 'iudex-core'
 
 module Iudex
-  module Filters
+  module Filter
 
     import 'iudex.filter.Filter'
     import 'iudex.filter.Described'
@@ -32,6 +32,8 @@ module Iudex
         []
       end
 
+      # Implements Named.name using abbreviated/lower case module
+      # names plus class name, in dot notation.
       def name
         n = self.class.name
         n = n.gsub( /::/, '.' )

@@ -17,167 +17,170 @@
 require 'iudex-core'
 
 module Iudex
-  module Filters
-    import 'iudex.filter.core.FilterChain'
-    import 'iudex.filter.core.ListenerChain'
-    import 'iudex.filter.core.FilterIndex'
-    import 'iudex.filter.core.LogListener'
-    import 'iudex.filter.core.SummaryReporter'
-    import 'iudex.filter.core.ByFilterReporter'
+  module Filter
     import 'iudex.filter.FilterContainer'
 
-    class FilterChainFactory
-      attr_reader :description, :filters, :listeners
+    module Core
+      import 'iudex.filter.core.ByFilterReporter'
 
-      def initialize( description = "default" )
-        @filters = []
-        @description = description
+      class FilterChainFactory
+        import 'iudex.filter.core.FilterChain'
+        import 'iudex.filter.core.ListenerChain'
+        import 'iudex.filter.core.FilterIndex'
+        import 'iudex.filter.core.LogListener'
+        import 'iudex.filter.core.SummaryReporter'
 
-        @log = SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
+        attr_reader :description, :filters, :listeners
 
-        @listeners = []
+        def initialize( description = "default" )
+          @filters = []
+          @description = description
 
-        @summery_period = nil
-        @by_filter_period = nil
+          @log = SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
 
-        @index = nil
-        @chain = nil
-        @listener = nil
-      end
+          @listeners = []
 
-      def add_summary_reporter( period_s = 10.0 )
-        @summary_period = period_s
-      end
+          @summery_period = nil
+          @by_filter_period = nil
 
-      def add_by_filter_reporter( period_s = 60 * 10.0 )
-        @by_filter_period = period_s
-      end
-
-      def open
-        close if open?
-
-        @index = FilterIndex.new
-        log_and_register( @filters )
-
-        create_listener_chain
-
-        @chain = FilterChain.new( @description, @filters )
-
-        @chain.listener = @listener
-
-        nil
-      end
-
-      def create_listener_chain
-        ll = []
-
-        ll << LogListener.new( @log.name, @index )
-
-        if @summary_period
-          ll << SummaryReporter.new( description, @summary_period )
-        end
-
-        if @by_filter_period
-          ll << ByFilterReporter.new( @index,
-                  ByFilterLogger.new( @description, @index ),
-                  @by_filter_period )
-        end
-
-        ll += @listeners #FIXME: Or better as factory method overload?
-
-        @listener = ListenerChain.new( ll )
-      end
-
-      def open?
-        @chain != nil
-      end
-
-      def close
-        if @chain
-          @chain.close
+          @index = nil
           @chain = nil
-        end
-
-        if @listener
-          @listener.close
           @listener = nil
         end
-      end
 
-      # Yields chain to block, bounded by open/close if not already open
-      def filter
-        opened = unless open?
-                   open
-                   true
-                 end
+        def add_summary_reporter( period_s = 10.0 )
+          @summary_period = period_s
+        end
 
-        yield @chain
+        def add_by_filter_reporter( period_s = 60 * 10.0 )
+          @by_filter_period = period_s
+        end
 
-      ensure
-        close if opened
-      end
+        def open
+          close if open?
 
-      private
+          @index = FilterIndex.new
+          log_and_register( @filters )
 
-      def log_and_register( filters, depth = 0 )
-        filters.each do |filter|
-          name = @index.register( filter )
-          @log.info { "<< " + "< " * depth + name }
-          if filter.kind_of?( FilterContainer )
-            log_and_register( filter.children, depth + 1 )
+          create_listener_chain
+
+          @chain = FilterChain.new( @description, @filters )
+
+          @chain.listener = @listener
+
+          nil
+        end
+
+        def create_listener_chain
+          ll = []
+
+          ll << LogListener.new( @log.name, @index )
+
+          if @summary_period
+            ll << SummaryReporter.new( description, @summary_period )
+          end
+
+          if @by_filter_period
+            ll << ByFilterReporter.new( @index,
+                                        ByFilterLogger.new( @description, @index ),
+                                        @by_filter_period )
+          end
+
+          ll += @listeners #FIXME: Or better as factory method overload?
+
+          @listener = ListenerChain.new( ll )
+        end
+
+        def open?
+          @chain != nil
+        end
+
+        def close
+          if @chain
+            @chain.close
+            @chain = nil
+          end
+
+          if @listener
+            @listener.close
+            @listener = nil
           end
         end
-      end
 
-    end
+        # Yields chain to block, bounded by open/close if not already open
+        def filter
+          opened = unless open?
+                     open
+                     true
+                   end
 
-    class ByFilterLogger
-      include ByFilterReporter::ReportWriter
+          yield @chain
 
-      import 'com.gravitext.util.Metric'
+        ensure
+          close if opened
+        end
 
-      def initialize( desc, index )
-        @log = SLF4J[ SLF4J.ruby_to_java_logger_name( self.class ) +
-                      '.' + desc ]
-        @index = index
-        @nlength = index.filters.map { |f| index.name( f ).length }.max
-      end
+        private
 
-      def report( total, delta, duration_ns, counters )
-        out = StringIO.new
-
-        out << "Report total: %s ::\n" % [ fmt( total ) ]
-        out << ( "  %-#{@nlength}s %6s %5s %6s %6s" %
-                 %w{ Filter Accept % Reject Failed } )
-
-        accepted = total
-        @index.filters.each do |f|
-          c = counters[ f ]
-          d = dropped( c )
-          if d > 0
-            p = prc( -d, accepted )
-            accepted -= d
-            out << ( "\n  %-#{@nlength}s %6s %4.0f%% %6s %6s" %
-                     [ @index.name( f ),
-                       fmt( accepted ), p,
-                       fmt( c.rejected ), fmt( c.failed ) ] )
+        def log_and_register( filters, depth = 0 )
+          filters.each do |filter|
+            name = @index.register( filter )
+            @log.info { "<< " + "< " * depth + name }
+            if filter.kind_of?( FilterContainer )
+              log_and_register( filter.children, depth + 1 )
+            end
           end
         end
-        @log.info( out.string )
+
       end
 
-      def dropped( c )
-        c.rejected + c.failed
-      end
+      class ByFilterLogger
+        include ByFilterReporter::ReportWriter
 
-      def fmt( v )
-        Metric::format( v )
-      end
+        import 'com.gravitext.util.Metric'
 
-      def prc( v, t )
-        ( t > 0 ) ? v.to_f / t * 100.0 : 0.0
-      end
+        def initialize( desc, index )
+          @log = SLF4J[ "iudex.filter.core.ByFilterLogger.#{desc}" ]
+          @index = index
+          @nlength = index.filters.map { |f| index.name( f ).length }.max
+        end
 
+        def report( total, delta, duration_ns, counters )
+          out = StringIO.new
+
+          out << "Report total: %s ::\n" % [ fmt( total ) ]
+          out << ( "  %-#{@nlength}s %6s %5s %6s %6s" %
+                   %w{ Filter Accept % Reject Failed } )
+
+          accepted = total
+          @index.filters.each do |f|
+            c = counters[ f ]
+            d = dropped( c )
+            if d > 0
+              p = prc( -d, accepted )
+              accepted -= d
+              out << ( "\n  %-#{@nlength}s %6s %4.0f%% %6s %6s" %
+                       [ @index.name( f ),
+                         fmt( accepted ), p,
+                         fmt( c.rejected ), fmt( c.failed ) ] )
+            end
+          end
+          @log.info( out.string )
+        end
+
+        def dropped( c )
+          c.rejected + c.failed
+        end
+
+        def fmt( v )
+          Metric::format( v )
+        end
+
+        def prc( v, t )
+          ( t > 0 ) ? v.to_f / t * 100.0 : 0.0
+        end
+
+      end
     end
 
   end

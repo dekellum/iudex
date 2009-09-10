@@ -33,7 +33,9 @@ require 'iudex-core/filter_base'
 require 'test/unit'
 
 class TestFilterChainFactory < Test::Unit::TestCase
-  include Iudex::Filters
+  include Iudex::Filter
+  include Iudex::Filter::Core
+
   include Gravitext::HTMap
 
   import 'iudex.filter.core.MDCSetter'
