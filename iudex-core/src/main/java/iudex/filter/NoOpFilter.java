@@ -14,31 +14,29 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter;
 
-import iudex.filter.Filter;
-import iudex.filter.FilterListener;
+import java.util.Collections;
+import java.util.List;
 
 import com.gravitext.htmap.UniMap;
 
-/**
- * Added to the end of series of multiple FilterChains to pass the
- * accepted() event (all prior filters passed) to the specified
- * listener.
- */
-public class TerminalAcceptor implements Filter
+public class NoOpFilter implements FilterContainer
 {
-    public TerminalAcceptor( FilterListener listener )
-    {
-        _listener = listener;
-    }
-
     @Override
     public boolean filter( UniMap content )
     {
-        _listener.accepted( content );
         return true;
     }
 
-    private final FilterListener _listener;
+    @Override
+    public List<Filter> children()
+    {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void close()
+    {
+    }
 }

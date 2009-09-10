@@ -18,6 +18,7 @@ package iudex.filters;
 
 import iudex.filter.Filter;
 import iudex.filter.FilterException;
+import iudex.filter.FilterListener;
 
 import com.gravitext.htmap.UniMap;
 

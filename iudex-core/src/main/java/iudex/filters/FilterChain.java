@@ -21,6 +21,8 @@ import iudex.filter.Described;
 import iudex.filter.Filter;
 import iudex.filter.FilterContainer;
 import iudex.filter.FilterException;
+import iudex.filter.FilterListener;
+import iudex.filter.NoOpListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter;
 
-import iudex.filter.Filter;
-import iudex.filter.FilterException;
 
 import com.gravitext.htmap.UniMap;
 

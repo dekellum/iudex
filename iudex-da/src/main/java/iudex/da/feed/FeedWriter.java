@@ -16,7 +16,7 @@ import iudex.da.ContentMapper;
 import iudex.da.ContentUpdater;
 import iudex.filter.Filter;
 import iudex.filter.FilterContainer;
-import iudex.filters.NoOpFilter;
+import iudex.filter.NoOpFilter;
 
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;

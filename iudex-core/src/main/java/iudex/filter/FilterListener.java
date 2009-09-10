@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-package iudex.filters;
-
-import iudex.filter.Filter;
-import iudex.filter.FilterContainer;
-
-import java.util.Collections;
-import java.util.List;
+package iudex.filter;
 
 import com.gravitext.htmap.UniMap;
 
-public class NoOpFilter implements FilterContainer
+
+public interface FilterListener
 {
-    @Override
-    public boolean filter( UniMap content )
-    {
-        return true;
-    }
+    /**
+     * Receive reject event.
+     * @param filter which returned false
+     * @param reject state on return from filter
+     */
+    void rejected( Filter filter, UniMap reject );
 
-    @Override
-    public List<Filter> children()
-    {
-        return Collections.emptyList();
-    }
+    /**
+     * Receive failed event.
+     * @param filter from which x was thrown
+     * @param reject state at catch site
+     * @param x the FilerException which was caught
+     */
+    void failed( Filter filter, UniMap reject, FilterException x );
 
-    @Override
-    public void close()
-    {
-    }
+    /**
+     * Receive an accepted event (all filters returned true).
+     * @param result the final state
+     */
+    void accepted( UniMap result );
 }
