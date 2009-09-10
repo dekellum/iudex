@@ -16,11 +16,11 @@
 
 package iudex.filters;
 
-import iudex.core.AsyncFilterContainer;
-import iudex.core.Described;
-import iudex.core.Filter;
-import iudex.core.FilterContainer;
-import iudex.core.FilterException;
+import iudex.filter.AsyncFilterContainer;
+import iudex.filter.Described;
+import iudex.filter.Filter;
+import iudex.filter.FilterContainer;
+import iudex.filter.FilterException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

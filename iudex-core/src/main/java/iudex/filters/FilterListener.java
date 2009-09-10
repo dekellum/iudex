@@ -18,8 +18,8 @@ package iudex.filters;
 
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.Filter;
-import iudex.core.FilterException;
+import iudex.filter.Filter;
+import iudex.filter.FilterException;
 
 public interface FilterListener
 {

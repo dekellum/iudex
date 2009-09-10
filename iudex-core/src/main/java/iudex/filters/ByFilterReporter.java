@@ -21,8 +21,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import iudex.core.Filter;
-import iudex.core.FilterException;
+import iudex.filter.Filter;
+import iudex.filter.FilterException;
 
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;

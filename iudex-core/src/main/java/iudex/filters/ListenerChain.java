@@ -18,8 +18,8 @@ package iudex.filters;
 
 import java.util.List;
 
-import iudex.core.Filter;
-import iudex.core.FilterException;
+import iudex.filter.Filter;
+import iudex.filter.FilterException;
 
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;

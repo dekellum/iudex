@@ -1,8 +1,8 @@
 package iudex.core.filters;
 
 import static iudex.core.ContentKeys.URL;
-import iudex.core.Filter;
 import iudex.core.VisitURL;
+import iudex.filter.Filter;
 
 import org.slf4j.MDC;
 

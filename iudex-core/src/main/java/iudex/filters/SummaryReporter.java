@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iudex.core.Filter;
-import iudex.core.FilterException;
+import iudex.filter.Filter;
+import iudex.filter.FilterException;
 
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;

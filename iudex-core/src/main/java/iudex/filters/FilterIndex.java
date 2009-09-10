@@ -21,14 +21,14 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudex.core.Described;
-import iudex.core.Filter;
-import iudex.core.Named;
+import iudex.filter.Described;
+import iudex.filter.Filter;
+import iudex.filter.Named;
 
 /**
  * Maintains an index of Filter instances (by identity) to descriptive unique
  * names for use in logging or reporting. If a filter implements
- * {@link iudex.core.Described}, these tokens will be used to augment the filter
+ * {@link iudex.filter.Described}, these tokens will be used to augment the filter
  * class name. Calls to {@link #name()} are unsynchronized. All calls to
  * {@link #register()} should be completed before the first call to
  * {@link #name()}.

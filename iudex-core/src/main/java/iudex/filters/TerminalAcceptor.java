@@ -16,7 +16,7 @@
 
 package iudex.filters;
 
-import iudex.core.Filter;
+import iudex.filter.Filter;
 
 import com.gravitext.htmap.UniMap;
 

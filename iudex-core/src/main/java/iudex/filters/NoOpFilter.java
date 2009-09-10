@@ -16,8 +16,8 @@
 
 package iudex.filters;
 
-import iudex.core.Filter;
-import iudex.core.FilterContainer;
+import iudex.filter.Filter;
+import iudex.filter.FilterContainer;
 
 import java.util.Collections;
 import java.util.List;

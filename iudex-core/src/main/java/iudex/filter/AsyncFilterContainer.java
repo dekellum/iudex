@@ -14,9 +14,23 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.filter;
 
-public interface Named
+import com.gravitext.htmap.UniMap;
+
+/**
+ * Extends FilterContainer as a marker of asynchronous filter containers, which
+ * enqueue passed content instead of processing it completely in the calling
+ * thread.
+ */
+public interface AsyncFilterContainer extends FilterContainer
 {
-    String name();
+
+    /**
+     * {@inheritDoc}
+     * @return true to indicate successful enqueue (and not final success.)
+     */
+    @Override
+    public boolean filter( UniMap content );
+
 }

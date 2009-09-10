@@ -24,7 +24,7 @@ module Iudex
     import 'iudex.filters.LogListener'
     import 'iudex.filters.SummaryReporter'
     import 'iudex.filters.ByFilterReporter'
-    import 'iudex.core.FilterContainer'
+    import 'iudex.filter.FilterContainer'
 
     class FilterChainFactory
       attr_reader :description, :filters, :listeners

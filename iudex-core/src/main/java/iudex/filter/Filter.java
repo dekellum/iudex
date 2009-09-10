@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.filter;
+
+import com.gravitext.htmap.UniMap;
 
 /**
- * Exception thrown by a {@link Filter} signaling content reject by
- * failure.
+ * Interface for filters over Content/Reference instances.
  */
-public class FilterException extends Exception
+public interface Filter
 {
-    public FilterException( String message )
-    {
-        super( message );
-    }
-
-    public FilterException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    public FilterException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    /**
+     * Accept, transform, or reject content.
+     * @throws FilterException to indicate rejection based on failure, to be
+     * logged upstream.
+     * @throws RuntimeException for more serious errors which should generally
+     * terminate processing.
+     * @return true if the Item should be kept, false otherwise.
+     */
+    boolean filter( UniMap content ) throws FilterException;
 }

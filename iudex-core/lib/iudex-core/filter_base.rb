@@ -19,9 +19,9 @@ require 'iudex-core'
 module Iudex
   module Filters
 
-    import 'iudex.core.Filter'
-    import 'iudex.core.Described'
-    import 'iudex.core.Named'
+    import 'iudex.filter.Filter'
+    import 'iudex.filter.Described'
+    import 'iudex.filter.Named'
 
     class FilterBase
       include Filter

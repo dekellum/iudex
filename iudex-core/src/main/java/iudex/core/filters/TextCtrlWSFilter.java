@@ -22,8 +22,8 @@ import java.util.List;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.Filter;
-import iudex.core.Described;
+import iudex.filter.Described;
+import iudex.filter.Filter;
 import iudex.util.Characters;
 
 public final class TextCtrlWSFilter

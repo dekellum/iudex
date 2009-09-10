@@ -24,8 +24,8 @@ import org.slf4j.MDC;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.Described;
-import iudex.core.Filter;
+import iudex.filter.Described;
+import iudex.filter.Filter;
 
 /**
  * Apply specified key as a SLF4J Mapped Diagnostic Context key/value.

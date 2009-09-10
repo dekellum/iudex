@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package iudex.core;
+package iudex.filter;
+
+import java.util.List;
 
 import com.gravitext.htmap.UniMap;
+import com.gravitext.util.Closeable;
 
-/**
- * Interface for filters over Content/Reference instances.
- */
-public interface Filter
+public interface FilterContainer
+    extends Filter, Closeable
 {
     /**
-     * Accept, transform, or reject content.
-     * @throws FilterException to indicate rejection based on failure, to be
-     * logged upstream.
-     * @throws RuntimeException for more serious errors which should generally
-     * terminate processing.
-     * @return true if the Item should be kept, false otherwise.
+     * {@inheritDoc}
+     * Containers can not throw FilterException.
      */
-    boolean filter( UniMap content ) throws FilterException;
+    @Override
+    public boolean filter( UniMap content );
+
+    public List<Filter> children();
 }

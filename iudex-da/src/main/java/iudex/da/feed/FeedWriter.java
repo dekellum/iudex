@@ -11,11 +11,11 @@ import javax.sql.DataSource;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.Filter;
-import iudex.core.FilterContainer;
 import iudex.da.BaseTransformer;
 import iudex.da.ContentMapper;
 import iudex.da.ContentUpdater;
+import iudex.filter.Filter;
+import iudex.filter.FilterContainer;
 import iudex.filters.NoOpFilter;
 
 import static iudex.core.ContentKeys.*;

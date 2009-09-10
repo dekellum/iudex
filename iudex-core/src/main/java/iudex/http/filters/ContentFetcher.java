@@ -26,11 +26,11 @@ import java.util.Set;
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.ResizableByteBuffer;
 
-import iudex.core.Filter;
-import iudex.core.FilterContainer;
-import iudex.core.AsyncFilterContainer;
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
+import iudex.filter.AsyncFilterContainer;
+import iudex.filter.Filter;
+import iudex.filter.FilterContainer;
 import iudex.http.BaseResponseHandler;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPKeys;
