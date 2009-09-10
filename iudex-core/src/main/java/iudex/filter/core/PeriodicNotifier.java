@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter.core;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;

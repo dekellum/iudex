@@ -23,7 +23,7 @@ require 'rubygems'
 require 'logback'
 Logback.config_console( :mdc => "tkey" )
 
-# Logback[ "iudex.filters.FilterChain.test.reject" ].level = Logback::DEBUG
+# Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
 
 require 'gravitext-util'
 require 'gravitext-util/unimap'
@@ -36,8 +36,8 @@ class TestFilterChainFactory < Test::Unit::TestCase
   include Iudex::Filters
   include Gravitext::HTMap
 
-  import 'iudex.filters.MDCSetter'
-  import 'iudex.filters.MDCUnsetter'
+  import 'iudex.filter.core.MDCSetter'
+  import 'iudex.filter.core.MDCUnsetter'
 
   TKEY = UniMap.create_key( 'tkey' );
   UniMap.define_accessors
@@ -81,7 +81,6 @@ class TestFilterChainFactory < Test::Unit::TestCase
 
       assert( ! fcf.open? )
     end
-
 
   end
 

@@ -18,12 +18,12 @@ require 'iudex-core'
 
 module Iudex
   module Filters
-    import 'iudex.filters.FilterChain'
-    import 'iudex.filters.ListenerChain'
-    import 'iudex.filters.FilterIndex'
-    import 'iudex.filters.LogListener'
-    import 'iudex.filters.SummaryReporter'
-    import 'iudex.filters.ByFilterReporter'
+    import 'iudex.filter.core.FilterChain'
+    import 'iudex.filter.core.ListenerChain'
+    import 'iudex.filter.core.FilterIndex'
+    import 'iudex.filter.core.LogListener'
+    import 'iudex.filter.core.SummaryReporter'
+    import 'iudex.filter.core.ByFilterReporter'
     import 'iudex.filter.FilterContainer'
 
     class FilterChainFactory
@@ -33,7 +33,7 @@ module Iudex
         @filters = []
         @description = description
 
-        @log = SLF4J[ "iudex.filters.FilterChain.#{description}" ]
+        @log = SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
 
         @listeners = []
 

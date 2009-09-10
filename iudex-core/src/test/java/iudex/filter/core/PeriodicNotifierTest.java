@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter.core;
 
 import static org.junit.Assert.*;
+import iudex.filter.core.PeriodicNotifier;
 
 import org.junit.Before;
 import org.junit.Test;

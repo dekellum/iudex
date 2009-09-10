@@ -14,49 +14,31 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter.core;
 
-import java.util.Arrays;
-import java.util.List;
+import iudex.filter.Filter;
+import iudex.filter.FilterListener;
 
-import org.slf4j.MDC;
-
-import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
-import iudex.filter.Described;
-import iudex.filter.Filter;
-
 /**
- * Apply specified key as a SLF4J Mapped Diagnostic Context key/value.
+ * Added to the end of series of multiple FilterChains to pass the
+ * accepted() event (all prior filters passed) to the specified
+ * listener.
  */
-public class MDCSetter implements Filter, Described
+public class TerminalAcceptor implements Filter
 {
-
-    public MDCSetter( Key key )
+    public TerminalAcceptor( FilterListener listener )
     {
-        _key = key;
+        _listener = listener;
     }
 
     @Override
-    public List<?> describe()
-    {
-        return Arrays.asList( _key );
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public boolean filter( UniMap content )
     {
-        Object value = content.get( _key );
-        if( value != null ) {
-            MDC.put( _key.name(), value.toString() );
-        } else {
-            MDC.remove( _key.name() );
-        }
+        _listener.accepted( content );
         return true;
     }
 
-    private Key _key;
-
+    private final FilterListener _listener;
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.filters;
+package iudex.filter.core;
 
 import iudex.filter.AsyncFilterContainer;
 import iudex.filter.Described;
