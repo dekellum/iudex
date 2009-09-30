@@ -16,7 +16,7 @@
 
 module Iudex
   module Core
-    VERSION = '1.0'
+    VERSION = '1.0.0'
 
     IUDEX_CORE_DIR = File.dirname( __FILE__ ) # :nodoc:
   end

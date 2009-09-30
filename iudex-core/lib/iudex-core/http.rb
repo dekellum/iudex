@@ -15,7 +15,7 @@
 #++
 
 require 'iudex-core'
-require 'hc-httpclient'
+require 'rjack-httpclient'
 
 module Iudex
   module Core

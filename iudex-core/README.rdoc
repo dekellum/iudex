@@ -1,8 +1,8 @@
-= Iudex Core
+= iudex-core
 
 * http://github.com/dekellum/iudex
 
-== Synopsis
+== Description
 
 Iudex is a general purpose web crawler and feed processor in
 ruby/java. The iudex-core gem contains core facilities and notably,

@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 require 'iudex-core'
 
 require 'rubygems'
-require 'logback'
+require 'rjack-logback'
 Logback.config_console
 
 #Logback[ "org.apache.commons.httpclient" ].level = Logback::INFO
