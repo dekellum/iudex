@@ -14,35 +14,16 @@
 # permissions and limitations under the License.
 #++
 
+require 'rubygems'
+
+require 'gravitext-util'
+require 'rjack-slf4j'
+require 'iudex-filter/base'
+
 module Iudex
   module Filter
-
-    import 'iudex.filter.Filter'
-    import 'iudex.filter.Described'
-    import 'iudex.filter.Named'
-
-    class FilterBase
-      include Filter
-      include Described
-      include Named
-
-      def describe
-        []
-      end
-
-      # Implements Named.name using abbreviated/lower case module
-      # names plus class name, in dot notation.
-      def name
-        n = self.class.name
-        n = n.gsub( /::/, '.' )
-        n = n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
-        n
-      end
-
-      def filter( map )
-        true
-      end
-    end
-
+    Dir.glob( File.join( IUDEX_FILTER_DIR, '*.jar' ) ).each { |jar| require jar }
   end
 end
+
+require 'iudex-filter/filter_base'

@@ -20,15 +20,14 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-require 'logback'
+
+require 'rjack-logback'
 Logback.config_console( :mdc => "tkey" )
 
 # Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
 
 require 'gravitext-util'
-require 'gravitext-util/unimap'
-require 'iudex-core/filter_chain_factory'
-require 'iudex-core/filter_base'
+require 'iudex-filter/filter_chain_factory'
 
 require 'test/unit'
 

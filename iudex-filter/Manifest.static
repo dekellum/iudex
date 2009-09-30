@@ -1,0 +1,8 @@
+Manifest.txt
+History.rdoc
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-filter/filter_chain_factory.rb
+lib/iudex-filter/filter_base.rb
+test/test_filter_chain_factory.rb

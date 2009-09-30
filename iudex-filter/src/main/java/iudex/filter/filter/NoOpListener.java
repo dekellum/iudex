@@ -16,7 +16,6 @@
 
 package iudex.filter;
 
-
 import com.gravitext.htmap.UniMap;
 
 /**

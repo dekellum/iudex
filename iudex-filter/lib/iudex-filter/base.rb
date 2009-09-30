@@ -16,33 +16,8 @@
 
 module Iudex
   module Filter
+    VERSION = '1.0.0'
 
-    import 'iudex.filter.Filter'
-    import 'iudex.filter.Described'
-    import 'iudex.filter.Named'
-
-    class FilterBase
-      include Filter
-      include Described
-      include Named
-
-      def describe
-        []
-      end
-
-      # Implements Named.name using abbreviated/lower case module
-      # names plus class name, in dot notation.
-      def name
-        n = self.class.name
-        n = n.gsub( /::/, '.' )
-        n = n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
-        n
-      end
-
-      def filter( map )
-        true
-      end
-    end
-
+    IUDEX_FILTER_DIR = File.dirname( __FILE__ ) # :nodoc:
   end
 end
