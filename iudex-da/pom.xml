@@ -20,7 +20,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-da</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.0.0</version>
   <name>Iudex Data Access</name>
 
   <parent>
@@ -59,7 +59,13 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-core</artifactId>
-      <version>1.0</version>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-filter</artifactId>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>

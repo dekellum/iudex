@@ -14,4 +14,3 @@ db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
-lib/iudex-da/iudex-da-1.0.0.jar
