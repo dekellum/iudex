@@ -1,8 +1,12 @@
-= Crawler Data Access
+= iudex-da
 
-* http://gravitext.com
+* http://github.com/dekellum/iudex
 
-== Synopsis
+== Description
+
+Iudex is a general purpose web crawler and feed processor in
+ruby/java. The iudex-da gem adds data access oriented to PostgreSQL
+incl activerecord migration and java based interaction.
 
 == Postgresql Setup
 

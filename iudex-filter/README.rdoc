@@ -2,7 +2,7 @@
 
 * http://github.com/dekellum/iudex
 
-== Synopsis
+== Description
 
 Iudex is a general purpose web crawler and feed processor in
 ruby/java. The iudex-filter gem contains a fundamental filtering/chain
