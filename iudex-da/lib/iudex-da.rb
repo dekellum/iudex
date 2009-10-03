@@ -16,6 +16,9 @@
 
 require 'rubygems'
 require 'iudex-da/base'
+require 'iudex-core'
+require 'rjack-commons-dbcp'
+require 'rjack-commons-dbutils'
 
 module Iudex
   module DA
