@@ -1,5 +1,4 @@
 
-
                        --------- fp
        httpclient-3   /   /    /  |
        *\ httpclient-4 rome  da* X
@@ -55,7 +54,6 @@ iudex-core
 
   iudex.queue
 
-
   iudex.util
 
   iudex.core.filters (?)
@@ -78,7 +76,6 @@ iudex-core
     slf4j
     logback (test/dev)
 
-
 iudex-hc-httpclient-3.x
 
   iudex.http.httpclient3
@@ -97,13 +94,9 @@ iudex-hc-httpclient-4.x
     hc-httpclient-3
     slf4j (?)
 
-
 iudex-rome
   iudex.feed.rome
 
   dependencies:
     iudex-core
     slf4j (?)
-
-
-
