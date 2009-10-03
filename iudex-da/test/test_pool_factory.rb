@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-require 'logback'
+require 'rjack-logback'
 Logback.config_console
 Logback['Iudex.DA'].level = Logback::DEBUG
 

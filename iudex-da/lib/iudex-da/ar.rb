@@ -15,7 +15,7 @@
 #++
 
 require 'rubygems'
-require 'slf4j'
+require 'rjack-slf4j'
 require 'iudex-da'
 require 'activerecord'
 

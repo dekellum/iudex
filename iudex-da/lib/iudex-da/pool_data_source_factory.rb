@@ -16,7 +16,7 @@
 
 require 'iudex-da'
 require 'iudex-core'
-require 'slf4j'
+require 'rjack-slf4j'
 require 'java'
 require 'jdbc/postgres'
 
