@@ -33,7 +33,7 @@ import 'iudex.http.httpclient3.HTTPClient3'
 import 'iudex.http.barc.BARCResponseHandler'
 import 'iudex.barc.BARCFile'
 
-hmanager = HC::HTTPClient::ManagerFacade.new
+hmanager = RJack::HTTPClient3::ManagerFacade.new
 hmanager.start
 
 hclient = HTTPClient3.new( hmanager.client )
