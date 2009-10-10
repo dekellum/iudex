@@ -34,8 +34,6 @@ t.specify do |h|
   h.rubyforge_name = "iudex"
 end
 
-t.jars = [ t.default_jar ]
-
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"
 
 t.define_tasks
