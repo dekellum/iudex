@@ -1,9 +1,0 @@
-History.txt
-Manifest.txt
-README.txt
-Rakefile
-pom.xml
-assembly.xml
-lib/rrome/jdom-1.0.jar
-lib/rrome/rome-1.0RC2.jar
-lib/rrome/rrome-1.0.jar
