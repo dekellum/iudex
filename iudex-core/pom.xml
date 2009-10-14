@@ -58,6 +58,18 @@
     </dependency>
 
     <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-http</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-barc</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
