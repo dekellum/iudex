@@ -10,6 +10,8 @@
 
   <modules>
     <module>iudex-filter</module>
+    <module>iudex-http</module>
+    <module>iudex-barc</module>
     <module>iudex-core</module>
     <module>iudex-da</module>
   </modules>
@@ -21,6 +23,13 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>1.5.8</version>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gravitext</groupId>
+        <artifactId>gravitext-util</artifactId>
+        <version>1.4.0</version>
         <scope>compile</scope>
       </dependency>
 

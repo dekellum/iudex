@@ -47,19 +47,8 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.gravitext</groupId>
       <artifactId>gravitext-util</artifactId>
-      <version>1.4.0</version>
     </dependency>
 
     <dependency>
@@ -84,6 +73,16 @@
       <groupId>rome</groupId>
       <artifactId>rome</artifactId>
       <version>1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
     </dependency>
 
   </dependencies>

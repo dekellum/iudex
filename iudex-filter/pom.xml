@@ -38,6 +38,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.gravitext</groupId>
+      <artifactId>gravitext-util</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
@@ -45,12 +50,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.gravitext</groupId>
-      <artifactId>gravitext-util</artifactId>
-      <version>1.4.0</version>
     </dependency>
 
   </dependencies>
