@@ -1,0 +1,8 @@
+Manifest.static
+Manifest.txt
+History.rdoc
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-http/base.rb
+lib/iudex-http.rb
