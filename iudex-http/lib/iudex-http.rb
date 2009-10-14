@@ -16,11 +16,13 @@
 
 require 'rubygems'
 
+require 'slf4j'
 require 'gravitext-util'
+
 require 'iudex-http/base'
 
 module Iudex
   module HTTP
-    Dir.glob( File.join( IUDEX_HTTP_DIR, '*.jar' ) ).each { |jar| require jar }
+    require "#{LIB_DIR}/iudex-http-#{VERSION}.jar"
   end
 end

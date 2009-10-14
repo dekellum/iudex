@@ -18,6 +18,6 @@ module Iudex
   module Filter
     VERSION = '1.0.0'
 
-    IUDEX_FILTER_DIR = File.dirname( __FILE__ ) # :nodoc:
+    LIB_DIR = File.dirname( __FILE__ ) # :nodoc:
   end
 end

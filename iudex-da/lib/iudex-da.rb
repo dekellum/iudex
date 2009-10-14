@@ -15,13 +15,19 @@
 #++
 
 require 'rubygems'
-require 'iudex-da/base'
-require 'iudex-core'
+
+require 'slf4j'
 require 'rjack-commons-dbcp'
 require 'rjack-commons-dbutils'
 
+require 'iudex-core'
+
+require 'iudex-da/base'
+
 module Iudex
   module DA
+
+    require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
 
     # Configuration for ActiveRecord (adjust before requiring iudex-da/ar)
     # and defaults for PoolDataSourceFactory.new( properties )
@@ -31,6 +37,5 @@ module Iudex
       :database => 'iudex_test',
       :username => 'iudex' }
 
-    Dir.glob( File.join( IUDEX_DA_DIR, '*.jar' ) ).each { |jar| require jar }
   end
 end

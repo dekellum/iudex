@@ -46,6 +46,9 @@ iudex-filter
 iudex-barc
   iudex.barc
 
+  dependencies:
+    rjack-http (abstraction?)
+
 iudex-core
   iudex.core
     ContentKeys

@@ -22,7 +22,7 @@ require 'iudex-filter/base'
 
 module Iudex
   module Filter
-    Dir.glob( File.join( IUDEX_FILTER_DIR, '*.jar' ) ).each { |jar| require jar }
+    require "#{LIB_DIR}/iudex-filter-#{VERSION}.jar"
   end
 end
 
