@@ -30,9 +30,9 @@ t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
   h.extra_deps += [ [ 'activerecord'           '~> 2.3.4'  ],
+                    [ 'jdbc-postgres',         '~> 8.4.701'],
                     [ 'activerecord-jdbcpostgresql-adapter', '~> 0.9.2' ],
                     [ 'rjack-slf4j',           '~> 1.5.8'  ],
-                    [ 'rjack-logback',         '>= 0.9.17' ],
                     [ 'rjack-commons-dbcp',    '~> 1.2.2'  ],
                     [ 'rjack-commons-dbutils', '~> 1.2.0'  ],
                     [ 'gravitext-util',        '~> 1.4.0'  ],

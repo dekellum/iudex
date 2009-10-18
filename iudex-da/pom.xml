@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql-jdbc4</artifactId>
-      <version>8.3.604</version>
+      <version>8.4.701</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
