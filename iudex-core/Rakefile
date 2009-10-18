@@ -22,9 +22,7 @@ require 'rubygems'
 gem     'rjack-tarpit', '~> 1.0.0'
 require 'rjack-tarpit'
 
-t = RJack::TarPit.new( 'iudex-core',
-                       Iudex::Core::VERSION,
-                       :no_assembly )
+t = RJack::TarPit.new( 'iudex-core', Iudex::Core::VERSION, :no_assembly )
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
