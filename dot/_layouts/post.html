@@ -1,0 +1,24 @@
+---
+layout: default
+top: Void * Blog
+feed: atom.xml
+---
+
+<div id="header">
+  <span class="ptitle">{{ page.title }}</span>
+
+  <span class="vblog">
+    <a href="/#vblog" title="void * blog">void * blog</a>
+  </span>
+
+  <div class="date">{{ page.date | date: "%Y.%m.%d" }}</div>
+
+</div>
+
+<div id="page">
+
+  <hr id="page-first"/>
+
+  {{ content }}
+
+</div>

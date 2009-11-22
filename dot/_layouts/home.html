@@ -1,0 +1,29 @@
+---
+layout: default
+title: David Kellum
+section: home
+---
+
+<div id="home-photo">
+  <h1 id="name">David Kellum</h1>
+  <img src="/images/1268-c-4.jpg" alt="David Kellum" width="710" height="190"/>
+</div>
+
+<div id="home">
+
+  {{ content }}
+
+  <h2 class="vblog"><a name="vblog">void * blog</a></h2>
+
+  <p>Technical musings on projects and other topics indeterminate:</p>
+
+  <div class="section list">
+    {% for post in site.posts %}
+      <h1>{{ post.date | date: "%Y.%m.%d" }}</h1>
+      <p class="line">
+      <a class="title" href="{{ post.url }}">{{ post.title }}</a>
+      </p>
+      <p class="excerpt">{{ post.excerpt }}</p>
+    {% endfor %}
+  </div>
+</div>
