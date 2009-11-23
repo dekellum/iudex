@@ -1,13 +1,11 @@
 # -*- ruby -*-
 
-rule( '.svg' => [ '.dot' ] ) do |t|
-  sh "dot -Tsvg -o #{t.name} #{t.source}"
-end
+FileList[ '_dot/*.dot' ].each do |dot|
+  svg = dot.sub( /(\.dot)$/, '.svg' ).sub( /^(_dot)/, 'svg' )
 
-FileList[ '*.dot' ].each do |d|
-  task :default => d.gsub( /(\.dot)$/, '.svg' )
-end
+  file svg => [ dot ] do
+    sh "dot -Tsvg -o #{svg} #{dot}"
+  end
 
-task :ff => [ 'iudex.svg' ] do
-  sh "firefox iudex.svg"
+  task :default => svg
 end
