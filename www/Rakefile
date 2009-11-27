@@ -1,5 +1,7 @@
 # -*- ruby -*-
 
+task :default => :dot
+
 directory 'svg'
 
 FileList[ '_dot/*.dot' ].each do |dot|
@@ -9,7 +11,7 @@ FileList[ '_dot/*.dot' ].each do |dot|
     sh "dot -Tsvg -o #{svg} #{dot}"
   end
 
-  task :default => svg
+  task :dot => svg
 end
 
 task :clean do
