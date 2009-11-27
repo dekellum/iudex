@@ -2,8 +2,10 @@ digraph "iudex-gems" {
   rankdir=LR
   size="5.5,5";
   bgcolor="transparent";
-  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b", fontname="Arial",
-         margin="0.30,0.1" ];
+  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
+         fontname="Arial",  margin="0.30,0.1" ];
+
+  "iudex-da" [ target=_parent, URL="../iudex-da.html" ];
 
   "iudex-filter" -> "gravitext-util"
   "iudex-http"   -> "gravitext-util"
