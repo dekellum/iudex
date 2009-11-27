@@ -65,16 +65,16 @@ public class ContentReader
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public List<UniMap> select( String query, Object... params )
         throws SQLException
     {
         QueryRunner runner = new QueryRunner( _dsource );
 
-        return (List<UniMap>) runner.query( query, new MapHandler(), params );
+        return runner.query( query, new MapHandler(), params );
     }
 
-    protected final class MapHandler implements ResultSetHandler
+    protected final class MapHandler
+        implements ResultSetHandler<List<UniMap>>
     {
         @Override
         public List<UniMap> handle( ResultSet rset ) throws SQLException

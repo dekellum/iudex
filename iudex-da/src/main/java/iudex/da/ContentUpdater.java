@@ -99,10 +99,9 @@ public class ContentUpdater
         qb.append( " FROM urls WHERE uhash = ? FOR UPDATE;" );
 
         UpdateQueryRunner runner = new UpdateQueryRunner();
-        int update = (Integer)
-            runner.query( conn, qb.toString(),
-                          new OneUpdateHandler( content ),
-                new Object[] { content.get( ContentKeys.URL ).uhash() } );
+        int update = runner.query( conn, qb.toString(),
+                                   new OneUpdateHandler( content ),
+                                   content.get( ContentKeys.URL ).uhash() );
 
         if( update == 0 ) {
             UniMap out = _transformer.transformContent( content, null );
@@ -153,7 +152,7 @@ public class ContentUpdater
     }
 
     private final class RefUpdateHandler
-        implements ResultSetHandler
+        implements ResultSetHandler<Object>
     {
         public RefUpdateHandler( HashMap<String, UniMap> hashes )
         {
@@ -180,7 +179,7 @@ public class ContentUpdater
     }
 
     private final class OneUpdateHandler
-        implements ResultSetHandler
+        implements ResultSetHandler<Integer>
     {
         public OneUpdateHandler( UniMap content )
         {
