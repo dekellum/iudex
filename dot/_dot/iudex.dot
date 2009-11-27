@@ -1,65 +1,38 @@
 digraph "iudex-gems" {
   rankdir=LR
-  size="7.5,10";
-  node [shape=box, style=filled, fillcolor=tan ];
+  size="5.5,5";
+  bgcolor="transparent";
+  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b", fontname="Arial",
+         margin="0.30,0.1" ];
 
   "iudex-filter" -> "gravitext-util"
-  "iudex-filter" -> "rjack-slf4j"
-  "iudex-filter" -> "rjack-logback"
+  "iudex-http"   -> "gravitext-util"
+  "iudex-barc"   -> "gravitext-util"
+  "iudex-core"   -> "gravitext-util"
+  "iudex-da"     -> "gravitext-util"
 
-  "iudex-http" -> "gravitext-util"
-  "iudex-http" -> "rjack-slf4j"
-
-  "iudex-barc" -> "gravitext-util"
   "iudex-barc" -> "iudex-http"
-  "iudex-barc" -> "rjack-slf4j"
 
   "iudex-core" -> "iudex-filter"
-  "iudex-core" -> "gravitext-util"
-  "iudex-core" -> "rjack-slf4j"
-  "iudex-core" -> "rjack-logback"
 
-  subgraph cluster_da {
-    rankdir=RL
-    rank=sink
-    "iudex-da" -> "activerecord" -> "activesupport"
-    "iudex-da" -> "jdbc-postgres"
-    "iudex-da" -> "activerecord-jdbcpostgresql-adapter"
-    "iudex-da" -> "rjack-commons-dbcp"
-    "iudex-da" -> "rjack-commons-dbutils"
-
-    "rjack-commons-dbcp" -> "rjack-commons-pool";
-
-    "activerecord-jdbcpostgresql-adapter" -> "activerecord-jdbc-adapter"
-    "activerecord-jdbcpostgresql-adapter" -> "jdbc-postgres"
-  }
-
-  "iudex-da" -> "rjack-slf4j"
-  "iudex-da" -> "gravitext-util"
   "iudex-da" -> "iudex-filter"
   "iudex-da" -> "iudex-core"
 
-  "rjack-rome" -> "rjack-jdom"
+#  "iudex-filter" -> "rjack-slf4j"
+#  "iudex-filter" -> "rjack-logback"
+#  "iudex-http" -> "rjack-slf4j"
+#  "iudex-barc" -> "rjack-slf4j"
+#  "iudex-core" -> "rjack-slf4j"
+#  "iudex-core" -> "rjack-logback"
+#  "iudex-da" -> "rjack-slf4j"
 
-  "rjack-httpclient" [shape=record,label="rjack-httpclient|<3>3|<4>4"]
-  "rjack-httpclient" -> "rjack-commons-codec";
-  "rjack-httpclient" -> "rjack-logback" [ style=dashed, label="dev" ];
-  "rjack-httpclient" -> "rjack-slf4j";
+#  "rjack-httpclient" -> "rjack-commons-codec";
+#  "rjack-httpclient" -> "rjack-logback" [ style=dashed, label="dev" ];
+#  "rjack-httpclient" -> "rjack-slf4j";
 
-  "rjack-slf4j"   [ group=log ];
-  "rjack-logback" [ group=log ];
-
-  "rjack-logback" -> "rjack-slf4j";
-
-  "rjack-commons-codec"   [ group=commons ];
-
-
-#  subgraph d {
-#    rank=same
-#    "rjack-commons-dbcp"    [ group=commons ];
-#    "rjack-commons-dbutils" [ group=commons ];
-#  }
-
-#  "rjack-commons-pool"    [ group=commons ];
+#  "rjack-slf4j"   [ group=log ];
+#  "rjack-logback" [ group=log ];
+#  "rjack-logback" -> "rjack-slf4j";
+#  "rjack-commons-codec"   [ group=commons ];
 
 }
