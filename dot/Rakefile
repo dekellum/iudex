@@ -1,11 +1,17 @@
 # -*- ruby -*-
 
+directory 'svg'
+
 FileList[ '_dot/*.dot' ].each do |dot|
   svg = dot.sub( /(\.dot)$/, '.svg' ).sub( /^(_dot)/, 'svg' )
 
-  file svg => [ dot ] do
+  file svg => [ dot, 'svg' ] do
     sh "dot -Tsvg -o #{svg} #{dot}"
   end
 
   task :default => svg
+end
+
+task :clean do
+  rm_rf %w[ svg _site ]
 end
