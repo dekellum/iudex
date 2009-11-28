@@ -5,15 +5,23 @@ digraph "iudex-gems" {
   node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
          fontname="Arial",  margin="0.30,0.1" ];
 
-  "iudex-da" [ target=_parent, URL="../iudex-da.html" ];
-
   "iudex-filter" -> "gravitext-util"
-  "iudex-http"   -> "gravitext-util"
-  "iudex-barc"   -> "gravitext-util"
   "iudex-core"   -> "gravitext-util"
   "iudex-da"     -> "gravitext-util"
 
+  "iudex-da" [ target=_parent, URL="../iudex-da.html" ];
+
+  "iudex-rome" -> "iudex-core"
+
+  "iudex-http"   -> "gravitext-util"
+  "iudex-barc"   -> "gravitext-util"
   "iudex-barc" -> "iudex-http"
+
+  "iudex-httpclient-3" -> "iudex-core"
+  "iudex-httpclient-4" -> "iudex-core"
+
+  "iudex-httpclient-3" -> "iudex-http"
+  "iudex-httpclient-4" -> "iudex-http"
 
   "iudex-core" -> "iudex-filter"
 
