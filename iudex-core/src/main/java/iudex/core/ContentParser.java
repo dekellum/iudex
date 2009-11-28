@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iudex.feed;
-
-import iudex.core.ParseException;
+package iudex.core;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 import com.gravitext.htmap.UniMap;
 
-public interface FeedParser
+/**
+ * Generic interface for parsing components, such as feed, sitemap, and
+ * page parsers.
+ * @author David Kellum
+ */
+public interface ContentParser
 {
-    public Iterator<UniMap> parse( UniMap feed )
+    /**
+     * Parse the given content, returning iterator to obtain child references.
+     * @return Iterator over (0..n) child references
+     * @throws IOException from reading {@link ContentSource@#stream()}
+     * @throws ParseException from other parse specific problem.
+     */
+    public Iterator<UniMap> parse( UniMap content )
         throws ParseException, IOException;
-    // parse input:
-    // IOStream, Chars (Bytes)
-    // Content-Type
-    // Feed URL
-    // Other feed information.. (priorities, etc.?)
-
 }

@@ -32,12 +32,12 @@ import com.sun.syndication.io.XmlReader;
 
 import iudex.core.ContentKeys;
 import iudex.core.ContentSource;
+import iudex.core.ContentParser;
 import iudex.core.ParseException;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
-import iudex.feed.FeedParser;
 
-public class RomeFeedParser implements FeedParser
+public class RomeFeedParser implements ContentParser
 {
     @Override
     public Iterator<UniMap> parse( UniMap inContent )
