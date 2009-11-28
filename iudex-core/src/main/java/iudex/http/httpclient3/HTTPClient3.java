@@ -69,12 +69,12 @@ public class HTTPClient3 implements HTTPClient
             //FIXME: Adapter? Lazy Cache?
         }
 
-        /** FIXME: Final Url?
+        /* FIXME: Final Url?
         public URI uri() throws URIException
         {
             return _httpMethod.getURI();
         }
-        **/
+        */
 
         public int responseCode()
         {
