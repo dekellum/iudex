@@ -21,6 +21,6 @@ require 'iudex-core/base'
 
 module Iudex
   module Core
-    Dir.glob( File.join( IUDEX_CORE_DIR, '*.jar' ) ).each { |jar| require jar }
+    require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
   end
 end
