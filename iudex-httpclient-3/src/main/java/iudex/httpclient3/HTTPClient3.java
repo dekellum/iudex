@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iudex.http.httpclient3;
+package iudex.httpclient3;
 
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
