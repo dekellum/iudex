@@ -6,3 +6,4 @@ Rakefile
 pom.xml
 lib/iudex-http/base.rb
 lib/iudex-http.rb
+test/test_http.rb

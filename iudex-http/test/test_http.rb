@@ -1,3 +1,6 @@
+#!/usr/bin/env jruby
+#.hashdot.profile += jruby-shortlived
+
 #--
 # Copyright (C) 2008-2009 David Kellum
 #
@@ -14,15 +17,18 @@
 # permissions and limitations under the License.
 #++
 
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
 require 'rubygems'
+require 'rjack-logback'
+Logback.config_console( :level => Logback::DEBUG )
 
-require 'rjack-slf4j'
-require 'gravitext-util'
+require 'iudex-http'
 
-require 'iudex-http/base'
+require 'test/unit'
 
-module Iudex
-  module HTTP
-    require "#{LIB_DIR}/iudex-http-#{VERSION}.jar"
+class TestHttp < Test::Unit::TestCase
+  def test_load
+    assert true
   end
 end
