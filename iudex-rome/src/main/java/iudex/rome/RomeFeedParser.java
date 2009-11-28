@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iudex.feed.rome;
+package iudex.rome;
 
 import java.io.CharArrayReader;
 import java.io.IOException;

@@ -4,6 +4,6 @@ History.rdoc
 README.rdoc
 Rakefile
 pom.xml
-lib/iudex-core/base.rb
-lib/iudex-core.rb
-test/test_core.rb
+lib/iudex-rome.rb
+lib/iudex-rome/base.rb
+test/test_rome.rb

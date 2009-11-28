@@ -6,6 +6,5 @@ Rakefile
 pom.xml
 lib/iudex-core/base.rb
 lib/iudex-core.rb
-lib/iudex-core/http.rb
 test/test_core.rb
 lib/iudex-core/iudex-core-1.0.0.jar
