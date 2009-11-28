@@ -14,16 +14,17 @@ digraph "iudex-gems" {
   "iudex-rome" -> "iudex-core"
 
   "iudex-http"   -> "gravitext-util"
+
   "iudex-barc"   -> "gravitext-util"
   "iudex-barc" -> "iudex-http"
 
-  "iudex-httpclient-3" -> "iudex-core"
-  "iudex-httpclient-4" -> "iudex-core"
-
   "iudex-httpclient-3" -> "iudex-http"
+
+  "iudex-httpclient-4" [ style="rounded,dashed" ]
   "iudex-httpclient-4" -> "iudex-http"
 
   "iudex-core" -> "iudex-filter"
+  "iudex-core" -> "iudex-http"
 
   "iudex-da" -> "iudex-filter"
   "iudex-da" -> "iudex-core"
