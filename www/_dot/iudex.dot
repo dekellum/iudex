@@ -17,6 +17,9 @@ digraph "iudex-gems" {
 
   "iudex-rome"   -> "iudex-core"
 
+  "iudex-sitemap" [ style="rounded,dashed" ]
+  "iudex-sitemap" -> "iudex-core"
+
   "iudex-barc"   -> "gravitext-util"
   "iudex-barc"   -> "iudex-http"
 
@@ -29,11 +32,11 @@ digraph "iudex-gems" {
 
 #  "iudex-filter" -> "rjack-slf4j"
 #  "iudex-filter" -> "rjack-logback"
-#  "iudex-http" -> "rjack-slf4j"
-#  "iudex-barc" -> "rjack-slf4j"
-#  "iudex-core" -> "rjack-slf4j"
-#  "iudex-core" -> "rjack-logback"
-#  "iudex-da" -> "rjack-slf4j"
+#  "iudex-http"   -> "rjack-slf4j"
+#  "iudex-barc"   -> "rjack-slf4j"
+#  "iudex-core"   -> "rjack-slf4j"
+#  "iudex-core"   -> "rjack-logback"
+#  "iudex-da"     -> "rjack-slf4j"
 
 #  "rjack-httpclient" -> "rjack-commons-codec";
 #  "rjack-httpclient" -> "rjack-logback" [ style=dashed, label="dev" ];
