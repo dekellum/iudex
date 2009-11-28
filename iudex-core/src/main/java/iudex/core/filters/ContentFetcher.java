@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.http.filters;
+package iudex.core.filters;
 
 import java.io.IOException;
 import java.util.Arrays;

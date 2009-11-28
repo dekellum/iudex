@@ -64,24 +64,6 @@
     </dependency>
 
     <dependency>
-      <groupId>iudex</groupId>
-      <artifactId>iudex-barc</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
       <groupId>rome</groupId>
       <artifactId>rome</artifactId>
       <version>1.0</version>

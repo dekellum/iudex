@@ -16,7 +16,7 @@
 
 require 'rubygems'
 
-require 'slf4j'
+require 'rjack-slf4j'
 require 'gravitext-util'
 
 require 'iudex-http'

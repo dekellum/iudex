@@ -18,7 +18,6 @@
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
-require 'iudex-core'
 
 require 'rubygems'
 require 'rjack-logback'
@@ -27,10 +26,11 @@ Logback.config_console
 #Logback[ "org.apache.commons.httpclient" ].level = Logback::INFO
 #Logback[ "iudex" ].level = Logback::DEBUG
 
-require 'iudex-core/http'
+require 'iudex-barc'
+require 'iudex-httpclient-3' #FIXME: Unspecified dependency
 
-import 'iudex.http.httpclient3.HTTPClient3'
-import 'iudex.http.barc.BARCResponseHandler'
+import 'iudex.httpclient3.HTTPClient3'
+import 'iudex.barc.http.BARCResponseHandler'
 import 'iudex.barc.BARCFile'
 
 hmanager = RJack::HTTPClient3::ManagerFacade.new
