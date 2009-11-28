@@ -6,28 +6,26 @@ digraph "iudex-gems" {
          fontname="Arial",  margin="0.30,0.1" ];
 
   "iudex-filter" -> "gravitext-util"
-  "iudex-core"   -> "gravitext-util"
   "iudex-da"     -> "gravitext-util"
+  "iudex-da"     [ target=_parent, URL="../iudex-da.html" ];
+  "iudex-da"     -> "iudex-filter"
+  "iudex-da"     -> "iudex-core"
 
-  "iudex-da" [ target=_parent, URL="../iudex-da.html" ];
+  "iudex-core"   -> "gravitext-util"
+  "iudex-core"   -> "iudex-filter"
+  "iudex-core"   -> "iudex-http"
 
-  "iudex-rome" -> "iudex-core"
-
-  "iudex-http"   -> "gravitext-util"
+  "iudex-rome"   -> "iudex-core"
 
   "iudex-barc"   -> "gravitext-util"
-  "iudex-barc" -> "iudex-http"
+  "iudex-barc"   -> "iudex-http"
+
+  "iudex-http"   -> "gravitext-util"
 
   "iudex-httpclient-3" -> "iudex-http"
 
   "iudex-httpclient-4" [ style="rounded,dashed" ]
   "iudex-httpclient-4" -> "iudex-http"
-
-  "iudex-core" -> "iudex-filter"
-  "iudex-core" -> "iudex-http"
-
-  "iudex-da" -> "iudex-filter"
-  "iudex-da" -> "iudex-core"
 
 #  "iudex-filter" -> "rjack-slf4j"
 #  "iudex-filter" -> "rjack-logback"
