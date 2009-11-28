@@ -13,6 +13,7 @@
     <module>iudex-http</module>
     <module>iudex-barc</module>
     <module>iudex-core</module>
+    <module>iudex-httpclient-3</module>
     <module>iudex-da</module>
   </modules>
 
