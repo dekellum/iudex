@@ -1,0 +1,94 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (C) 2008-2009 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+
+require 'rjack-logback'
+Logback.config_console
+Logback['Iudex.DA'].level = Logback::INFO
+
+require 'iudex-da'
+require 'iudex-da/pool_data_source_factory'
+
+class Generator
+  include Iudex::DA
+  include Gravitext::HTMap
+
+  import 'iudex.core.VisitURL'
+  import 'iudex.core.ContentKeys'
+  import 'org.apache.commons.dbutils.ResultSetHandler'
+  import 'org.apache.commons.dbutils.QueryRunner'
+  import 'iudex.da.ContentMapper'
+  import 'iudex.da.ContentWriter'
+
+  # 26^3 or 17,576 hosts
+  def hosts
+    h = []
+    r = ('a'..'z')
+    r.each do |i|
+      r.each do |j|
+        r.each do |k|
+          h << i.to_s + j + k + ".com"
+        end
+      end
+    end
+    h
+  end
+
+  def initialize
+    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 )
+    @data_source = @factory.create
+
+    @kmap = ContentMapper.new( [ ContentMapper::UHASH,
+                                 ContentMapper::HOST,
+                                 ContentKeys::URL,
+                                 ContentKeys::TYPE,
+                                 ContentKeys::PRIORITY,
+                                 ContentKeys::NEXT_VISIT_AFTER ] )
+
+    UniMap.define_accessors
+  end
+
+  def clear
+    qrun = QueryRunner.new( @data_source )
+    qrun.update( "DELETE from urls;" )
+  end
+
+  def write
+    writer = ContentWriter.new( @data_source, @kmap )
+
+    t = Time.now
+    hosts.each do |host|
+      (rand(50) + 1).times do |i|
+        c = UniMap.new
+        c.priority = ( rand * 9.99 + 0.01 )
+        c.url = VisitURL.normalize( "http://#{host}/#{i}" )
+        c.type = "FEED"
+        c.next_visit_after = t + ( rand(3) * 60 * 60 * 24 * 100 ) # 2/3 are in future
+        writer.write( c )
+      end
+    end
+  end
+
+end
+
+g = Generator.new
+g.clear
+g.write
