@@ -20,64 +20,62 @@
 # Base Urls table schema
 class BaseUrls < ActiveRecord::Migration
   def self.up
-    create_table  'urls',  :id => false do |t|
+    create_table( 'urls', :id => false ) {}
 
-      t.text      'uhash', :null => false
-      # 23 byte ASCII PRIMARY KEY SHA-1 hash fragment of URL
-      # (Note :limit not useful.)
+    add_column( 'urls', 'uhash', :text, :null => false )
+    # 23 byte ASCII PRIMARY KEY SHA-1 hash fragment of URL
+    # (Note :limit not useful.)
 
-      t.text      'url',   :null => false
-      # Complete normalized url (exactly as used for uhash)
+    add_column( 'urls', 'url', :text,  :null => false )
+    # Complete normalized url (exactly as used for uhash)
 
-      t.text      'host',  :null => false
-      # Normalized host portion of URL
+    add_column( 'urls', 'host', :text, :null => false )
+    # Normalized host portion of URL
 
-      t.text      'type',  :null => false
-      # FEED, PAGE, ROBOTS, SITEMAP
-      # Potentially speculative (i.e. "PAGE" before visited)
-      # FIXME: Or REDIRECT here instead of status?
+    add_column( 'urls', 'type', :text, :null => false )
+    # FEED, PAGE, ROBOTS, SITEMAP
+    # Potentially speculative (i.e. "PAGE" before visited)
+    # FIXME: Or REDIRECT here instead of status?
 
-      t.text      'etag'
-      # HTTP ETag header used for subsequent conditional GET
-      # Should only be on 200 and related HTTP status, not redirect
+    add_column( 'urls', 'etag', :text )
+    # HTTP ETag header used for subsequent conditional GET
+    # Should only be on 200 and related HTTP status, not redirect
 
-      t.timestamp 'last_visit'
-      # Time of last visit (and thus last type,status,reason,etc.)
+    add_column( 'urls', 'last_visit', 'timestamp with time zone' )
+    # Time of last visit (and thus last type,status,reason,etc.)
 
-      t.integer   'status'
-      # HTTP status code or special (negative) status mapping
-      # null     : Not yet visited
-      #  -1      : Connection Failed
-      # 4xx      : Permanent Failures
-      # 5xx      : Transient server error
-      # 200      : Success
-      # 304      : Not Modified
-      # 301,302  : Redirect
-      # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-      # Compare to: http://crawler.archive.org/articles/user_manual/glossary.html#statuscodes
+    add_column( 'urls', 'status', :integer )
+    # HTTP status code or special (negative) status mapping
+    # null     : Not yet visited
+    #  -1      : Connection Failed
+    # 4xx      : Permanent Failures
+    # 5xx      : Transient server error
+    # 200      : Success
+    # 304      : Not Modified
+    # 301,302  : Redirect
+    # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+    # Compare to: http://crawler.archive.org/articles/user_manual/glossary.html#statuscodes
 
-      t.boolean   'pass'
-      # null     : Not yet processed (i.e. visit failed)
-      # false    : Rejected by processing (for reason), DELETE required
-      # true     : Fully Processed
+    add_column( 'urls', 'pass', :boolean )
+    # null     : Not yet processed (i.e. visit failed)
+    # false    : Rejected by processing (for reason), DELETE required
+    # true     : Fully Processed
 
-      t.text      'reason'
-      # null      : None
-      # DUPE      : Duplicate of referent
-      # rejection filter (intended as key)
+    add_column( 'urls', 'reason', :text )
+    # null      : None
+    # DUPE      : Duplicate of referent
+    # rejection filter (intended as key)
 
-      t.text      'referent'
-      # null      : None
-      # uhash of url this is refering to
-      # (includes status:REDIRECT, reason:DUPE, etc.)
+    add_column( 'urls', 'referent', :text )
+    # null      : None
+    # uhash of url this is refering to
+    # (includes status:REDIRECT, reason:DUPE, etc.)
 
-      t.text      'referer'
-      # null      : None
-      # uhash of url this was refered from. (i.e. the feed URL)
+    add_column( 'urls', 'referer', :text )
+    # null      : None
+    # uhash of url this was refered from. (i.e. the feed URL)
 
-    end
-
-    execute "ALTER TABLE urls ADD PRIMARY KEY (uhash)"
+    execute( "ALTER TABLE urls ADD PRIMARY KEY (uhash)" )
     add_index 'urls', [ 'host' ]
   end
 

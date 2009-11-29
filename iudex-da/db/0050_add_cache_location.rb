@@ -17,10 +17,10 @@
 class AddCacheLocation < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',   'cache_file',         :integer, :limit => 4
+    add_column( 'urls', 'cache_file', :integer, :limit => 4 )
     # 32-bit file number
 
-    add_column    'urls',   'cache_file_offset',  :integer, :limit => 8
+    add_column( 'urls', 'cache_file_offset', :integer, :limit => 8 )
     # 64-bit byte offset within file
   end
 
