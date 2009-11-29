@@ -17,17 +17,18 @@ digraph "iudex-gems" {
 
   "iudex-rome"   -> "iudex-core"
 
-  "iudex-sitemap" [ style="rounded,dashed" ]
+  "iudex-sitemap" [ style="rounded,dashed" ];
+  "iudex-sitemap" [ target=_parent, URL="../sitemap.html" ];
   "iudex-sitemap" -> "iudex-core"
 
   "iudex-barc"   -> "gravitext-util"
   "iudex-barc"   -> "iudex-http"
-
+  "iudex-barc"   [ target=_parent, URL="../barc.html" ];
   "iudex-http"   -> "gravitext-util"
 
   "iudex-httpclient-3" -> "iudex-http"
 
-  "iudex-httpclient-4" [ style="rounded,dashed" ]
+  "iudex-httpclient-4" [ style="rounded,dashed" ];
   "iudex-httpclient-4" -> "iudex-http"
 
 #  "iudex-filter" -> "rjack-slf4j"
