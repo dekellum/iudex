@@ -75,6 +75,7 @@ class Generator
     writer = ContentWriter.new( @data_source, @kmap )
 
     t = Time.now
+    batch = []
     hosts.each do |host|
       (rand(50) + 1).times do |i|
         c = UniMap.new
@@ -82,9 +83,14 @@ class Generator
         c.url = VisitURL.normalize( "http://#{host}/#{i}" )
         c.type = "FEED"
         c.next_visit_after = t + ( rand(3) * 60 * 60 * 24 * 100 ) # 2/3 are in future
-        writer.write( c )
+        batch << c
+        if batch.length >= 10_000
+          writer.write( batch )
+          batch.clear
+        end
       end
     end
+    writer.write( batch ) unless batch.empty?
   end
 
 end
