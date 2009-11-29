@@ -28,7 +28,7 @@ module Iudex::DA
   ActiveRecord::Base.establish_connection( CONFIG )
 
   def migrate( target_version = nil )
-    ActiveRecord::Migrator.migrate( File.join( IUDEX_DA_DIR, '..', '..', 'db' ),
+    ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),
                                     target_version )
   end
 
