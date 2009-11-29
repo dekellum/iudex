@@ -76,7 +76,6 @@ class BaseUrls < ActiveRecord::Migration
     # uhash of url this was refered from. (i.e. the feed URL)
 
     execute( "ALTER TABLE urls ADD PRIMARY KEY (uhash)" )
-    add_index 'urls', [ 'host' ]
   end
 
   def self.down
