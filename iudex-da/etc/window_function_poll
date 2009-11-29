@@ -1,10 +1,10 @@
-iudex_test=# EXPLAIN ANALYZE ELECT url, host, type, priority
+iudex_test=# EXPLAIN ANALYZE SELECT url, host, type, priority
 FROM ( SELECT * FROM urls
        WHERE next_visit_after <= now()
        AND uhash IN ( SELECT uhash FROM urls o
                       WHERE o.host = urls.host
                       ORDER BY priority DESC LIMIT 5 )
-       ORDER BY priority DESC LIMIT 18 ) AS sub
+       ORDER BY priority DESC LIMIT 1000 ) AS sub
 ORDER BY host, priority DESC;
 iudex_test=# \e
                                                     QUERY PLAN
@@ -23,13 +23,13 @@ iudex_test=# \e
                                          Filter: (host = $0)
 (12 rows)
 
-iudex_test=# EXPLAIN SELECT url, host, type, priority
+iudex_test=# EXPLAIN ANALYZE SELECT url, host, type, priority
 FROM ( SELECT *,
          row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) AS hpos,
          row_number() OVER ( ORDER BY priority DESC ) as ppos
        FROM urls
        WHERE next_visit_after <= now() ) AS sub
-WHERE hpos <= 5 AND ppos <= 18
+WHERE hpos <= 5 AND ppos <= 1000
 ORDER BY host, priority DESC;
                                         QUERY PLAN
 -------------------------------------------------------------------------------------------
@@ -85,17 +85,16 @@ ORDER BY host, priority DESC;
 
 (TRY large data set, "EXPLAIN ANALYZE")
 
-EXPLAIN SELECT url, host, type, priority
+EXPLAIN ANALYZE SELECT url, host, type, priority
 FROM ( SELECT *,
-       ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) ) ,
-
-         row_number() OVER ( ORDER BY priority DESC ) as ppos
+       row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) as hpos,
+       row_number() OVER ( ORDER BY priority DESC ) as ppos
        FROM urls
        WHERE next_visit_after <= now() ) AS sub
-WHERE hpos <= 5 AND ppos <= 18
+WHERE hpos <= 5 AND ppos <= 1000
 ORDER BY host, priority DESC;
 
-OR, simple discount priority as a function of host rank:
+OR, simply discount priority as a function of host rank:
 
 SELECT url, host, type, priority, adj_priority
 FROM ( SELECT *,
@@ -104,7 +103,7 @@ FROM ( SELECT *,
               ( priority - ( ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) - 1 ) / 8.0 ) ) as adj_priority
               FROM urls
               WHERE next_visit_after <= now() ) AS sub1 ) as sub2
-WHERE apos <= 18
+WHERE apos <= 1000
 ORDER BY host, priority DESC;
 
            url            |     host      | type | priority |   adj_priority
@@ -158,3 +157,182 @@ WHERE ppos <= 18
  http://other.net/1.56     | other.net     | FEED |     1.56
  http://other.net/1.44     | other.net     | FEED |     1.44
 (18 rows)
+
+---------------- Updates with large dateset
+
+% select count(*) from urls;
+
+ count
+--------
+ 465257
+
+EXPLAIN ANALYZE SELECT url, host, type, priority
+FROM ( SELECT * FROM urls
+       WHERE next_visit_after <= now()
+       AND uhash IN ( SELECT uhash FROM urls o
+                      WHERE o.host = urls.host
+                      ORDER BY priority DESC LIMIT 10 )
+       ORDER BY priority DESC LIMIT 50000 ) AS sub
+ORDER BY host, priority DESC;
+
+ Sort  (cost=1035509.04..1035634.04 rows=50000 width=100) (actual time=19700.087..19775.652 rows=50000 loops=1)
+   Sort Key: sub.host, sub.priority
+   Sort Method:  external merge  Disk: 3192kB
+   ->  Subquery Scan sub  (cost=0.00..1028957.13 rows=50000 width=100) (actual time=0.203..18996.480 rows=50000 loops=1)
+         ->  Limit  (cost=0.00..1028457.13 rows=50000 width=287) (actual time=0.202..18912.163 rows=50000 loops=1)
+               ->  Index Scan Backward using index_urls_on_priority on urls  (cost=0.00..4784485.41 rows=232605 width=287) (actual time=0.200..18851.825 rows=50000 loops=1)
+                     Filter: ((next_visit_after <= now()) AND (SubPlan 1))
+                     SubPlan 1
+                       ->  Limit  (cost=10.21..10.23 rows=10 width=28) (actual time=0.108..0.121 rows=8 loops=142227)
+                             ->  Sort  (cost=10.21..10.29 rows=31 width=28) (actual time=0.106..0.110 rows=8 loops=142227)
+                                   Sort Key: o.priority
+                                   Sort Method:  top-N heapsort  Memory: 17kB
+                                   ->  Index Scan using index_urls_on_host on urls o  (cost=0.00..9.54 rows=31 width=28) (actual time=0.022..0.063 rows=34 loops=142227)
+                                         Index Cond: (host = $0)
+ Total runtime: 19802.725 ms
+
+EXPLAIN ANALYZE SELECT url, host, type, priority
+FROM ( SELECT *,
+       row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) as hpos,
+       row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM urls
+       WHERE next_visit_after <= now() ) AS sub
+WHERE hpos <= 10 AND ppos <= 50000
+ORDER BY host, priority DESC;
+
+ Sort  (cost=504698.10..504827.33 rows=51690 width=100) (actual time=15770.147..15789.956 rows=17378 loops=1)
+   Sort Key: sub.host, sub.priority
+   Sort Method:  external merge  Disk: 1104kB
+   ->  Subquery Scan sub  (cost=482791.57..497910.90 rows=51690 width=100) (actual time=13620.212..15575.418 rows=17378 loops=1)
+         Filter: ((sub.hpos <= 10) AND (sub.ppos <= 50000))
+         ->  WindowAgg  (cost=482791.57..490932.75 rows=465210 width=287) (actual time=13620.187..15246.148 rows=465257 loops=1)
+               ->  Sort  (cost=482791.57..483954.60 rows=465210 width=287) (actual time=13620.154..14278.178 rows=465257 loops=1)
+                     Sort Key: urls.priority
+                     Sort Method:  external merge  Disk: 49904kB
+                     ->  WindowAgg  (cost=243654.61..252958.81 rows=465210 width=287) (actual time=8856.298..10691.097 rows=465257 loops=1)
+                           ->  Sort  (cost=243654.61..244817.64 rows=465210 width=287) (actual time=8856.260..9439.710 rows=465257 loops=1)
+                                 Sort Key: urls.host, urls.priority
+                                 Sort Method:  external merge  Disk: 46256kB
+                                 ->  Seq Scan on urls  (cost=0.00..13821.85 rows=465210 width=287) (actual time=0.062..837.350 rows=465257 loops=1)
+                                       Filter: (next_visit_after <= now())
+ Total runtime: 16731.738 ms
+
+EXPLAIN ANALYZE SELECT url, host, type, priority, adj_priority
+FROM ( SELECT *,
+       row_number() OVER( ORDER BY adj_priority DESC ) as apos
+       FROM ( SELECT *,
+              ( priority - ( ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) - 1 ) / 8.0 ) ) as adj_priority
+              FROM urls
+              WHERE next_visit_after <= now() ) AS sub1 ) as sub2
+WHERE apos <= 50000
+ORDER BY host, priority DESC;
+
+Sort  (cost=576244.62..576632.29 rows=155070 width=108) (actual time=21122.517..21202.086 rows=50000 loops=1)
+   Sort Key: sub2.host, sub2.priority
+   Sort Method:  external merge  Disk: 3584kB
+   ->  Subquery Scan sub2  (cost=531426.30..545382.60 rows=155070 width=108) (actual time=17249.457..19395.000 rows=50000 loops=1)
+         Filter: (sub2.apos <= 50000)
+         ->  WindowAgg  (cost=531426.30..539567.47 rows=465210 width=349) (actual time=17249.428..19020.053 rows=465257 loops=1)
+               ->  Sort  (cost=531426.30..532589.32 rows=465210 width=349) (actual time=17249.394..18000.104 rows=465257 loops=1)
+                     Sort Key: ((urls.priority - ((((row_number() OVER (?) - 1))::numeric / 8.0))::double precision))
+                     Sort Method:  external merge  Disk: 49904kB
+                     ->  WindowAgg  (cost=243654.61..258773.94 rows=465210 width=287) (actual time=9196.136..13331.453 rows=465257 loops=1)
+                           ->  Sort  (cost=243654.61..244817.64 rows=465210 width=287) (actual time=9196.072..9874.401 rows=465257 loops=1)
+                                 Sort Key: urls.host, urls.priority
+                                 Sort Method:  external merge  Disk: 46256kB
+                                 ->  Seq Scan on urls  (cost=0.00..13821.85 rows=465210 width=287) (actual time=0.074..875.077 rows=465257 loops=1)
+                                       Filter: (next_visit_after <= now())
+ Total runtime: 21378.018 ms
+
+In memory:
+
+/var/lib/data/postgresql.conf
+work_mem = 128MB
+
+EXPLAIN ANALYZE SELECT url, host, type, priority, adj_priority
+FROM ( SELECT *,
+       row_number() OVER( ORDER BY adj_priority DESC ) as apos
+       FROM ( SELECT *,
+              ( priority - ( ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) - 1 ) / 8.0 ) ) as adj_priority
+              FROM urls
+              WHERE next_visit_after <= now() ) AS sub1 ) as sub2
+WHERE apos <= 50000
+ORDER BY host, priority DESC;
+
+Sort  (cost=285254.62..285642.29 rows=155070 width=108) (actual time=15159.070..15194.032 rows=50000 loops=1)
+   Sort Key: sub2.host, sub2.priority
+   Sort Method:  quicksort  Memory: 7665kB
+   ->  Subquery Scan sub2  (cost=257929.30..271885.60 rows=155070 width=108) (actual time=12947.029..14522.331 rows=50000 loops=1)
+         Filter: (sub2.apos <= 50000)
+         ->  WindowAgg  (cost=257929.30..266070.47 rows=465210 width=349) (actual time=12947.003..14202.211 rows=465257 loops=1)
+               ->  Sort  (cost=257929.30..259092.32 rows=465210 width=349) (actual time=12946.984..13237.357 rows=465257 loops=1)
+                     Sort Key: ((urls.priority - ((((row_number() OVER (?) - 1))::numeric / 8.0))::double precision))
+                     Sort Method:  quicksort  Memory: 69984kB
+                     ->  WindowAgg  (cost=119628.61..134747.94 rows=465210 width=287) (actual time=7324.436..10863.458 rows=465257 loops=1)
+                           ->  Sort  (cost=119628.61..120791.64 rows=465210 width=287) (actual time=7324.393..7646.024 rows=465257 loops=1)
+                                 Sort Key: urls.host, urls.priority
+                                 Sort Method:  quicksort  Memory: 69984kB
+                                 ->  Seq Scan on urls  (cost=0.00..13821.85 rows=465210 width=287) (actual time=0.092..644.945 rows=465257 loops=1)
+                                       Filter: (next_visit_after <= now())
+ Total runtime: 15256.827 ms
+
+In memory + adjusted data: 1/3 next_visit_after <= now()
+
+EXPLAIN ANALYZE SELECT url, host, type, priority, adj_priority
+FROM ( SELECT *,
+       row_number() OVER( ORDER BY adj_priority DESC ) as apos
+       FROM ( SELECT *,
+              ( priority - ( ( row_number() OVER ( PARTITION BY host ORDER BY priority DESC ) - 1 ) / 8.0 ) ) as adj_priority
+              FROM urls
+              WHERE next_visit_after <= now() ) AS sub1 ) as sub2
+WHERE apos <= 50000
+ORDER BY host, priority DESC;
+                                                                     QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=56186.21..56314.93 rows=51487 width=108) (actual time=5166.515..5201.693 rows=50000 loops=1)
+   Sort Key: sub2.host, sub2.priority
+   Sort Method:  quicksort  Memory: 4540kB
+   ->  Subquery Scan sub2  (cost=47523.03..52156.86 rows=51487 width=108) (actual time=4138.549..4741.899 rows=50000 loops=1)
+         Filter: (sub2.apos <= 50000)
+         ->  WindowAgg  (cost=47523.03..50226.10 rows=154461 width=349) (actual time=4138.534..4608.511 rows=155587 loops=1)
+               ->  Sort  (cost=47523.03..47909.18 rows=154461 width=349) (actual time=4138.516..4256.492 rows=155587 loops=1)
+                     Sort Key: ((urls.priority - ((((row_number() OVER (?) - 1))::numeric / 8.0))::double precision))
+                     Sort Method:  quicksort  Memory: 24760kB
+                     ->  WindowAgg  (cost=27646.31..32666.29 rows=154461 width=271) (actual time=2159.617..3362.994 rows=155587 loops=1)
+                           ->  Sort  (cost=27646.31..28032.46 rows=154461 width=271) (actual time=2159.575..2267.050 rows=155587 loops=1)
+                                 Sort Key: urls.host, urls.priority
+                                 Sort Method:  quicksort  Memory: 24760kB
+                                 ->  Seq Scan on urls  (cost=0.00..14334.17 rows=154461 width=271) (actual time=0.062..429.353 rows=155587 loops=1)
+                                       Filter: (next_visit_after <= now())
+ Total runtime: 5240.328 ms
+
+The traditional limit query is MUCH slower.
+
+EXPLAIN ANALYZE SELECT url, host, type, priority
+FROM ( SELECT * FROM urls
+       WHERE next_visit_after <= now()
+       AND uhash IN ( SELECT uhash FROM urls o
+                      WHERE o.host = urls.host
+                      ORDER BY priority DESC LIMIT 10 )
+       ORDER BY priority DESC LIMIT 50000 ) AS sub
+ORDER BY host, priority DESC;
+
+ Sort  (cost=15293074.10..15293199.10 rows=50000 width=100) (actual time=20669.531..20704.277 rows=50000 loops=1)
+   Sort Key: sub.host, sub.priority
+   Sort Method:  quicksort  Memory: 4540kB
+   ->  Subquery Scan sub  (cost=15288546.69..15289171.69 rows=50000 width=100) (actual time=20116.407..20274.467 rows=50000 loops=1)
+         ->  Limit  (cost=15288546.69..15288671.69 rows=50000 width=271) (actual time=20116.402..20204.167 rows=50000 loops=1)
+               ->  Sort  (cost=15288546.69..15288739.77 rows=77230 width=271) (actual time=20116.399..20152.094 rows=50000 loops=1)
+                     Sort Key: urls.priority
+                     Sort Method:  quicksort  Memory: 8316kB
+                     ->  Index Scan using index_urls_on_next_visit_after on urls  (cost=0.00..15282276.83 rows=77230 width=271) (actual time=0.811..19959.154 rows=54903 loops=1)
+                           Index Cond: (next_visit_after <= now())
+                           Filter: (SubPlan 1)
+                           SubPlan 1
+                             ->  Limit  (cost=98.70..98.72 rows=10 width=28) (actual time=0.107..0.120 rows=8 loops=155587)
+                                   ->  Sort  (cost=98.70..98.78 rows=31 width=28) (actual time=0.105..0.109 rows=8 loops=155587)
+                                         Sort Key: o.priority
+                                         Sort Method:  quicksort  Memory: 18kB
+                                         ->  Index Scan using index_urls_on_host on urls o  (cost=0.00..98.03 rows=31 width=28) (actual time=0.021..0.061 rows=34 loops=155587)
+                                               Index Cond: (host = $0)
+ Total runtime: 20733.103 ms

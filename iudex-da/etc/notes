@@ -133,7 +133,7 @@ iudex-parsers (iudex-core for now)
   html
   sitemap
 
-iudex-httpclient3 (iudex-core for nw)
+iudex-httpclient3 (iudex-core for now)
 
 == HTTP write through file approach ==
 
