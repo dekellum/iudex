@@ -35,19 +35,22 @@ public class WorkPoller
     {
         String query = String.format( POLL_QUERY, mapper().fieldNames() );
 
-        return select( query, _urlsPerHost, _totalUrls );
+        return select( query, _totalUrls );
     }
 
     private static final String POLL_QUERY =
-        "SELECT %s " +
-        "FROM ( SELECT * FROM urls " +
-        "       WHERE next_visit_after <= now() " +
-        "       AND uhash IN ( SELECT uhash FROM urls o " +
-        "                      WHERE o.host = urls.host " +
-        "                      ORDER BY priority DESC LIMIT ? ) " +
-        "       ORDER BY priority DESC LIMIT ? ) AS sub " +
-        "ORDER BY host, priority DESC;";
+    "SELECT %s " +
+    "FROM ( SELECT *, " +
+    "       row_number() OVER( ORDER BY adj_priority DESC ) as apos " +
+    "       FROM ( SELECT *, " +
+    "              ( priority -  " +
+    "               ( ( row_number() OVER " +
+    "                   ( PARTITION BY host ORDER BY priority DESC ) - 1 ) " +
+    "                  / 8.0 ) ) as adj_priority " +
+    "              FROM urls " +
+    "              WHERE next_visit_after <= now() ) AS sub1 ) as sub2 " +
+    "WHERE apos <= ? " +
+    "ORDER BY host, priority DESC; ";
 
-    private int _urlsPerHost = 100;
-    private int _totalUrls = 10000;
+    private int _totalUrls = 50000;
 }
