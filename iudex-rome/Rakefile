@@ -19,7 +19,7 @@ $LOAD_PATH << './lib'
 require 'iudex-rome/base'
 
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.0.0'
+gem     'rjack-tarpit', '~> 1.1'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-rome', Iudex::ROME::VERSION, :no_assembly )
