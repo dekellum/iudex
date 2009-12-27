@@ -31,5 +31,9 @@ public interface FilterContainer
     @Override
     public boolean filter( UniMap content );
 
+    /**
+     * Return a list of all child filters in this container. Children may
+     * themselves be containers.
+     */
     public List<Filter> children();
 }

@@ -28,8 +28,8 @@ import iudex.filter.Named;
 /**
  * Maintains an index of Filter instances (by identity) to descriptive unique
  * names for use in logging or reporting. If a filter implements
- * {@link iudex.filter.Described}, these tokens will be used to augment the filter
- * class name. Calls to {@link #name()} are unsynchronized. All calls to
+ * {@link iudex.filter.Described}, these tokens will be used to augment the
+ * filter class name. Calls to {@link #name()} are unsynchronized. All calls to
  * {@link #register()} should be completed before the first call to
  * {@link #name()}.
  */
