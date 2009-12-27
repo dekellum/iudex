@@ -31,13 +31,13 @@ WRITE references ->
 
 For each reference (R):
   if R exists (gcid)
-    if pub_date != prior pub_date
-      UPDATE ref_pub_date, title, priority(-update,date), next_visit_after=now(), [referer (C:gcid)]
+    if ref_pub_date != prior ref_pub_date
+      UPDATE ref_pub_date, pub_date, title, priority(-update,date), next_visit_after=now(), [referer (C:gcid)]
     else
-      ignore (gcid,pub_date equal; title difference ignored)
+      ignore (gcid,ref_pub_date equal; title difference ignored)
     end
   else
-    INSERT gcid, url, host, ref_pub_date, title, priority(date), [next_visit_after=now()],
+    INSERT gcid, url, host, ref_pub_date, pub_date, title, priority(date), [next_visit_after=now()],
            referer (C:gcid)
   end
 
