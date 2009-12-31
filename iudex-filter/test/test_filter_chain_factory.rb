@@ -63,10 +63,14 @@ class TestFilterChainFactory < Test::Unit::TestCase
     fcf.add_summary_reporter( 1.0 )
     fcf.add_by_filter_reporter( 2.5 )
 
-    fcf.filters   << MDCSetter.new(   TKEY )
-    fcf.listeners << MDCUnsetter.new( TKEY )
+    def fcf.filters
+      [ MDCSetter.new( TKEY ) ] + super +
+        [ 6, 4, 6, 6 ].map { |p| RandomFilter.new( p ) }
+    end
 
-    [ 6, 4, 6, 6 ].each { |p| fcf.filters << RandomFilter.new( p ) }
+    def fcf.listeners
+      super + [ MDCUnsetter.new( TKEY ) ]
+    end
 
     2.times do |r|
       assert( ! fcf.open? )

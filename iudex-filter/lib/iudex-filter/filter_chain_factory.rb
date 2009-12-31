@@ -30,15 +30,12 @@ module Iudex
         import 'iudex.filter.core.LogListener'
         import 'iudex.filter.core.SummaryReporter'
 
-        attr_reader :description, :filters, :listeners
+        attr_reader :description
 
         def initialize( description = "default" )
-          @filters = []
           @description = description
 
           @log = SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
-
-          @listeners = []
 
           @summery_period = nil
           @by_filter_period = nil
@@ -60,35 +57,14 @@ module Iudex
           close if open?
 
           @index = FilterIndex.new
-          log_and_register( @filters )
 
-          create_listener_chain
+          flts = filters
+          log_and_register( flts )
+          @chain = FilterChain.new( @description, flts )
 
-          @chain = FilterChain.new( @description, @filters )
-
-          @chain.listener = @listener
+          @chain.listener = @listener = ListenerChain.new( listeners )
 
           nil
-        end
-
-        def create_listener_chain
-          ll = []
-
-          ll << LogListener.new( @log.name, @index )
-
-          if @summary_period
-            ll << SummaryReporter.new( description, @summary_period )
-          end
-
-          if @by_filter_period
-            ll << ByFilterReporter.new( @index,
-                                        ByFilterLogger.new( @description, @index ),
-                                        @by_filter_period )
-          end
-
-          ll += @listeners #FIXME: Or better as factory method overload?
-
-          @listener = ListenerChain.new( ll )
         end
 
         def open?
@@ -118,6 +94,25 @@ module Iudex
 
         ensure
           close if opened
+        end
+
+        def filters
+          []
+        end
+
+        def listeners
+          ll = [ LogListener.new( @log.name, @index ) ]
+
+          if @summary_period
+            ll << SummaryReporter.new( description, @summary_period )
+          end
+
+          if @by_filter_period
+            ll << ByFilterReporter.new( @index,
+                                        ByFilterLogger.new( @description, @index ),
+                                        @by_filter_period )
+          end
+          ll
         end
 
         private
