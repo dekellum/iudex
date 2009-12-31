@@ -125,7 +125,7 @@ module Iudex
         def log_and_register( filters, depth = 0 )
           filters.each do |filter|
             name = @index.register( filter )
-            @log.info { "<< " + "< " * depth + name }
+            @log.info { "<< " + "  " * depth + name }
             if filter.kind_of?( FilterContainer )
               log_and_register( filter.children, depth + 1 )
             end
