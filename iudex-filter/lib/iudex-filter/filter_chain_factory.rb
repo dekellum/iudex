@@ -60,9 +60,8 @@ module Iudex
 
           flts = filters
           log_and_register( flts )
-          @chain = FilterChain.new( @description, flts )
-
-          @chain.listener = @listener = ListenerChain.new( listeners )
+          @listener = ListenerChain.new( listeners )
+          @chain = create_chain( @description, flts )
 
           nil
         end
@@ -113,6 +112,14 @@ module Iudex
                                         @by_filter_period )
           end
           ll
+        end
+
+        def create_chain( desc, flts )
+          unless flts.nil? || flts.empty?
+            c = FilterChain.new( desc.to_s, flts )
+            c.listener = @listener
+            ( yield c if block_given? ) || c
+          end
         end
 
         private
