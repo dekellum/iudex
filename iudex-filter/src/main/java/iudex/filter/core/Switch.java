@@ -46,9 +46,9 @@ public final class Switch implements FilterContainer
      * {@inheritDoc}
      */
     @Override
-    public List<Filter> children()
+    public List<? extends Filter> children()
     {
-        return new ArrayList<Filter>( _props );
+        return _props;
     }
 
     /**

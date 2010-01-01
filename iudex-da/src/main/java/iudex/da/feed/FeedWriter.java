@@ -30,7 +30,6 @@ import com.gravitext.htmap.UniMap;
 import iudex.da.BaseTransformer;
 import iudex.da.ContentMapper;
 import iudex.da.ContentUpdater;
-import iudex.filter.Filter;
 import iudex.filter.FilterContainer;
 import iudex.filter.NoOpFilter;
 
@@ -38,6 +37,11 @@ import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 import static iudex.da.DataAccessKeys.*;
 
+// FIXME: Generalize: Not just for feeds.
+
+/**
+ * Filter based support for writing references (from feeds, etc.)
+ */
 public class FeedWriter implements FilterContainer
 {
     public FeedWriter( DataSource source,
@@ -127,11 +131,9 @@ public class FeedWriter implements FilterContainer
     }
 
     @Override
-    public List<Filter> children()
+    public List<FilterContainer> children()
     {
-        return Arrays.asList(
-            new Filter[] { this._updateRefFilter,
-                           this._newRefFilter } );
+        return Arrays.asList( _updateRefFilter, _newRefFilter );
     }
 
     @Override
