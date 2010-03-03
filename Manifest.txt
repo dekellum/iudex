@@ -1,7 +1,6 @@
 Manifest.txt
 README.rdoc
 History.rdoc
-NOTICE.txt
 Rakefile
 pom.xml
 bin/brute-fuzzy-perftest

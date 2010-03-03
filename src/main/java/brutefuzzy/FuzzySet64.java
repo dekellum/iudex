@@ -22,6 +22,9 @@ public final class FuzzySet64
 
     public boolean fuzzyMatch( final long a, final long b )
     {
+        //Note: This could be further optimized by short circuit
+        //evaluation, i.e. stop counting bits once _thresholdBits is
+        //exceeded.
         return ( Long.bitCount( a ^ b ) <= _thresholdBits );
     }
 
