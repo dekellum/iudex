@@ -1,0 +1,14 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+require 'brute-fuzzy'
+
+require 'gravitext-util'
+require 'gravitext-util/perftest'
+
+test = BruteFuzzy::FuzzySetPerfTest.new
+harness = Gravitext::PerfTest::Harness.new( [ test ] )
+harness.execute

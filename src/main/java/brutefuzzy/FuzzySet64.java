@@ -1,3 +1,5 @@
+package brutefuzzy;
+
 public final class FuzzySet64
 {
     public FuzzySet64( int capacity, int thresholdBits )

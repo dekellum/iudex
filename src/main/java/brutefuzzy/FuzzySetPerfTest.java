@@ -1,3 +1,5 @@
+package brutefuzzy;
+
 import java.util.Random;
 
 import com.gravitext.concurrent.TestFactory;
@@ -13,6 +15,8 @@ public class FuzzySetPerfTest implements TestFactory
     public TestRunnable createTestRunnable( final int seed )
     {
         return new TestRunnable() {
+
+            final long _testKeys[];
 
             {
                 // Pre define a random set of long keys
@@ -34,8 +38,6 @@ public class FuzzySetPerfTest implements TestFactory
                 }
                 return hits;
             }
-
-            final long _testKeys[];
         };
     }
 }

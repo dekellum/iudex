@@ -1,19 +1,21 @@
 # -*- ruby -*-
 
-require 'rubygems'
-
-require 'rake/testtask'
-
 $LOAD_PATH << './lib'
+require 'brute-fuzzy/base'
 
-file 'lib/brute-fuzzy.jar' => FileList[ 'src/*.java' ] do
-  cfiles = FileList[ 'src/*.class' ].map { |cf| File.basename( cf ) }
-  sh( 'javac src/*.java' )
-  sh( ( [ "jar cvf lib/brute-fuzzy.jar -C src" ] + cfiles ).join( ' ' ) )
+require 'rubygems'
+gem     'rjack-tarpit', '~> 1.1'
+require 'rjack-tarpit'
+
+t = RJack::TarPit.new( 'brute-fuzzy',
+                       BruteFuzzy::VERSION,
+                       :no_assembly )
+
+t.specify do |h|
+  h.developer( "David Kellum", "dek-oss@gravitext.com" )
+  h.extra_deps += [ [ 'gravitext-util', '>= 1.3.2' ] ]
 end
 
-task :default => [ 'lib/brute-fuzzy.jar' ]
+file 'Manifest.txt' => [ 'lib/brute-fuzzy.rb' ]
 
-task :test => [ 'lib/brute-fuzzy.jar' ]
-Rake::TestTask.new
-
+t.define_tasks

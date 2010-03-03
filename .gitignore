@@ -1,4 +1,5 @@
 *~
 pkg/
 doc/
-lib/*.jar
+lib/**/*.jar
+target

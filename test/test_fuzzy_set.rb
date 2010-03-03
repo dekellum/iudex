@@ -6,7 +6,7 @@ require 'test/unit'
 
 class TestFuzzySet < Test::Unit::TestCase
   def setup
-    @fset = Java::FuzzySet64.new( 100, 4 )
+    @fset = BruteFuzzy::FuzzySet64.new( 100, 4 )
   end
 
   def test_fuzzy_match
