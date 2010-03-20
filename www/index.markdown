@@ -22,7 +22,7 @@ each delivered as both maven compatible java jars and jruby gems.
 
 {% svg svg/iudex.svg %}
 
-### Iudex DA
+### Iūdex DA
 
 Additional external dependencies:
 

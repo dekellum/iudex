@@ -1,9 +1,9 @@
 ---
-title: Iudex BARC
+title: Iūdex BARC
 layout: default
 ---
 
-Iudex Basic Archive (BARC)
+Iūdex Basic Archive (BARC)
 ==========================
 
 ![LARC LX](/img/BARC-LARC-XV-2-c.jpg)
@@ -47,13 +47,11 @@ B. HTTP fetch
 * Compress or not
 * Display instead of write?
 
-
 C. Copy/Concatenate record to file
 
     barc [-zt] infile outfile
 
 * Compress target or not
-
 
 (last file implicit write)
 
@@ -78,8 +76,6 @@ Format:
     ...
     ...
     ...
-
-
 
 Other records
 -------------
