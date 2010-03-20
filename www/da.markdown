@@ -1,11 +1,9 @@
 ---
-title: Iūdex DA
-layout: default
+title: Data Access
+layout: sub
 ---
 
-# Iūdex Data Access (DA)
-
-Provides:
+## Provides:
 
 * A PostgreSQL-based content meta-data store
 * JRuby/ActiveRecord based schema definition and migration

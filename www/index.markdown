@@ -1,9 +1,6 @@
 ---
-title: Iūdex
-layout: default
+layout: home
 ---
-
-# Iūdex
 
 A feed aggregator/crawler, and content processing toolkit. Iūdex is
 pronounced as the Latin [/ˈjuː.deks/][wiki-ogg], meaning: judge or
@@ -12,7 +9,7 @@ umpire.
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
 
 * [BARC](/barc.html)
-* [iudex-da](/iudex-da.html)
+* [Data Access](/da.html)
 * [sitemaps](/sitemap.html)
 
 ## Modules and Dependencies

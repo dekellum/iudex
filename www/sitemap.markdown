@@ -1,10 +1,9 @@
 ---
-title: Iūdex Sitemap Parser
-layout: default
+title: Sitemap Parser
+layout: sub
 ---
 
-Iūdex Sitemap Parser
-====================
+## Protocol
 
 The [sitemap protocol] provides similar meta-data to feed formats:
 

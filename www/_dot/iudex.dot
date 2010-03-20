@@ -7,7 +7,7 @@ digraph "iudex-gems" {
 
   "iudex-filter" -> "gravitext-util"
   "iudex-da"     -> "gravitext-util"
-  "iudex-da"     [ target=_parent, URL="../iudex-da.html" ];
+  "iudex-da"     [ target=_parent, URL="../da.html" ];
   "iudex-da"     -> "iudex-filter"
   "iudex-da"     -> "iudex-core"
 

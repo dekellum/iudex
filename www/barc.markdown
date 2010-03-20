@@ -1,21 +1,18 @@
 ---
-title: Iūdex BARC
-layout: default
+title: BARC
+layout: sub
 ---
 
-Iūdex Basic Archive (BARC)
-==========================
+# Basic Archive
 
 ![LARC LX](/img/BARC-LARC-XV-2-c.jpg)
 
-ARC/WARC limitations
---------------------
+## ARC/WARC limitations
 
 * Uses text based Content-Length, so not possible to perform concurrent record reads.
 * Many depdencies, too complicated.
 
-BARC Format
------------
+## BARC Format
 
 A Human/Machine readable header used for first record (offset zero)
 and each subsequent record:
