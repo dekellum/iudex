@@ -6,14 +6,27 @@ directory 'svg'
 
 FileList[ '_dot/*.dot' ].each do |dot|
   svg = dot.sub( /(\.dot)$/, '.svg' ).sub( /^(_dot)/, 'svg' )
+  png = dot.sub( /(\.dot)$/, '.png' ).sub( /^(_dot)/, 'svg' )
 
   file svg => [ dot, 'svg' ] do
     sh "dot -Tsvg -o #{svg} #{dot}"
   end
 
-  task :dot => svg
+  file png => [ dot, 'svg' ] do
+    sh "dot -Tpng -o #{png} #{dot}"
+  end
+
+  task :dot => [ svg, png ]
 end
 
 task :clean do
   rm_rf %w[ svg _site ]
+end
+
+task :gen => [ :dot ] do
+  sh "jekyll"
+end
+
+task :server => [ :dot ] do
+  sh "jekyll --auto --server"
 end
