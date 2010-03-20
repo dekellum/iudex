@@ -20,19 +20,10 @@ umpire.
 The Iūdex toolkit is constructed of modules with controlled dependencies,
 each delivered as both maven compatible java jars and jruby gems.
 
-<div style="text-align: center;">
-  <object data="svg/iudex.svg" type="image/svg+xml">
-    <p>(<a href="svg/iudex.svg">SVG dependency diagram.</a>)</p>
-  </object>
-</div>
+{% svg svg/iudex.svg %}
 
 ### Iudex DA
 
 Additional external dependencies:
 
-<div style="text-align: center;">
-  <object data="svg/iudex-da.svg" type="image/svg+xml">
-    <p>(<a href="svg/iudex-da.svg">SVG dependency diagram.</a>)</p>
-  </object>
-</div>
-
+{% svg svg/iudex-da.svg %}
