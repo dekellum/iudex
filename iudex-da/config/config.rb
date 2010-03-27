@@ -8,6 +8,6 @@ Iudex.configure do |c|
     :username => 'iudex',
     :ds_pool     => { :max_active => 4,
                       :max_idle   => 2 },
-    :loglevel => 1 }
+    :loglevel => 2 }
 
 end
