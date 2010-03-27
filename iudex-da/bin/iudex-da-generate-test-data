@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 require 'rubygems'
 
 require 'rjack-logback'
-RJack::Logback.config_console
+RJack::Logback.config_console( :thread => true )
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
@@ -70,26 +70,33 @@ class Generator
     qrun.update( "DELETE from urls;" )
   end
 
-  def write
+  def write( parts = 3 )
     writer = ContentWriter.new( @data_source, @kmap )
-
-    t = Time.now
-    batch = []
-    hosts.each do |host|
-      (rand(50) + 1).times do |i|
-        c = UniMap.new
-        c.priority = ( rand * 9.99 + 0.01 )
-        c.url = VisitURL.normalize( "http://#{host}/#{i}" )
-        c.type = "FEED"
-        c.next_visit_after = t + ( rand(3) * 60 * 60 * 24 * 100 ) # 2/3 are in future
-        batch << c
-        if batch.length >= 10_000
-          writer.write( batch )
-          batch.clear
+    hs = hosts
+    sl = hs.length / parts
+    threads = []
+    while( ( h = hs.slice!( 0, sl ) ).length > 0 )
+      threads << Thread.new( h, writer ) do |hi, out|
+        now = Time.now
+        batch = []
+        hi.each do |host|
+          (rand(50) + 1).times do |i|
+            c = UniMap.new
+            c.priority = ( rand * 9.99 + 0.01 )
+            c.url = VisitURL.normalize( "http://#{host}/#{i}" )
+            c.type = "FEED"
+            c.next_visit_after = now + ( rand(3) * 60 * 60 * 24 * 100 ) # 2/3 are in future
+            batch << c
+            if batch.length >= 10_000
+              out.write( batch )
+              batch.clear
+            end
+          end
         end
+        out.write( batch ) unless batch.empty?
       end
     end
-    writer.write( batch ) unless batch.empty?
+    threads.each { |t| t.join }
   end
 
 end
