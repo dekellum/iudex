@@ -1,8 +1,7 @@
 #!/usr/bin/env jruby
-#.hashdot.profile += jruby-shortlived
-
+# -*- ruby -*-
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (C) 2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -20,27 +19,13 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-
 require 'rjack-logback'
-Logback.config_console
+Logback.config_console( :level => Logback::DEBUG )
 
 require 'iudex-core'
 
-require 'test/unit'
-
-class TestLogWriter < Test::Unit::TestCase
-  import 'java.io.PrintWriter'
-  import 'iudex.util.LogWriter'
-  import 'java.util.regex.Pattern'
-
-  def test_log_writer
-    Logback['TestLogWriter'].level = Logback::DEBUG
-    lw = LogWriter.new( 'TestLogWriter' )
-    lw.remove_pattern = Pattern.compile( '(^test)|(\s+$)' )
-    pw = PrintWriter.new( lw, true )
-    pw.print( "test 1   \n\r" )
-    pw.println( "test 2   \n\r" )
-    pw.print( "test 3" )
+Iudex::Core::Config.parse_options do |opts|
+  opts.on( "-v", "--version", "Display version" ) do |file|
+    puts "iudex-core version: #{Iudex::Core::VERSION}"
   end
-
 end

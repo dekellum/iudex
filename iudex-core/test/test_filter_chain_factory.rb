@@ -19,14 +19,14 @@
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
-require 'iudex-core'
-require 'iudex-core/filter_chain_factory'
-
 require 'rubygems'
 
 require 'rjack-logback'
 Logback.config_console( :mdc => "uhash" )
 Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
+
+require 'iudex-core'
+require 'iudex-core/filter_chain_factory'
 
 require 'test/unit'
 

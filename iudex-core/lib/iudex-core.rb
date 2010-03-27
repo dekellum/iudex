@@ -19,7 +19,9 @@ require 'rubygems'
 require 'gravitext-util'
 require 'iudex-http'
 require 'iudex-filter'
+
 require 'iudex-core/base'
+require 'iudex-core/config'
 
 module Iudex
   module Core

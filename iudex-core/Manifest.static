@@ -6,4 +6,8 @@ Rakefile
 pom.xml
 lib/iudex-core/base.rb
 lib/iudex-core.rb
+lib/iudex-core/config.rb
+lib/iudex-core/filter_chain_factory.rb
 test/test_core.rb
+test/test_filter_chain_factory.rb
+bin/iudex-test-config
