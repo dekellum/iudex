@@ -27,7 +27,7 @@ require 'iudex-da'
 
 require 'optparse'
 
-OptionParser.new do |opts|
+Iudex::Core::Config.parse_options do |opts|
   opts.banner = "Usage: migrate [options] [target-version]"
   opts.on( "-s", "--set name=value", String,
            "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
@@ -37,7 +37,7 @@ OptionParser.new do |opts|
   opts.on( "-v", "--verbose" ) do
     Logback[ "Iudex.DA" ].level = Logback::DEBUG
   end
-end.parse!
+end
 
 require 'iudex-da/ar'
 

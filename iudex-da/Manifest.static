@@ -13,5 +13,7 @@ db/0020_add_feed_metadata.rb
 db/0030_add_priority.rb
 db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
+test/test_feed_filters.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
+config/config.rb

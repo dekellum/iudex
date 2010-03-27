@@ -38,4 +38,13 @@ module Iudex
       :username => 'iudex' }
 
   end
+
+  module Core
+    module Config
+      def self.connect_props=( props )
+        Iudex::DA::CONFIG.merge!( props )
+      end
+    end
+  end
+
 end
