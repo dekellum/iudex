@@ -17,11 +17,11 @@
 require 'rubygems'
 require 'rjack-slf4j'
 require 'iudex-da'
-require 'activerecord'
+require 'active_record'
 
 module Iudex::DA
 
-  LOG = SLF4J[ "Iudex.DA.ActiveRecord" ]
+  LOG = SLF4J[ "iudex.da.ActiveRecord" ]
   ActiveRecord::Base.logger = LOG
 
   LOG.info { "Connecting: #{CONFIG.inspect}" }
@@ -30,6 +30,7 @@ module Iudex::DA
   def migrate( target_version = nil )
     ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),
                                     target_version )
+    #FIXME: Support additional migration directories?
   end
 
   module_function :migrate
