@@ -23,7 +23,7 @@ require 'rubygems'
 
 require 'rjack-logback'
 Logback.config_console
-Logback['Iudex.DA'].level = Logback::DEBUG
+Logback[ 'iudex.da' ].level = Logback::DEBUG
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
@@ -36,7 +36,7 @@ class TestPoolFactory < Test::Unit::TestCase
   import 'org.apache.commons.dbutils.QueryRunner'
 
   def setup
-    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 )
+    @factory = PoolDataSourceFactory.new( :loglevel => 2 )
     @data_source = @factory.create
   end
 

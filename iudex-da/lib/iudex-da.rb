@@ -29,18 +29,22 @@ module Iudex
 
     require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
 
-    # Configuration for ActiveRecord (adjust before requiring iudex-da/ar)
-    # and defaults for PoolDataSourceFactory.new( properties )
+    # Database connection configuration for both ActiveRecord
+    # (migrations, testing) and PoolDataSourceFactory.
+    # May (-c)onfig via Iudex::Core::Config.connect_props=
+    # Defaults are used by unit tests, migrate
     CONFIG = {
-      :host     => 'localhost',
       :adapter  => 'jdbcpostgresql',
+      :host     => 'localhost',
       :database => 'iudex_test',
-      :username => 'iudex' }
+      :username => 'iudex',
+      :pool     => 10 }
 
   end
 
   module Core
     module Config
+      # Merge props to Iudex::DA::CONFIG
       def self.connect_props=( props )
         Iudex::DA::CONFIG.merge!( props )
       end

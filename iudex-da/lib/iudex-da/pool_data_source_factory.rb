@@ -15,7 +15,6 @@
 #++
 
 require 'iudex-da'
-require 'iudex-core'
 require 'rjack-slf4j'
 require 'java'
 require 'jdbc/postgres'
@@ -36,15 +35,17 @@ module Iudex::DA
 
     attr_accessor :data_source
 
-    def initialize( properties = {} )
-      @properties = properties.dup
-      @properties[ 'user'     ] ||= Iudex::DA::CONFIG[ :username ]
-      @properties[ 'host'     ] ||= Iudex::DA::CONFIG[ :host     ]
-      @properties[ 'database' ] ||= Iudex::DA::CONFIG[ :database ]
-      @properties[ 'loglevel' ] ||= 1
+    def initialize( in_props = {} )
+      @props = CONFIG.merge( in_props )
 
-      SLF4J[ 'Iudex.DA.PoolDataSourceFactory' ].info do
-        "Init properties: #{@properties.inspect}"
+      # Tweeks specific for Java datasource/pool
+      @props[ :user ] ||= @props[ :username ]
+      @props.delete( :username )
+
+      @props[ :loglevel ] ||= 1
+
+      SLF4J[ 'iudex.da.PoolDataSourceFactory' ].info do
+        "Init properties: #{@props.inspect}"
       end
       load_driver
     end
@@ -62,7 +63,7 @@ module Iudex::DA
 
     def load_driver
       import 'org.postgresql.Driver'
-      lw = LogWriter.new( 'Iudex.DA.Driver' )
+      lw = LogWriter.new( 'iudex.da.Driver' )
       # Remove postgres time stamp, trailing whitespace.
       lw.remove_pattern =
         Pattern.compile( '(^\d\d:\d\d:\d\d\.\d\d\d\s\(\d\)\s)|(\s+$)' )
@@ -70,21 +71,27 @@ module Iudex::DA
     end
 
     def create_connection_factory
-      uri = "jdbc:postgresql://%s/%s" %
-        [ @properties[ 'host' ], @properties[ 'database' ] ]
+      uri = "jdbc:postgresql://%s/%s" % [ @props[ :host ], @props[ :database ] ]
 
-      props = Properties.new
-      @properties.each do | key, value |
-        props.set_property( key.to_s, value.to_s )
-      end
+      jprops = Properties.new
+      @props.each { |k,v| jprops.set_property( k.to_s, v.to_s ) }
 
-      DriverManagerConnectionFactory.new( uri, props )
+      DriverManagerConnectionFactory.new( uri, jprops )
     end
 
     def create_connection_pool( con_factory )
       con_pool = GenericObjectPool.new( nil )
-      # FIXME: Has min, max connections, etc. setters
-      # Defaults to 8 max
+
+      con_count = @props[ :pool ]
+      if con_count
+        con_pool.max_active = con_count
+        con_pool.max_idle = con_count
+      end
+
+      props = @props[ :ds_pool ]
+      if props
+        props.each { |k,v| con_pool.send( k.to_s + '=', v ) }
+      end
 
       # This sets self on con_pool
       PoolableConnectionFactory.new( con_factory,

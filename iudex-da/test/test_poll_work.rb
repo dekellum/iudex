@@ -23,7 +23,7 @@ require 'rubygems'
 
 require 'rjack-logback'
 Logback.config_console
-Logback['Iudex.DA'].level = Logback::DEBUG
+Logback[ 'iudex.da' ].level = Logback::DEBUG
 
 require 'iudex-core'
 require 'iudex-da/ar'

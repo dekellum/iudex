@@ -21,10 +21,10 @@ require 'active_record'
 
 module Iudex::DA
 
-  LOG = SLF4J[ "iudex.da.ActiveRecord" ]
-  ActiveRecord::Base.logger = LOG
+  @log = SLF4J[ "iudex.da.ActiveRecord" ]
+  ActiveRecord::Base.logger = @log
 
-  LOG.info { "Connecting: #{CONFIG.inspect}" }
+  @log.info { "Connecting: #{CONFIG.inspect}" }
   ActiveRecord::Base.establish_connection( CONFIG )
 
   def migrate( target_version = nil )

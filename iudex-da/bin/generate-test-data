@@ -22,7 +22,6 @@ require 'rubygems'
 
 require 'rjack-logback'
 Logback.config_console
-Logback['Iudex.DA'].level = Logback::INFO
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
@@ -53,7 +52,7 @@ class Generator
   end
 
   def initialize
-    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 )
+    @factory = PoolDataSourceFactory.new
     @data_source = @factory.create
 
     @kmap = ContentMapper.new( [ ContentMapper::UHASH,
@@ -93,6 +92,12 @@ class Generator
     writer.write( batch ) unless batch.empty?
   end
 
+end
+
+Iudex::Core::Config.parse_options do |opts|
+  opts.on( "-v", "--verbose" ) do
+    Logback[ 'iudex.da' ].level = Logback::DEBUG
+  end
 end
 
 g = Generator.new

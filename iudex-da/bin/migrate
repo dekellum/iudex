@@ -27,6 +27,7 @@ require 'iudex-da'
 
 require 'optparse'
 
+# Apply all config before including ar
 Iudex::Core::Config.parse_options do |opts|
   opts.banner = "Usage: migrate [options] [target-version]"
   opts.on( "-s", "--set name=value", String,
@@ -35,7 +36,7 @@ Iudex::Core::Config.parse_options do |opts|
     Iudex::DA::CONFIG[ name.to_sym ] = value
   end
   opts.on( "-v", "--verbose" ) do
-    Logback[ "Iudex.DA" ].level = Logback::DEBUG
+    Logback[ 'iudex.da' ].level = Logback::DEBUG
   end
 end
 
