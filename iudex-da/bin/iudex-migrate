@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 require 'rubygems'
 
 require 'rjack-logback'
-Logback.config_console
+RJack::Logback.config_console
 
 require 'iudex-da'
 
@@ -29,14 +29,21 @@ require 'optparse'
 
 # Apply all config before including ar
 Iudex::Core::Config.parse_options do |opts|
-  opts.banner = "Usage: migrate [options] [target-version]"
+  opts.banner = <<END
+iudex-da: #{Iudex::DA::VERSION}
+Usage: iudex-migrate [options] [target-migration-number]
+END
   opts.on( "-s", "--set name=value", String,
            "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
     name,value = nv.split('=').map { |t| t.strip }
     Iudex::DA::CONFIG[ name.to_sym ] = value
   end
-  opts.on( "-v", "--verbose" ) do
-    Logback[ 'iudex.da' ].level = Logback::DEBUG
+  opts.on( "-d", "--debug" ) do
+    RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
+  end
+  opts.on( "-v", "--version", "Display version and exit" ) do |file|
+    puts "iudex-da: #{Iudex::DA::VERSION}"
+    exit 1
   end
 end
 

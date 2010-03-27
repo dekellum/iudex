@@ -17,4 +17,6 @@ test/test_feed_filters.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
 config/config.rb
+bin/iudex-da-generate-test-data
+bin/iudex-migrate
 lib/iudex-da/iudex-da-1.0.0.jar

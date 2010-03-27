@@ -21,7 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 require 'rubygems'
 
 require 'rjack-logback'
-Logback.config_console
+RJack::Logback.config_console
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
@@ -95,8 +95,12 @@ class Generator
 end
 
 Iudex::Core::Config.parse_options do |opts|
-  opts.on( "-v", "--verbose" ) do
-    Logback[ 'iudex.da' ].level = Logback::DEBUG
+  opts.on( "-d", "--debug" ) do
+    RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
+  end
+  opts.on( "-v", "--version", "Display version and exit" ) do |file|
+    puts "iudex-da: #{Iudex::DA::VERSION}"
+    exit 1
   end
 end
 
