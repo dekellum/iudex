@@ -15,7 +15,7 @@ layout: sub
 
     % createuser iudex
     % createdb iudex_test -O iudex
-    % (iudex-)migrate #FIXME: rename?
+    % iudex-migrate
 
 ## Dependencies
 
