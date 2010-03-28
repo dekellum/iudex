@@ -14,8 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
-
 require 'gravitext-util'
 require 'iudex-http'
 require 'iudex-filter'

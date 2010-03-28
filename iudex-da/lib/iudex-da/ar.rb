@@ -14,7 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
 require 'rjack-slf4j'
 require 'iudex-da'
 require 'active_record'

@@ -14,8 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
-
 require 'gravitext-util'
 require 'rjack-slf4j'
 require 'iudex-filter/base'

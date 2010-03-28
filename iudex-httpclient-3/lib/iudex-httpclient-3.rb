@@ -14,8 +14,6 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
-
 require 'iudex-http'
 require 'rjack-httpclient-3'
 
