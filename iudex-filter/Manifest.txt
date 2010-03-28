@@ -7,5 +7,6 @@ lib/iudex-filter/base.rb
 lib/iudex-filter.rb
 lib/iudex-filter/filter_chain_factory.rb
 lib/iudex-filter/filter_base.rb
+test/setup.rb
 test/test_filter_chain_factory.rb
 lib/iudex-filter/iudex-filter-1.0.0.jar

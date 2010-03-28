@@ -6,4 +6,5 @@ Rakefile
 pom.xml
 lib/iudex-rome.rb
 lib/iudex-rome/base.rb
+test/setup.rb
 test/test_rome.rb
