@@ -16,21 +16,17 @@
 # implied.  See the License for the specific language governing
 # permissions and limitations under the License.
 #++
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+require 'iudex-core'
+require 'iudex-da/ar'
 
-require 'rubygems'
-
-require 'rjack-logback'
-Logback.config_console
-Logback[ 'iudex.da' ].level = Logback::DEBUG
+# Logback[ 'iudex.da' ].level = Logback::DEBUG
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
 
-require 'test/unit'
-
-class TestPoolFactory < Test::Unit::TestCase
+class TestPoolFactory < MiniTest::Unit::TestCase
   include Iudex::DA
   import 'org.apache.commons.dbutils.ResultSetHandler'
   import 'org.apache.commons.dbutils.QueryRunner'

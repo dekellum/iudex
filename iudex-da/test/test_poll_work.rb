@@ -17,19 +17,12 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
-
-require 'rjack-logback'
-Logback.config_console
-Logback[ 'iudex.da' ].level = Logback::DEBUG
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-core'
 require 'iudex-da/ar'
-require 'test/unit'
 
-class TestPollWork < Test::Unit::TestCase
+class TestPollWork < MiniTest::Unit::TestCase
   include Iudex::DA
   import 'iudex.core.VisitURL'
 

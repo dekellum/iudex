@@ -1,8 +1,5 @@
-#!/usr/bin/env jruby
-#.hashdot.profile += jruby-shortlived
-
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (C) 2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -16,12 +13,22 @@
 # implied.  See the License for the specific language governing
 # permissions and limitations under the License.
 #++
-require File.join( File.dirname( __FILE__ ), "setup" )
 
-require 'iudex-http'
+#### General test setup: LOAD_PATH, logging, console output ####
 
-class TestHttp < MiniTest::Unit::TestCase
-  def test_load
-    assert true
-  end
+ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
+$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
+
+require 'rubygems'
+require 'rjack-logback'
+RJack::Logback.config_console( :stderr => true )
+
+require 'minitest/unit'
+require 'minitest/autorun'
+
+# Make test output logging compatible: no partial lines.
+class TestOut
+  def print( *a ); $stdout.puts( *a ); end
+  def puts( *a );  $stdout.puts( *a ); end
 end
+MiniTest::Unit.output = TestOut.new

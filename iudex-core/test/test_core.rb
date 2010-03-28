@@ -17,18 +17,10 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
-
-require 'rjack-logback'
-Logback.config_console
-
+require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-core'
 
-require 'test/unit'
-
-class TestLogWriter < Test::Unit::TestCase
+class TestLogWriter < MiniTest::Unit::TestCase
   import 'java.io.PrintWriter'
   import 'iudex.util.LogWriter'
   import 'java.util.regex.Pattern'

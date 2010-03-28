@@ -11,4 +11,5 @@ lib/iudex-core/filter_chain_factory.rb
 test/test_core.rb
 test/test_filter_chain_factory.rb
 bin/iudex-test-config
+config/config.rb
 lib/iudex-core/iudex-core-1.0.0.jar

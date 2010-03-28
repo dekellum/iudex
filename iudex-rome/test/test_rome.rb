@@ -17,17 +17,11 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
-require 'rjack-logback'
-Logback.config_console( :level => Logback::DEBUG )
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-rome'
 
-require 'test/unit'
-
-class TestRome < Test::Unit::TestCase
+class TestRome < MiniTest::Unit::TestCase
   def test_load
     assert true
   end

@@ -17,17 +17,13 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-require 'rubygems'
-require 'rjack-logback'
-Logback.config_console( :level => Logback::DEBUG )
+Logback.config_console( :stderr => true )
 
 require 'iudex-httpclient-3'
 
-require 'test/unit'
-
-class TestHttpClient < Test::Unit::TestCase
+class TestHttpClient < MiniTest::Unit::TestCase
   def test_load
     assert true
   end

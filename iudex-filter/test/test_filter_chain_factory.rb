@@ -17,21 +17,16 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-require 'rubygems'
-
-require 'rjack-logback'
-Logback.config_console( :mdc => "tkey" )
+Logback.config_console( :stderr => true, :mdc => "tkey" )
 
 # Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
 
 require 'gravitext-util'
 require 'iudex-filter/filter_chain_factory'
 
-require 'test/unit'
-
-class TestFilterChainFactory < Test::Unit::TestCase
+class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Filter
   include Iudex::Filter::Core
 

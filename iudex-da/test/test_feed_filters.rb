@@ -17,14 +17,9 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-require 'rubygems'
-
-require 'rjack-logback'
-Logback.config_console( :mdc => "uhash" )
-
-# Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
+Logback.config_console( :stderr => true, :mdc => "uhash" )
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
@@ -33,9 +28,7 @@ require 'iudex-filter/filter_chain_factory'
 require 'iudex-httpclient-3'
 require 'iudex-rome'
 
-require 'test/unit'
-
-class TestFeedFilters < Test::Unit::TestCase
+class TestFeedFilters < MiniTest::Unit::TestCase
   include Iudex::Filter
   include Iudex::Filter::Core
   include Iudex::DA
@@ -67,11 +60,10 @@ class TestFeedFilters < Test::Unit::TestCase
 
   def test_filter
 
-
     fcf = FilterChainFactory.new( "test" )
     fcf.add_summary_reporter #( 1.0 )
     fcf.add_by_filter_reporter #( 2.5 )
-    
+
     def fcf.feed_post
       [ RomeFeedParser.new,
         feed_writer ]
@@ -126,7 +118,5 @@ class TestFeedFilters < Test::Unit::TestCase
     fcf.open
     fcf.close
   end
-
-
 
 end

@@ -31,6 +31,11 @@ t.specify do |h|
   h.extra_deps += [ [ 'iudex-core',  '~> 1.0.0' ],
                     [ 'rjack-rome',  '~> 1.0.0' ],
                     [ 'rjack-slf4j', '~> 1.5.11' ] ]
+
+  h.testlib = :minitest
+  h.extra_dev_deps += [ [ 'minitest',  '~> 1.5.0'  ],
+                        [ 'rjack-logback', '>= 0.9.18' ] ]
+
   h.rubyforge_name = "iudex"
 end
 

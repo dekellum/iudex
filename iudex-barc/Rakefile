@@ -31,6 +31,10 @@ t.specify do |h|
   h.extra_deps += [ [ 'gravitext-util', '~> 1.4.0'  ],
                     [ 'iudex-http',     '~> 1.0.0'  ],
                     [ 'rjack-slf4j',    '~> 1.5.11'  ] ]
+
+  h.testlib = :minitest
+  h.extra_dev_deps << [ 'minitest',     '~> 1.5.0'  ]
+
   h.rubyforge_name = "iudex"
 end
 
