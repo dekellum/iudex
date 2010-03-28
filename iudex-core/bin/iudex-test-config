@@ -20,12 +20,12 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 require 'rjack-logback'
-Logback.config_console( :level => Logback::DEBUG )
+RJack::Logback.config_console( :level => Logback::DEBUG )
 
 require 'iudex-core'
 
 Iudex::Core::Config.parse_options do |opts|
   opts.on( "-v", "--version", "Display version" ) do |file|
-    puts "iudex-core version: #{Iudex::Core::VERSION}"
+    puts "iudex-core: #{Iudex::Core::VERSION}"
   end
 end
