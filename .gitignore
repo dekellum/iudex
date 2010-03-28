@@ -3,7 +3,8 @@
 .settings
 /target
 */target
-*/pkg
+/doc
 */doc
+*/pkg
 *~
 */lib/**/*.jar
