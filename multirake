@@ -1,0 +1,14 @@
+#!/usr/bin/env jruby
+
+gems = %w[ iudex-filter iudex-http
+           iudex-barc iudex-core iudex-httpclient-3
+           iudex-da iudex-rome ]
+
+tasks = ARGV
+
+gems.each do |dir|
+  Dir.chdir( dir ) do
+    puts ">> cd #{dir}"
+    system( "jrake", *tasks )
+  end
+end
