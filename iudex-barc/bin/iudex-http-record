@@ -1,5 +1,5 @@
 #!/usr/bin/env jruby
-
+# -*- ruby -*-
 #--
 # Copyright (C) 2008-2009 David Kellum
 #
@@ -17,7 +17,6 @@
 #++
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
 
 require 'rubygems'
 require 'rjack-logback'

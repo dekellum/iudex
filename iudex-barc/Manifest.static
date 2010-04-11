@@ -1,8 +1,8 @@
-Manifest.static
-Manifest.txt
 History.rdoc
+Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-http-record
 lib/iudex-barc/base.rb
 lib/iudex-barc.rb
