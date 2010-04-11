@@ -1,6 +1,5 @@
-Manifest.static
-Manifest.txt
 History.rdoc
+Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
