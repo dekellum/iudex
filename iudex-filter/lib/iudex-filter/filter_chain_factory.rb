@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-filter'
+require 'stringio'
 
 module Iudex
   module Filter
