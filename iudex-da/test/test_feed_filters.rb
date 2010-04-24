@@ -24,13 +24,13 @@ Logback.config_console( :stderr => true, :mdc => "uhash" )
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
 
-require 'iudex-filter/filter_chain_factory'
-require 'iudex-httpclient-3'
-require 'iudex-rome'
+require 'iudex-core/filter_chain_factory'
+require 'iudex-httpclient-3' #FIXME
+require 'iudex-rome' #FIXME
 
 class TestFeedFilters < MiniTest::Unit::TestCase
-  include Iudex::Filter
-  include Iudex::Filter::Core
+#  include Iudex::Filter
+  include Iudex::Core
   include Iudex::DA
 
   include Gravitext::HTMap
@@ -60,7 +60,7 @@ class TestFeedFilters < MiniTest::Unit::TestCase
 
   def test_filter
 
-    fcf = FilterChainFactory.new( "test" )
+    fcf = Iudex::Core::FilterChainFactory.new( "test-da" )
     fcf.add_summary_reporter #( 1.0 )
     fcf.add_by_filter_reporter #( 2.5 )
 
@@ -72,32 +72,17 @@ class TestFeedFilters < MiniTest::Unit::TestCase
     def fcf.feed_writer
       f = FeedWriter.new( data_source, [] )
 
-      chain( "feed-update", feed_update ) { |c| f.update_ref_filter = c }
-      chain( "feed-new",    feed_new )    { |c| f.new_ref_filter = c }
+      create_chain( "feed-update", feed_update ) { |c| f.update_ref_filter = c }
+      create_chain( "feed-new",    feed_new )    { |c| f.new_ref_filter = c }
       f
     end
 
-    def fcf.filters
+    def fcf.feed_filters
       mf = RJack::HTTPClient3::ManagerFacade.new
       mf.start
 
-      fc = [ ContentFetcher.new( HTTPClient3.new( mf.client ),
-                               chain( "feed-receiver", feed_post ) ) ]
-
-      switch = Switch.new
-      switch.add_proposition( Selector.new( ContentKeys::TYPE, "FEED" ),
-                              chain( "feed", fc ) )
-
-      [ UHashMDCSetter.new ] + super + [ switch ]
-    end
-
-    def fcf.listeners
-      super + [ MDCUnsetter.new( "uhash" ) ]
-    end
-
-    def fcf.chain( desc, flts )
-      c = FilterChain.new( desc.to_s, flts ) unless flts.nil? || flts.empty?
-      ( yield c if block_given? ) || c
+      [ ContentFetcher.new( HTTPClient3.new( mf.client ),
+                            create_chain( "feed-receiver", feed_post ) ) ]
     end
 
     def fcf.feed_update
