@@ -21,6 +21,7 @@ require 'iudex-core'
 
 module Iudex
   module Core
+
     class FilterChainFactory < Iudex::Filter::Core::FilterChainFactory
       import 'iudex.filter.core.MDCUnsetter'
       import 'iudex.filter.core.Switch'

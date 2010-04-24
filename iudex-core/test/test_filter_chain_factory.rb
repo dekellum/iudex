@@ -26,6 +26,7 @@ require 'iudex-core'
 require 'iudex-core/filter_chain_factory'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
+  include Iudex::Filter
   include Iudex::Core
   include Gravitext::HTMap
 
@@ -34,15 +35,28 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
 
   UniMap.define_accessors
 
+  class TestFilter < FilterBase
+    def filter( c )
+      @toggle = !@toggle
+    end
+  end
+
   def test_filter_chain
     fcf = FilterChainFactory.new( "test" )
-    fcf.add_summary_reporter( 1.0 )
-    fcf.add_by_filter_reporter( 2.5 )
+    fcf.add_summary_reporter
+    fcf.add_by_filter_reporter
+
+    def fcf.feed_filters
+      [ TestFilter.new ]
+    end
 
     fcf.filter do |chain|
       content = UniMap.new
-      content.url = VisitURL.normalize( "http://foo.com/bar" )
-      chain.filter( content )
+      5.times do |n|
+        content.url = VisitURL.normalize( "http://foo.bar/#{n}" )
+        content.type = "FEED"
+        chain.filter( content )
+      end
     end
 
     assert( ! fcf.open? )
