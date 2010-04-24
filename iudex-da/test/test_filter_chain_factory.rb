@@ -19,21 +19,35 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-Logback.config_console( :stderr => true, :mdc => "uhash" )
+RJack::Logback.config_console( :stderr => true, :mdc => "uhash",
+                               :level => RJack::Logback::DEBUG )
 
 require 'iudex-da'
+require 'iudex-da/pool_data_source_factory'
 require 'iudex-da/filter_chain_factory'
+require 'iudex-httpclient-3'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Core
   include Iudex::DA
 
+  import 'iudex.httpclient3.HTTPClient3'
+
   def test_filter
     fcf = FilterChainFactory.new( "test-da" )
+    fcf.data_source = PoolDataSourceFactory.new.create
+
+    http_mf = RJack::HTTPClient3::ManagerFacade.new
+    http_mf.start
+
+    fcf.http_client = HTTPClient3.new( http_mf.client )
+
     fcf.add_summary_reporter
     fcf.add_by_filter_reporter
     fcf.open
     fcf.close
+
+    http_mf.shutdown
   end
 
 end

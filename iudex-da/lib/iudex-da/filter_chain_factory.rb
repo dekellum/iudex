@@ -17,9 +17,6 @@
 require 'iudex-core'
 require 'iudex-core/filter_chain_factory'
 
-require 'iudex-httpclient-3' #FIXME
-require 'iudex-rome' #FIXME
-
 module Iudex
   module DA
 
@@ -31,49 +28,43 @@ module Iudex
       import 'iudex.da.feed.FutureDateFilter'
       import 'iudex.da.feed.FeedWriter'
 
-      import 'iudex.httpclient3.HTTPClient3' #FIXME
-      import 'iudex.rome.RomeFeedParser' #FIXME
-
-      def feed_post
-        [ RomeFeedParser.new, #FIXME: dep leak.
-          feed_writer ]
-      end
-
-      def feed_writer
-        f = FeedWriter.new( data_source, [] )
-
-        create_chain( "feed-update", feed_update ) { |c| f.update_ref_filter = c }
-        create_chain( "feed-new",    feed_new )    { |c| f.new_ref_filter = c }
-        f
-      end
-
-      # FIXME: Central configuration?
-      def http_client
-        @http_mf = RJack::HTTPClient3::ManagerFacade.new
-        @http_mf.start
-        HTTPClient3.new( @http_mf.client )
-        #FIXME: Close with FilterChainFactory?
-      end
+      attr_accessor :data_source
+      attr_accessor :http_client
 
       def feed_filters
         [ ContentFetcher.new( http_client,
                               create_chain( "feed-receiver", feed_post ) ) ]
       end
 
+      def feed_post
+        [ feed_writer ]
+      end
+
+      def feed_writer
+        f = FeedWriter.new( data_source, additional_writer_fields )
+
+        create_chain( "feed-update", feed_update ) { |c| f.update_ref_filter = c }
+        create_chain( "feed-new",    feed_new )    { |c| f.new_ref_filter = c }
+        f
+      end
+
       def feed_update
-        [ TextCtrlWSFilter.new( ContentKeys::TITLE ),
-          FutureDateFilter.new( ContentKeys::PUB_DATE ) ]
+        [ UHashMDCSetter.new ] +
+          feed_common_cleanup
       end
 
       def feed_new
+        [ UHashMDCSetter.new ] +
+        feed_common_cleanup
+      end
+
+      def feed_common_cleanup
         [ TextCtrlWSFilter.new( ContentKeys::TITLE ),
           FutureDateFilter.new( ContentKeys::PUB_DATE ) ]
       end
 
-      # FIXME: Central configuration?
-      def data_source
-        factory = PoolDataSourceFactory.new #( 'loglevel' => 2 )
-        factory.create
+      def additional_writer_fields
+        []
       end
 
     end
