@@ -125,7 +125,8 @@ module Iudex
           unless flts.nil? || flts.empty?
             c = FilterChain.new( desc, flts )
             c.listener = log_listener( desc )
-            ( yield c if block_given? ) || c
+            yield c if block_given?
+            c
           end
         end
 
