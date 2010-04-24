@@ -15,8 +15,9 @@ db/0060_url_indexes.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
+lib/iudex-da/filter_chain_factory.rb
 lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
-test/test_feed_filters.rb
+test/test_filter_chain_factory.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb

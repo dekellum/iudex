@@ -22,10 +22,9 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 Logback.config_console( :stderr => true, :mdc => "uhash" )
 
 require 'iudex-da'
-require 'iudex-da/pool_data_source_factory'
 require 'iudex-da/filter_chain_factory'
 
-class TestFeedFilters < MiniTest::Unit::TestCase
+class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Core
   include Iudex::DA
 
