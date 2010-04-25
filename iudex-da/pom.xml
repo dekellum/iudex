@@ -56,7 +56,6 @@
     <dependency>
       <groupId>com.gravitext</groupId>
       <artifactId>gravitext-util</artifactId>
-      <version>1.4.0</version>
     </dependency>
 
     <dependency>
