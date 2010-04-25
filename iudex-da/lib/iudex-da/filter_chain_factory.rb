@@ -43,9 +43,9 @@ module Iudex
       def feed_writer
         f = UpdateFilter.new( data_source, additional_writer_fields )
 
-        f.update_ref_filter = create_chain( "feed-update", ref_update )
-        f.new_ref_filter    = create_chain( "feed-new",    ref_new )
-
+        create_chain( "ref-update", ref_update ) {|c| f.update_ref_filter = c}
+        create_chain( "ref-new",    ref_new )    {|c| f.new_ref_filter    = c}
+        create_chain( "content-post", content_post ) {|c| f.content_filter= c}
         f
       end
 
@@ -58,6 +58,12 @@ module Iudex
       def ref_new
         [ UHashMDCSetter.new,
           Prioritizer.new( "ref-new" ) ] +
+        ref_common_cleanup
+      end
+
+      def content_post
+        [ UHashMDCSetter.new,
+          Prioritizer.new( "content-post" ) ] +
         ref_common_cleanup
       end
 

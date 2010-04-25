@@ -39,4 +39,9 @@ public class DataAccessKeys
     public static final Key<UniMap> CURRENT =
         create( "current", UniMap.class );
 
+    public static final Key<Integer> NEW_REFERENCES =
+        create( "new_references", Integer.class );
+
+    public static final Key<Integer> UPDATED_REFERENCES =
+        create( "updated_references", Integer.class );
 }

@@ -40,10 +40,9 @@ import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
 import static iudex.da.DataAccessKeys.*;
 
-// FIXME: Generalize: Not just for feeds.
-
 /**
- * Filter based support for writing references (from feeds, etc.)
+ * Filter based support for updating references (from feeds, etc.) and the
+ * original content as part of a single batch transaction.
  */
 public class UpdateFilter implements FilterContainer
 {
@@ -64,6 +63,15 @@ public class UpdateFilter implements FilterContainer
     public void setNewRefFilter( FilterContainer newRefFilter )
     {
         _newRefFilter = newRefFilter;
+    }
+
+    /**
+     * Set additional chained filters to run the original content once all
+     * references are processed but before a final content update is made.
+     */
+    public void setContentFilter( FilterContainer contentFilter )
+    {
+        _contentFilter = contentFilter;
     }
 
     public void update( UniMap content ) throws SQLException
@@ -107,8 +115,10 @@ public class UpdateFilter implements FilterContainer
         {
             UniMap out = merge( updated, current );
 
-            // FIXME: Means for prioritization based on _new/updated counts?
-            // Filter based?
+            out.set( NEW_REFERENCES,     _newReferences );
+            out.set( UPDATED_REFERENCES, _updatedReferences );
+
+            if( ! _contentFilter.filter( out ) ) out = null;
 
             return out;
         }
@@ -140,7 +150,7 @@ public class UpdateFilter implements FilterContainer
     @Override
     public List<FilterContainer> children()
     {
-        return Arrays.asList( _updateRefFilter, _newRefFilter );
+        return Arrays.asList( _updateRefFilter, _newRefFilter, _contentFilter );
     }
 
     @Override
@@ -148,6 +158,7 @@ public class UpdateFilter implements FilterContainer
     {
         _updateRefFilter.close();
         _newRefFilter.close();
+        _contentFilter.close();
     }
 
     private static final List<Key> BASE_KEYS =
@@ -163,6 +174,7 @@ public class UpdateFilter implements FilterContainer
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();
+    private FilterContainer _contentFilter   = new NoOpFilter();
 
     protected static final Logger _log =
         LoggerFactory.getLogger( UpdateFilter.class );
