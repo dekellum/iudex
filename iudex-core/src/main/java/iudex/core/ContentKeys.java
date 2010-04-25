@@ -65,6 +65,13 @@ public class ContentKeys
         create( "pub_date", Date.class );
 
     /**
+     * Difference between this REF_PUB_DATE and CURRENT.REF_PUB_DATE
+     * in seconds.
+     */
+    public static final Key<Float> REF_PUB_DELTA =
+        create( "ref_pub_delta", Float.class );
+
+    /**
      * Highest priority wins.
      */
     public static final Key<Float> PRIORITY =
@@ -85,4 +92,9 @@ public class ContentKeys
     public static final Key<UniMap> REFERER =
         create( "referer", UniMap.class );
 
+    /**
+     * The current state of content during a transform/update operation.
+     */
+    public static final Key<UniMap> CURRENT =
+        create( "current", UniMap.class );
 }

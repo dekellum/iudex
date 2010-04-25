@@ -25,6 +25,7 @@ module Iudex
       import 'iudex.core.filters.ContentFetcher'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.Prioritizer'
+      import 'iudex.core.filters.DateChangeFilter'
       import 'iudex.core.filters.FutureDateFilter'
       import 'iudex.da.filters.UpdateFilter'
 
@@ -37,7 +38,8 @@ module Iudex
       end
 
       def feed_post
-        [ feed_writer ]
+        [ DateChangeFilter.new( false ),
+          feed_writer ]
       end
 
       def feed_writer
@@ -51,6 +53,7 @@ module Iudex
 
       def ref_update
         [ UHashMDCSetter.new,
+          DateChangeFilter.new( true ),
           Prioritizer.new( "ref-update" ) ] +
           ref_common_cleanup
       end

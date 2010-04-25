@@ -33,12 +33,6 @@ public class DataAccessKeys
         return UniMap.KEY_SPACE.createListKey( name );
     }
 
-    /**
-     * During update operations, the CURRENT DB content.
-     */
-    public static final Key<UniMap> CURRENT =
-        create( "current", UniMap.class );
-
     public static final Key<Integer> NEW_REFERENCES =
         create( "new_references", Integer.class );
 
