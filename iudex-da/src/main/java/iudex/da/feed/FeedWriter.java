@@ -24,6 +24,9 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
@@ -80,6 +83,11 @@ public class FeedWriter implements FilterContainer
             update( content );
         }
         catch( SQLException x ) {
+            SQLException s = x;
+            while( s != null ) {
+                _log.error( s.getMessage() );
+                s = s.getNextException();
+            }
             // FIXME: As in fatal?
             throw new RuntimeException( x );
         }
@@ -156,4 +164,8 @@ public class FeedWriter implements FilterContainer
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();
+
+    protected static final Logger _log =
+        LoggerFactory.getLogger( FeedWriter.class  );
+
 }
