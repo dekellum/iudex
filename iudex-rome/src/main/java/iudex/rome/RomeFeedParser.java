@@ -78,6 +78,9 @@ public class RomeFeedParser implements Filter
         SyndFeedInput input = new SyndFeedInput();
         SyndFeed feed = input.build( reader );
 
+        content.set( TITLE, feed.getTitle() );
+        content.set( REF_PUB_DATE, feed.getPublishedDate() );
+
         ArrayList<UniMap> refs = new ArrayList<UniMap>();
         List<?> entries = feed.getEntries();
         for( Object oe : entries ) {
@@ -107,6 +110,8 @@ public class RomeFeedParser implements Filter
                                        entry.getUpdatedDate() );
         ref.set( REF_PUB_DATE, bestDate );
         ref.set( PUB_DATE,     bestDate );
+
+        ref.set( TYPE, TYPE_PAGE );
 
         //FIXME: se.getDescription() or se.getContents()?
 
