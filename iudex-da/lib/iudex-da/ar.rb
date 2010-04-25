@@ -20,7 +20,7 @@ require 'active_record'
 
 module Iudex::DA
 
-  @log = SLF4J[ "iudex.da.ActiveRecord" ]
+  @log = RJack::SLF4J[ "iudex.da.ActiveRecord" ]
   ActiveRecord::Base.logger = @log
 
   @log.info { "Connecting: #{CONFIG.inspect}" }

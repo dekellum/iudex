@@ -44,7 +44,7 @@ module Iudex::DA
 
       @props[ :loglevel ] ||= 1
 
-      SLF4J[ 'iudex.da.PoolDataSourceFactory' ].info do
+      RJack::SLF4J[ 'iudex.da.PoolDataSourceFactory' ].info do
         "Init properties: #{@props.inspect}"
       end
       load_driver

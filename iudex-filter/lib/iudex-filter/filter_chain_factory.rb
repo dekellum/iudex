@@ -36,7 +36,7 @@ module Iudex
         def initialize( description = "default" )
           @description = description
 
-          @log = SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
+          @log = RJack::SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
 
           @summery_period = nil
           @by_filter_period = nil
@@ -150,7 +150,7 @@ module Iudex
         import 'com.gravitext.util.Metric'
 
         def initialize( desc, index )
-          @log = SLF4J[ "iudex.filter.core.ByFilterLogger.#{desc}" ]
+          @log = RJack::SLF4J[ "iudex.filter.core.ByFilterLogger.#{desc}" ]
           @index = index
           @nlength = index.filters.map { |f| index.name( f ).length }.max
         end
