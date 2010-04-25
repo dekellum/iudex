@@ -80,6 +80,7 @@ public class RomeFeedParser implements Filter
 
         content.set( TITLE, feed.getTitle() );
         content.set( REF_PUB_DATE, feed.getPublishedDate() );
+        content.set( PUB_DATE,     feed.getPublishedDate() );
 
         ArrayList<UniMap> refs = new ArrayList<UniMap>();
         List<?> entries = feed.getEntries();
