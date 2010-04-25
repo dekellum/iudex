@@ -17,6 +17,9 @@
 package iudex.core.filters;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,6 +38,7 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPKeys;
 import iudex.http.HTTPSession;
 import iudex.http.ContentType;
+import iudex.http.Header;
 import iudex.http.Headers;
 
 public class ContentFetcher implements AsyncFilterContainer
@@ -57,6 +61,11 @@ public class ContentFetcher implements AsyncFilterContainer
     public Set<String> acceptedContentTypes()
     {
         return _acceptedContentTypes;
+    }
+
+    public void setDefaultEncoding( Charset defaultEncoding )
+    {
+        _defaultEncoding = defaultEncoding;
     }
 
     public boolean filter( UniMap content )
@@ -106,8 +115,9 @@ public class ContentFetcher implements AsyncFilterContainer
                 return;
             }
 
-            int len = Headers.contentLength(
-                _content.get( HTTPKeys.RESPONSE_HEADERS ) );
+            List<Header> headers = _content.get( HTTPKeys.RESPONSE_HEADERS );
+
+            int len = Headers.contentLength( headers );
             if( len != 0 ) {
                 if( len > _maxContentLength ){
                     session.abort();
@@ -130,10 +140,30 @@ public class ContentFetcher implements AsyncFilterContainer
                 ContentSource cs =
                     new ContentSource( buffer.flipAsByteBuffer() );
 
+                Charset encoding = null;
+                String eName = Headers.contentType( headers ).charset();
+                if( eName != null ) {
+                    encoding = lookupCharset( eName );
+                }
+                if( encoding == null ) encoding = _defaultEncoding;
+
+                cs.setDefaultEncoding( encoding );
+
                 _content.set( ContentKeys.CONTENT, cs );
             }
             // FIXME: Catch IO Exception, handle and pass to _receiver?
             _receiver.filter( _content );
+        }
+
+        private Charset lookupCharset( String charset )
+        {
+            Charset found = null;
+            try {
+                found = Charset.forName( charset );
+            }
+            catch( IllegalCharsetNameException x ) {}
+            catch( UnsupportedCharsetException x ) {}
+            return found;
         }
 
         private boolean testContentType( HTTPSession session )
@@ -171,4 +201,5 @@ public class ContentFetcher implements AsyncFilterContainer
     private final HTTPClient _client;
     private FilterContainer _receiver;
     private Set<String> _acceptedContentTypes = null;
+    private Charset _defaultEncoding = Charset.forName( "ISO-8859-1" );
 }

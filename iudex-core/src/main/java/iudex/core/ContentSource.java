@@ -51,6 +51,11 @@ public class ContentSource
                  (CharSequence) _source : null );
     }
 
+    public void setDefaultEncoding( Charset encoding )
+    {
+        _defaultEncoding = encoding;
+    }
+
     public Charset defaultEncoding()
     {
         return _defaultEncoding;
