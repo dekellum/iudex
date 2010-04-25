@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.da.feed;
+package iudex.core.filters;
 
 import iudex.filter.Described;
 import iudex.filter.Filter;
@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
-
-//FIXME: Move to core.filters?
 
 /**
  * Filter that removes a date value if it is beyond a specified grace

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package iudex.da.feed;
+package iudex.da.filters;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,10 +45,9 @@ import static iudex.da.DataAccessKeys.*;
 /**
  * Filter based support for writing references (from feeds, etc.)
  */
-public class FeedWriter implements FilterContainer
+public class UpdateFilter implements FilterContainer
 {
-    public FeedWriter( DataSource source,
-                       List<Key> fields )
+    public UpdateFilter( DataSource source, List<Key> fields )
     {
         _dsource = source;
 
@@ -166,6 +165,6 @@ public class FeedWriter implements FilterContainer
     private FilterContainer _newRefFilter    = new NoOpFilter();
 
     protected static final Logger _log =
-        LoggerFactory.getLogger( FeedWriter.class  );
+        LoggerFactory.getLogger( UpdateFilter.class );
 
 }

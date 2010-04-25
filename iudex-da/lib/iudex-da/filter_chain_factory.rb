@@ -25,8 +25,8 @@ module Iudex
       import 'iudex.core.filters.ContentFetcher'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.Prioritizer'
-      import 'iudex.da.feed.FutureDateFilter'
-      import 'iudex.da.feed.FeedWriter'
+      import 'iudex.core.filters.FutureDateFilter'
+      import 'iudex.da.filters.UpdateFilter'
 
       attr_accessor :data_source
       attr_accessor :http_client
@@ -41,7 +41,7 @@ module Iudex
       end
 
       def feed_writer
-        f = FeedWriter.new( data_source, additional_writer_fields )
+        f = UpdateFilter.new( data_source, additional_writer_fields )
 
         f.update_ref_filter = create_chain( "feed-update", ref_update )
         f.new_ref_filter    = create_chain( "feed-new",    ref_new )
