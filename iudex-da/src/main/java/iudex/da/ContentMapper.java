@@ -171,9 +171,13 @@ public final class ContentMapper
             if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
                 stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
+            else if( key == REFERER ) {
+                UniMap ref = content.get( REFERER );
+                stmt.setString( i,
+                                (ref != null) ? ref.get( URL ).uhash() : null );
+            }
             else {
                 stmt.setObject( i, convert( key, content.get( key ) ) );
-
             }
             i++;
         }
@@ -183,6 +187,9 @@ public final class ContentMapper
     {
         if( key.valueType().equals( java.util.Date.class ) ) {
             return convertDate( (java.util.Date) value );
+        }
+        if( key.valueType().equals( java.lang.CharSequence.class ) ) {
+            return ( value != null ) ? value.toString() : null;
         }
         return value;
     }
