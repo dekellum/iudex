@@ -19,7 +19,7 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-Logback.config_console( :stderr => true )
+RJack::Logback.config_console( :stderr => true )
 
 require 'iudex-httpclient-3'
 

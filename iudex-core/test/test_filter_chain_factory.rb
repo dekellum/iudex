@@ -19,8 +19,8 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-Logback.config_console( :mdc => "uhash" )
-Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
+RJack::Logback.config_console( :mdc => "uhash" )
+RJack::Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = RJack::Logback::DEBUG
 
 require 'iudex-core'
 require 'iudex-core/filter_chain_factory'

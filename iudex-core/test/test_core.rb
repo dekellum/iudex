@@ -26,7 +26,7 @@ class TestLogWriter < MiniTest::Unit::TestCase
   import 'java.util.regex.Pattern'
 
   def test_log_writer
-    Logback['TestLogWriter'].level = Logback::DEBUG
+    RJack::Logback['TestLogWriter'].level = RJack::Logback::DEBUG
     lw = LogWriter.new( 'TestLogWriter' )
     lw.remove_pattern = Pattern.compile( '(^test)|(\s+$)' )
     pw = PrintWriter.new( lw, true )

@@ -20,10 +20,10 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 require 'rjack-logback'
-Logback.config_console
+RJack::Logback.config_console
 
-#Logback[ "org.apache.commons.httpclient" ].level = Logback::INFO
-#Logback[ "iudex" ].level = Logback::DEBUG
+#RJack::Logback[ "org.apache.commons.httpclient" ].level = RJack::Logback::INFO
+#RJack::Logback[ "iudex" ].level = RJack::Logback::DEBUG
 
 require 'iudex-barc'
 require 'iudex-httpclient-3' #FIXME: Unspecified dependency

@@ -21,8 +21,6 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-core'
 require 'iudex-da/ar'
 
-# Logback[ 'iudex.da' ].level = Logback::DEBUG
-
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
 

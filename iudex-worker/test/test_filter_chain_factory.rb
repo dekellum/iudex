@@ -19,7 +19,7 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-Logback.config_console( :stderr => true, :mdc => "uhash" )
+RJack::Logback.config_console( :stderr => true, :mdc => "uhash" )
 
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'

@@ -19,9 +19,9 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-Logback.config_console( :stderr => true, :mdc => "tkey" )
+RJack::Logback.config_console( :stderr => true, :mdc => "tkey" )
 
-# Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = Logback::DEBUG
+# RJack::Logback[ "iudex.filter.core.FilterChain.test.reject" ].level = RJack::Logback::DEBUG
 
 require 'gravitext-util'
 require 'iudex-filter/filter_chain_factory'
