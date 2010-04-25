@@ -24,7 +24,7 @@ module Iudex
       import 'iudex.core.filters.UHashMDCSetter'
       import 'iudex.core.filters.ContentFetcher'
       import 'iudex.core.filters.TextCtrlWSFilter'
-
+      import 'iudex.core.filters.Prioritizer'
       import 'iudex.da.feed.FutureDateFilter'
       import 'iudex.da.feed.FeedWriter'
 
@@ -43,22 +43,25 @@ module Iudex
       def feed_writer
         f = FeedWriter.new( data_source, additional_writer_fields )
 
-        create_chain( "feed-update", feed_update ) { |c| f.update_ref_filter = c }
-        create_chain( "feed-new",    feed_new )    { |c| f.new_ref_filter = c }
+        f.update_ref_filter = create_chain( "feed-update", ref_update )
+        f.new_ref_filter    = create_chain( "feed-new",    ref_new )
+
         f
       end
 
-      def feed_update
-        [ UHashMDCSetter.new ] +
-          feed_common_cleanup
+      def ref_update
+        [ UHashMDCSetter.new,
+          Prioritizer.new( "ref-update" ) ] +
+          ref_common_cleanup
       end
 
-      def feed_new
-        [ UHashMDCSetter.new ] +
-        feed_common_cleanup
+      def ref_new
+        [ UHashMDCSetter.new,
+          Prioritizer.new( "ref-new" ) ] +
+        ref_common_cleanup
       end
 
-      def feed_common_cleanup
+      def ref_common_cleanup
         [ TextCtrlWSFilter.new( ContentKeys::TITLE ),
           FutureDateFilter.new( ContentKeys::PUB_DATE ) ]
       end
