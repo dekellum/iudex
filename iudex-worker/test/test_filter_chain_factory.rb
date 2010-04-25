@@ -25,14 +25,31 @@ require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
+  include Iudex::Core
   include Iudex::Worker
+  include Gravitext::HTMap
+
+  import 'iudex.core.ContentKeys'
+  import 'iudex.core.VisitURL'
+  UniMap.define_accessors #FIXME: FilterFactory after all filters created?
 
   def test_filter
     fcf = FilterChainFactory.new( "test" )
     fcf.add_summary_reporter
     fcf.add_by_filter_reporter
-    fcf.open
-    fcf.close
+
+    def fcf.additional_writer_fields
+      super + [ ContentKeys::TITLE ]
+    end
+
+    fcf.filter do |chain|
+      content = UniMap.new
+      content.url = VisitURL.normalize( "http://gravitext.com/atom.xml" )
+      content.type = "FEED"
+      content.priority = 1.0
+      chain.filter( content )
+    end
+
   end
 
 end
