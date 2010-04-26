@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,17 +17,12 @@
 class AddPriority < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',   'priority',  :float, :null => false, :default => 0.0
+    add_column( 'urls',  'priority', :float, :null => false, :default => 0.0 )
     # Prioritization of next visit, range -INF,+INF
-
-    add_index     'urls', [ 'priority' ] 
-    # FIXME: Consider partial index, e.g. WHERE next_visit_after IS NOT NULL?
-    # FIXME: Consider a combined index 'host', 'priority'?
   end
 
   def self.down
-    remove_index  'urls',   'priority'
-    remove_column 'urls',   'priority'
+    remove_column( 'urls', 'priority' )
   end
 
 end

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,20 @@
  */
 package iudex.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import com.gravitext.util.Streams;
+
 public class ContentSource
 {
-    
+
     public ContentSource( ByteBuffer buffer )
     {
         _source = buffer;
     }
-    
+
     public ContentSource( InputStream in )
     {
         _source = in;
@@ -39,21 +40,22 @@ public class ContentSource
             return (InputStream) _source;
         }
         else if( _source instanceof ByteBuffer ) {
-            ByteBuffer buf = (ByteBuffer) _source;
-            return new ByteArrayInputStream( buf.array(),
-                                             buf.arrayOffset() + buf.position(),
-                                             buf.remaining() );
-            //FIXME: Replace with more optimized (non-synchronized) stream?
+            return Streams.inputStream( (ByteBuffer) _source );
         }
         return null;
     }
 
     public CharSequence characters()
     {
-        return ( ( _source instanceof CharSequence ) ? 
-                 (CharSequence) _source : null ); 
+        return ( ( _source instanceof CharSequence ) ?
+                 (CharSequence) _source : null );
     }
-    
+
+    public void setDefaultEncoding( Charset encoding )
+    {
+        _defaultEncoding = encoding;
+    }
+
     public Charset defaultEncoding()
     {
         return _defaultEncoding;

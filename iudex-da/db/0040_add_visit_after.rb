@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,17 +17,14 @@
 class AddVisitAfter < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',   'next_visit_after', :timestamp
+    add_column( 'urls', 'next_visit_after', 'timestamp with time zone' )
     execute 'ALTER TABLE urls ALTER COLUMN next_visit_after SET DEFAULT now()'
     # null: never visit (terminal result)
     # Don't visit again before the specified date.
-    
-    add_index     'urls', [ 'next_visit_after' ] 
   end
 
   def self.down
-    remove_index  'urls', 'next_visit_after'
-    remove_column 'urls', 'next_visit_after'
+    remove_column( 'urls', 'next_visit_after' )
   end
 
 end

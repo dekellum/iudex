@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import iudex.core.VisitQueue;
 import iudex.core.VisitURL;
 
 import org.junit.Test;
+
+import com.gravitext.htmap.UniMap;
+
 import static org.junit.Assert.*;
 
 public class VisitQueueTest
@@ -27,24 +30,24 @@ public class VisitQueueTest
     private VisitQueue _visitQ = new VisitQueue();
 
     @Test
-    public void testPriority() 
+    public void testPriority()
         throws VisitURL.SyntaxException, InterruptedException
     {
         addOrder( "http://h1/3", 1.3F );
         addOrder( "http://h1/1", 1.1F );
         addOrder( "http://h1/2", 1.2F );
-        
+
         assertEquals( 3, _visitQ.size() );
-        
+
         assertTakeNext( "http://h1/3" );
         assertTakeNext( "http://h1/2" );
         assertTakeNext( "http://h1/1" );
-        
+
         assertEquals( 0, _visitQ.size() );
     }
 
     @Test
-    public void testHosts() 
+    public void testHosts()
         throws VisitURL.SyntaxException, InterruptedException
     {
         addOrder( "http://h2/2", 2.2F );
@@ -53,28 +56,26 @@ public class VisitQueueTest
         addOrder( "http://h3/1", 3.1F );
         addOrder( "http://h1/2", 1.2F );
         addOrder( "http://h1/1", 1.1F );
-        
+
         assertEquals( 6, _visitQ.size() );
-        
+
         assertTakeNext( "http://h3/2" );
         assertTakeNext( "http://h2/2" );
         assertTakeNext( "http://h1/2" );
         assertTakeNext( "http://h3/1" );
         assertTakeNext( "http://h2/1" );
         assertTakeNext( "http://h1/1" );
-        
+
         assertEquals( 0, _visitQ.size() );
     }
 
-    
-    
     private void assertTakeNext( String url ) throws InterruptedException
     {
         Thread.sleep( 30 );
-        
-        final HostQueue hq = _visitQ.take(); 
+
+        final HostQueue hq = _visitQ.take();
         try {
-            Content order = hq.remove();
+            UniMap order = hq.remove();
             assertEquals( url, order.get( ContentKeys.URL ).toString() );
         }
         finally {
@@ -83,14 +84,14 @@ public class VisitQueueTest
         }
     }
 
-    private void addOrder( String url, float priority ) 
+    private void addOrder( String url, float priority )
         throws VisitURL.SyntaxException
     {
-        Content content = new Content();
+        UniMap content = new UniMap();
         content.set( ContentKeys.URL, VisitURL.normalize( url ) );
         content.set( ContentKeys.TYPE, ContentKeys.TYPE_PAGE );
         content.set( ContentKeys.PRIORITY, priority );
-        
+
         _visitQ.add( content );
     }
 }

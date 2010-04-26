@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -14,20 +14,39 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
+require 'rjack-slf4j'
+require 'rjack-commons-dbcp'
+require 'rjack-commons-dbutils'
+
+require 'iudex-core'
+
 require 'iudex-da/base'
 
 module Iudex
   module DA
-    
-    # Configuration for ActiveRecord (adjust before requiring iudex-da/ar)
-    # and defaults for PoolDataSourceFactory.new( properties )
-    CONFIG = { 
-      :host     => 'localhost',
-      :adapter  => 'jdbcpostgresql',
-      :database => 'iudex_test',
-      :username => 'iudex' }
 
-    Dir.glob( File.join( IUDEX_DA_DIR, '*.jar' ) ).each { |jar| require jar }
+    require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
+
+    # Database connection configuration for both ActiveRecord
+    # (migrations, testing) and PoolDataSourceFactory.
+    # May (-c)onfig via Iudex::Core::Config.connect_props=
+    # Defaults are used by unit tests, migrate
+    CONFIG = {
+      :adapter  => 'jdbcpostgresql',
+      :host     => 'localhost',
+      :database => 'iudex_test',
+      :username => 'iudex',
+      :pool     => 10 }
+
   end
+
+  module Core
+    module Config
+      # Merge props to Iudex::DA::CONFIG
+      def self.connect_props=( props )
+        Iudex::DA::CONFIG.merge!( props )
+      end
+    end
+  end
+
 end

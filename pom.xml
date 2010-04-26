@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>iudex</groupId>
@@ -9,12 +9,13 @@
   <name>Iudex Parent</name>
 
   <modules>
+    <module>iudex-filter</module>
+    <module>iudex-http</module>
+    <module>iudex-barc</module>
     <module>iudex-core</module>
+    <module>iudex-rome</module>
+    <module>iudex-httpclient-3</module>
     <module>iudex-da</module>
-    <!-- DISABLED for now:
-         <module>jetty-httpclient</module>
-         <module>nfeedparser</module>
-         <module>rrome</module> -->
   </modules>
 
   <dependencyManagement>
@@ -23,7 +24,14 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.5.6</version>
+        <version>1.5.10</version>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.gravitext</groupId>
+        <artifactId>gravitext-util</artifactId>
+        <version>1.4.0</version>
         <scope>compile</scope>
       </dependency>
 
@@ -37,7 +45,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>0.9.15</version>
+        <version>0.9.18</version>
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
@@ -59,6 +67,14 @@
             <encoding>UTF-8</encoding>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <aggregate>true</aggregate>
           </configuration>
         </plugin>
 

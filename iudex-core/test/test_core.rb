@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,23 +17,16 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
+require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-core'
 
-require 'rubygems'
-require 'logback'
-Logback.config_console
-
-require 'test/unit'
-
-class TestLogWriter < Test::Unit::TestCase
+class TestLogWriter < MiniTest::Unit::TestCase
   import 'java.io.PrintWriter'
   import 'iudex.util.LogWriter'
   import 'java.util.regex.Pattern'
 
-  def test_log_writter
-    Logback['TestLogWriter'].level = Logback::DEBUG
+  def test_log_writer
+    RJack::Logback['TestLogWriter'].level = RJack::Logback::DEBUG
     lw = LogWriter.new( 'TestLogWriter' )
     lw.remove_pattern = Pattern.compile( '(^test)|(\s+$)' )
     pw = PrintWriter.new( lw, true )

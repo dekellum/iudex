@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-httpclient-3/base.rb
+lib/iudex-httpclient-3.rb
+test/setup.rb
+test/test_httpclient.rb

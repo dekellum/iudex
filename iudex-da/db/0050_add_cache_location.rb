@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,10 +17,10 @@
 class AddCacheLocation < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',   'cache_file',         :integer, :limit => 4 
+    add_column( 'urls', 'cache_file', :integer, :limit => 4 )
     # 32-bit file number
 
-    add_column    'urls',   'cache_file_offset',  :integer, :limit => 8
+    add_column( 'urls', 'cache_file_offset', :integer, :limit => 8 )
     # 64-bit byte offset within file
   end
 

@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -16,8 +16,8 @@
 
 module Iudex
   module Core
-    VERSION = '1.0'
+    VERSION = '1.0.0'
 
-    IUDEX_CORE_DIR = File.dirname( __FILE__ ) # :nodoc:
+    LIB_DIR = File.dirname( __FILE__ ) # :nodoc:
   end
 end

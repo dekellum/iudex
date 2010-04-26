@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,21 @@
  */
 package iudex.core;
 
-import iudex.util.URL64;
+import com.gravitext.util.URL64;
+
+import iudex.util.Characters;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static com.gravitext.util.Charsets.UTF_8;
 
 /**
- * Immutable URL representation encapsulates URL/URI parsing, normalization, 
+ * Immutable URL representation encapsulates URL/URI parsing, normalization,
  * and hashing.
  */
 public final class VisitURL
@@ -40,7 +42,7 @@ public final class VisitURL
         {
             super( cause );
         }
-        
+
         private static final long serialVersionUID = 1L;
     }
 
@@ -53,9 +55,9 @@ public final class VisitURL
             throw new RuntimeException( e );
         }
     }
-    
+
     public static VisitURL normalize( CharSequence rawURL )
-        throws SyntaxException 
+        throws SyntaxException
     {
         try {
             String raw = preEncode( rawURL );
@@ -67,7 +69,7 @@ public final class VisitURL
     }
 
     // FIXME: domain() via http://publicsuffix.org/list/ (see notes)
-    
+
     public int compareTo( VisitURL other )
     {
         return _uri.compareTo( other._uri );
@@ -75,22 +77,22 @@ public final class VisitURL
 
     public boolean equals( Object other )
     {
-        return ( ( other instanceof VisitURL ) && 
-                 _uri.equals( ((VisitURL) other)._uri ) );  
+        return ( ( other instanceof VisitURL ) &&
+                 _uri.equals( ((VisitURL) other)._uri ) );
     }
 
     public String host()
     {
         return _uri.getHost();
     }
-    
+
     public String uhash()
     {
         //lazy init
-        if( _uhash == null ) _uhash = hashURL( toString() ).toString(); 
+        if( _uhash == null ) _uhash = hashURL( toString() ).toString();
         return _uhash;
     }
-    
+
     public int hashCode()
     {
         return _uri.hashCode();
@@ -100,7 +102,7 @@ public final class VisitURL
     {
         return _uri.toString();
     }
-    
+
     VisitURL( URI preParsed )
     {
         _uri = preParsed;
@@ -117,7 +119,7 @@ public final class VisitURL
         cbuff.limit( 23 );
         return cbuff;
     }
-    
+
     /**
      * Return 6-character URL64 encoded hash of a domain name.
      */
@@ -129,8 +131,7 @@ public final class VisitURL
         cbuff.limit( 6 );
         return cbuff;
     }
-   
-    
+
     static URI normalize( URI uri ) throws URISyntaxException
     {
         //FIXME: See also http://en.wikipedia.org/wiki/URL_normalization
@@ -138,7 +139,7 @@ public final class VisitURL
         uri = uri.parseServerAuthority();
 
         // FIXME: Use java.net.IDN (for unicode to ascii host conversion)?
-        
+
         // Lower case the scheme
         String scheme = uri.getScheme();
         if( scheme != null ) scheme = scheme.toLowerCase();
@@ -147,96 +148,70 @@ public final class VisitURL
         String host = uri.getHost();
         //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
         if( host != null ) host = host.toLowerCase();
-        
+
         // Drop superfluous port assignments
         int port = uri.getPort();
-        if( ( "http".equals(  scheme ) && port ==  80 ) || 
+        if( ( "http".equals(  scheme ) && port ==  80 ) ||
             ( "https".equals( scheme ) && port == 443 ) ) {
             port = -1;
         }
-        
+
         // Drop empty '?' query string.
         String query = uri.getRawQuery();
         if( query != null && query.isEmpty() ) query = null;
-        
+
         // Add '/' with bare http://host -> http://host/.
         String path = uri.getRawPath();
         if( path == null || path.isEmpty() ) path = "/";
-        
+
         StringBuilder b = new StringBuilder();
         b.append( scheme ).append( "://" );
         b.append(  host );
         if( port != -1 ) b.append( ':' ).append( port );
         b.append( path );
         if( query != null ) b.append( '?' ).append( query );
-        
+
         uri = new URI( b.toString() );
-        
-        /* FIXME: Encode path (good) but encode query is wrong, 
+
+        /* FIXME: Encode path (good) but encode query is wrong,
          * so can't use this:
         uri = new URI( scheme,
                        null, // Drop userInfo
                        host,
                        port,
-                       path, 
+                       path,
                        query,
                        null ); // Drop fragment (anchor)
         */
-        
+
         uri = new URI( uri.normalize().toASCIIString() );
-        
+
         return uri;
     }
 
     /**
-     * Trim leading trail whitespace
+     * Trim leading/trailing isCtrlWS().
      * Replace internal whitespace sequences with a single %20
      */
     static String preEncode( CharSequence in )
     {
-        final StringBuilder clean = new StringBuilder( in.length() );
-        int i = 0;
-        int last = i;
-        boolean inWhitespace = false;
-        final int end = in.length();
-        while( i < end ) {
-            char c = in.charAt(i);
-            if( Character.isWhitespace( c ) || Character.isSpaceChar( c ) ) {
-                if( !inWhitespace ) {
-                    clean.append( in, last, i);
-                    inWhitespace = true;
-                }
-            }
-            else if( inWhitespace ) {
-                if( clean.length() > 0 ) clean.append( "%20" );
-                last = i;
-                inWhitespace = false;
-            }
-            ++i;
-        }
-        if( !inWhitespace ) clean.append( in, last, i );
-        return clean.toString();
+        return Characters.replaceCtrlWS( in, "%20" ).toString();
     }
-    
-    
-    private static byte[] hash( CharSequence input ) 
+
+    private static byte[] hash( CharSequence input )
     {
         try {
             MessageDigest md = MessageDigest.getInstance( "SHA-1" );
-            md.update( UTF8.encode( CharBuffer.wrap( input ) ) );
+            md.update( UTF_8.encode( CharBuffer.wrap( input ) ) );
             return md.digest();
-            
+
         }
         catch( NoSuchAlgorithmException x ) {
             throw new RuntimeException( x ); //SHA-1 should be available
         }
     }
-    
 
-    
-    
     private final URI _uri;
     private String _uhash = null;
-    
-    private static final Charset UTF8 = Charset.forName( "UTF-8" );
+
 }

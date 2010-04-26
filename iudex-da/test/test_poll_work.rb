@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,20 +17,12 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
-
-require 'logback'
-Logback.config_console
-Logback['Iudex.DA'].level = Logback::DEBUG
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-core'
 require 'iudex-da/ar'
-require 'test/unit'
 
-
-class TestPollWork < Test::Unit::TestCase
+class TestPollWork < MiniTest::Unit::TestCase
   include Iudex::DA
   import 'iudex.core.VisitURL'
 
@@ -64,12 +56,13 @@ class TestPollWork < Test::Unit::TestCase
   def test_poll
     query = <<END
 SELECT url, host, type, priority
-FROM ( SELECT * FROM urls
-       WHERE next_visit_after <= now()
-       AND uhash IN ( SELECT uhash FROM urls o
-                      WHERE o.host = urls.host
-                      ORDER BY priority DESC LIMIT ? )
-       ORDER BY priority DESC LIMIT ? ) AS sub
+FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
+       FROM ( SELECT *, row_number() OVER ( PARTITION BY host
+                                            ORDER BY priority DESC ) AS hpos
+              FROM urls
+              WHERE next_visit_after <= now() ) AS subh
+       WHERE hpos <= ? ) AS subp
+WHERE ppos <= ?
 ORDER BY host, priority DESC;
 END
     res = Url.find_by_sql( [ query, 5, 18 ] )

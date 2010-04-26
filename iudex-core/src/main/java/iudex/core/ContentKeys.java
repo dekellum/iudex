@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,24 @@ import java.util.Date;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
+import com.gravitext.htmap.UniMap;
 
 public class ContentKeys
 {
     protected static <T> Key<T> create( String name, Class<T> valueType )
     {
-        return Content.KEY_SPACE.create( name, valueType );
+        return UniMap.KEY_SPACE.create( name, valueType );
     }
-    
+
     protected static <T> Key<List<T>> createListKey( String name )
     {
-        return Content.KEY_SPACE.createListKey( name );
+        return UniMap.KEY_SPACE.createListKey( name );
     }
 
-    public static final Key<VisitURL> URL = 
-        create( "url", VisitURL.class ); 
+    public static final Key<VisitURL> URL =
+        create( "url", VisitURL.class );
 
-    public static final Key<String> TYPE = 
+    public static final Key<String> TYPE =
         create( "type", String.class );
 
     public static final String TYPE_FEED    = "FEED";
@@ -43,46 +44,57 @@ public class ContentKeys
     public static final String TYPE_ROBOTS  = "ROBOTS";
     public static final String TYPE_SITEMAP = "SITEMAP";
 
-    public static final Key<Date> LAST_VISIT = 
+    public static final Key<Date> LAST_VISIT =
         create( "last_visit", Date.class );
 
-    public static final Key<Integer> STATUS = 
+    public static final Key<Integer> STATUS =
         create( "status", Integer.class );
 
-    public static final Key<String> REASON = 
+    public static final Key<String> REASON =
         create( "reason", String.class );
-    
+
     public static final String REASON_DUPE = "DUPE";
 
-    public static final Key<CharSequence> TITLE = 
+    public static final Key<CharSequence> TITLE =
         create( "title", CharSequence.class );
 
-    public static final Key<Date> REF_PUB_DATE = 
+    public static final Key<Date> REF_PUB_DATE =
         create( "ref_pub_date", Date.class );
-    
-    
-    public static final Key<Date> PUB_DATE = 
+
+    public static final Key<Date> PUB_DATE =
         create( "pub_date", Date.class );
+
+    /**
+     * Difference between this REF_PUB_DATE and CURRENT.REF_PUB_DATE
+     * in seconds.
+     */
+    public static final Key<Float> REF_PUB_DELTA =
+        create( "ref_pub_delta", Float.class );
 
     /**
      * Highest priority wins.
      */
-    public static final Key<Float> PRIORITY = 
+    public static final Key<Float> PRIORITY =
         create( "priority", Float.class );
 
-    public static final Key<Date> NEXT_VISIT_AFTER = 
+    public static final Key<Date> NEXT_VISIT_AFTER =
         create( "next_visit_after", Date.class );
 
     public static final Key<ContentSource> CONTENT =
         create( "content", ContentSource.class );
-    
+
     /**
-     * FIXME: Or single "REFERENT" Key<Content>? 
+     * FIXME: Or single "REFERENT" Key<Content>?
      */
-    public static final Key<List<Content>> REFERENCES =
+    public static final Key<List<UniMap>> REFERENCES =
         createListKey( "references" );
-    
-    public static final Key<Content> REFERER =
-        create( "referer", Content.class );
-    
+
+    public static final Key<UniMap> REFERER =
+        create( "referer", UniMap.class );
+
+    /**
+     * The current state of content during a transform/update operation.
+     */
+    public static final Key<UniMap> CURRENT =
+        create( "current", UniMap.class );
 }

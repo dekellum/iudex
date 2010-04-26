@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package iudex.core;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+import com.gravitext.htmap.UniMap;
+
 public class HostQueue
 {
     public static class NextVisitComparator implements Comparator<HostQueue>
@@ -27,7 +29,7 @@ public class HostQueue
             return Long.signum( prev.nextVisit() - next.nextVisit() );
         }
     }
-    
+
     public static class TopOrderComparator implements Comparator<HostQueue>
     {
         public int compare( HostQueue prev, HostQueue next )
@@ -35,7 +37,7 @@ public class HostQueue
             return PRIORITY_COMPARATOR.compare( prev.peek(), next.peek() );
         }
     }
-    
+
     public HostQueue( String host )
     {
         _host = host;
@@ -51,12 +53,11 @@ public class HostQueue
         _nextVisit = nextVisitMillis;
     }
 
-    
-    public void add( Content order )
+    public void add( UniMap order )
     {
         _work.add( order );
     }
-    
+
     public String host()
     {
         return _host;
@@ -67,37 +68,37 @@ public class HostQueue
         return _work.size();
     }
 
-    public Content peek()
+    public UniMap peek()
     {
         return _work.peek();
     }
-    
-    public Content remove()
+
+    public UniMap remove()
     {
         return _work.remove();
     }
 
     /**
-     * Order by descending priority. 
+     * Order by descending priority.
      */
-    private static final class PriorityComparator 
-        implements Comparator<Content>
+    private static final class PriorityComparator
+        implements Comparator<UniMap>
     {
-        public int compare( Content prev, Content next )
+        public int compare( UniMap prev, UniMap next )
         {
             return Float.compare( next.get( ContentKeys.PRIORITY ),
                                   prev.get( ContentKeys.PRIORITY ) );
         }
-        
+
     }
     private static final PriorityComparator PRIORITY_COMPARATOR =
         new PriorityComparator();
     private final String _host;
-    private long _nextVisit = 0; 
-    
-    // FIXME: Logically a priority queue but may be more optimal 
+    private long _nextVisit = 0;
+
+    // FIXME: Logically a priority queue but may be more optimal
     // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
-    private PriorityQueue<Content> _work = 
-        new PriorityQueue<Content>( 256, PRIORITY_COMPARATOR );
+    private PriorityQueue<UniMap> _work =
+        new PriorityQueue<UniMap>( 256, PRIORITY_COMPARATOR );
 }

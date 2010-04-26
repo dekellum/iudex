@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -17,21 +17,21 @@
 class AddFeedMetadata < ActiveRecord::Migration
 
   def self.up
-    add_column    'urls',  'title',          :text
+    add_column( 'urls', 'title', :text )
     # PAGE,FEED title
 
-    add_column    'urls',  'ref_pub_date', :timestamp
+    add_column( 'urls', 'ref_pub_date', 'timestamp with time zone' )
     # (Latest) published date as provided from feed (may be ahead of
-    # or set before pub_date, above).
+    # or set before pub_date, below).
 
-    add_column    'urls',  'pub_date', :timestamp
+    add_column( 'urls', 'pub_date', 'timestamp with time zone' )
     # (Latest) published date as processed
   end
 
   def self.down
-    remove_column 'urls', 'title'
-    remove_column 'urls', 'pub_date'
-    remove_column 'urls', 'ref_pub_date'
+    remove_column( 'urls', 'title' )
+    remove_column( 'urls', 'ref_pub_date' )
+    remove_column( 'urls', 'pub_date' )
   end
 
 end

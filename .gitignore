@@ -2,7 +2,9 @@
 .project
 .settings
 /target
-**/target
-**/pkg
+*/target
+/doc
+*/doc
+*/pkg
 *~
-**/lib/**/*.jar
+*/lib/**/*.jar

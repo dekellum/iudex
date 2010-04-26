@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -16,27 +16,21 @@
 # implied.  See the License for the specific language governing
 # permissions and limitations under the License.
 #++
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
-
-require 'logback'
-Logback.config_console
-Logback['Iudex.DA'].level = Logback::DEBUG
+require 'iudex-core'
+require 'iudex-da/ar'
 
 require 'iudex-da'
-require 'iudex-da/pool_date_source_factory'
+require 'iudex-da/pool_data_source_factory'
 
-require 'test/unit'
-
-class TestPoolFactory < Test::Unit::TestCase
+class TestPoolFactory < MiniTest::Unit::TestCase
   include Iudex::DA
   import 'org.apache.commons.dbutils.ResultSetHandler'
   import 'org.apache.commons.dbutils.QueryRunner'
 
   def setup
-    @factory = PoolDataSourceFactory.new( 'loglevel' => 2 )
+    @factory = PoolDataSourceFactory.new( :loglevel => 2 )
     @data_source = @factory.create
   end
 

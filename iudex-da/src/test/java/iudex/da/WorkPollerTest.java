@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 David Kellum
+ * Copyright (c) 2008-2010 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,83 +16,57 @@
 
 package iudex.da;
 
-
-import iudex.core.Content;
-import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbutils.QueryRunner;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gravitext.htmap.UniMap;
+
 import static org.junit.Assert.*;
 import static iudex.core.ContentKeys.*;
+import static iudex.da.ContentMapper.*;
 
 public class WorkPollerTest
+    extends Helper
 {
-    private static DataSource _dataSource = null;
-
-    @BeforeClass
-    public static void Setup() throws SQLException
-    {      
-        _dataSource = DataSourceFactory.create();
-        QueryRunner runner = new QueryRunner( _dataSource );
-        runner.update( "DELETE from urls;" );
-    }
-    
-    @AfterClass
-    public static void Close()
-    {
-    }
-    
     @Test
     public void testAutoCommit() throws SQLException
     {
-        assertTrue( _dataSource.getConnection().getAutoCommit() );
+        Connection conn = dataSource().getConnection();
+        assertTrue( conn.getAutoCommit() );
+        conn.close();
     }
-    
+
     @Test
     public void test() throws SQLException, SyntaxException
     {
-        ContentWriter writer = new ContentWriter( _dataSource );
-        List<Content> contents = new ArrayList<Content>();
-        Content c = new Content();
-        c.set( URL, 
-               VisitURL.normalize( "http://gravitext.com/blog/feed/atom.xml" ) );
-        c.set( TYPE, TYPE_FEED );
-        c.set(  PRIORITY, 1.5f );
-        contents.add( c );
-        try {
-            assertEquals( 1, writer.write( contents ) );
-        }
-        catch( SQLException x ) {
-            //FIXME: Move to ContentWriter?
-            _log.error( x.getMessage() );
-            SQLException n = x;
-            while( (n = n.getNextException() ) != null ) {
-                _log.error(  n.getMessage() );
-            }
-            throw x;
-        }
-        
-        WorkPoller wpoller = new WorkPoller( _dataSource );
-        contents = wpoller.poll();
-        _log.info( "Work poll returned {} contents", contents.size() );
-        
-        for( Content w : contents ) {
+        ContentMapper mapper =
+            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
+                               PRIORITY, NEXT_VISIT_AFTER );
+
+        ContentWriter writer = new ContentWriter( dataSource(), mapper );
+        List<UniMap> in = new ArrayList<UniMap>();
+        in.add( content( "http://gravitext.com/blog/feed/atom.xml",
+                         TYPE_FEED, 1.5f ) );
+
+        assertEquals( 1, writer.write( in ) );
+
+        WorkPoller wpoller = new WorkPoller( dataSource(), mapper );
+        List<UniMap> out = wpoller.poll();
+        assertNotNull( out );
+        _log.info( "Work poll returned {} contents", out.size() );
+
+        for( UniMap w : out ) {
             _log.info( w.toString() );
         }
-        assertNotNull( contents );
     }
     public final Logger _log = LoggerFactory.getLogger( getClass() );
-    
+
 }

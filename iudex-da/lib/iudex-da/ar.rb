@@ -1,5 +1,5 @@
 #--
-# Copyright (C) 2008-2009 David Kellum
+# Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -14,22 +14,22 @@
 # permissions and limitations under the License.
 #++
 
-require 'rubygems'
-require 'slf4j' 
+require 'rjack-slf4j'
 require 'iudex-da'
-require 'activerecord'
+require 'active_record'
 
 module Iudex::DA
-    
-  LOG = SLF4J[ "Iudex.DA.ActiveRecord" ]
-  ActiveRecord::Base.logger = LOG
 
-  LOG.info { "Connecting: #{CONFIG.inspect}" }
+  @log = RJack::SLF4J[ "iudex.da.ActiveRecord" ]
+  ActiveRecord::Base.logger = @log
+
+  @log.info { "Connecting: #{CONFIG.inspect}" }
   ActiveRecord::Base.establish_connection( CONFIG )
 
   def migrate( target_version = nil )
-    ActiveRecord::Migrator.migrate( File.join( IUDEX_DA_DIR, '..', '..', 'db' ),
+    ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),
                                     target_version )
+    #FIXME: Support additional migration directories?
   end
 
   module_function :migrate
@@ -38,5 +38,5 @@ module Iudex::DA
     set_primary_key :uhash
     set_inheritance_column :object_type # since "type" used already
   end
-  
+
 end
