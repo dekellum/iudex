@@ -1,0 +1,18 @@
+digraph "iudex-da-gems" {
+  rankdir=LR
+  size="5.5,5";
+  bgcolor="transparent";
+  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b", fontname="Arial",
+         margin="0.30,0.1" ];
+
+  "iudex-da" -> "activerecord" -> "activesupport"
+  "iudex-da" -> "jdbc-postgres"
+  "iudex-da" -> "activerecord-jdbcpostgresql-adapter"
+  "iudex-da" -> "rjack-commons-dbcp"
+  "iudex-da" -> "rjack-commons-dbutils"
+
+  "rjack-commons-dbcp" -> "rjack-commons-pool";
+
+  "activerecord-jdbcpostgresql-adapter" -> "activerecord-jdbc-adapter"
+  "activerecord-jdbcpostgresql-adapter" -> "jdbc-postgres"
+}

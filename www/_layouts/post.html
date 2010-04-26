@@ -1,0 +1,22 @@
+---
+layout: default
+top: Iūdex
+feed: atom.xml
+---
+
+<div id="header">
+  <span class="ptitle">{{ page.title }}</span>
+
+  <a href="/" title="Iūdex">Iūdex</a> ⇒
+
+  <div class="date">{{ page.date | date: "%Y.%m.%d" }}</div>
+
+</div>
+
+<div id="page">
+
+  <hr id="page-first"/>
+
+  {{ content }}
+
+</div>

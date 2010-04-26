@@ -1,0 +1,30 @@
+digraph absent
+  {
+    "activerecord" [ color = blue ];
+    "activerecord-jdbcpostgresql-adapter" [ color = blue ];
+    "gravitext-xmlprod" [ color = blue ];
+    "jruby-openssl" [ color = blue,color = purple4 ];
+    "json_pure" [ color = blue ];
+    "rdoc" [ color = blue ];
+    "rjack-commons-dbcp" [ color = blue ];
+    "rjack-commons-dbutils" [ color = blue ];
+    "rjack-httpclient-3" [ color = blue ];
+    "rjack-jetty-jsp" [ color = blue ];
+    "rubyforge" [ color = red ];
+    "activerecord" -> "activesupport";
+    "activerecord-jdbcpostgresql-adapter" -> "activerecord-jdbc-adapter";
+    "activerecord-jdbcpostgresql-adapter" -> "jdbc-postgres";
+    "gravitext-util" -> "hoe";
+    "gravitext-xmlprod" -> "gravitext-util";
+    "gravitext-xmlprod" -> "hoe";
+    "hoe" -> "rubyforge";
+    "hoe" -> "rake";
+    "rdoc" -> "hoe";
+    "rjack-commons-dbcp" -> "rjack-commons-pool";
+    "rjack-httpclient-3" -> "rjack-slf4j";
+    "rjack-httpclient-3" -> "rjack-commons-codec";
+    "rjack-httpclient-3" -> "rjack-logback";
+    "rjack-jetty" -> "rjack-logback";
+    "rjack-jetty-jsp" -> "rjack-jetty";
+    "rjack-logback" -> "rjack-slf4j";
+  }

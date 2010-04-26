@@ -1,0 +1,32 @@
+
+FilterChain (outer)                                -- listener C -->
+  i.c.f.UHashMDCSetter
+  i.f.c.Switch
+    i.f.c.Switch$Proposition
+      i.f.c.Selector-type-FEED
+      i.f.c.FilterChain-feed                       -- listener C(F) -->
+        i.c.f.ContentFetcher                       (AsyncFilterContainer) R,F: C
+          i.f.c.FilterChain-feed-receiver          -- listener C(F) -->
+            i.r.RomeFeedParser                                            R,F: C
+            i.d.f.UpdateFilter                     (references)
+              i.f.c.FilterChain-ref-update       -- listener FR(U) -->
+                i.c.f.UHashMDCSetter
+                [i.d.f.DateChangeFilter]           R,F: FR(U)
+                i.c.f.TextCtrlWSFilter-title
+                i.c.f.FutureDateFilter-pub_date
+                i.c.f.Prioritizer-ref-update
+              i.f.c.FilterChain-ref-new          -- listener FR(N) -->
+                i.c.f.UHashMDCSetter
+                [i.d.f.DateChangeFilter]?          R,F: FR(U)
+                i.c.f.TextCtrlWSFilter-title
+                i.c.f.FutureDateFilter-pub_date
+                i.c.f.Prioritizer-ref-new
+              i.f.c.FilterChain-content-post      -- listener C(F)? -->
+                i.c.f.UHashMDCSetter
+                i.c.f.TextCtrlWSFilter-title
+                i.c.f.FutureDateFilter-pub_date
+                i.c.f.Prioritizer-content-post
+      i.f.c.Selector-type-PAGE
+      i.f.c.FilterChain-page                       -- listener C(P) -->
+        i.c.f.ContentFetcher                       (AsyncFilterContainer)
+          i.f.c.FilterChain-page-receiver          -- listener C -->

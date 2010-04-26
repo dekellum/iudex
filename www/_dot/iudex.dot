@@ -1,0 +1,62 @@
+digraph "iudex-gems" {
+  rankdir=TB
+  size="6.0,5";
+  bgcolor="transparent";
+  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
+         fontname="Arial",  margin="0.30,0.1" ];
+
+  "iudex-filter" -> "gravitext-util"
+  "iudex-da"     -> "gravitext-util"
+  "iudex-da"     [ target=_parent, URL="../da.html" ];
+  "iudex-da"     -> "iudex-filter"
+  "iudex-da"     -> "iudex-core"
+
+  "iudex-core"   -> "gravitext-util"
+  "iudex-core"   -> "iudex-filter"
+  "iudex-core"   -> "iudex-http"
+
+  "iudex-rome"   -> "iudex-core"
+
+  "iudex-sitemap" [ style="rounded,dashed" ];
+  "iudex-sitemap" [ target=_parent, URL="../sitemap.html" ];
+  "iudex-sitemap" -> "iudex-core"
+
+  "iudex-barc"   -> "gravitext-util"
+  "iudex-barc"   -> "iudex-http"
+  "iudex-barc"   [ target=_parent, URL="../barc.html" ];
+  "iudex-http"   -> "gravitext-util"
+
+  "iudex-httpclient-3" -> "iudex-http"
+
+  "iudex-httpclient-4" [ style="rounded,dashed" ];
+  "iudex-httpclient-4" -> "iudex-http"
+
+  "iudex-worker" [ style="filled,rounded,dashed" ];
+  "iudex-worker" -> "iudex-da"
+  "iudex-worker" -> "iudex-rome"
+  "iudex-worker" -> "iudex-core"
+  "iudex-worker" -> "iudex-httpclient-3"
+  "iudex-worker" -> "iudex-barc"
+
+  "iudex-publisher" [ style="filled,rounded,dashed" ];
+  "iudex-publisher" -> "iudex-da"
+  "iudex-publisher" -> "iudex-barc"
+
+#  "iudex-filter" -> "rjack-slf4j"
+#  "iudex-filter" -> "rjack-logback"
+#  "iudex-http"   -> "rjack-slf4j"
+#  "iudex-barc"   -> "rjack-slf4j"
+#  "iudex-core"   -> "rjack-slf4j"
+#  "iudex-core"   -> "rjack-logback"
+#  "iudex-da"     -> "rjack-slf4j"
+
+#  "rjack-httpclient" -> "rjack-commons-codec";
+#  "rjack-httpclient" -> "rjack-logback" [ style=dashed, label="dev" ];
+#  "rjack-httpclient" -> "rjack-slf4j";
+
+#  "rjack-slf4j"   [ group=log ];
+#  "rjack-logback" [ group=log ];
+#  "rjack-logback" -> "rjack-slf4j";
+#  "rjack-commons-codec"   [ group=commons ];
+
+}

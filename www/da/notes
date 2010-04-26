@@ -1,0 +1,261 @@
+Sorting amongst feeds:
+
+* Time since last visit
+* Yield in articles per last visit interval
+* Independent priority values
+
+New domain-->robots.txt URL
+(any crawler, us)
+
+IN Memory
+
+MaP host -> (prority) queue
+(need to know which domains/queues qre ready.)
+Queues sorted by intra-domain priority
+(Each queue accounts for one connection kept alive.)
+
+Constrained by:
+* Total count of all URLs across all queues and domains
+
+Scenario 1: Read FEED
+
+fetch (conditional)
+(redirect)
+(error)
+parse feed xml
+n: URLs, title (max), pubdate
+
+== Selecting work, limiting from particular host:
+
+crawler_test=# \d urls
+    Table "public.urls"
+ Column | Type | Modifiers
+--------+------+-----------
+ gcid   | text | not null
+ url    | text | not null
+Indexes:
+    "urls_pkey" PRIMARY KEY, btree (gcid)
+
+crawler_test=# select * from test;
+ key | value
+-----+-------
+ a   | v1
+ b   | v1
+ c   | v1
+ d   | v2
+ e   | v2
+ f   | v2
+
+Limit by some number of a particular value:
+
+select * from test
+where key IN
+(select key from test b where b.value = test.value limit 2);
+ key | value
+-----+-------
+ a   | v1
+ b   | v1
+ d   | v2
+ e   | v2
+
+See use of temporary table for condiitional insert/update:
+
+http://robbat2.livejournal.com/214267.html
+
+However using a temporary table maybe pretty slow:
+
+http://archives.postgresql.org/pgsql-hackers/2008-11/msg00342.php
+
+See original robbat article for link to suggestion to use a RULE to
+convert insert to update.
+
+Consider a transaction:
+
+Get existing uhash values
+
+SELECT uhash FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', ... )
+
+Then doing INSERT, UPDATE for the one found/not found
+
+The IN syntax above will likely need to be generated internally:
+
+http://groups.google.com/group/pgsql.interfaces.jdbc/browse_thread/thread/f4c9433a581b9912/e36acf010edaed2d?lnk=gst&q=statement+list#e36acf010edaed2d
+
+== Domain Suffix Support
+
+Useful for grouping URLs into the highest level registered domain suffix.
+
+See:
+
+http://publicsuffix.org/list/
+
+Java Impl (primative, Mozilla Licensed):
+
+http://sourceforge.net/projects/publicsuffix/
+
+java.net.IDN (for unicode to ascii domain conversion)
+http://java.sun.com/javase/6/docs/api/java/net/IDN.html
+
+== URL normalization
+
+* Strip leading/trailing whitspace?
+* Decode uncessary encode portions?
+* Drop unecessary port 80?
+
+* tolower domain name
+* normalize relative paths foo/bar/../ -> foo/
+* Strip any "#anchor"
+
+== Hetoregenous-Type-Safe-Map usage
+
+feed parse --> iterator over entries
+
+/w each entry is a Item
+
+crawl pare->processes page as item....
+
+== TODO ==
+
+Revise modules?
+
+iudex-core
+  barc
+  http abstraction
+  (content)
+  Work Queue (-RDBMS)
+   Extraction (abstraction)
+
+iudex-da
+
+iudex-parsers (iudex-core for now)
+  robots
+  feed
+  html
+  sitemap
+
+iudex-httpclient3 (iudex-core for now)
+
+== HTTP write through file approach ==
+
+Open temp barc individual file, write record (uncompressed) off of http stream.
+(Might use truncate and existing pool of files, faster?)
+
+Reopen for read (TODO: Cache parsed headers on write):
+
+(Process: parse, etc., decide to keep or terminate)
+
+Copy (compressed) to final pool of persistent/large BARC files.
+
+PROS:
+
+Avoid OOM concerns on http read (not bufferd in memory)
+Avoid compression cost on HTTP fetch (and overhead of uncompress for read back.)
+
+CONS:
+
+More to implement.
+
+Alternative: In memory initial read
+
+Read in to memory <--WINNER
+(process)
+Write compressed if keeping
+
+PROS
+
+Faster if memory not an issue
+Simpler to implement
+Avoid compression cost on HTTP fetch
+
+BARCDirectory (file pool):
+
+v1:
+BARC File ID scheme: 000000.barc ... 012345.barc ... 999999.barc
+
+Simplified with one open barc file
+   get record for append (indicate file "ID" + OFFset for DB)
+   write (all other threads block on get record)
+   record.close() or "pool" equivelent.
+Cap on file size
+Write compressed "default"?
+
+------
+
+http://jdbc.postgresql.org/documentation/83/connect.html#connection-parameters
+
+loglevel = int
+
+    Set the amount of logging information printed to the DriverManager's current value for LogStream or LogWriter. It currently supports values of org.postgresql.Driver.DEBUG (2) and org.postgresql.Driver.INFO (1). INFO will log very little information while DEBUG will produce significant detail. This property is only really useful if you are a developer or are having problems with the driver.
+
+http://java.sun.com/javase/6/docs/api/java/sql/DriverManager.html#getLogWriter()
+
+---------
+
+activerecord-jdbc-adaptor 0.9.1
+activerecord-jdbcpostgresql-adapter 0.9.1
+activerecord 2.3.2 or 2.2.2
+
+BUG: Fails on urls table (uhash primary key not a sequence)
+
+Workaround: Stay on 0.9 for now.
+
+------------------
+
+Conditional insert/update in postgres:
+
+http://archives.postgresql.org//pgsql-sql/2007-04/msg00167.php
+
+=== 301 vs 302 redirect handling: ===
+
+In theory:
+    301 - use referent on subsequent requests
+    302 - use referer (redirect) on subsquent requests
+
+Refinements by Yahoo:
+
+http://help.yahoo.com/l/us/yahoo/search/webcrawler/slurp-11.html
+
+Most interestingly, cross domain 30x always indexes the referent (as if 301)
+
+Options:
+
+a. Always revisit referer (as if 302).
+
+Con: Since page is indexed via referent, this approach can orphan
+referent, unless we detech referent change and delete referent.
+
+Con: Susceptible to cache thwarting constantly new referer URLs.
+
+This approach might suggest sticking with refernent for index.
+
+b. Always revisit referent (as if 301)  <--- WINNER
+
+Pro: Not susceptible to cache thwarting constantly new referer URLs.
+
+Con: Could cause loss of update in referer changes referent?
+
+ANALYSIS:
+  if feed url (referer) pub_date change: follow referer:
+    if new referent: insert/update
+      ( subsequent dupe detection may DELETE old referent)
+      ( subsequent scheduled revisit of old referent may find 404, 500: DELETE)
+    else increase existing referent revisit priority
+
+Not too bad.
+
+IMPLEMENTATION:
+(1) On poll, don't include prior REDIRECTs
+
+c. As "In Theory" full solution (possible /w yahoo style cross-domain as 301)
+
+Con: Certainly more complicated.
+
+Con: What people do: feedburner uses 302 redirect to keep click tracks
+flowing. Any real motivation for that?
+
+Con: Same problem in 302 case as (a).
+
+IMPLEMENTATION:
+REDIRECT_FINAL vs REDIRECT codes
+
+Different prioritization?
