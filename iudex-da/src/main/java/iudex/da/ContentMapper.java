@@ -110,6 +110,14 @@ public final class ContentMapper
             else if( ( key == UHASH ) || ( key == HOST ) ) {
                 // ignore on input
             }
+            else if( key == REFERER ) {
+                String uhash = rset.getString( i );
+                if( uhash != null ) {
+                    UniMap ref = new UniMap();
+                    ref.set( URL, VisitURL.fromHash( uhash ) );
+                    content.set( REFERER, ref );
+                }
+            }
             else {
                 // FIXME: intern type,status,reason strings? { "x".intern(); }
                 content.put( key, rset.getObject( i ) );
