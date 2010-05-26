@@ -15,8 +15,7 @@
  */
 package iudex.core;
 
-import com.gravitext.util.URL64;
-
+import static com.gravitext.util.Charsets.UTF_8;
 import iudex.util.Characters;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.nio.CharBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static com.gravitext.util.Charsets.UTF_8;
+import com.gravitext.util.URL64;
 
 /**
  * Immutable URL representation encapsulates URL/URI parsing, normalization,
@@ -46,6 +45,20 @@ public final class VisitURL
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Return a partially complete, uhash-only VisitURL.
+     */
+    public static VisitURL fromHash( String hash )
+    {
+        if( hash == null ) {
+            throw new NullPointerException( "fromHash( null )" );
+        }
+        return new VisitURL( null, hash );
+    }
+
+    /**
+     * Return VisitURL from safeURL of trusted source and without normalizing.
+     */
     public static VisitURL trust( CharSequence safeURL )
     {
         try {
@@ -56,6 +69,11 @@ public final class VisitURL
         }
     }
 
+    /**
+     * Return VisitURL from normalizing rawURL as from an untrusted source
+     * (i.e. the web).
+     * @throws SyntaxException if rawURL can not be salvaged/parsed as a URL.
+     */
     public static VisitURL normalize( CharSequence rawURL )
         throws SyntaxException
     {
@@ -70,42 +88,69 @@ public final class VisitURL
 
     // FIXME: domain() via http://publicsuffix.org/list/ (see notes)
 
-    public int compareTo( VisitURL other )
+    public boolean hasUrl()
     {
-        return _uri.compareTo( other._uri );
+        return ( _uri != null );
     }
 
-    public boolean equals( Object other )
+    public String url()
     {
-        return ( ( other instanceof VisitURL ) &&
-                 _uri.equals( ((VisitURL) other)._uri ) );
+        if( ! hasUrl() ) {
+            throw new RuntimeException( "url() on VisitURL with only uhash " +
+                                        uhash() );
+        }
+        return _uri.toString();
     }
 
     public String host()
     {
+        if( ! hasUrl() ) {
+            throw new RuntimeException( "host() on VisitURL with only uhash " +
+                                        uhash() );
+        }
+
         return _uri.getHost();
     }
 
     public String uhash()
     {
         //lazy init
-        if( _uhash == null ) _uhash = hashURL( toString() ).toString();
+        if( _uhash == null ) _uhash = hashURL( url() ).toString();
         return _uhash;
     }
 
+    public int compareTo( VisitURL other )
+    {
+        return uhash().compareTo( other.uhash() );
+    }
+
+    @Override
+    public boolean equals( Object other )
+    {
+        return ( ( other instanceof VisitURL ) &&
+            uhash().equals( ((VisitURL) other).uhash() ) );
+    }
+
+    @Override
     public int hashCode()
     {
-        return _uri.hashCode();
+        return uhash().hashCode();
     }
 
     public String toString()
     {
-        return _uri.toString();
+        return ( hasUrl() ? _uri.toString() : uhash() );
     }
 
     VisitURL( URI preParsed )
     {
         _uri = preParsed;
+    }
+
+    VisitURL( URI preParsed, String hash )
+    {
+        _uri = preParsed;
+        _uhash = hash;
     }
 
     /**
