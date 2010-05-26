@@ -43,11 +43,14 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
     end
 
     fcf.filter do |chain|
-      content = UniMap.new
-      content.url = VisitURL.normalize( "http://gravitext.com/atom.xml" )
-      content.type = "FEED"
-      content.priority = 1.0
-      chain.filter( content )
+      # Run twice (assume new the first time, updates the second).
+      2.times do
+        content = UniMap.new
+        content.url = VisitURL.normalize( "http://gravitext.com/atom.xml" )
+        content.type = "FEED"
+        content.priority = 1.0
+        assert( chain.filter( content ) )
+      end
     end
 
   end
