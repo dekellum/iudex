@@ -19,12 +19,27 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-RJack::Logback.config_console( :stderr => true )
-
 require 'iudex-httpclient-3'
 
 class TestHttpClient < MiniTest::Unit::TestCase
-  def test_load
-    assert true
+  include Iudex::Core
+
+  def test_config
+    assert( Config.http_client_3_manager )
+
+    called = :not
+    Config.setup_http_client_3 do |mgr|
+      assert_equal( 100, mgr.manager_params.max_total_connections )
+      called = :called
+    end
+    assert_equal( :called, called )
+    assert( Config.http_client_3_manager )
+
+    mgr = Config.http_client_3_manager
+    assert( mgr )
+    mgr.start
+    assert( mgr.client )
+    mgr.shutdown
+
   end
 end
