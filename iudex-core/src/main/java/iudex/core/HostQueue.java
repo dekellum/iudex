@@ -43,6 +43,16 @@ public class HostQueue
         _host = host;
     }
 
+    public long lastTake()
+    {
+        return _lastTake;
+    }
+
+    public void setLastTake( long now )
+    {
+        _lastTake = now;
+    }
+
     public long nextVisit()
     {
         return _nextVisit;
@@ -95,10 +105,12 @@ public class HostQueue
         new PriorityComparator();
     private final String _host;
     private long _nextVisit = 0;
+    private long _lastTake = 0;
 
     // FIXME: Logically a priority queue but may be more optimal
     // as a simple linked list FIFO, as we already get work from database in
     // sorted priority order.
     private PriorityQueue<UniMap> _work =
         new PriorityQueue<UniMap>( 256, PRIORITY_COMPARATOR );
+
 }

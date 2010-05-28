@@ -56,12 +56,15 @@ public class VisitQueue
         return _size;
     }
 
-    public synchronized HostQueue take() throws InterruptedException
+    public HostQueue take() throws InterruptedException
+    {
+        return take( System.currentTimeMillis() );
+    }
+
+    public synchronized HostQueue take( long now ) throws InterruptedException
     {
         HostQueue ready = null;
         while( ( ready = _readyHosts.poll() ) == null ) {
-            final long now = System.currentTimeMillis();
-
             HostQueue next = null;
             while( ( next = _sleepHosts.peek() ) != null ) {
                 if( ( now - next.nextVisit() ) >= 0 ) {
@@ -73,8 +76,10 @@ public class VisitQueue
                 long delay =
                     ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
                 wait( delay );
+                now = System.currentTimeMillis();
             }
         }
+        ready.setLastTake( now );
         return ready;
     }
 
