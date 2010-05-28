@@ -35,12 +35,17 @@ public class VisitQueue
         for( UniMap order : orders ) {
             privAdd( order );
         }
+        _highHostCount = hostCount();
+        _highOrderCount = orderCount();
+
         notifyAll();
     }
 
     public synchronized void add( UniMap order )
     {
         privAdd( order );
+        _highHostCount = hostCount();
+        _highOrderCount = orderCount();
         notifyAll();
     }
 
@@ -53,6 +58,14 @@ public class VisitQueue
     }
 
     /**
+     * Return ratio of total visit orders remaining since last add or addAll().
+     */
+    public synchronized float orderRemainingRatio()
+    {
+        return ( ( (float) orderCount() ) / ( (float) _highOrderCount ) );
+    }
+
+    /**
      * Return the total number of unique hosts for which there is at
      * least one visit order.
      */
@@ -62,10 +75,18 @@ public class VisitQueue
     }
 
     /**
+     * Return ratio of unique hosts remaining since last add or addAll().
+     */
+    public synchronized float hostRemainingRatio()
+    {
+        return ( ( (float) hostCount() ) / ( (float) _highHostCount ) );
+    }
+
+    /**
      * Take the next ready/highest priority host queue. May block
      * indefinitely for the next ready queue. Once a HostQueue is
      * returned, the calling threads own its exclusively and must
-     * guaruntee to return it via untake after removing the highest
+     * guarantee to return it via untake() after removing the highest
      * priority visit order.
      */
     public HostQueue take() throws InterruptedException
@@ -77,7 +98,7 @@ public class VisitQueue
      * Take the next ready/highest priority host queue. May block
      * indefinitely for the next ready queue. Once a HostQueue is
      * returned, the calling threads own its exclusively and must
-     * guaruntee to return it via untake after removing the highest
+     * guarantee to return it via untake() after removing the highest
      * priority visit order.
      */
     public synchronized HostQueue take( long now ) throws InterruptedException
@@ -141,6 +162,8 @@ public class VisitQueue
     }
 
     private int _orderCount = 0;
+    private int _highHostCount;
+    private int _highOrderCount;
 
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>();
