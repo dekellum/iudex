@@ -16,20 +16,110 @@
 package iudex.core;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
 import com.gravitext.htmap.UniMap;
 
 /**
- *
- * The readyHosts queue is prioritized by the top FetchOrder in each ready host.
- * The sleeping host queue is prioritize by least next visit.
+ * A prioritized queue of ready and sleeping HostQueues. The ready
+ * hosts queue is prioritized by the top priority order in each ready
+ * host. The sleeping hosts queue is prioritized by least next visit
+ * time.
  */
 public class VisitQueue
 {
-    //FIXME: List<UniMap> with common host orders instead?
+    public synchronized void addAll( List<UniMap> orders )
+    {
+        for( UniMap order : orders ) {
+            privAdd( order );
+        }
+        notifyAll();
+    }
+
     public synchronized void add( UniMap order )
+    {
+        privAdd( order );
+        notifyAll();
+    }
+
+    /**
+     * Return the total number of visit orders across all hosts.
+     */
+    public synchronized int orderCount()
+    {
+        return _orderCount;
+    }
+
+    /**
+     * Return the total number of unique hosts for which there is at
+     * least one visit order.
+     */
+    public synchronized int hostCount()
+    {
+        return _hosts.size();
+    }
+
+    /**
+     * Take the next ready/highest priority host queue. May block
+     * indefinitely for the next ready queue. Once a HostQueue is
+     * returned, the calling threads own its exclusively and must
+     * guaruntee to return it via untake after removing the highest
+     * priority visit order.
+     */
+    public HostQueue take() throws InterruptedException
+    {
+        return take( System.currentTimeMillis() );
+    }
+
+    /**
+     * Take the next ready/highest priority host queue. May block
+     * indefinitely for the next ready queue. Once a HostQueue is
+     * returned, the calling threads own its exclusively and must
+     * guaruntee to return it via untake after removing the highest
+     * priority visit order.
+     */
+    public synchronized HostQueue take( long now ) throws InterruptedException
+    {
+        HostQueue ready = null;
+        while( ( ready = _readyHosts.poll() ) == null ) {
+            HostQueue next = null;
+            while( ( next = _sleepHosts.peek() ) != null ) {
+                if( ( now - next.nextVisit() ) >= 0 ) {
+                    _readyHosts.add( _sleepHosts.remove() );
+                }
+                else
+                    break;
+            }
+            if( _readyHosts.isEmpty() ) {
+                long delay =
+                    ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
+                wait( delay );
+                now = System.currentTimeMillis();
+            }
+        }
+        ready.setLastTake( now );
+        return ready;
+    }
+
+    /**
+     * Return the previously taken HostQueue, after removing a single
+     * visit order and adjusting the next visit time accordingly.
+     */
+    public synchronized void untake( HostQueue queue )
+    {
+        --_orderCount;
+        if( queue.size() == 0 ) {
+            _hosts.remove( queue.host() );
+        }
+        else {
+            _sleepHosts.add( queue );
+            notifyAll();
+        }
+    }
+
+    private void privAdd( UniMap order )
     {
         String host = order.get( ContentKeys.URL ).host();
         HostQueue queue = _hosts.get( host );
@@ -47,65 +137,17 @@ public class VisitQueue
             _readyHosts.add( queue );
         }
 
-        ++_size;
-        notifyAll();
+        ++_orderCount;
     }
 
-    public synchronized int size()
-    {
-        return _size;
-    }
+    private int _orderCount = 0;
 
-    public HostQueue take() throws InterruptedException
-    {
-        return take( System.currentTimeMillis() );
-    }
+    private final Map<String, HostQueue> _hosts      =
+        new HashMap<String, HostQueue>();
 
-    public synchronized HostQueue take( long now ) throws InterruptedException
-    {
-        HostQueue ready = null;
-        while( ( ready = _readyHosts.poll() ) == null ) {
-            HostQueue next = null;
-            while( ( next = _sleepHosts.peek() ) != null ) {
-                if( ( now - next.nextVisit() ) >= 0 ) {
-                    _readyHosts.add( _sleepHosts.remove() );
-                }
-                else break;
-            }
-            if( _readyHosts.isEmpty() ) {
-                long delay =
-                    ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
-                wait( delay );
-                now = System.currentTimeMillis();
-            }
-        }
-        ready.setLastTake( now );
-        return ready;
-    }
+    private PriorityQueue<HostQueue>     _readyHosts =
+        new PriorityQueue<HostQueue>( 1024, new HostQueue.TopOrderComparator());
 
-    public synchronized void untake( HostQueue queue )
-    {
-        --_size;
-        if( queue.size() == 0 ) {
-            _hosts.remove( queue.host() );
-        }
-        else {
-            _sleepHosts.add( queue );
-            notifyAll();
-        }
-    }
-
-    private final Map<String,HostQueue> _hosts =
-        new HashMap<String,HostQueue>();
-
-    private int _size = 0;
-
-    private PriorityQueue<HostQueue> _readyHosts =
-        new PriorityQueue<HostQueue>
-            ( 1024, new HostQueue.TopOrderComparator() );
-
-    private PriorityQueue<HostQueue> _sleepHosts =
-        new PriorityQueue<HostQueue>
-            ( 128, new HostQueue.NextVisitComparator() );
-
+    private PriorityQueue<HostQueue>     _sleepHosts =
+        new PriorityQueue<HostQueue>( 128, new HostQueue.NextVisitComparator());
 }

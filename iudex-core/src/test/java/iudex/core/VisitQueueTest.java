@@ -37,13 +37,13 @@ public class VisitQueueTest
         addOrder( "http://h1/1", 1.1F );
         addOrder( "http://h1/2", 1.2F );
 
-        assertEquals( 3, _visitQ.size() );
+        assertEquals( 3, _visitQ.orderCount() );
 
         assertTakeNext( "http://h1/3" );
         assertTakeNext( "http://h1/2" );
         assertTakeNext( "http://h1/1" );
 
-        assertEquals( 0, _visitQ.size() );
+        assertEquals( 0, _visitQ.orderCount() );
     }
 
     @Test
@@ -57,7 +57,7 @@ public class VisitQueueTest
         addOrder( "http://h1/2", 1.2F );
         addOrder( "http://h1/1", 1.1F );
 
-        assertEquals( 6, _visitQ.size() );
+        assertEquals( 6, _visitQ.orderCount() );
 
         assertTakeNext( "http://h3/2" );
         assertTakeNext( "http://h2/2" );
@@ -66,7 +66,7 @@ public class VisitQueueTest
         assertTakeNext( "http://h2/1" );
         assertTakeNext( "http://h1/1" );
 
-        assertEquals( 0, _visitQ.size() );
+        assertEquals( 0, _visitQ.orderCount() );
     }
 
     private void assertTakeNext( String url ) throws InterruptedException
