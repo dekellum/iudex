@@ -14,18 +14,18 @@ import com.gravitext.util.Closeable;
 
 public class VisitExecutor implements Closeable, Runnable
 {
-    public VisitExecutor( FilterContainer chain )
+    public VisitExecutor( FilterContainer chain, WorkPollStrategy poller )
     {
         _chain = chain;
-        _visitQ = new VisitQueue();
+        _poller = poller;
     }
 
     public synchronized void run()
     {
         try {
             while( true ) {
+                long maxWait = checkWorkPoll();
                 spawnThreads();
-                long maxWait = pollWork();
                 wait( maxWait );
             }
         }
@@ -35,17 +35,33 @@ public class VisitExecutor implements Closeable, Runnable
     }
 
     /**
-     * Possibly poll work, and return maximum time to wait in milliseconds
-     * before re-checking.
+     * Check if work needs to be polled either because this it the first time
+     * or if maxWorkPollInterval has expired, by delegating to the
+     * WorkPollStrategy. If strategy returns a new VisitQueue, then
+     * shutdown existing worker threads.
+     *
+     * @return maximum time to wait in milliseconds before re-checking.
      */
-    protected synchronized long pollWork()
+    protected synchronized long checkWorkPoll()
     {
+        long delta = _maxWorkPollInterval;
         long now = System.currentTimeMillis();
-        long delta = _nextPollTime - now;
-        if( delta <= 0 ) {
-            //FIXME: Actually poll.
-            _nextPollTime = now + _workPollInterval;
-            return _workPollInterval;
+
+        if( ( _visitQ == null ) || ( now >= _nextPollTime ) ) {
+
+            if( ( _visitQ == null ) || _poller.shouldReplaceQueue( _visitQ ) ) {
+                shutdownWorkers();
+                // FIXME: Blocks. Might be better, if safe?, to support overlap
+                // of old and new generation visitors
+                _visitQ = _poller.pollWork( null );
+            }
+            else {
+                _poller.pollWork( _visitQ );
+            }
+            _nextPollTime = now + _maxWorkPollInterval;
+        }
+        else {
+            delta = _nextPollTime - now;
         }
         return delta;
     }
@@ -54,7 +70,7 @@ public class VisitExecutor implements Closeable, Runnable
     {
         // Grow threads to "max"
         while( _threads.size() < _maxThreads ) {
-            Thread t = new Thread( new Runner( _visitQ ),
+            Thread t = new Thread( new Visitor( _visitQ ),
                                    "visitor-" + ( _threads.size() + 1 ) );
             // base-1 thread#, reserve 0 for detached executor thread.
             t.start();
@@ -63,11 +79,41 @@ public class VisitExecutor implements Closeable, Runnable
     }
 
     @Override
-    public void close()
+    public synchronized void close()
     {
-        //Add thread interupt/shutdown?
+        shutdownWorkers();
+        _chain.close();
+    }
 
-        _chain.close(); //FIXME: Really want this here?
+    /**
+     * Interrupt all worker threads and wait for them to gracefully exit.
+     */
+    private synchronized void shutdownWorkers()
+    {
+        for( Thread thread : _threads ) {
+            thread.interrupt();
+        }
+
+        // Wait for all to exit
+        try {
+            long ellapsed = 0;
+            long now = System.currentTimeMillis();
+            while( ( _threads.size() > 0 ) &&
+                   ( ellapsed < _maxShutdownWait ) ) {
+                wait( _maxShutdownWait );
+                long nextNow = System.currentTimeMillis();
+                ellapsed += nextNow - now;
+                now = nextNow;
+            }
+        }
+        catch( InterruptedException x ) {
+            _log.warn( "Shutdown interrupted: " + x );
+        }
+
+        if( _threads.size() > 0 ) {
+            _log.warn( "({}) vistor threads remain after maxShutdownWait",
+                       _threads.size() );
+        }
     }
 
     private synchronized void threadExiting( Thread thread )
@@ -77,9 +123,9 @@ public class VisitExecutor implements Closeable, Runnable
         notifyAll();
     }
 
-    private class Runner implements Runnable
+    private class Visitor implements Runnable
     {
-        public Runner( VisitQueue queue )
+        public Visitor( VisitQueue queue )
         {
             _visitQ = queue;
         }
@@ -113,15 +159,19 @@ public class VisitExecutor implements Closeable, Runnable
             }
         }
 
-        private VisitQueue _visitQ; // FIXME: Here because it may change?
+        private final VisitQueue _visitQ;
     }
 
-    private int _minHostDelay = 2000;
-    private int _workPollInterval = 10 * 60 * 1000; //10m in milliseconds
-    private long _nextPollTime = 0;
+    private int  _maxThreads          = 10;
+    private long _minHostDelay        = 2000; //2s
+    private long _maxWorkPollInterval = 10 * 60 * 1000; //10min
+    private long _maxShutdownWait     = 20 * 1000; //20s
 
-    private int _maxThreads = 10;
+    private long _nextPollTime        = 0;
+
     private final FilterContainer _chain;
+    private final WorkPollStrategy _poller;
+
     private VisitQueue _visitQ = null;
     private Collection<Thread> _threads = new HashSet<Thread>();
     private Logger _log = LoggerFactory.getLogger( getClass() );
