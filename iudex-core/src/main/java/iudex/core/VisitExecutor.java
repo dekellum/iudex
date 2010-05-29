@@ -53,6 +53,10 @@ public class VisitExecutor implements Closeable, Runnable
                 shutdownWorkers();
                 // FIXME: Blocks. Might be better, if safe?, to support overlap
                 // of old and new generation visitors
+
+                ++_generation;
+                _threadCounter = 0;
+
                 _visitQ = _poller.pollWork( null );
             }
             else {
@@ -70,9 +74,7 @@ public class VisitExecutor implements Closeable, Runnable
     {
         // Grow threads to "max"
         while( _threads.size() < _maxThreads ) {
-            Thread t = new Thread( new Visitor( _visitQ ),
-                                   "visitor-" + ( _threads.size() + 1 ) );
-            // base-1 thread#, reserve 0 for detached executor thread.
+            Thread t = new Visitor( _visitQ, _generation, ++_threadCounter );
             t.start();
             _threads.add( t );
         }
@@ -123,13 +125,15 @@ public class VisitExecutor implements Closeable, Runnable
         notifyAll();
     }
 
-    private class Visitor implements Runnable
+    private class Visitor extends Thread
     {
-        public Visitor( VisitQueue queue )
+        public Visitor( VisitQueue queue, int generation, int instance )
         {
+            super( String.format( "visitor-%d-%d", generation, instance ) );
             _visitQ = queue;
         }
 
+        @Override
         public void run()
         {
             try {
@@ -168,6 +172,9 @@ public class VisitExecutor implements Closeable, Runnable
     private long _maxShutdownWait     = 20 * 1000; //20s
 
     private long _nextPollTime        = 0;
+
+    private int _generation = 0;
+    private int _threadCounter = 0;
 
     private final FilterContainer _chain;
     private final WorkPollStrategy _poller;
