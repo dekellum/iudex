@@ -36,6 +36,11 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
   UniMap.define_accessors
 
   class TestFilter < FilterBase
+    def initialize
+      super
+      @toggle = false
+    end
+
     def filter( c )
       @toggle = !@toggle
     end
