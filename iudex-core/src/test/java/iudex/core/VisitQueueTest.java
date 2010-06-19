@@ -73,7 +73,7 @@ public class VisitQueueTest
     {
         Thread.sleep( 30 );
 
-        final HostQueue hq = _visitQ.take();
+        final HostQueue hq = _visitQ.take( 200 );
         try {
             UniMap order = hq.remove();
             assertEquals( url, order.get( ContentKeys.URL ).toString() );

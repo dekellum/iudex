@@ -85,26 +85,31 @@ public class VisitQueue
     /**
      * Take the next ready/highest priority host queue. May block
      * indefinitely for the next ready queue. Once a HostQueue is
-     * returned, the calling threads own its exclusively and must
+     * returned, the calling thread owns it exclusively and must
      * guarantee to return it via untake() after removing the highest
      * priority visit order.
      */
     public HostQueue take() throws InterruptedException
     {
-        return take( System.currentTimeMillis() );
+        return take( Long.MAX_VALUE );
     }
 
     /**
-     * Take the next ready/highest priority host queue. May block
-     * indefinitely for the next ready queue. Once a HostQueue is
-     * returned, the calling threads own its exclusively and must
+     * Take the next ready/highest priority host queue. May block up
+     * to maxWait for the next ready queue. If a HostQueue is
+     * returned, the calling thread owns it exclusively and must
      * guarantee to return it via untake() after removing the highest
      * priority visit order.
+     * @param maxWait maximum wait in milliseconds
+     * @return HostQueue or null if maxWait exceeded
      */
-    public synchronized HostQueue take( long now ) throws InterruptedException
+    public synchronized HostQueue take( long maxWait )
+        throws InterruptedException
     {
+        long now = System.currentTimeMillis();
         HostQueue ready = null;
-        while( ( ready = _readyHosts.poll() ) == null ) {
+        while( ( ( ready = _readyHosts.poll() ) == null ) &&
+               ( maxWait > 0 ) ) {
             HostQueue next = null;
             while( ( next = _sleepHosts.peek() ) != null ) {
                 if( ( now - next.nextVisit() ) >= 0 ) {
@@ -114,13 +119,18 @@ public class VisitQueue
                     break;
             }
             if( _readyHosts.isEmpty() ) {
-                long delay =
-                    ( next == null ) ? 0 : ( next.nextVisit() - now + 1 );
+
+                long delay = maxWait;
+                if( next != null ) {
+                    delay = Math.min( next.nextVisit() - now + 1, maxWait );
+                }
                 wait( delay );
-                now = System.currentTimeMillis();
+                long nextNow = System.currentTimeMillis();
+                maxWait -= nextNow - now;
+                now = nextNow;
             }
         }
-        ready.setLastTake( now );
+        if( ready != null ) ready.setLastTake( now );
         return ready;
     }
 
