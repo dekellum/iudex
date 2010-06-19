@@ -173,37 +173,51 @@ public class VisitExecutor implements Closeable, Runnable
      */
     private synchronized void shutdownVisitors( boolean doWait )
     {
-        for( Visitor thread : _visitors ) {
-            thread.shutdown();
-            //FIXME: Interrupt if stopRunning doesn't work?
-            //if( doWait ) thread.interrupt();
+        _log.debug( "Shutdown of current generation visitors." );
+
+        for( Visitor visitor : _visitors ) {
+            visitor.shutdown();
         }
 
-        // Wait for all to exit
-        try {
-            if( doWait ) {
+        if( doWait ) {
+            _log.debug( "Waiting for visitors to exit." );
+
+            try {
                 _shutdown = true;
-                long ellapsed = 0;
-                long now = System.currentTimeMillis();
-                while( ( _visitors.size() > 0 ) &&
-                       ( ellapsed < _maxShutdownWait ) ) {
-                    wait( _maxShutdownWait );
-                    long nextNow = System.currentTimeMillis();
-                    ellapsed += nextNow - now;
-                    now = nextNow;
-                }
+
+                waitForVisitorExit( _maxShutdownWait );
 
                 if( _visitors.size() > 0 ) {
-                    _log.warn( "({}) visitor threads after maxShutdownWait",
-                               _visitors.size() );
+                    _log.warn( "Interrupting remaining visitors." );
+                    for( Visitor visitor : _visitors ) {
+                        visitor.interrupt();
+                    }
+                    waitForVisitorExit( _maxPostInterruptWait );
                 }
             }
+            catch( InterruptedException x ) {
+                _log.warn( "Shutdown interrupted: " + x );
+            }
+            finally {
+                _shutdown = false;
+            }
         }
-        catch( InterruptedException x ) {
-            _log.warn( "Shutdown interrupted: " + x );
+    }
+
+    private synchronized void waitForVisitorExit( long maxWait )
+        throws InterruptedException
+    {
+        long ellapsed = 0;
+        long now = System.currentTimeMillis();
+        while( ( _visitors.size() > 0 ) && ( ellapsed < maxWait ) ) {
+            wait( maxWait );
+            long nextNow = System.currentTimeMillis();
+            ellapsed += nextNow - now;
+            now = nextNow;
         }
-        finally {
-            _shutdown = false;
+        if( _visitors.size() > 0 ) {
+            _log.warn( "({}) visitor threads after {}ms",
+                       _visitors.size(), maxWait );
         }
     }
 
@@ -284,6 +298,7 @@ public class VisitExecutor implements Closeable, Runnable
     private long _minHostDelay        = 2000; //2s
     private long _maxWorkPollInterval = 10 * 60 * 1000; //10min
     private long _maxShutdownWait     = 20 * 1000; //20s
+    private long _maxPostInterruptWait = 3 * 1000;
     private boolean _doWaitOnGeneration = false;
     private volatile boolean _shutdown = false;
 

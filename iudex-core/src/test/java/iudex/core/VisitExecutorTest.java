@@ -77,8 +77,7 @@ public class VisitExecutorTest
             try {
                 Thread.sleep( 3 );
             }
-            catch( InterruptedException e ) {
-            }
+            catch( InterruptedException e ) {}
 
             _latch.countDown();
             return true;
