@@ -181,6 +181,7 @@ public final class Characters
 
         case 0xFEFF: // BOM
         case 0xFFFE: // Bad BOM: (not assigned)
+        case 0xFFFF: // Not assigned (invalid Unicode)
             return true;
         }
         return false;
