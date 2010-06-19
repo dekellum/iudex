@@ -28,6 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 
+/**
+ * Custom threaded executor for processing VisitQueues.
+ */
 public class VisitExecutor implements Closeable, Runnable
 {
     public VisitExecutor( FilterContainer chain, WorkPollStrategy poller )
@@ -66,7 +69,13 @@ public class VisitExecutor implements Closeable, Runnable
         if( _executor != null ) {
             throw new IllegalStateException( "Executor already started." );
         }
+
         _executor = new Thread( this, "executor" );
+
+        if( _doShutdownHook ) {
+            _shutdownHook = new ShutdownHook();
+            Runtime.getRuntime().addShutdownHook( _shutdownHook );
+        }
 
         _executor.start();
     }
@@ -81,6 +90,11 @@ public class VisitExecutor implements Closeable, Runnable
         _running = false;
         shutdownVisitors( true );
         if( _executor != null ) _executor.join();
+
+        if( _shutdownHook != null ) {
+            Runtime.getRuntime().removeShutdownHook( _shutdownHook );
+            _shutdownHook = null;
+        }
     }
 
     /**
@@ -216,7 +230,7 @@ public class VisitExecutor implements Closeable, Runnable
             now = nextNow;
         }
         if( _visitors.size() > 0 ) {
-            _log.warn( "({}) visitor threads after {}ms",
+            _log.warn( "{} visitor threads remain after waiting {}ms",
                        _visitors.size(), maxWait );
         }
     }
@@ -289,22 +303,40 @@ public class VisitExecutor implements Closeable, Runnable
         private volatile boolean _running = true;
     }
 
+    private class ShutdownHook extends Thread
+    {
+        public ShutdownHook()
+        {
+            super( "visitor-shutdown" );
+        }
+
+        @Override
+        public void run()
+        {
+            _log.info( "Visitor shutdown hook closing" );
+            close();
+        }
+    }
+
     private final FilterContainer _chain;
     private final WorkPollStrategy _poller;
-    private Thread _executor          = null;
-    private volatile boolean _running = false;
 
-    private int  _maxThreads          = 10;
-    private long _minHostDelay        = 2000; //2s
-    private long _maxWorkPollInterval = 10 * 60 * 1000; //10min
-    private long _maxShutdownWait     = 20 * 1000; //20s
-    private long _maxPostInterruptWait = 3 * 1000;
-    private boolean _doWaitOnGeneration = false;
-    private volatile boolean _shutdown = false;
+    private int  _maxThreads              = 10;
+    private long _minHostDelay            =  2 * 1000; //2s
+    private long _maxWorkPollInterval     = 10 * 1000 * 60; //10min
+    private long _maxShutdownWait         = 20 * 1000; //20s
+    private long _maxPostInterruptWait    =  3 * 1000;
+    private boolean _doWaitOnGeneration   = false;
+    private boolean _doShutdownHook       = true;
 
-    private long _nextPollTime        = 0;
-    private int _generation           = 0;
-    private int _threadCounter        = 0;
+    private Thread _executor              = null;
+    private ShutdownHook _shutdownHook    = null;
+    private volatile boolean _running     = false;
+    private volatile boolean _shutdown    = false;
+
+    private long _nextPollTime            = 0;
+    private int _generation               = 0;
+    private int _threadCounter            = 0;
 
     private VisitQueue _visitQ            = null;
     private Collection<Visitor> _visitors = new HashSet<Visitor>();
