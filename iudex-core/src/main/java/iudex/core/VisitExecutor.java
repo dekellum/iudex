@@ -36,25 +36,97 @@ public class VisitExecutor implements Closeable, Runnable
         _poller = poller;
     }
 
-    public synchronized void run()
+    public void setMaxThreads( int maxThreads )
+    {
+        _maxThreads = maxThreads;
+    }
+
+    public void setMinHostDelay( long minHostDelay )
+    {
+        _minHostDelay = minHostDelay;
+    }
+
+    public void setMaxWorkPollInterval( long maxWorkPollInterval )
+    {
+        _maxWorkPollInterval = maxWorkPollInterval;
+    }
+
+    public void setMaxShutdownWait( long maxShutdownWait )
+    {
+        _maxShutdownWait = maxShutdownWait;
+    }
+
+    public void setDoWaitOnGeneration( boolean doWaitOnGeneration )
+    {
+        _doWaitOnGeneration = doWaitOnGeneration;
+    }
+
+    public void start()
+    {
+        if( _executor != null ) {
+            throw new IllegalStateException( "Executor already started." );
+        }
+        _executor = new Thread( this, "executor" );
+
+        _executor.start();
+    }
+
+    public void join() throws InterruptedException
+    {
+        _executor.join();
+    }
+
+    public synchronized void shutdown() throws InterruptedException
+    {
+        _running = false;
+        shutdownVisitors( true );
+        if( _executor != null ) _executor.join();
+    }
+
+    /**
+     * Shutdown executor and visitor threads, then close filter chain.
+     */
+    @Override
+    public synchronized void close()
     {
         try {
-            while( true ) {
+            shutdown();
+        }
+        catch( InterruptedException x ) {
+            _log.warn( "On executor shutdown: " + x );
+        }
+
+        _chain.close();
+    }
+
+    @Override
+    public synchronized void run()
+    {
+        //FIXME: Really want to expose this as public? Replace with Runnable?
+
+        _running = true;
+
+        try {
+            while( _running ) {
                 long maxWait = checkWorkPoll();
                 spawnThreads();
                 wait( maxWait );
             }
         }
-        catch( InterruptedException e ) {
-            _log.warn( "Main run loop:", e );
+        catch( InterruptedException x ) {
+            _log.warn( "Executor run loop: " + x );
+        }
+        finally {
+            _executor = null;
+            _running = false;
         }
     }
 
     /**
-     * Check if work needs to be polled either because this it the first time
-     * or if maxWorkPollInterval has expired, by delegating to the
-     * WorkPollStrategy. If strategy returns a new VisitQueue, then
-     * shutdown existing worker threads.
+     * Check if work needs to be polled either because this it the
+     * first time or if maxWorkPollInterval has expired, by delegating
+     * to the WorkPollStrategy. If strategy returns a new VisitQueue,
+     * then shutdown existing worker threads.
      *
      * @return maximum time to wait in milliseconds before re-checking.
      */
@@ -66,9 +138,8 @@ public class VisitExecutor implements Closeable, Runnable
         if( ( _visitQ == null ) || ( now >= _nextPollTime ) ) {
 
             if( ( _visitQ == null ) || _poller.shouldReplaceQueue( _visitQ ) ) {
-                shutdownWorkers();
-                // FIXME: Blocks. Might be better, if safe?, to support overlap
-                // of old and new generation visitors
+
+                shutdownVisitors( _doWaitOnGeneration );
 
                 ++_generation;
                 _threadCounter = 0;
@@ -89,55 +160,57 @@ public class VisitExecutor implements Closeable, Runnable
     private synchronized void spawnThreads()
     {
         // Grow threads to "max"
-        while( _threads.size() < _maxThreads ) {
-            Thread t = new Visitor( _visitQ, _generation, ++_threadCounter );
-            t.start();
-            _threads.add( t );
+        while( !_shutdown && ( _visitors.size() < _maxThreads ) ) {
+            Visitor v = new Visitor( _visitQ, _generation, ++_threadCounter );
+            _visitors.add( v );
+            v.start();
         }
     }
 
-    @Override
-    public synchronized void close()
-    {
-        shutdownWorkers();
-        _chain.close();
-    }
-
     /**
-     * Interrupt all worker threads and wait for them to gracefully exit.
+     * Interrupt all visitor threads and wait for them to gracefully
+     * exit.
      */
-    private synchronized void shutdownWorkers()
+    private synchronized void shutdownVisitors( boolean doWait )
     {
-        for( Thread thread : _threads ) {
-            thread.interrupt();
+        for( Visitor thread : _visitors ) {
+            thread.shutdown();
+            //FIXME: Interrupt if stopRunning doesn't work?
+            //if( doWait ) thread.interrupt();
         }
 
         // Wait for all to exit
         try {
-            long ellapsed = 0;
-            long now = System.currentTimeMillis();
-            while( ( _threads.size() > 0 ) &&
-                   ( ellapsed < _maxShutdownWait ) ) {
-                wait( _maxShutdownWait );
-                long nextNow = System.currentTimeMillis();
-                ellapsed += nextNow - now;
-                now = nextNow;
+            if( doWait ) {
+                _shutdown = true;
+                long ellapsed = 0;
+                long now = System.currentTimeMillis();
+                while( ( _visitors.size() > 0 ) &&
+                       ( ellapsed < _maxShutdownWait ) ) {
+                    wait( _maxShutdownWait );
+                    long nextNow = System.currentTimeMillis();
+                    ellapsed += nextNow - now;
+                    now = nextNow;
+                }
+
+                if( _visitors.size() > 0 ) {
+                    _log.warn( "({}) visitor threads after maxShutdownWait",
+                               _visitors.size() );
+                }
             }
         }
         catch( InterruptedException x ) {
             _log.warn( "Shutdown interrupted: " + x );
         }
-
-        if( _threads.size() > 0 ) {
-            _log.warn( "({}) vistor threads remain after maxShutdownWait",
-                       _threads.size() );
+        finally {
+            _shutdown = false;
         }
     }
 
-    private synchronized void threadExiting( Thread thread )
+    private synchronized void threadExiting( Visitor visitor )
     {
-        _log.debug( "Exit: {}", thread.getName() );
-        _threads.remove( thread );
+        _log.debug( "Exit: {}", visitor.getName() );
+        _visitors.remove( visitor );
         notifyAll();
     }
 
@@ -153,18 +226,23 @@ public class VisitExecutor implements Closeable, Runnable
         public void run()
         {
             try {
+                _log.debug( "Running" );
+                final long maxTakeWait = maxTakeWait();
                 while( true ) {
-
-                    final HostQueue hq = _visitQ.take();
-                    final long now = hq.lastTake();
-                    try {
-                        UniMap order = hq.remove();
-                        order.set( ContentKeys.VISIT_START, new Date( now ) );
-                        _chain.filter( order );
-                    }
-                    finally {
-                        hq.setNextVisit( now + _minHostDelay );
-                        _visitQ.untake( hq );
+                    final HostQueue hq = _visitQ.take( maxTakeWait );
+                    if( ! _running ) break;
+                    if( hq != null ) {
+                        final long now = hq.lastTake();
+                        try {
+                            UniMap order = hq.remove();
+                            order.set( ContentKeys.VISIT_START,
+                                       new Date( now ) );
+                            _chain.filter( order );
+                        }
+                        finally {
+                            hq.setNextVisit( now + _minHostDelay );
+                            _visitQ.untake( hq );
+                        }
                     }
                 }
             }
@@ -175,27 +253,46 @@ public class VisitExecutor implements Closeable, Runnable
                 _log.debug( "Interrupted: ", x );
             }
             finally {
-                threadExiting( Thread.currentThread() );
+                threadExiting( this );
             }
         }
 
+        public void shutdown()
+        {
+            _running = false;
+        }
+
+        private long maxTakeWait()
+        {
+            long mwait = _minHostDelay + 10;
+            mwait = Math.min( mwait, _maxWorkPollInterval - 10 );
+            mwait = Math.min( mwait, _maxShutdownWait - 10 );
+
+            return mwait;
+        }
+
         private final VisitQueue _visitQ;
+        private volatile boolean _running = true;
     }
+
+    private final FilterContainer _chain;
+    private final WorkPollStrategy _poller;
+    private Thread _executor          = null;
+    private volatile boolean _running = false;
 
     private int  _maxThreads          = 10;
     private long _minHostDelay        = 2000; //2s
     private long _maxWorkPollInterval = 10 * 60 * 1000; //10min
     private long _maxShutdownWait     = 20 * 1000; //20s
+    private boolean _doWaitOnGeneration = false;
+    private volatile boolean _shutdown = false;
 
     private long _nextPollTime        = 0;
+    private int _generation           = 0;
+    private int _threadCounter        = 0;
 
-    private int _generation = 0;
-    private int _threadCounter = 0;
+    private VisitQueue _visitQ            = null;
+    private Collection<Visitor> _visitors = new HashSet<Visitor>();
 
-    private final FilterContainer _chain;
-    private final WorkPollStrategy _poller;
-
-    private VisitQueue _visitQ = null;
-    private Collection<Thread> _threads = new HashSet<Thread>();
     private Logger _log = LoggerFactory.getLogger( getClass() );
 }
