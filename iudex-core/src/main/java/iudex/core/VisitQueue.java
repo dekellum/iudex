@@ -172,8 +172,8 @@ public class VisitQueue
     }
 
     private int _orderCount = 0;
-    private int _highHostCount;
-    private int _highOrderCount;
+    private int _highHostCount = 0;
+    private int _highOrderCount = 0;
 
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>();

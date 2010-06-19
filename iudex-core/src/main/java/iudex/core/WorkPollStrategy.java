@@ -19,14 +19,27 @@ package iudex.core;
 public interface WorkPollStrategy
 {
     /**
-     * Returns true to indicate that the current visitQ should be shutdown
-     * and a new VisitQueue created.
+     * Returns true to indicate that visitors on the current VisitQueue should
+     * be shutdown and a new VisitQueue created. The next call to pollWork
+     * should return a new queue.
      */
-    boolean shouldReplaceQueue( VisitQueue visitQ );
+    boolean shouldReplaceQueue( VisitQueue current );
 
     /**
+     * Add to current or return new VisitQueue with new work.
      * @param current VisitQueue or null, requiring new queue.
      * @return existing or new VisitQueue
      */
     VisitQueue pollWork( VisitQueue current );
+
+    /**
+     * Indicate if work should be polled or when the next check should
+     * be made.
+     * @param current the current VisitQueue being processed
+     * @param ellapsed milliseconds since last poll
+     * @return suggested milliseconds before next check or
+     * less than zero to check now.
+     */
+    long nextPollWork( VisitQueue current, long ellapsed );
+
 }

@@ -32,16 +32,18 @@ import com.gravitext.htmap.UniMap;
 
 public class VisitExecutorTest
 {
-    class TestStrategy implements WorkPollStrategy
+    class TestStrategy extends GenericWorkPollStrategy
     {
+        TestStrategy()
+        {
+            setMinPollInterval( 5 );
+            setMaxCheckInterval( 21 );
+            setMaxPollInterval( 130 );
+        }
 
         @Override
-        public VisitQueue pollWork( VisitQueue current )
+        public void pollWorkImpl( VisitQueue q )
         {
-            assertNull( current );
-
-            VisitQueue q = new VisitQueue();
-
             ++_batch;
 
             _log.info( "Creating VisitQueue {}", _batch );
@@ -54,8 +56,6 @@ public class VisitExecutorTest
             q.add( order( 3, _batch, 2, 1.5f ) );
             q.add( order( 4, _batch, 1, 1.7f ) );
             q.add( order( 4, _batch, 2, 1.6f ) );
-
-            return q;
         }
 
         @Override
@@ -93,7 +93,6 @@ public class VisitExecutorTest
         _executor.setMaxThreads( 3 );
         _executor.setMinHostDelay( 100 );
         _executor.setMaxShutdownWait( 200 );
-        _executor.setMaxWorkPollInterval( 130 );
         _executor.setDoWaitOnGeneration( false );
     }
 

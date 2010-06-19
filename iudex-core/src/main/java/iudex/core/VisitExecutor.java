@@ -49,11 +49,6 @@ public class VisitExecutor implements Closeable, Runnable
         _minHostDelay = minHostDelay;
     }
 
-    public void setMaxWorkPollInterval( long maxWorkPollInterval )
-    {
-        _maxWorkPollInterval = maxWorkPollInterval;
-    }
-
     public void setMaxShutdownWait( long maxShutdownWait )
     {
         _maxShutdownWait = maxShutdownWait;
@@ -137,8 +132,7 @@ public class VisitExecutor implements Closeable, Runnable
     }
 
     /**
-     * Check if work needs to be polled either because this it the
-     * first time or if maxWorkPollInterval has expired, by delegating
+     * Check if work needs to be polled by delegating
      * to the WorkPollStrategy. If strategy returns a new VisitQueue,
      * then shutdown existing worker threads.
      *
@@ -146,10 +140,10 @@ public class VisitExecutor implements Closeable, Runnable
      */
     protected synchronized long checkWorkPoll()
     {
-        long delta = _maxWorkPollInterval;
         long now = System.currentTimeMillis();
+        long delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
 
-        if( ( _visitQ == null ) || ( now >= _nextPollTime ) ) {
+        if( ( _visitQ == null ) || ( delta <= 0 ) ) {
 
             if( ( _visitQ == null ) || _poller.shouldReplaceQueue( _visitQ ) ) {
 
@@ -163,10 +157,9 @@ public class VisitExecutor implements Closeable, Runnable
             else {
                 _poller.pollWork( _visitQ );
             }
-            _nextPollTime = now + _maxWorkPollInterval;
-        }
-        else {
-            delta = _nextPollTime - now;
+
+            _lastPollTime = now;
+            delta = _poller.nextPollWork( _visitQ, 0 );
         }
         return delta;
     }
@@ -293,7 +286,6 @@ public class VisitExecutor implements Closeable, Runnable
         private long maxTakeWait()
         {
             long mwait = _minHostDelay + 10;
-            mwait = Math.min( mwait, _maxWorkPollInterval - 10 );
             mwait = Math.min( mwait, _maxShutdownWait - 10 );
 
             return mwait;
@@ -323,7 +315,6 @@ public class VisitExecutor implements Closeable, Runnable
 
     private int  _maxThreads              = 10;
     private long _minHostDelay            =  2 * 1000; //2s
-    private long _maxWorkPollInterval     = 10 * 1000 * 60; //10min
     private long _maxShutdownWait         = 20 * 1000; //20s
     private long _maxPostInterruptWait    =  3 * 1000;
     private boolean _doWaitOnGeneration   = false;
@@ -334,7 +325,7 @@ public class VisitExecutor implements Closeable, Runnable
     private volatile boolean _running     = false;
     private volatile boolean _shutdown    = false;
 
-    private long _nextPollTime            = 0;
+    private long _lastPollTime            = 0;
     private int _generation               = 0;
     private int _threadCounter            = 0;
 
