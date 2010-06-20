@@ -153,13 +153,10 @@ public class VisitQueue
     private void privAdd( UniMap order )
     {
         String host = order.get( ContentKeys.URL ).host();
-        HostQueue queue = _hosts.get( host );
-        boolean isNew = false;
 
-        if( queue == null ) {
-            queue = new HostQueue( host );
-            isNew = true;
-        }
+        HostQueue queue = _hosts.get( host );
+        final boolean isNew = ( queue == null );
+        if( isNew ) queue = new HostQueue( host );
 
         queue.add( order );
 
