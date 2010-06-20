@@ -16,6 +16,9 @@
 
 package iudex.da;
 
+import iudex.core.GenericWorkPollStrategy;
+import iudex.core.VisitQueue;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -23,19 +26,56 @@ import javax.sql.DataSource;
 
 import com.gravitext.htmap.UniMap;
 
-public class WorkPoller
-    extends ContentReader
+public class WorkPoller extends GenericWorkPollStrategy
 {
     public WorkPoller( DataSource dataSource, ContentMapper mapper )
     {
-        super( dataSource, mapper );
+        _contentReader = new ContentReader( dataSource, mapper );
+    }
+
+    public void setHostDepthDivisor( float hostDepthDivisor )
+    {
+        _hostDepthDivisor = hostDepthDivisor;
+    }
+
+    public float hostDepthDivisor()
+    {
+        return _hostDepthDivisor;
+    }
+
+    /**
+     * Set maximum VisitURLs to load per poll.
+     */
+    public void setMaxUrls( int maxUrls )
+    {
+        _maxUrls = maxUrls;
+    }
+
+    public int maxUrls()
+    {
+        return _maxUrls;
     }
 
     public List<UniMap> poll() throws SQLException
     {
-        String query = String.format( POLL_QUERY, mapper().fieldNames() );
+        String query = String.format( POLL_QUERY,
+                                      _contentReader.mapper().fieldNames() );
 
-        return select( query, _totalUrls );
+        return _contentReader.select( query, _hostDepthDivisor, _maxUrls );
+    }
+
+    @Override
+    public void pollWorkImpl( VisitQueue out )
+    {
+        try {
+            //FIXME: Further optimization potential by utilizing grouping
+            //of URLs for common host.
+            out.addAll( poll() );
+        }
+        catch( SQLException x ) {
+            //FIXME: Or log it and continue? Allow # of failures before passing?
+            throw new RuntimeException( x );
+        }
     }
 
     private static final String POLL_QUERY =
@@ -46,11 +86,13 @@ public class WorkPoller
     "              ( priority -  " +
     "               ( ( row_number() OVER " +
     "                   ( PARTITION BY host ORDER BY priority DESC ) - 1 ) " +
-    "                  / 8.0 ) ) as adj_priority " +
+    "                  / ? ) ) as adj_priority " +
     "              FROM urls " +
     "              WHERE next_visit_after <= now() ) AS sub1 ) as sub2 " +
     "WHERE apos <= ? " +
     "ORDER BY host, priority DESC; ";
 
-    private int _totalUrls = 50000;
+    private final ContentReader _contentReader;
+    private float _hostDepthDivisor = 8.0f;
+    private int _maxUrls = 50000;
 }
