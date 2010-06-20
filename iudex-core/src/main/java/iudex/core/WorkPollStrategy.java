@@ -24,7 +24,7 @@ public interface WorkPollStrategy
      * @param current the current VisitQueue being processed
      * @param elapsed milliseconds since last poll
      * @return suggested milliseconds before next check or
-     * less than zero to check now.
+     * less than or equal to zero to check now.
      */
     long nextPollWork( VisitQueue current, long elapsed );
 

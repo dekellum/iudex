@@ -31,6 +31,11 @@ public abstract class GenericWorkPollStrategy
         _minPollInterval = minPollInterval;
     }
 
+    public long getMinPollInterval()
+    {
+        return _minPollInterval;
+    }
+
     /**
      * Set the maximum milliseconds between checking if a poll should
      * be made.
@@ -40,12 +45,22 @@ public abstract class GenericWorkPollStrategy
         _maxCheckInterval = maxCheckInterval;
     }
 
+    public long maxCheckInterval()
+    {
+        return _maxCheckInterval;
+    }
+
     /**
      * Set the maximum milliseconds between successive work polls.
      */
     public void setMaxPollInterval( long maxPollInterval )
     {
         _maxPollInterval = maxPollInterval;
+    }
+
+    public long maxPollInterval()
+    {
+        return _maxPollInterval;
     }
 
     /**
@@ -57,6 +72,11 @@ public abstract class GenericWorkPollStrategy
         _minHostRemainingRatio = minHostRemainingRatio;
     }
 
+    public float minHostRemainingRatio()
+    {
+        return _minHostRemainingRatio;
+    }
+
     /**
      * The minimum ratio of orders (across all hosts) remaining since
      * the last poll before a new work poll will be made (subject to
@@ -66,6 +86,11 @@ public abstract class GenericWorkPollStrategy
     public void setMinOrderRemainingRatio( float minOrderRemainingRatio )
     {
         _minOrderRemainingRatio = minOrderRemainingRatio;
+    }
+
+    public float minOrderRemainingRatio()
+    {
+        return _minOrderRemainingRatio;
     }
 
     @Override
@@ -98,6 +123,8 @@ public abstract class GenericWorkPollStrategy
     public long nextPollWork( VisitQueue current, long elapsed )
     {
         if( current == null ) return 0;
+
+        //FIXME: Refactor: move VisitQueue.*RemainingRatio's to here.
 
         if( ( current.orderCount() == 0 ) ||
             ( current.hostRemainingRatio() < _minHostRemainingRatio ) ||
