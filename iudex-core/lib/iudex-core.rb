@@ -24,5 +24,17 @@ require 'iudex-core/config'
 module Iudex
   module Core
     require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
+
+    module Config
+      class << self
+        def setup_visit_executor( &block )
+          @setup_vx_proc = block
+        end
+
+        def do_visit_executor( vx )
+          @setup_vx_proc.call( vx ) if @setup_vx_proc
+        end
+      end
+    end
   end
 end
