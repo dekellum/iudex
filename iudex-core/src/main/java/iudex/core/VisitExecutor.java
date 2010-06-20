@@ -323,8 +323,8 @@ public class VisitExecutor implements Closeable, Runnable
 
     private int  _maxThreads              = 10;
     private long _minHostDelay            =  2 * 1000; //2s
-    private long _maxShutdownWait         = 20 * 1000; //20s
-    private long _maxPostInterruptWait    =  3 * 1000;
+    private long _maxShutdownWait         = 19 * 1000; //19s
+    private long _maxPostInterruptWait    =  1 * 1000;
     private boolean _doWaitOnGeneration   = false;
     private boolean _doShutdownHook       = true;
 
