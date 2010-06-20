@@ -36,6 +36,8 @@ public class VisitExecutorTest
     {
         TestStrategy()
         {
+            super();
+
             setMinPollInterval( 5 );
             setMaxCheckInterval( 21 );
             setMaxPollInterval( 130 );

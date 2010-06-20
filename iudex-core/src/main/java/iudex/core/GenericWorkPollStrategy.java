@@ -16,29 +16,53 @@
 
 package iudex.core;
 
+/**
+ * Generic abstract WorkPollStrategy implementation.
+ */
 public abstract class GenericWorkPollStrategy
     implements WorkPollStrategy
 {
+    /**
+     * Set the minimum allowable milliseconds between successive work
+     * polls.
+     */
     public void setMinPollInterval( long minPollInterval )
     {
         _minPollInterval = minPollInterval;
     }
 
+    /**
+     * Set the maximum milliseconds between checking if a poll should
+     * be made.
+     */
     public void setMaxCheckInterval( long maxCheckInterval )
     {
         _maxCheckInterval = maxCheckInterval;
     }
 
+    /**
+     * Set the maximum milliseconds between successive work polls.
+     */
     public void setMaxPollInterval( long maxPollInterval )
     {
         _maxPollInterval = maxPollInterval;
     }
 
+    /**
+     * The minimum ratio of hosts remaining since the last poll before
+     * a new work poll will be made (subject to minPollInterval).
+     */
     public void setMinHostRemainingRatio( float minHostRemainingRatio )
     {
         _minHostRemainingRatio = minHostRemainingRatio;
     }
 
+    /**
+     * The minimum ratio of orders (across all hosts) remaining since
+     * the last poll before a new work poll will be made (subject to
+     * minPollInterval). Note that zero total remaining orders always
+     * triggers a new poll.
+     */
     public void setMinOrderRemainingRatio( float minOrderRemainingRatio )
     {
         _minOrderRemainingRatio = minOrderRemainingRatio;
@@ -54,25 +78,34 @@ public abstract class GenericWorkPollStrategy
         return vq;
     }
 
+    /**
+     * The actual pollWorkImpl which should be implemented to fill the
+     * provided out queue.
+     */
     public abstract void pollWorkImpl( VisitQueue out );
 
+    /**
+     * {@inheritDoc}
+     * This implementation always returns true;
+     */
     @Override
     public boolean shouldReplaceQueue( VisitQueue current )
     {
         return true;
     }
 
-    public long nextPollWork( VisitQueue current, long ellapsed )
+    @Override
+    public long nextPollWork( VisitQueue current, long elapsed )
     {
         if( current == null ) return 0;
 
         if( ( current.orderCount() == 0 ) ||
             ( current.hostRemainingRatio() < _minHostRemainingRatio ) ||
             ( current.orderRemainingRatio() < _minOrderRemainingRatio ) ) {
-            return Math.max( 0, _minPollInterval - ellapsed );
+            return Math.max( 0, _minPollInterval - elapsed );
         }
 
-        return Math.min( _maxPollInterval - ellapsed, _maxCheckInterval );
+        return Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
     }
 
     private long _minPollInterval  =      15 * 1000; //15sec

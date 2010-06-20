@@ -141,7 +141,11 @@ public class VisitExecutor implements Closeable, Runnable
     protected synchronized long checkWorkPoll()
     {
         long now = System.currentTimeMillis();
-        long delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
+        long delta = 0;
+
+        if( _visitQ != null ) {
+            delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
+        }
 
         if( ( _visitQ == null ) || ( delta <= 0 ) ) {
 
@@ -180,14 +184,18 @@ public class VisitExecutor implements Closeable, Runnable
      */
     private synchronized void shutdownVisitors( boolean doWait )
     {
-        _log.debug( "Shutdown of current generation visitors." );
+        if( _visitors.size() > 0 ) {
+            _log.debug( "Shutdown of current generation visitors." );
+        }
 
         for( Visitor visitor : _visitors ) {
             visitor.shutdown();
         }
 
         if( doWait ) {
-            _log.debug( "Waiting for visitors to exit." );
+            if( _visitors.size() > 0 ) {
+                _log.debug( "Waiting for visitors to exit." );
+            }
 
             try {
                 _shutdown = true;
