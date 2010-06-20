@@ -17,4 +17,10 @@ Iudex.configure do |c|
     mgr.manager_params.max_total_connections = 200
   end
 
+  c.setup_visit_executor do |vx|
+    vx.max_threads             = 10
+    vx.min_host_delay          = 2_000
+    vx.max_shutdown_wait       = 19_000
+  end
+
 end
