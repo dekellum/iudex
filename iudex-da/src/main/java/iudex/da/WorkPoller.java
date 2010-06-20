@@ -83,7 +83,7 @@ public class WorkPoller extends GenericWorkPollStrategy
     "FROM ( SELECT *, " +
     "       row_number() OVER( ORDER BY adj_priority DESC ) as apos " +
     "       FROM ( SELECT *, " +
-    "              ( priority -  " +
+    "              ( priority - " +
     "               ( ( row_number() OVER " +
     "                   ( PARTITION BY host ORDER BY priority DESC ) - 1 ) " +
     "                  / ? ) ) as adj_priority " +
