@@ -21,6 +21,17 @@ require 'iudex-filter/base'
 module Iudex
   module Filter
     require "#{LIB_DIR}/iudex-filter-#{VERSION}.jar"
+
+    import 'iudex.filter.FilterContainer'
+
+    module Core
+      import 'iudex.filter.core.ByFilterReporter'
+      import 'iudex.filter.core.FilterChain'
+      import 'iudex.filter.core.ListenerChain'
+      import 'iudex.filter.core.FilterIndex'
+      import 'iudex.filter.core.LogListener'
+      import 'iudex.filter.core.SummaryReporter'
+    end
   end
 end
 
