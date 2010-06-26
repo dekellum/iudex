@@ -36,7 +36,6 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
 
   def test_filter
     fcf = FilterChainFactory.new( "test-da" )
-    fcf.data_source = PoolDataSourceFactory.new.create
 
     http_mf = RJack::HTTPClient3::ManagerFacade.new
     http_mf.start

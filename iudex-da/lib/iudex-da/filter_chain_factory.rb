@@ -16,54 +16,107 @@
 
 require 'iudex-da'
 require 'iudex-core'
-require 'iudex-core/filter_chain_factory'
+require 'iudex-filter'
+require 'iudex-filter/filter_chain_factory'
 
 module Iudex
   module DA
     module Filters
 
-      class FilterChainFactory < Iudex::Core::Filters::FilterChainFactory
-        include Iudex::Core
-        include Iudex::Core::Filters
+      # Mixin FilterChainFactory helper methods
+      module FactoryHelper
 
-        attr_accessor :data_source
-        attr_accessor :http_client
-
-        def feed_filters
-          [ ContentFetcher.new( http_client,
-                                create_chain( "feed-receiver", feed_post ) ) ]
+        # Lazy initialize DataSource
+        def data_source
+          @data_source ||= PoolDataSourceFactory.new.create
         end
 
-        def feed_post
-          [ DateChangeFilter.new( false ),
-            feed_writer ]
-        end
+        # Create UpdateFilter given filter list factory methods
+        # symbols and any more_fields to read/writer.
+        def create_update_filter( update_sym, new_sym, post_sym, more_fields )
+          f = UpdateFilter.new( data_source, more_fields )
 
-        def feed_writer
-          f = UpdateFilter.new( data_source, additional_writer_fields )
+          create_chain( s_to_n( update_sym ), send( update_sym ) ) do |c|
+            f.update_ref_filter = c
+          end
+          create_chain( s_to_n( new_sym ), send( new_sym ) ) do |c|
+            f.new_ref_filter = c
+          end
+          create_chain( s_to_n( post_sym ), send( post_sym ) ) do |c|
+            f.content_filter = c
+          end
 
-          create_chain( "ref-update", ref_update ) {|c| f.update_ref_filter = c}
-          create_chain( "ref-new",    ref_new )    {|c| f.new_ref_filter    = c}
-          create_chain( "content-post", content_post ) {|c| f.content_filter= c}
           f
         end
 
-        def ref_update
+        private
+
+        def s_to_n( sym )
+          sym.to_s.gsub( /_/, '-' )
+        end
+      end
+
+      # FIXME: To move into iudex-worker
+      class FilterChainFactory < Iudex::Filter::Core::FilterChainFactory
+        include Iudex::DA::Filters::FactoryHelper
+        include Iudex::Filter::Core
+        include Iudex::Core
+        include Iudex::Core::Filters
+
+        attr_accessor :http_client
+
+        def filters
+          [ UHashMDCSetter.new ] + super + [ type_switch ]
+        end
+
+        def listeners
+          super + [ MDCUnsetter.new( "uhash" ) ]
+        end
+
+        def type_map
+          { "FEED" => feed_fetcher,
+            "PAGE" => page_fetcher }
+        end
+
+        def type_switch( tmap = type_map )
+          create_switch( ContentKeys::TYPE, tmap )
+        end
+
+        def feed_fetcher
+          [ ContentFetcher.new( http_client,
+                                create_chain( "feed-receiver", feed_receiver ) )
+          ]
+        end
+
+        def page_fetcher
+        end
+
+        def feed_receiver
+          [ DateChangeFilter.new( false ),
+            feed_updater ]
+        end
+
+        def feed_updater
+          create_update_filter( :feed_ref_update, :feed_ref_new, :feed_post,
+                                more_feed_update_fields )
+        end
+
+        def feed_ref_update
           [ UHashMDCSetter.new,
             DateChangeFilter.new( true ),
-            Prioritizer.new( "ref-update" ) ] +
+            Prioritizer.new( "feed-ref-update" ) ] +
             ref_common_cleanup
         end
 
-        def ref_new
+        def feed_ref_new
           [ UHashMDCSetter.new,
-            Prioritizer.new( "ref-new" ) ] +
+            Prioritizer.new( "feed-ref-new" ) ] +
             ref_common_cleanup
         end
 
-        def content_post
+        def feed_post
           [ UHashMDCSetter.new,
-            Prioritizer.new( "content-post" ) ] +
+            Prioritizer.new( "feed-post" ) ] +
             ref_common_cleanup
         end
 
@@ -72,7 +125,7 @@ module Iudex
             FutureDateFilter.new( ContentKeys::PUB_DATE ) ]
         end
 
-        def additional_writer_fields
+        def more_feed_update_fields
           []
         end
 
