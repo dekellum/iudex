@@ -28,7 +28,8 @@ module Iudex
         def initialize( description = "default" )
           @description = description
 
-          @log = RJack::SLF4J[ "iudex.filter.core.FilterChain.#{description}" ]
+          @log = RJack::SLF4J[ [ RJack::SLF4J.to_log_name( self.class ),
+                                 description ].join('.') ]
 
           @summery_period = nil
           @by_filter_period = nil
