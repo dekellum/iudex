@@ -15,7 +15,7 @@
 #++
 
 module Iudex
-  module HttpClient3
+  module HTTPClient3
     VERSION = '1.0.0'
 
     LIB_DIR = File.dirname( __FILE__ ) # :nodoc:

@@ -8,7 +8,7 @@ gem     'rjack-tarpit', '~> 1.2'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-httpclient-3',
-                       Iudex::HttpClient3::VERSION,
+                       Iudex::HTTPClient3::VERSION,
                        :no_assembly, :java_platform )
 
 t.specify do |h|

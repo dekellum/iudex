@@ -21,8 +21,10 @@ require 'iudex-httpclient-3/base'
 
 module Iudex
 
-  module HttpClient3
+  module HTTPClient3
     require "#{LIB_DIR}/iudex-httpclient-3-#{VERSION}.jar"
+
+    import 'iudex.httpclient3.HTTPClient3'
 
     def self.default_manager
       mgr = RJack::HTTPClient3::ManagerFacade.new
@@ -57,7 +59,7 @@ module Iudex
       end
 
       # Apply setup block and returns manager
-      def self.do_http_client_3( mgr = HttpClient3.default_manager )
+      def self.do_http_client_3( mgr = HTTPClient3.default_manager )
         @http_client_3_proc.call( mgr ) if @http_client_3_proc
         mgr
       end

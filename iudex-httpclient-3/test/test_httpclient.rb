@@ -21,8 +21,9 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-httpclient-3'
 
-class TestHttpClient < MiniTest::Unit::TestCase
+class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex::Core
+  include Iudex::HTTPClient3
 
   def test_config
     assert( Config.do_http_client_3 )
