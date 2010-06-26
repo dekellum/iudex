@@ -38,6 +38,10 @@ module Iudex
       :username => 'iudex',
       :pool     => 10 }
 
+    module Filters
+      import 'iudex.da.filters.UpdateFilter'
+    end
+
   end
 
   module Core

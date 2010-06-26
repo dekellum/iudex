@@ -30,6 +30,7 @@ require 'iudex-httpclient-3'
 class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Core
   include Iudex::DA
+  include Iudex::DA::Filters
 
   import 'iudex.httpclient3.HTTPClient3'
 
