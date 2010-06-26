@@ -38,14 +38,15 @@ module Iudex
     end
 
     module Config
-      class << self
-        def setup_visit_executor( &block )
-          @setup_vx_proc = block
-        end
+      @visit_exec_proc = nil
 
-        def do_visit_executor( vx )
-          @setup_vx_proc.call( vx ) if @setup_vx_proc
-        end
+      def self.setup_visit_executor( &block )
+        @visit_exec_proc = block
+      end
+
+      def self.do_visit_executor( vx )
+        @visit_exec_proc.call( vx ) if @visit_exec_proc
+        vx
       end
     end
   end
