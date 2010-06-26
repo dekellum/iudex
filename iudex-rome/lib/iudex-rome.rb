@@ -16,10 +16,15 @@
 
 require 'rjack-rome'
 
+require 'iudex-filter'
+require 'iudex-core'
+
 require 'iudex-rome/base'
 
 module Iudex
   module ROME
     require "#{LIB_DIR}/iudex-rome-#{VERSION}.jar"
+
+    import 'iudex.rome.RomeFeedParser'
   end
 end
