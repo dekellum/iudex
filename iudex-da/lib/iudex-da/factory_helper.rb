@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-da'
+require 'iudex-da/pool_data_source_factory'
 
 module Iudex
   module DA
