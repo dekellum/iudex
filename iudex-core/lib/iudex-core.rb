@@ -25,6 +25,18 @@ module Iudex
   module Core
     require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
 
+    import 'iudex.core.ContentKeys'
+    import 'iudex.core.VisitURL'
+
+    module Filters
+      import 'iudex.core.filters.ContentFetcher'
+      import 'iudex.core.filters.DateChangeFilter'
+      import 'iudex.core.filters.FutureDateFilter'
+      import 'iudex.core.filters.Prioritizer'
+      import 'iudex.core.filters.TextCtrlWSFilter'
+      import 'iudex.core.filters.UHashMDCSetter'
+    end
+
     module Config
       class << self
         def setup_visit_executor( &block )

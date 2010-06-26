@@ -21,46 +21,35 @@ require 'iudex-core'
 
 module Iudex
   module Core
+    module Filters
 
-    class FilterChainFactory < Iudex::Filter::Core::FilterChainFactory
-      import 'iudex.filter.core.MDCUnsetter'
-      import 'iudex.filter.core.Switch'
-      import 'iudex.filter.core.Selector'
+      class FilterChainFactory < Iudex::Filter::Core::FilterChainFactory
+        include Iudex::Filter::Core
 
-      import 'iudex.core.ContentKeys'
-      import 'iudex.core.filters.UHashMDCSetter'
-      import 'iudex.core.filters.ContentFetcher'
-      import 'iudex.core.filters.TextCtrlWSFilter'
-
-      def filters
-        [ UHashMDCSetter.new ] + super + [ type_switch ]
-      end
-
-      def listeners
-        super + [ MDCUnsetter.new( "uhash" ) ]
-      end
-
-      def type_map
-        { "FEED" => :feed_filters,
-          "PAGE" => :page_filters }
-      end
-
-      def type_switch
-        switch = Switch.new
-        type_map.each do |t,ff|
-          create_chain( t.downcase, send( ff ) ) do |c|
-            switch.add_proposition( Selector.new( ContentKeys::TYPE, t ), c )
-          end
+        def filters
+          [ UHashMDCSetter.new ] + super + [ type_switch ]
         end
-        switch
-      end
 
-      def feed_filters
-      end
+        def listeners
+          super + [ MDCUnsetter.new( "uhash" ) ]
+        end
 
-      def page_filters
-      end
+        def type_map
+          { "FEED" => feed_filters,
+            "PAGE" => page_filters }
+        end
 
+        def type_switch( tmap = type_map )
+          create_switch( ContentKeys::TYPE, tmap )
+        end
+
+        def feed_filters
+        end
+
+        def page_filters
+        end
+
+      end
     end
   end
 end

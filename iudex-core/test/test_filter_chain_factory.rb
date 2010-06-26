@@ -28,10 +28,8 @@ require 'iudex-core/filter_chain_factory'
 class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Filter
   include Iudex::Core
+  include Iudex::Core::Filters
   include Gravitext::HTMap
-
-  import 'iudex.core.VisitURL'
-  import 'iudex.core.ContentKeys'
 
   UniMap.define_accessors
 
