@@ -22,15 +22,21 @@ module Iudex
   module Filter
     require "#{LIB_DIR}/iudex-filter-#{VERSION}.jar"
 
+    import 'iudex.filter.Filter'
     import 'iudex.filter.FilterContainer'
+    import 'iudex.filter.Described'
+    import 'iudex.filter.Named'
 
     module Core
       import 'iudex.filter.core.ByFilterReporter'
       import 'iudex.filter.core.FilterChain'
-      import 'iudex.filter.core.ListenerChain'
       import 'iudex.filter.core.FilterIndex'
+      import 'iudex.filter.core.ListenerChain'
       import 'iudex.filter.core.LogListener'
+      import 'iudex.filter.core.MDCUnsetter'
+      import 'iudex.filter.core.Selector'
       import 'iudex.filter.core.SummaryReporter'
+      import 'iudex.filter.core.Switch'
     end
   end
 end

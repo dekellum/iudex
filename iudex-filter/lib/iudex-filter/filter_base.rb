@@ -17,10 +17,6 @@
 module Iudex
   module Filter
 
-    import 'iudex.filter.Filter'
-    import 'iudex.filter.Described'
-    import 'iudex.filter.Named'
-
     class FilterBase
       include Filter
       include Described
