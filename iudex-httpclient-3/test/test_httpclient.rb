@@ -25,17 +25,17 @@ class TestHttpClient < MiniTest::Unit::TestCase
   include Iudex::Core
 
   def test_config
-    assert( Config.http_client_3_manager )
+    assert( Config.do_http_client_3 )
 
     called = :not
     Config.setup_http_client_3 do |mgr|
       assert_equal( 100, mgr.manager_params.max_total_connections )
       called = :called
     end
+    assert( Config.do_http_client_3 )
     assert_equal( :called, called )
-    assert( Config.http_client_3_manager )
 
-    mgr = Config.http_client_3_manager
+    mgr = Config.do_http_client_3
     assert( mgr )
     mgr.start
     assert( mgr.client )

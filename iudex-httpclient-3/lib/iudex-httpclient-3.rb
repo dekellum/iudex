@@ -20,42 +20,48 @@ require 'rjack-httpclient-3'
 require 'iudex-httpclient-3/base'
 
 module Iudex
+
   module HttpClient3
     require "#{LIB_DIR}/iudex-httpclient-3-#{VERSION}.jar"
+
+    def self.default_manager
+      mgr = RJack::HTTPClient3::ManagerFacade.new
+
+      # Sensible defaults:
+      mgr.manager_params.max_total_connections = 100
+      mgr.manager_params.default_max_connections_per_host = 2
+      mgr.manager_params.stale_checking_enabled = false
+      mgr.client_params.connection_manager_timeout = 3_000 #ms
+      mgr.client_params.so_timeout = 5_000 #ms
+
+      mgr.client_params.set_parameter(
+          RJack::HTTPClient3::HttpMethodParams::RETRY_HANDLER,
+          RJack::HTTPClient3::DefaultHttpMethodRetryHandler.new( 2, false ) )
+
+      # FIXME: Use scoped per-session cookies?
+      cp = Java::org.apache.commons.httpclient.cookie.CookiePolicy
+      mgr.client_params.cookie_policy = cp::IGNORE_COOKIES
+
+      mgr
+    end
+
   end
 
   module Core
     module Config
+      @http_client_3_proc = nil
 
-      # Setup singleton ManagerFacade with defaults, yielding to block
-      # for overrides.
-      def self.setup_http_client_3
-
-        @manager = RJack::HTTPClient3::ManagerFacade.new
-
-        # Sensible defaults:
-        @manager.manager_params.max_total_connections = 100
-        @manager.manager_params.default_max_connections_per_host = 2
-        @manager.manager_params.stale_checking_enabled = false
-        @manager.client_params.connection_manager_timeout = 3_000 #ms
-        @manager.client_params.so_timeout = 5_000 #ms
-
-        @manager.client_params.set_parameter(
-          RJack::HTTPClient3::HttpMethodParams::RETRY_HANDLER,
-          RJack::HTTPClient3::DefaultHttpMethodRetryHandler.new( 2, false ) )
-
-        # FIXME: Use scoped per-session cookies
-        cp = Java::org.apache.commons.httpclient.cookie.CookiePolicy
-        @manager.client_params.cookie_policy = cp::IGNORE_COOKIES
-
-        yield @manager if block_given?
-        @manager
+      # Yields RJack::HTTPClient3::ManagerFacade to block for setup.
+      def self.setup_http_client_3( &block )
+        @http_client_3_proc = block
       end
 
-      # Return default/customized manager
-      def self.http_client_3_manager
-        @manager || setup_http_client_3
+      # Apply setup block and returns manager
+      def self.do_http_client_3( mgr = HttpClient3.default_manager )
+        @http_client_3_proc.call( mgr ) if @http_client_3_proc
+        mgr
       end
+
     end
   end
 
