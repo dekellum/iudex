@@ -123,6 +123,18 @@ module Iudex
           end
         end
 
+        # Create a new Switch given selector key and map of values to
+        # filters.
+        def create_switch( key, value_filters_map )
+          switch = Switch.new
+          value_filters_map.each do |value, filters|
+            create_chain( value.to_s.downcase, filters ) do |chain|
+              switch.add_proposition( Selector.new( key, value ), chain )
+            end
+          end
+          switch
+        end
+
         private
 
         def log_and_register( filters, depth = 0 )
