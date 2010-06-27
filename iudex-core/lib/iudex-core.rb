@@ -26,6 +26,7 @@ module Iudex
     require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
 
     import 'iudex.core.ContentKeys'
+    import 'iudex.core.VisitExecutor'
     import 'iudex.core.VisitURL'
 
     module Filters
