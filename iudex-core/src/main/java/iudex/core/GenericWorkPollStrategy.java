@@ -172,7 +172,7 @@ public abstract class GenericWorkPollStrategy
     }
 
     private long _minPollInterval  =      15 * 1000; //15sec
-    private long _maxCheckInterval =      60 * 1000; //1min;
+    private long _maxCheckInterval =      30 * 1000; //30sec;
     private long _maxPollInterval  = 10 * 60 * 1000; //10min
 
     private int _highHostCount = 0;
