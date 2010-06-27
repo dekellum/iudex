@@ -116,8 +116,15 @@ module Iudex
 
         # Create, yield to optional block, and return FilterChain if
         # flts is not empty. Otherwise return a NoOpFilter and don't
-        # yield.
-        def create_chain( desc, flts )
+        # yield. If passed a single Symbol argument, will use both
+        # as description and method to obtain flts array from.
+        def create_chain( desc, flts = nil )
+
+          if desc.is_a?( Symbol )
+            flts = send( desc ) unless flts
+            desc = desc.to_s.gsub( /_/, '-' )
+          end
+
           if flts.nil? || flts.empty?
             NoOpFilter.new
           else

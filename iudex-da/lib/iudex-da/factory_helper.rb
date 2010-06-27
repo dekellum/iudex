@@ -33,25 +33,12 @@ module Iudex
         # symbols and any more_fields to read/writer.
         def create_update_filter( update_sym, new_sym, post_sym, more_fields )
           f = UpdateFilter.new( data_source, more_fields )
-
-          create_chain( s_to_n( update_sym ), send( update_sym ) ) do |c|
-            f.update_ref_filter = c
-          end
-          create_chain( s_to_n( new_sym ), send( new_sym ) ) do |c|
-            f.new_ref_filter = c
-          end
-          create_chain( s_to_n( post_sym ), send( post_sym ) ) do |c|
-            f.content_filter = c
-          end
-
+          create_chain( update_sym ) { |c| f.update_ref_filter = c }
+          create_chain( new_sym )    { |c| f.new_ref_filter    = c }
+          create_chain( post_sym )   { |c| f.content_filter    = c }
           f
         end
 
-        private
-
-        def s_to_n( sym )
-          sym.to_s.gsub( /_/, '-' )
-        end
       end
 
     end
