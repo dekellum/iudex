@@ -99,9 +99,9 @@ public class VisitExecutorTest
     }
 
     @After
-    public void shutdown()
+    public void shutdown() throws InterruptedException
     {
-        _executor.close();
+        _executor.shutdown();
     }
 
     @Test

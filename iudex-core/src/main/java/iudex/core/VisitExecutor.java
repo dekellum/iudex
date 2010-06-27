@@ -85,21 +85,9 @@ public class VisitExecutor implements Closeable, Runnable
         shutdown( false );
     }
 
-    private synchronized void shutdown( boolean fromVM )
-        throws InterruptedException
-    {
-        _running = false;
-        shutdownVisitors( true );
-        if( _executor != null ) _executor.join();
-
-        if( !fromVM && _shutdownHook != null ) {
-            Runtime.getRuntime().removeShutdownHook( _shutdownHook );
-            _shutdownHook = null;
-        }
-    }
-
     /**
-     * Shutdown executor and visitor threads, then close filter chain.
+     * Shutdown executor and visitor threads. Note the provided filter chain
+     * should be closed externally.
      */
     @Override
     public synchronized void close()
@@ -110,8 +98,6 @@ public class VisitExecutor implements Closeable, Runnable
         catch( InterruptedException x ) {
             _log.warn( "On executor shutdown: " + x );
         }
-
-        _chain.close();
     }
 
     @Override
@@ -181,6 +167,19 @@ public class VisitExecutor implements Closeable, Runnable
             Visitor v = new Visitor( _visitQ, _generation, ++_threadCounter );
             _visitors.add( v );
             v.start();
+        }
+    }
+
+    private synchronized void shutdown( boolean fromVM )
+        throws InterruptedException
+    {
+        _running = false;
+        shutdownVisitors( true );
+        if( _executor != null ) _executor.join();
+
+        if( !fromVM && ( _shutdownHook != null ) ) {
+            Runtime.getRuntime().removeShutdownHook( _shutdownHook );
+            _shutdownHook = null;
         }
     }
 
@@ -323,7 +322,9 @@ public class VisitExecutor implements Closeable, Runnable
             try {
                 shutdown( true );
             }
-            catch( InterruptedException x ) {}
+            catch( InterruptedException x ) {
+                _log.warn( "On shutdown: " + x );
+            }
         }
     }
 
