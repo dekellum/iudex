@@ -65,12 +65,11 @@ module Iudex
       end
 
       def feed_fetcher
-        [ ContentFetcher.new( http_client,
-                              create_chain( "feed-receiver", feed_receiver ) )
-        ]
+        [ ContentFetcher.new( http_client, create_chain( :feed_receiver ) ) ]
       end
 
       def page_fetcher
+        [ ContentFetcher.new( http_client, create_chain( :page_receiver ) ) ]
       end
 
       def feed_receiver
@@ -110,6 +109,9 @@ module Iudex
 
       def more_feed_update_fields
         []
+      end
+
+      def page_receiver
       end
 
     end
