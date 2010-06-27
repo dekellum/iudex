@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.util.Metric;
+import com.gravitext.util.Stopwatch;
 
 /**
  * Generic abstract WorkPollStrategy implementation.
@@ -103,14 +104,16 @@ public abstract class GenericWorkPollStrategy
     {
         VisitQueue vq = new VisitQueue();
 
+        Stopwatch sw = new Stopwatch().start();
         pollWorkImpl( vq );
+        sw.stop();
 
         _highOrderCount = vq.orderCount();
         _highHostCount = vq.hostCount();
 
-        _log.info( "Polled {} orders in {} hosts",
-                   _highOrderCount, _highHostCount );
-
+        _log.info( "Polled {} orders in {} hosts; ({})",
+                   new Object[] { _highOrderCount, _highHostCount,
+                                  sw.duration() } );
         return vq;
     }
 
