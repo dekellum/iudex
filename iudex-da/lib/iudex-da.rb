@@ -38,6 +38,9 @@ module Iudex
       :username => 'iudex',
       :pool     => 10 }
 
+    import 'iudex.da.WorkPoller'
+    import 'iudex.da.ContentMapper'
+
     module Filters
       import 'iudex.da.filters.UpdateFilter'
     end
