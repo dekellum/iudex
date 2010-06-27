@@ -114,8 +114,13 @@ module Iudex
           ll
         end
 
+        # Create, yield to optional block, and return FilterChain if
+        # flts is not empty. Otherwise return a NoOpFilter and don't
+        # yield.
         def create_chain( desc, flts )
-          unless flts.nil? || flts.empty?
+          if flts.nil? || flts.empty?
+            NoOpFilter.new
+          else
             c = FilterChain.new( desc, flts )
             c.listener = log_listener( desc )
             yield c if block_given?
