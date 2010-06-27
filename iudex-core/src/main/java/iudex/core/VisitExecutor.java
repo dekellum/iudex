@@ -80,13 +80,19 @@ public class VisitExecutor implements Closeable, Runnable
         _executor.join();
     }
 
-    public synchronized void shutdown() throws InterruptedException
+    public void shutdown() throws InterruptedException
+    {
+        shutdown( false );
+    }
+
+    private synchronized void shutdown( boolean fromVM )
+        throws InterruptedException
     {
         _running = false;
         shutdownVisitors( true );
         if( _executor != null ) _executor.join();
 
-        if( _shutdownHook != null ) {
+        if( !fromVM && _shutdownHook != null ) {
             Runtime.getRuntime().removeShutdownHook( _shutdownHook );
             _shutdownHook = null;
         }
@@ -99,7 +105,7 @@ public class VisitExecutor implements Closeable, Runnable
     public synchronized void close()
     {
         try {
-            shutdown();
+            shutdown( false );
         }
         catch( InterruptedException x ) {
             _log.warn( "On executor shutdown: " + x );
@@ -314,7 +320,10 @@ public class VisitExecutor implements Closeable, Runnable
         public void run()
         {
             _log.info( "Visitor shutdown hook closing" );
-            close();
+            try {
+                shutdown( true );
+            }
+            catch( InterruptedException x ) {}
         }
     }
 
