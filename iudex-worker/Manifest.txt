@@ -2,8 +2,9 @@ History.rdoc
 Manifest.txt
 README.rdoc
 Rakefile
-bin/iudex-worker
+bin/iudex-worker-fg
 config/config.rb
+init/iudex-worker
 lib/iudex-worker/base.rb
 lib/iudex-worker.rb
 lib/iudex-worker/agent.rb

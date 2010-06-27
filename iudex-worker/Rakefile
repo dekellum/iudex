@@ -27,15 +27,18 @@ t.specify do |h|
   h.rubyforge_name = "iudex"
 end
 
-task :check_history_version do
+task :chk_hist_vers do
   t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
 end
-task :check_history_date do
+task :chk_init_v do
+  t.test_line_match( 'init/iudex-worker', /^gem.+#{t.name}/, /= #{t.version}/ )
+end
+task :chk_hist_date do
   t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
 end
 
-task :gem  => [ :check_history_version                      ]
-task :tag  => [ :check_history_version, :check_history_date ]
-task :push => [                         :check_history_date ]
+task :gem  => [ :chk_hist_vers, :chk_init_v                 ]
+task :tag  => [ :chk_hist_vers, :chk_init_v, :chk_hist_date ]
+task :push => [                              :chk_hist_date ]
 
 t.define_tasks
