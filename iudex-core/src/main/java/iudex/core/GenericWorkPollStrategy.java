@@ -16,6 +16,11 @@
 
 package iudex.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gravitext.util.Metric;
+
 /**
  * Generic abstract WorkPollStrategy implementation.
  */
@@ -100,6 +105,12 @@ public abstract class GenericWorkPollStrategy
 
         pollWorkImpl( vq );
 
+        _highOrderCount = vq.orderCount();
+        _highHostCount = vq.hostCount();
+
+        _log.info( "Polled {} orders in {} hosts",
+                   _highOrderCount, _highHostCount );
+
         return vq;
     }
 
@@ -124,21 +135,48 @@ public abstract class GenericWorkPollStrategy
     {
         if( current == null ) return 0;
 
-        //FIXME: Refactor: move VisitQueue.*RemainingRatio's to here.
+        final int oCount = current.orderCount();
+        final int hCount = current.hostCount();
+        final float oRatio = ratio( oCount, _highOrderCount );
+        final float hRatio = ratio( hCount, _highHostCount );
 
-        if( ( current.orderCount() == 0 ) ||
-            ( current.hostRemainingRatio() < _minHostRemainingRatio ) ||
-            ( current.orderRemainingRatio() < _minOrderRemainingRatio ) ) {
-            return Math.max( 0, _minPollInterval - elapsed );
+        long wait = 0;
+
+        if( ( oCount == 0 ) ||
+            ( hRatio < _minHostRemainingRatio ) ||
+            ( oRatio < _minOrderRemainingRatio ) ) {
+            wait = Math.max( 0, _minPollInterval - elapsed );
+        }
+        else {
+            wait = Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
+        }
+        if( ( wait > 0 ) && _log.isDebugEnabled() ) {
+            _log.debug( "orders {} ({}), hosts {} ({}); wait {}s",
+                        new Object[] { Metric.format( oCount ),
+                                       Metric.formatDifference( oRatio ),
+                                       Metric.format( hCount ),
+                                       Metric.formatDifference( hRatio ),
+                                       Metric.format( (double) wait /
+                                                      1000d ) } );
         }
 
-        return Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
+        return wait;
+    }
+
+    protected float ratio( int count, int highMark )
+    {
+        return ( ( (float) count ) / ( (float) highMark ) );
     }
 
     private long _minPollInterval  =      15 * 1000; //15sec
     private long _maxCheckInterval =      60 * 1000; //1min;
     private long _maxPollInterval  = 10 * 60 * 1000; //10min
 
+    private int _highHostCount = 0;
+    private int _highOrderCount = 0;
+
     private float _minHostRemainingRatio  = 0.25f;
     private float _minOrderRemainingRatio = 0.10f;
+
+    private Logger _log = LoggerFactory.getLogger( getClass() );
 }

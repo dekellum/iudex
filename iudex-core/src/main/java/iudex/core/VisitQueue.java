@@ -35,17 +35,12 @@ public class VisitQueue
         for( UniMap order : orders ) {
             privAdd( order );
         }
-        _highHostCount = hostCount();
-        _highOrderCount = orderCount();
-
         notifyAll();
     }
 
     public synchronized void add( UniMap order )
     {
         privAdd( order );
-        _highHostCount = hostCount();
-        _highOrderCount = orderCount();
         notifyAll();
     }
 
@@ -58,28 +53,12 @@ public class VisitQueue
     }
 
     /**
-     * Return ratio of total visit orders remaining since last add or addAll().
-     */
-    public synchronized float orderRemainingRatio()
-    {
-        return ( ( (float) orderCount() ) / ( (float) _highOrderCount ) );
-    }
-
-    /**
      * Return the total number of unique hosts for which there is at
      * least one visit order.
      */
     public synchronized int hostCount()
     {
         return _hosts.size();
-    }
-
-    /**
-     * Return ratio of unique hosts remaining since last add or addAll().
-     */
-    public synchronized float hostRemainingRatio()
-    {
-        return ( ( (float) hostCount() ) / ( (float) _highHostCount ) );
     }
 
     /**
@@ -169,8 +148,6 @@ public class VisitQueue
     }
 
     private int _orderCount = 0;
-    private int _highHostCount = 0;
-    private int _highOrderCount = 0;
 
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>();
