@@ -17,6 +17,7 @@
 require 'gravitext-util'
 require 'iudex-http'
 require 'iudex-filter'
+require 'iudex-barc'
 
 require 'iudex-core/base'
 require 'iudex-core/config'
@@ -30,6 +31,7 @@ module Iudex
     import 'iudex.core.VisitURL'
 
     module Filters
+      import 'iudex.core.filters.BARCWriter'
       import 'iudex.core.filters.ContentFetcher'
       import 'iudex.core.filters.DateChangeFilter'
       import 'iudex.core.filters.FutureDateFilter'
