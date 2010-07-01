@@ -24,5 +24,8 @@ require 'iudex-barc/base'
 module Iudex
   module BARC
     require "#{LIB_DIR}/iudex-barc-#{VERSION}.jar"
+
+    import 'iudex.barc.BARCDirectory'
+    import 'iudex.barc.BARCFile'
   end
 end
