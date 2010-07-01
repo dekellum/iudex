@@ -17,6 +17,8 @@
 require 'iudex-filter'
 require 'iudex-filter/filter_chain_factory'
 
+require 'iudex-barc'
+
 require 'iudex-core'
 
 require 'iudex-da'
@@ -29,6 +31,7 @@ module Iudex
 
     class FilterChainFactory < Iudex::Filter::Core::FilterChainFactory
       include Iudex::Filter::Core
+      include Iudex::BARC
       include Iudex::Core
       include Iudex::Core::Filters
       include Iudex::DA::Filters::FactoryHelper
@@ -112,6 +115,18 @@ module Iudex
       end
 
       def page_receiver
+        [ barc_writer ]
+      end
+
+      def barc_writer
+        bw = BARCWriter.new( barc_directory )
+        bw.do_compress = true
+        bw
+      end
+
+      def barc_directory
+        bdir = BARCDirectory.new( Java::java.io.File.new( "./barc" ) )
+        bdir
       end
 
     end
