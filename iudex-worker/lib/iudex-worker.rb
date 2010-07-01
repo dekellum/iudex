@@ -20,6 +20,7 @@ require 'iudex-worker/base'
 
 module Iudex
   module Worker
+  end
 
   module Core
     module Config
@@ -31,7 +32,7 @@ module Iudex
       end
 
       def self.do_agent( agent )
-        @agent_proc.call( agent ) if @filter_factory_proc
+        @agent_proc.call( agent ) if @agent_proc
       end
 
       def self.setup_filter_factory( &block )
@@ -44,7 +45,6 @@ module Iudex
     end
   end
 
-  end
 end
 
 require 'iudex-worker/agent'
