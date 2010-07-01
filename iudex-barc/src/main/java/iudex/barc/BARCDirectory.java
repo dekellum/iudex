@@ -91,7 +91,7 @@ public final class BARCDirectory implements Closeable
     public synchronized void close() throws IOException
     {
         for( BARCFile bfile : _barcs ) {
-            bfile.close();
+            if( bfile != null ) bfile.close();
         }
         _barcs.clear();
         _writeFile = null;
