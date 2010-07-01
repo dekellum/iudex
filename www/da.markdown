@@ -5,10 +5,10 @@ layout: sub
 
 ## Provides:
 
-* A PostgreSQL-based content meta-data store
-* JRuby/ActiveRecord based schema definition and migration
+* A PostgreSQL-based content summary data store
 * A politeness-aware persistent priority queue using SQL:2003
   Window Functions
+* JRuby/ActiveRecord based schema definition and migration
 * A high performance thread-safe Java JDBC-based and extensible Data Access Layer
 
 ## Postgresql Setup
