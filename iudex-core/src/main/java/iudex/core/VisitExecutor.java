@@ -59,7 +59,7 @@ public class VisitExecutor implements Closeable, Runnable
         _doWaitOnGeneration = doWaitOnGeneration;
     }
 
-    public void start()
+    public synchronized void start()
     {
         if( _executor != null ) {
             throw new IllegalStateException( "Executor already started." );
@@ -71,6 +71,8 @@ public class VisitExecutor implements Closeable, Runnable
             _shutdownHook = new ShutdownHook();
             Runtime.getRuntime().addShutdownHook( _shutdownHook );
         }
+
+        _shutdown = false;
 
         _executor.start();
     }
@@ -170,16 +172,37 @@ public class VisitExecutor implements Closeable, Runnable
         }
     }
 
-    private synchronized void shutdown( boolean fromVM )
+    private void shutdown( boolean fromVM )
         throws InterruptedException
     {
-        _running = false;
-        shutdownVisitors( true );
-        if( _executor != null ) _executor.join();
+        Thread executor = null;
 
-        if( !fromVM && ( _shutdownHook != null ) ) {
-            Runtime.getRuntime().removeShutdownHook( _shutdownHook );
-            _shutdownHook = null;
+        synchronized( this ) {
+            _running = false;
+            _shutdown = true;
+            notifyAll();
+            shutdownVisitors( true );
+            executor = _executor;
+        }
+
+        if( executor != null ) {
+            executor.join( _maxShutdownWait );
+        }
+
+        synchronized( this ) {
+            if( _executor != null ) {
+                _log.warn(  "Executor not exiting: interrupt" );
+                _executor.interrupt();
+            }
+        }
+
+        if( !fromVM ) {
+            synchronized( this ) {
+                if( _shutdownHook != null ) {
+                    Runtime.getRuntime().removeShutdownHook( _shutdownHook );
+                    _shutdownHook = null;
+                }
+            }
         }
     }
 
@@ -203,8 +226,6 @@ public class VisitExecutor implements Closeable, Runnable
             }
 
             try {
-                _shutdown = true;
-
                 waitForVisitorExit( _maxShutdownWait );
 
                 if( _visitors.size() > 0 ) {
@@ -217,9 +238,6 @@ public class VisitExecutor implements Closeable, Runnable
             }
             catch( InterruptedException x ) {
                 _log.warn( "Shutdown interrupted: " + x );
-            }
-            finally {
-                _shutdown = false;
             }
         }
     }
@@ -321,6 +339,8 @@ public class VisitExecutor implements Closeable, Runnable
             _log.info( "Visitor shutdown hook closing" );
             try {
                 shutdown( true );
+                //FIXME: Need a better solution for allow main to exit.
+                Thread.sleep( 1000 );
             }
             catch( InterruptedException x ) {
                 _log.warn( "On shutdown: " + x );
@@ -341,7 +361,7 @@ public class VisitExecutor implements Closeable, Runnable
     private Thread _executor              = null;
     private ShutdownHook _shutdownHook    = null;
     private volatile boolean _running     = false;
-    private volatile boolean _shutdown    = false;
+    private volatile boolean _shutdown    = true;
 
     private long _lastPollTime            = 0;
     private int _generation               = 0;
