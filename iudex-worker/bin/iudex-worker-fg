@@ -19,20 +19,29 @@
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
-require 'rubygems'
-require 'rjack-logback'
-RJack::Logback.config_console( :mdc => "uhash", :thread => true )
+module IudexBinScript
 
-require 'iudex-worker'
+  require 'rubygems'
+  require 'rjack-logback'
 
-Iudex::Core::Config.parse_options do |opts|
-  opts.on( "-v", "--version", "Display version" ) do |file|
-    puts "iudex-worker: #{Iudex::Worker::VERSION}"
+  include RJack
+  Logback.config_console( :mdc => "uhash", :thread => true )
+
+  require 'iudex-worker'
+
+  include Iudex
+
+  Core::Config.parse_options do |opts|
+    opts.on( "-v", "--version", "Display version" ) do |file|
+      puts "iudex-worker: #{Worker::VERSION}"
+      exit 1
+    end
+    opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
+      Logback[ 'iudex' ].level = Logback::DEBUG
+    end
   end
-  opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
-    RJack::Logback[ 'iudex' ].level = RJack::Logback::DEBUG
-  end
+
+  agent = Worker::Agent.new
+  agent.run
+
 end
-
-agent = Iudex::Worker::Agent.new
-agent.run
