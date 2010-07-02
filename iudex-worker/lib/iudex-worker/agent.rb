@@ -51,7 +51,9 @@ module Iudex
         data_source = dsf.create
 
         cmapper = ContentMapper.new( kmap( poll_keys ) )
+
         wpoller = WorkPoller.new( data_source, cmapper )
+        Config.do_work_poller( wpoller )
 
         mgr = Config.do_http_client_3
         mgr.start

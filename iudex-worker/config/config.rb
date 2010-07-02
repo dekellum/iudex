@@ -23,17 +23,23 @@ module LocalIudexConfig
       vx.min_host_delay = 1 #ms : none!
     end
 
+    c.setup_work_poller do |wp|
+      wp.min_order_remaining_ratio = 0.30
+      wp.max_check_interval = 10 #ms !
+      wp.min_poll_interval = 30 #ms
+    end
+
     c.setup_filter_factory do |ff|
 
       def ff.barc_writer
         bw = super
-        bw.do_compress = false
+        bw.do_compress = true
         bw
       end
 
       def ff.barc_directory
         bdir = super
-        bdir.target_length = 64 * 1024
+        bdir.target_length = 2 * ( 1024 ** 2 )
         bdir
       end
 

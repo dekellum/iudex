@@ -26,6 +26,7 @@ module Iudex
     module Config
       @agent_proc = nil
       @filter_factory_proc = nil
+      @work_poller_proc = nil
 
       def self.setup_agent( &block )
         @agent_proc = block
@@ -42,6 +43,15 @@ module Iudex
       def self.do_filter_factory( filter_factory )
         @filter_factory_proc.call( filter_factory ) if @filter_factory_proc
       end
+
+      def self.setup_work_poller( &block )
+        @work_poller_proc = block
+      end
+
+      def self.do_work_poller( work_poller )
+        @work_poller_proc.call( work_poller ) if @work_poller_proc
+      end
+
     end
   end
 
