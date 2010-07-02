@@ -188,7 +188,7 @@ public final class BARCDirectory implements Closeable
 
     private final File _path;
 
-    private long _targetBARCLength = 1L * ( 1024L ^ 3 ); //1GB
+    private long _targetBARCLength = 0x40000000L; //1GB
     private BARCFile _writeFile = null;
     private WriteSession _currentSession = null;
 
