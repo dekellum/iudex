@@ -56,7 +56,7 @@ public final class BARCDirectory implements Closeable
      *  Set target length after which new BARCFile will be opened for write.
      *  Default: 1GB
      */
-    public void setTargetBARCLength( long length )
+    public void setTargetLength( long length )
     {
         _targetBARCLength = length;
     }

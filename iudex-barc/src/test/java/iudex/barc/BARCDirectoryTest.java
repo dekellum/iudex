@@ -63,7 +63,7 @@ public class BARCDirectoryTest
     @Test
     public void testConcurrentWrite() throws IOException
     {
-        _barcs.setTargetBARCLength( 200 ); //~3 records/file
+        _barcs.setTargetLength( 200 ); //~3 records/file
 
         long count = TestExecutor.run( new ConcurrentWriter(), 200, 3 );
         _log.debug( "Completed threaded run with {} iterations.", count );
