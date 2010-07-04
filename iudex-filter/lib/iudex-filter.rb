@@ -30,6 +30,7 @@ module Iudex
 
     module Core
       import 'iudex.filter.core.ByFilterReporter'
+      import 'iudex.filter.core.Copier'
       import 'iudex.filter.core.FilterChain'
       import 'iudex.filter.core.FilterIndex'
       import 'iudex.filter.core.ListenerChain'
