@@ -23,10 +23,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
+
+import static iudex.core.ContentKeys.*;
 
 /**
  * Filter that removes a date value if it is beyond a specified grace
@@ -63,25 +64,17 @@ public final class FutureDateFilter implements Filter, Described
     {
         final Date date = content.get( _field );
         if( date != null ) {
+            final long start = content.get( VISIT_START ).getTime();
             final long time = date.getTime();
 
-            // If this date is before some previously obtained "now" +
-            // grace, then its known good, otherwise recheck with an
-            // updated "now."
-            if( time > ( _lazyNow.get() + _grace ) ) {
-                final long now = System.currentTimeMillis();
-                _lazyNow.set( now );
-                if( time > ( now + _grace ) ) {
-                    content.remove( _field );
-                }
+            if( time > ( start + _grace ) ) {
+                content.remove( _field );
             }
         }
         return true;
     }
 
     private final Key<Date> _field;
-    private final AtomicLong _lazyNow =
-        new AtomicLong( System.currentTimeMillis() );
     private long _grace; // milliseconds
 
 }

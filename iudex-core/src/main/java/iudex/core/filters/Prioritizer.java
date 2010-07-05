@@ -37,12 +37,28 @@ public class Prioritizer implements Filter, Described
     @Override
     public boolean filter( UniMap content )
     {
-        //FIXME: Simple place holder impl.
-        content.set( PRIORITY, 0.5f );
+        //FIXME: Keep as simple place holder impl?
+
+        Float priority = content.get( PRIORITY );
+        if( priority == null ) content.set( PRIORITY, 1.0f );
+
+        content.set( PRIORITY, adjustPriority( content ) );
+
+        Date start = content.get( VISIT_START );
         content.set( NEXT_VISIT_AFTER,
-                     new Date( System.currentTimeMillis() ) );
+                     new Date( start.getTime() + visitDelta( content ) ) );
 
         return true;
+    }
+
+    public float adjustPriority( UniMap content )
+    {
+        return content.get( PRIORITY );
+    }
+
+    public long visitDelta( UniMap content )
+    {
+        return 0;
     }
 
     @Override
