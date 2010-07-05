@@ -16,6 +16,7 @@ lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
 lib/iudex-da/factory_helper.rb
+lib/iudex-da/key_helper.rb
 lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
 test/test_poll_work.rb

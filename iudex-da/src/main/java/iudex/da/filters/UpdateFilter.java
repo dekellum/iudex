@@ -17,9 +17,7 @@
 package iudex.da.filters;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -46,13 +44,17 @@ import static iudex.da.DataAccessKeys.*;
  */
 public class UpdateFilter implements FilterContainer
 {
-    public UpdateFilter( DataSource source, List<Key> fields )
+    public UpdateFilter( DataSource source, ContentMapper mapper )
     {
-        _dsource = source;
+        for( Key req : REQUIRED_KEYS ) {
+            if( ! mapper.fields().contains( req ) ) {
+                throw new IllegalArgumentException(
+                   "UpdateFilter needs mapper with " + req + " included." );
+            }
+        }
 
-        LinkedHashSet<Key> mergedKeys = new LinkedHashSet<Key>( BASE_KEYS );
-        mergedKeys.addAll( fields );
-        _mapper = new ContentMapper( new ArrayList<Key>( mergedKeys ) );
+        _dsource = source;
+        _mapper = mapper;
     }
 
     public void setUpdateRefFilter( FilterContainer updateRefFilter )
@@ -77,7 +79,7 @@ public class UpdateFilter implements FilterContainer
     public void update( UniMap content ) throws SQLException
     {
         ContentUpdater updater =
-            new ContentUpdater( _dsource, _mapper, new FeedTransformer() );
+            new ContentUpdater( _dsource, _mapper, new UpdateTransformer() );
 
         updater.update( content );
     }
@@ -101,7 +103,7 @@ public class UpdateFilter implements FilterContainer
         return true;
     }
 
-    private final class FeedTransformer extends BaseTransformer
+    private final class UpdateTransformer extends BaseTransformer
     {
 
         @Override
@@ -153,13 +155,8 @@ public class UpdateFilter implements FilterContainer
         _contentFilter.close();
     }
 
-    private static final List<Key> BASE_KEYS =
-        Arrays.asList( new Key[] { UHASH, HOST, URL,
-                                   TYPE,
-                                   REF_PUB_DATE,
-                                   PRIORITY,
-                                   NEXT_VISIT_AFTER,
-                                   REFERER } );
+    private static final List<Key> REQUIRED_KEYS =
+        Arrays.asList( new Key[] { UHASH } );
 
     private DataSource _dsource;
     private ContentMapper _mapper;
@@ -170,5 +167,4 @@ public class UpdateFilter implements FilterContainer
 
     protected static final Logger _log =
         LoggerFactory.getLogger( UpdateFilter.class );
-
 }

@@ -20,16 +20,27 @@ import iudex.core.GenericWorkPollStrategy;
 import iudex.core.VisitQueue;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
+
+import static iudex.core.ContentKeys.*;
 
 public class WorkPoller extends GenericWorkPollStrategy
 {
     public WorkPoller( DataSource dataSource, ContentMapper mapper )
     {
+        for( Key req : REQUIRED_KEYS ) {
+            if( ! mapper.fields().contains( req ) ) {
+                throw new IllegalArgumentException(
+                   "WorkPoller needs mapper with " + req + " included." );
+            }
+        }
+
         _contentReader = new ContentReader( dataSource, mapper );
     }
 
@@ -91,6 +102,9 @@ public class WorkPoller extends GenericWorkPollStrategy
     "              WHERE next_visit_after <= now() ) AS sub1 ) as sub2 " +
     "WHERE apos <= ? " +
     "ORDER BY host, priority DESC; ";
+
+    private static final List<Key> REQUIRED_KEYS =
+        Arrays.asList( new Key[] { URL, PRIORITY, NEXT_VISIT_AFTER } );
 
     private final ContentReader _contentReader;
     private float _hostDepthDivisor = 8.0f;
