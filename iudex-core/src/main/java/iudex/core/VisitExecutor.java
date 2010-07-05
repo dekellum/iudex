@@ -137,6 +137,10 @@ public class VisitExecutor implements Closeable, Runnable
         long now = System.currentTimeMillis();
         long delta = 0;
 
+        if( _shutdown ) {
+            return 100;
+        }
+
         if( _visitQ != null ) {
             delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
         }
@@ -178,10 +182,12 @@ public class VisitExecutor implements Closeable, Runnable
         Thread executor = null;
 
         synchronized( this ) {
+            _shutdown = true;         //Avoid more visitors
+            shutdownVisitors( true ); //wait
+
+            //Shutdown executor
             _running = false;
-            _shutdown = true;
             notifyAll();
-            shutdownVisitors( true );
             executor = _executor;
         }
 
