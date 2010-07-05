@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-da'
+require 'iudex-da/key_helper'
 require 'iudex-da/pool_data_source_factory'
 
 require 'iudex-httpclient-3'
@@ -27,6 +28,7 @@ module Iudex
 
     class Agent
       include Iudex::DA
+      include Iudex::DA::KeyHelper
       include Iudex::Core
       include Iudex::HTTPClient3
       include Iudex::Worker
@@ -37,20 +39,14 @@ module Iudex
       end
 
       def poll_keys
-        [ :uhash,
-          :host,
-          :url,
-          :type,
-          :ref_pub_date,
-          :priority,
-          :next_visit_after ]
+        [ :url, :type, :priority, :next_visit_after ]
       end
 
       def run
         dsf = PoolDataSourceFactory.new
         data_source = dsf.create
 
-        cmapper = ContentMapper.new( kmap( poll_keys ) )
+        cmapper = ContentMapper.new( keys( poll_keys ) )
 
         wpoller = WorkPoller.new( data_source, cmapper )
         Config.do_work_poller( wpoller )
@@ -74,15 +70,6 @@ module Iudex
         mgr.shutdown
         dsf.close
 
-      end
-
-      #FIXME: Push down to filter or gravitext.util?
-      def kmap( keys )
-        keys.map do |ks|
-          ContentMapper::LOGICAL_KEYS.get( ks.to_s ) or
-            UniMap::KEY_SPACE.get( ks.to_s ) or
-            raise( "Key #{ks} not found" )
-        end
       end
 
     end

@@ -51,7 +51,10 @@ module Iudex
       end
 
       def filters
-        [ UHashMDCSetter.new ] + super + [ type_switch ]
+        [ UHashMDCSetter.new,
+          DefaultFilter.new,
+          super,
+          type_switch ].flatten
       end
 
       def listeners
@@ -64,7 +67,7 @@ module Iudex
       end
 
       def type_switch( tmap = type_map )
-        create_switch( ContentKeys::TYPE, tmap )
+        create_switch( :type.to_k, tmap )
       end
 
       def feed_fetcher
@@ -77,45 +80,51 @@ module Iudex
 
       def feed_receiver
         [ RomeFeedParser.new,
+          DefaultFilter.new,
           DateChangeFilter.new( false ),
           feed_updater ]
       end
 
       def feed_updater
-        create_update_filter( :feed_ref_update, :feed_ref_new, :feed_post,
-                              more_feed_update_fields )
+        create_update_filter( keys( feed_update_keys ),
+                              :feed_post, :feed_ref_update, :feed_ref_new )
       end
 
       def feed_ref_update
         [ UHashMDCSetter.new,
           DateChangeFilter.new( true ),
-          Prioritizer.new( "feed-ref-update" ) ] +
-          ref_common_cleanup
+          Prioritizer.new( "feed-ref-update" ),
+          ref_common_cleanup ].flatten
       end
 
       def feed_ref_new
         [ UHashMDCSetter.new,
-          Prioritizer.new( "feed-ref-new" ) ] +
-          ref_common_cleanup
+          Prioritizer.new( "feed-ref-new" ),
+          ref_common_cleanup ].flatten
       end
 
       def feed_post
         [ UHashMDCSetter.new,
-          Prioritizer.new( "feed-post" ) ] +
-          ref_common_cleanup
+          Prioritizer.new( "feed-post" ),
+          last_visit_setter,
+          ref_common_cleanup ].flatten
       end
 
       def ref_common_cleanup
-        [ TextCtrlWSFilter.new( ContentKeys::TITLE ),
-          FutureDateFilter.new( ContentKeys::PUB_DATE ) ]
+        [ TextCtrlWSFilter.new( :title.to_k ),
+          FutureDateFilter.new( :pub_date.to_k ) ]
       end
 
-      def more_feed_update_fields
-        []
+      def feed_update_keys
+        [ :uhash, :host, :url, :type,
+          :ref_pub_date, :pub_date,
+          :priority, :last_visit, :next_visit_after,
+          :referer ]
       end
 
       def page_receiver
-        [ barc_writer ]
+        [ barc_writer,
+          page_updater ]
       end
 
       def barc_writer
@@ -127,6 +136,26 @@ module Iudex
       def barc_directory
         bdir = BARCDirectory.new( Java::java.io.File.new( "./barc" ) )
         bdir
+      end
+
+      def page_updater
+        create_update_filter( keys( page_update_keys ), :page_post )
+      end
+
+      def page_post
+        [ Prioritizer.new( "page-post" ),
+          last_visit_setter ]
+      end
+
+      def page_update_keys
+        [ :uhash, :host, :url, :type,
+          :ref_pub_date, :pub_date,
+          :priority, :last_visit, :next_visit_after,
+          :referer ]
+      end
+
+      def last_visit_setter
+        Copier.new( *keys( :visit_start, :last_visit ) )
       end
 
     end
