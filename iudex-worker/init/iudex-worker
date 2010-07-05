@@ -26,12 +26,17 @@ require 'rubygems'
 
 gem( "iudex-worker", "= 1.0.0" )
 
-require 'rjack-logback'
-RJack::Logback.config_console( :full => true, :thread => true, :mdc => "uhash" )
+module IudexInitScript
 
-require 'iudex-worker'
+  require 'rjack-logback'
+  include RJack
+  Logback.config_console( :full => true, :thread => true, :mdc => "uhash" )
 
-Iudex::Core::Config.parse_options
+  require 'iudex-worker'
+  include Iudex
+  Core::Config.parse_options
 
-agent = Iudex::Worker::Agent.new
-agent.run
+  agent = Worker::Agent.new
+  agent.run
+
+end
