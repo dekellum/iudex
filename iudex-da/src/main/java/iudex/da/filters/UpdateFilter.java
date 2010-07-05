@@ -77,8 +77,7 @@ public class UpdateFilter implements FilterContainer
     public void update( UniMap content ) throws SQLException
     {
         ContentUpdater updater =
-            new ContentUpdater( _dsource, _mapper,
-                                new FeedTransformer( content ) );
+            new ContentUpdater( _dsource, _mapper, new FeedTransformer() );
 
         updater.update( content );
     }
@@ -105,11 +104,6 @@ public class UpdateFilter implements FilterContainer
     private final class FeedTransformer extends BaseTransformer
     {
 
-        public FeedTransformer( UniMap content )
-        {
-            _content = content;
-        }
-
         @Override
         public UniMap transformContent( UniMap updated, UniMap current )
         {
@@ -129,7 +123,6 @@ public class UpdateFilter implements FilterContainer
             UniMap out = merge( updated, current );
 
             out.set( CURRENT, current );
-            out.set( REFERER, _content );
 
             if( current == null ) {
                 if(    _newRefFilter.filter( out ) ) ++_newReferences;
@@ -142,7 +135,6 @@ public class UpdateFilter implements FilterContainer
             return out;
         }
 
-        private UniMap _content;
         private int _newReferences = 0;
         private int _updatedReferences = 0;
     }
