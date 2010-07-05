@@ -89,9 +89,6 @@ public class ContentKeys
     public static final Key<Date> VISIT_START =
         create( "visit_start", Date.class );
 
-    /**
-     * FIXME: Or single "REFERENT" Key<Content>?
-     */
     public static final Key<List<UniMap>> REFERENCES =
         createListKey( "references" );
 
