@@ -84,7 +84,8 @@ public class ContentKeys
         create( "content", ContentSource.class );
 
     /**
-     * Start of visit processing.
+     * Start of processing. Inherited from REFERER on REFERENCES. Used as
+     * "now" in most processing contexts.
      */
     public static final Key<Date> VISIT_START =
         create( "visit_start", Date.class );
