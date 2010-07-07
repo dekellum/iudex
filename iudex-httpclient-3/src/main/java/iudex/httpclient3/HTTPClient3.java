@@ -137,6 +137,11 @@ public class HTTPClient3 implements HTTPClient
 
                 int code = _client.executeMethod( _httpMethod );
                 if( ( code >= 200 ) && ( code < 300 ) ) {
+
+                    // Record possibly redirected URL.
+                    String newUrl = _httpMethod.getURI().toString();
+                    setUrl( newUrl );
+
                     handler.handleSuccess( this );
                 }
                 else {
