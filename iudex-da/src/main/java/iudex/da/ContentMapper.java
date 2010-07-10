@@ -110,12 +110,12 @@ public final class ContentMapper
             else if( ( key == UHASH ) || ( key == HOST ) ) {
                 // ignore on input
             }
-            else if( key == REFERER ) {
+            else if( ( key == REFERER ) || ( key == REFERENT ) ) {
                 String uhash = rset.getString( i );
                 if( uhash != null ) {
                     UniMap ref = new UniMap();
                     ref.set( URL, VisitURL.fromHash( uhash ) );
-                    content.set( REFERER, ref );
+                    content.put( key, ref );
                 }
             }
             else {
@@ -179,10 +179,10 @@ public final class ContentMapper
             if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
                 stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
-            else if( key == REFERER ) {
-                UniMap ref = content.get( REFERER );
-                stmt.setString( i,
-                                (ref != null) ? ref.get( URL ).uhash() : null );
+            else if( ( key == REFERER ) || ( key == REFERENT ) ) {
+                UniMap ref = (UniMap) content.get( key );
+                stmt.setString( i, (ref != null) ? ref.get( URL ).uhash()
+                                                   : null );
             }
             else {
                 stmt.setObject( i, convert( key, content.get( key ) ) );

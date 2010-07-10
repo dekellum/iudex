@@ -65,6 +65,12 @@ public class ContentUpdater
                 update( refs, conn );
             }
 
+            UniMap referer = content.get( ContentKeys.REFERER );
+            if( referer != null ) {
+                //FIXME: Really sufficient as same path as content?
+                update( referer, conn );
+            }
+
             update( content, conn );
 
             conn.commit();
