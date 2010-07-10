@@ -52,29 +52,29 @@ public class HTTPClient3 implements HTTPClient
 
     private class Session extends HTTPSession
     {
+        public void addRequestHeader( Header header )
+        {
+            _requestedHeaders.add( header );
+        }
+
         public List<Header> requestHeaders()
         {
-            org.apache.commons.httpclient.Header[] inHeaders =
-                _httpMethod.getRequestHeaders();
-            List<Header> outHeaders =
-                new ArrayList<Header>( inHeaders.length + 1 );
+            if( _httpMethod != null ) {
 
-            outHeaders.add( new Header( "Request-Line",
-                                        reconstructRequestLine() ) );
+                org.apache.commons.httpclient.Header[] inHeaders =
+                    _httpMethod.getRequestHeaders();
+                List<Header> outHeaders =
+                    new ArrayList<Header>( inHeaders.length + 1 );
 
-            copyHeaders( inHeaders, outHeaders );
+                outHeaders.add( new Header( "Request-Line",
+                                            reconstructRequestLine() ) );
 
-            return outHeaders;
+                copyHeaders( inHeaders, outHeaders );
 
-            //FIXME: Adapter? Lazy Cache?
+                return outHeaders;
+            }
+            return _requestedHeaders;
         }
-
-        /* FIXME: Final Url?
-        public URI uri() throws URIException
-        {
-            return _httpMethod.getURI();
-        }
-        */
 
         public int responseCode()
         {
@@ -133,15 +133,18 @@ public class HTTPClient3 implements HTTPClient
                 else if( method() == Method.HEAD ) {
                     _httpMethod = new HeadMethod( url() );
                 }
-                //FIXME: Set Headers from session?
+
+                for( Header h : _requestedHeaders ) {
+                    _httpMethod.addRequestHeader( h.name().toString(),
+                                                  h.value().toString() );
+                }
 
                 int code = _client.executeMethod( _httpMethod );
+
+                // Record possibly redirected URL.
+                setUrl( _httpMethod.getURI().toString() );
+
                 if( ( code >= 200 ) && ( code < 300 ) ) {
-
-                    // Record possibly redirected URL.
-                    String newUrl = _httpMethod.getURI().toString();
-                    setUrl( newUrl );
-
                     handler.handleSuccess( this );
                 }
                 else {
@@ -176,11 +179,9 @@ public class HTTPClient3 implements HTTPClient
             return outHeaders;
         }
 
-        HttpMethod _httpMethod;
+        private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
+        private HttpMethod _httpMethod = null;
     }
-
-    // FIXME: Conditional GET (If-Modified-Since, ETags?)
-    // FIXME: Record all redirects
 
     private HttpClient _client;
 }
