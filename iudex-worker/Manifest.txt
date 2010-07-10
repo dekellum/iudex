@@ -8,6 +8,7 @@ init/iudex-worker
 lib/iudex-worker/base.rb
 lib/iudex-worker.rb
 lib/iudex-worker/agent.rb
+lib/iudex-worker/fetch_helper.rb
 lib/iudex-worker/filter_chain_factory.rb
 test/setup.rb
 test/test_filter_chain_factory.rb

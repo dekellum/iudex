@@ -26,6 +26,9 @@ require 'iudex-da/factory_helper'
 
 require 'iudex-rome'
 
+require 'iudex-worker'
+require 'iudex-worker/fetch_helper'
+
 module Iudex
   module Worker
 
@@ -34,8 +37,10 @@ module Iudex
       include Iudex::BARC
       include Iudex::Core
       include Iudex::Core::Filters
-      include Iudex::DA::Filters::FactoryHelper
       include Iudex::ROME
+
+      include Iudex::DA::Filters::FactoryHelper
+      include FetchHelper
 
       attr_accessor :http_client
       attr_accessor :data_source
@@ -71,11 +76,11 @@ module Iudex
       end
 
       def feed_fetcher
-        [ ContentFetcher.new( http_client, create_chain( :feed_receiver ) ) ]
+        [ create_content_fetcher( feed_mime_types, :feed_receiver ) ]
       end
 
       def page_fetcher
-        [ ContentFetcher.new( http_client, create_chain( :page_receiver ) ) ]
+        [ create_content_fetcher( page_mime_types, :page_receiver ) ]
       end
 
       def feed_receiver
@@ -118,7 +123,7 @@ module Iudex
       def feed_update_keys
         [ :uhash, :host, :url, :type,
           :ref_pub_date, :pub_date,
-          :priority, :last_visit, :next_visit_after,
+          :priority, :last_visit, :next_visit_after, :status, :etag,
           :referer ]
       end
 
@@ -150,7 +155,7 @@ module Iudex
       def page_update_keys
         [ :uhash, :host, :url, :type,
           :ref_pub_date, :pub_date,
-          :priority, :last_visit, :next_visit_after,
+          :priority, :last_visit, :next_visit_after, :status, :etag,
           :referer ]
       end
 

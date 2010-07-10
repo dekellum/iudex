@@ -39,7 +39,7 @@ module Iudex
       end
 
       def poll_keys
-        [ :url, :type, :priority, :next_visit_after ]
+        [ :url, :type, :priority, :next_visit_after, :last_visit, :etag ]
       end
 
       def run
