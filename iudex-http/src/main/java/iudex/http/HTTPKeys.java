@@ -28,4 +28,7 @@ public class HTTPKeys
 
     public static final Key<List<Header>> RESPONSE_HEADERS =
         UniMap.KEY_SPACE.createListKey( "response_headers" );
+
+    public static final Key<CharSequence> ETAG =
+        UniMap.KEY_SPACE.create( "etag", CharSequence.class );
 }

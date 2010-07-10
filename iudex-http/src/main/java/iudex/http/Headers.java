@@ -16,15 +16,19 @@
 
 package iudex.http;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Utility methods for List<Header>
  */
 public final class Headers
 {
-     public static Header getFirst( final List<Header> headers,
-                                    final String name )
+    public static Header getFirst( final List<Header> headers,
+                                   final String name )
     {
         for( Header h : headers ) {
             if( name.equalsIgnoreCase( h.name().toString() ) ) {
@@ -43,13 +47,13 @@ public final class Headers
         int length = -1;
         Header h = getFirst( headers, "Content-Length" );
         if( h != null ) {
-           try {
-               length = Integer.parseInt( h.value().toString().trim() );
-               if( length < -1 ) length = -1;
-           }
-           catch( NumberFormatException x ) {
-               //ignore
-           }
+            try {
+                length = Integer.parseInt( h.value().toString().trim() );
+                if( length < -1 ) length = -1;
+            }
+            catch( NumberFormatException x ) {
+                //ignore
+            }
         }
         return length;
     }
@@ -70,6 +74,20 @@ public final class Headers
         return null;
     }
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * Create a header from name and Date value in HTTP-date (1.1) format
+     * RFC 1123 (update/subset of RFC 822),.
+     */
+    public static Header createDateHeader( Object name, Date value )
+    {
+        // Create new each time for thread safety.
+        SimpleDateFormat df = new SimpleDateFormat( HTTP_DATE_FORM, Locale.US );
+        df.setTimeZone( TZ_GMT );
+        return new Header( name, df.format( value ) );
+    }
 
+    private static final String HTTP_DATE_FORM =
+        "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
+
+    private static final TimeZone TZ_GMT = TimeZone.getTimeZone( "GMT" );
 }
