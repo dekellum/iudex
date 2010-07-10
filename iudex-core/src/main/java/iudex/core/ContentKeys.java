@@ -96,6 +96,9 @@ public class ContentKeys
     public static final Key<UniMap> REFERER =
         create( "referer", UniMap.class );
 
+    public static final Key<UniMap> REFERENT =
+        create( "referent", UniMap.class );
+
     /**
      * The current state of content during a transform/update operation.
      */
