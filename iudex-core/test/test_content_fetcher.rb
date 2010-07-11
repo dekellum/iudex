@@ -154,6 +154,32 @@ class TestContentFetcher < MiniTest::Unit::TestCase
     end
   end
 
+  import "java.net.UnknownHostException"
+  import "java.io.IOException"
+
+  def test_connect_error
+    client = MockHTTPClient.new
+    def client.create_session
+      s = MockSession.new
+      def s.execute( handler )
+        handler.handle_exception( self,
+                                  UnknownHostException.new( "foobar.com" ) )
+      end
+      def s.responseCode
+        nil
+      end
+      def s.responseHeaders
+        nil
+      end
+      s
+    end
+    fetch( create_content, client ) do |out|
+      assert_equal( -1, out.status )
+      assert_nil( out.response_headers )
+      assert( out.reason =~ /UnknownHostException/ )
+    end
+  end
+
   def fetch( content, client = MockHTTPClient.new, &block )
     rec = TestReceiver.new( &block )
     cf = ContentFetcher.new( client,

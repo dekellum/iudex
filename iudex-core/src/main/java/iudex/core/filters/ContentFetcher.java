@@ -218,6 +218,7 @@ public class ContentFetcher implements AsyncFilterContainer
         {
             _content.set( STATUS, -1 );
             setHTTPValues( session );
+            _content.set( REASON, "i.c.f.ContentFetcher: " + x.toString() );
             super.handleException( session, x );
             _receiver.filter( _content );
         }

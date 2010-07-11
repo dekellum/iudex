@@ -30,7 +30,8 @@ public class BaseResponseHandler implements ResponseHandler
             handleSuccessUnsafe( session );
         }
         catch( IOException x ) {
-            _log.warn( "From handleSuccess() of Url: " + session.url(), x );
+            _log.warn( "Url: {} :: {}",  session.url(), x.toString() );
+            _log.debug( "Stack dump: ", x );
         }
         finally {
             closeSession( session );
@@ -48,7 +49,8 @@ public class BaseResponseHandler implements ResponseHandler
     @Override
     public void handleException( HTTPSession session, Exception x )
     {
-        _log.warn( "Url: " + session.url(), x );
+        _log.warn( "Url: {} :: {}", session.url(), x.toString() );
+        _log.debug( "Stack Trace: ", x );
         closeSession( session );
     }
 
