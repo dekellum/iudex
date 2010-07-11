@@ -85,6 +85,7 @@ public class ContentFetcher implements AsyncFilterContainer
         HTTPSession session = _client.createSession();
         session.setMethod( HTTPSession.Method.GET );
         session.setUrl( content.get( URL ).toString() );
+        //FIXME: Abort if no URL?
 
         CharSequence etag = content.get( ETAG );
         if( etag != null ) {
@@ -150,7 +151,9 @@ public class ContentFetcher implements AsyncFilterContainer
                 }
             }
 
-            if( !testContentType( session ) ) {
+            ContentType ctype = Headers.contentType( session.responseHeaders() );
+
+            if( !testContentType( ctype ) ) {
                 safeAbort( session );
                 handleError( session, -20 );
                 return;
@@ -192,10 +195,13 @@ public class ContentFetcher implements AsyncFilterContainer
                 ContentSource cs =
                     new ContentSource( buffer.flipAsByteBuffer() );
 
+                // Set default encoding
                 Charset encoding = null;
-                String eName = Headers.contentType( headers ).charset();
-                if( eName != null ) {
-                    encoding = lookupCharset( eName );
+                if( ctype != null ) {
+                    String eName = ctype.charset();
+                    if( eName != null ) {
+                        encoding = lookupCharset( eName );
+                    }
                 }
                 if( encoding == null ) encoding = _defaultEncoding;
 
@@ -227,13 +233,11 @@ public class ContentFetcher implements AsyncFilterContainer
             return found;
         }
 
-        private boolean testContentType( HTTPSession session )
+        private boolean testContentType( ContentType ctype )
         {
             boolean match = false;
 
             if( _acceptedContentTypes != null ) {
-                ContentType ctype =
-                    Headers.contentType( session.responseHeaders() );
                 if ( ctype != null ) {
                     String mtype = ctype.type();
 
