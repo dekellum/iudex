@@ -21,6 +21,7 @@ import static iudex.http.HTTPKeys.*;
 
 import iudex.core.ContentSource;
 import iudex.core.VisitURL;
+import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.AsyncFilterContainer;
 import iudex.filter.FilterContainer;
 import iudex.http.BaseResponseHandler;
@@ -134,24 +135,15 @@ public class ContentFetcher implements AsyncFilterContainer
             setHTTPValues( session );
             _content.set( STATUS, session.responseCode() );
 
-            // Handle redirect
-            if( ! _content.get( URL ).toString().equals( session.url() ) ) {
-                try {
-                    VisitURL newUrl = VisitURL.normalize( session.url() );
-                    if( ! newUrl.equals( _content.get( URL ) ) ) {
-                        UniMap referer = _content.clone();
-                        referer.set( REFERENT, _content );
-                        _content.set( REFERER, referer );
-                        _content.set( URL, newUrl );
-                    }
-                }
-                catch ( VisitURL.SyntaxException e ) {
-                    safeAbort( session );
-                    handleError( session, -30 );
-                }
+            try {
+                handleRedirect( session );
+            }
+            catch ( VisitURL.SyntaxException e ) {
+                safeAbort( session );
+                handleError( session, -30 );
             }
 
-            ContentType ctype = Headers.contentType( session.responseHeaders() );
+            ContentType ctype = Headers.contentType( session.responseHeaders());
 
             if( !testContentType( ctype ) ) {
                 safeAbort( session );
@@ -212,6 +204,49 @@ public class ContentFetcher implements AsyncFilterContainer
             _receiver.filter( _content );
         }
 
+        @Override
+        public void handleError( HTTPSession session, int code )
+        {
+            _content.set( STATUS, code );
+            setHTTPValues( session );
+            super.handleError( session, code );
+            _receiver.filter( _content );
+        }
+
+        @Override
+        public void handleException( HTTPSession session, Exception x )
+        {
+            _content.set( STATUS, -1 );
+            setHTTPValues( session );
+            super.handleException( session, x );
+            _receiver.filter( _content );
+        }
+
+        private void handleRedirect( HTTPSession session )
+            throws SyntaxException
+        {
+            if( ! _content.get( URL ).toString().equals( session.url() ) ) {
+                VisitURL newUrl = VisitURL.normalize( session.url() );
+                if( ! newUrl.equals( _content.get( URL ) ) ) {
+                    UniMap referer = _content.clone();
+
+                    //FIXME: Session might support obtaining the original
+                    //redirect code received. But for now we fake it:
+                    referer.set( STATUS, 302 );
+
+                    // FIXME: Avoid circular reference for reference, and
+                    // stack overflow on toString, by just making a copy
+                    // with URL.
+                    UniMap referent = new UniMap();
+                    referent.set( URL, newUrl );
+                    referer.set( REFERENT, referent );
+
+                    _content.set( REFERER, referer );
+                    _content.set( URL, newUrl );
+                }
+            }
+        }
+
         private void safeAbort( HTTPSession session )
         {
             try {
@@ -264,25 +299,6 @@ public class ContentFetcher implements AsyncFilterContainer
 
             return match;
         }
-
-        @Override
-        public void handleError( HTTPSession session, int code )
-        {
-            _content.set( STATUS, code );
-            setHTTPValues( session );
-            super.handleError( session, code );
-            _receiver.filter( _content );
-        }
-
-        @Override
-        public void handleException( HTTPSession session, Exception x )
-        {
-            _content.set( STATUS, -1 );
-            setHTTPValues( session );
-            super.handleException( session, x );
-            _receiver.filter( _content );
-        }
-
         private void setHTTPValues( HTTPSession session )
         {
             _content.set( REQUEST_HEADERS, session.requestHeaders() );

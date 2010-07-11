@@ -61,9 +61,10 @@ public final class Headers
     public static ContentType contentType( final List<Header> headers  )
     {
         Header h = getFirst( headers, "Content-Type" );
-
-        CharSequence tvalue = asCharSequence( h.value() );
-        if( tvalue != null ) return ContentType.parse( tvalue );
+        if( h != null ) {
+            CharSequence tvalue = asCharSequence( h.value() );
+            if( tvalue != null ) return ContentType.parse( tvalue );
+        }
         return null;
     }
 

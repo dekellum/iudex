@@ -21,6 +21,9 @@ import java.util.List;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
+//FIXME: This can move to core, not used here (where there are no
+//filters either.)
+
 public class HTTPKeys
 {
     public static final Key<List<Header>> REQUEST_HEADERS =

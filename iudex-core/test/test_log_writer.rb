@@ -26,13 +26,14 @@ class TestLogWriter < MiniTest::Unit::TestCase
   import 'java.util.regex.Pattern'
 
   def test_log_writer
-    RJack::Logback['TestLogWriter'].level = RJack::Logback::DEBUG
     lw = LogWriter.new( 'TestLogWriter' )
     lw.remove_pattern = Pattern.compile( '(^test)|(\s+$)' )
     pw = PrintWriter.new( lw, true )
     pw.print( "test 1   \n\r" )
     pw.println( "test 2   \n\r" )
     pw.print( "test 3" )
+
+    #FIXME: Assert?
   end
 
 end

@@ -21,10 +21,16 @@ $LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
 
 require 'rubygems'
 require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
-
 require 'minitest/unit'
 require 'minitest/autorun'
+
+module TestSetup
+  include RJack
+  Logback.config_console( :stderr => true )
+  if ARGV.include?( '--verbose' ) || ARGV.include?( '-v' )
+    Logback.root.level = Logback::DEBUG
+  end
+end
 
 # Make test output logging compatible: no partial lines.
 class TestOut
