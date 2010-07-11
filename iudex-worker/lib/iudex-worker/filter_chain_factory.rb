@@ -121,10 +121,7 @@ module Iudex
       end
 
       def feed_update_keys
-        [ :uhash, :host, :url, :type,
-          :ref_pub_date, :pub_date,
-          :priority, :last_visit, :next_visit_after, :status, :etag,
-          :referer ]
+        page_update_keys # the same
       end
 
       def page_receiver
@@ -155,8 +152,8 @@ module Iudex
       def page_update_keys
         [ :uhash, :host, :url, :type,
           :ref_pub_date, :pub_date,
-          :priority, :last_visit, :next_visit_after, :status, :etag,
-          :referer ]
+          :priority, :last_visit, :next_visit_after,
+          :status, :etag, :reason, :referer ]
       end
 
       def last_visit_setter
