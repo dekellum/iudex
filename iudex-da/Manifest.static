@@ -4,6 +4,7 @@ README.rdoc
 Rakefile
 pom.xml
 bin/iudex-da-generate-test-data
+bin/iudex-da-import
 bin/iudex-migrate
 config/config.rb
 db/0010_base_urls.rb
@@ -16,6 +17,7 @@ lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
 lib/iudex-da/factory_helper.rb
+lib/iudex-da/importer.rb
 lib/iudex-da/key_helper.rb
 lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
