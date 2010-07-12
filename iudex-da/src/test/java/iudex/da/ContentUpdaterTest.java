@@ -71,15 +71,20 @@ public class ContentUpdaterTest
         UniMap in = content( "http://gravitext.com/content2", TYPE_PAGE, 1f );
         assertEquals( 1, updater.write( in ) );
         in.set( PRIORITY, 11.3f );
+        UniMap referer = content( "http://gravitext.com/ref", TYPE_FEED, 1f );
+        in.set( REFERER, referer );
 
         updater.update( in );
 
         ContentReader reader = new ContentReader( dataSource(), _kmap );
         UniMap out = reader.read( in.get(  URL ) );
+        assertEquals(  in.get( REFERER ).get( URL ),
+                      out.get( REFERER ).get( URL ) );
+        out.set( REFERER, referer ); //Wouldn't be exact match otherwise
         assertEquals( in, out );
     }
 
     private final ContentMapper _kmap =
         new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
-                           PRIORITY, NEXT_VISIT_AFTER );
+                           PRIORITY, NEXT_VISIT_AFTER, REFERER );
 }

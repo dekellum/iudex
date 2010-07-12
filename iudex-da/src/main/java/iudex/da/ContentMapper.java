@@ -143,6 +143,10 @@ public final class ContentMapper
         if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
             rset.updateString( name, convertURL( key, out.get( URL ) ) );
         }
+        else if( ( key == REFERER ) || ( key == REFERENT ) ) {
+            UniMap ref = (UniMap) out.get( key );
+            rset.updateString( name, hashOrNull( ref ) );
+        }
         else {
             rset.updateObject( name, convert( key, out.get( key ) ) );
             // NULL ok, at least with PostgreSQL
@@ -181,14 +185,21 @@ public final class ContentMapper
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
                 UniMap ref = (UniMap) content.get( key );
-                stmt.setString( i, (ref != null) ? ref.get( URL ).uhash()
-                                                   : null );
+                stmt.setString( i, hashOrNull( ref ) );
             }
             else {
+                if( key.valueType().equals( UniMap.class ) ) {
+                    throw new IllegalStateException( "Key? " + key.toString() );
+                }
                 stmt.setObject( i, convert( key, content.get( key ) ) );
             }
             i++;
         }
+    }
+
+    private String hashOrNull( UniMap ref )
+    {
+        return ( ref != null ) ? ref.get( URL ).uhash() : null;
     }
 
     private Object convert( Key<?> key, Object value )
