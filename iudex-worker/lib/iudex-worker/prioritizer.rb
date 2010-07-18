@@ -97,7 +97,9 @@ module Iudex
       end
 
       def log_pub_age( map )
-        log( sdiff( ( map.pub_date || WWW_BEGINS ), map.visit_start ) / MINUTE )
+        diff = sdiff( ( map.pub_date || WWW_BEGINS ), map.visit_start ) / MINUTE
+        diff = 1.0 / MINUTE if diff < 1.0 / MINUTE
+        ( log( diff ) - log( 1.0 / MINUTE ) )
       end
 
       # FIXME: Useful?
@@ -128,7 +130,8 @@ module Iudex
       end
 
       def sdiff( prev, now )
-        as_time( now ) - as_time( prev || WWW_BEGINS )
+        diff = as_time( now ) - as_time( prev || WWW_BEGINS )
+        ( diff < 0.0 ) ? 0.0 : diff
       end
 
       # FIXME: Generalize?
