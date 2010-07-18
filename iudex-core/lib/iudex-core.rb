@@ -36,7 +36,6 @@ module Iudex
       import 'iudex.core.filters.DateChangeFilter'
       import 'iudex.core.filters.DefaultFilter'
       import 'iudex.core.filters.FutureDateFilter'
-      import 'iudex.core.filters.Prioritizer'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.UHashMDCSetter'
     end
