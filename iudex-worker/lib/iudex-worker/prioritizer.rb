@@ -42,15 +42,20 @@ module Iudex
         @min_next_unmodified =  5 * MINUTE
         @min_next            = 10 * MINUTE
 
-        @factors = [ [  30.0, :ref_change_rate ],
-                     [ -10.0, :log_pub_age ] ]
+        @factors = [ [ 30.0, :ref_change_rate ],
+                     [ -1.0, :log_pub_age ] ]
+
+        @log = SLF4J[ self.class ]
 
         opts.each { |k,v| send( k.to_s + '=', v ) }
         yield self if block_given?
+
+        @min_next_unmodified = [ @min_next_unmodified, @min_next ].min
+        @constant = @constant.to_f
       end
 
       def describe
-        [ @name ]
+        [ @name, @constant, @min_next ]
       end
 
       def filter( map )
@@ -64,11 +69,16 @@ module Iudex
 
       def adjust( map, priority, delta = 0.0 )
 
-        new_priority = @factors.inject( @constant ) do | p, (w,f)|
-          p + ( w * send( f, map ) )
+        old_priority = priority
+        memo = ( ( ( @constant != 0.0 ) ? [ @constant ] : [] ) if @log.debug? )
+
+        new_priority = @factors.inject( @constant ) do | p, (w,func)|
+          comp = ( w * send( func, map ) )
+          ( memo << "%.1f:%s" % [ comp.to_f, func ] ) if memo && comp != 0.0
+          p + comp
         end
 
-        new_priority = [ 0.0, new_priority ].max
+        #FIXME: new_priority = [ 0.0, new_priority ].max
 
         priority = ( ( ( priority || 0.0 ) * @impedance + new_priority ) /
                      ( @impedance + 1 ) )
@@ -79,11 +89,18 @@ module Iudex
           delta = 0.0
         end
 
+        @log.debug do
+          memo.join( ' + ' ) +
+            ( " :: %.1f -> %.1f = %.1f in %.1fs" %
+              ( [ old_priority, new_priority,
+                  priority, delta ].map { |f| f.to_f } ) )
+        end
+
         [ priority, delta ]
       end
 
       def log_pub_age( map )
-        log( sdiff( ( map.pub_date || WWW_BEGINS ), map.visit_start ) )
+        log( sdiff( ( map.pub_date || WWW_BEGINS ), map.visit_start ) / MINUTE )
       end
 
       # FIXME: Useful?
@@ -93,10 +110,15 @@ module Iudex
 
       # References per hour, with updates rated at 1/4 a new reference.
       def ref_change_rate( map )
-        ( ( ( map.new_references || 0.0 ) +
-            ( map.updated_references || 0.0 ) / 4.0 ) /
-          since( map ) *
-          HOUR )
+        s = since( map )
+        if s.nil? || s == 0.0
+          0.0
+        else
+          ( ( ( map.new_references || 0.0 ) +
+              ( map.updated_references || 0.0 ) / 4.0 ) /
+            s *
+            HOUR )
+        end
       end
 
       def since( map )

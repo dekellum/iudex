@@ -28,6 +28,7 @@ require 'iudex-rome'
 
 require 'iudex-worker'
 require 'iudex-worker/fetch_helper'
+require 'iudex-worker/prioritizer'
 
 module Iudex
   module Worker
@@ -38,6 +39,7 @@ module Iudex
       include Iudex::Core
       include Iudex::Core::Filters
       include Iudex::ROME
+      include Gravitext::HTMap
 
       include Iudex::DA::Filters::FactoryHelper
       include FetchHelper
@@ -48,6 +50,11 @@ module Iudex
       def initialize( name )
         super
         setup_reporters
+      end
+
+      def open
+        super
+        UniMap.define_accessors #FIXME: Move to base?
       end
 
       def setup_reporters
@@ -95,24 +102,29 @@ module Iudex
                               :feed_post, :feed_ref_update, :feed_ref_new )
       end
 
+      def feed_ref_new
+        [ UHashMDCSetter.new,
+          ref_common_cleanup,
+          Prioritizer.new( "feed-ref-new",
+                           :constant => 50,
+                           :min_next => 0.0 ) ].flatten
+      end
+
       def feed_ref_update
         [ UHashMDCSetter.new,
           DateChangeFilter.new( true ),
-          Prioritizer.new( "feed-ref-update" ),
-          ref_common_cleanup ].flatten
-      end
-
-      def feed_ref_new
-        [ UHashMDCSetter.new,
-          Prioritizer.new( "feed-ref-new" ),
-          ref_common_cleanup ].flatten
+          ref_common_cleanup,
+          Prioritizer.new( "feed-ref-update",
+                           :constant => 10,
+                           :min_next => 0.0 ) ].flatten
       end
 
       def feed_post
         [ UHashMDCSetter.new,
-          Prioritizer.new( "feed-post" ),
-          last_visit_setter,
-          ref_common_cleanup ].flatten
+          ref_common_cleanup,
+          Prioritizer.new( "feed-post",
+                           :constant => 30 ),
+          last_visit_setter ].flatten
       end
 
       def ref_common_cleanup
@@ -145,7 +157,9 @@ module Iudex
       end
 
       def page_post
-        [ Prioritizer.new( "page-post" ),
+        [ Prioritizer.new( "page-post",
+                           :constant => 0,
+                           :min_next => ( 30 * 60.0 ) ),
           last_visit_setter ]
       end
 

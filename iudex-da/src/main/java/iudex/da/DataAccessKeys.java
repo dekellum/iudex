@@ -33,6 +33,7 @@ public class DataAccessKeys
         return UniMap.KEY_SPACE.createListKey( name );
     }
 
+    //FIXME: Results in dependency on consumer. Move?
     public static final Key<Integer> NEW_REFERENCES =
         create( "new_references", Integer.class );
 
