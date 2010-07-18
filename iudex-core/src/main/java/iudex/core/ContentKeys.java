@@ -93,6 +93,18 @@ public class ContentKeys
     public static final Key<List<UniMap>> REFERENCES =
         createListKey( "references" );
 
+    /**
+     * Number of references that are new.
+     */
+    public static final Key<Integer> NEW_REFERENCES =
+        create( "new_references", Integer.class );
+
+    /**
+     * Number of references that are updated.
+     */
+    public static final Key<Integer> UPDATED_REFERENCES =
+        create( "updated_references", Integer.class );
+
     public static final Key<UniMap> REFERER =
         create( "referer", UniMap.class );
 
@@ -104,4 +116,5 @@ public class ContentKeys
      */
     public static final Key<UniMap> CURRENT =
         create( "current", UniMap.class );
+
 }

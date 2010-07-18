@@ -15,14 +15,11 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-da' #FIXME
-
 module Iudex
   module Worker
 
     class Prioritizer < Iudex::Filter::FilterBase
       include Math
-      import 'iudex.da.DataAccessKeys' #FIXME
 
       attr_accessor :constant
       attr_accessor :impedance

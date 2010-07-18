@@ -36,7 +36,6 @@ import iudex.filter.NoOpFilter;
 
 import static iudex.core.ContentKeys.*;
 import static iudex.da.ContentMapper.*;
-import static iudex.da.DataAccessKeys.*;
 
 /**
  * Filter based support for updating references (from feeds, etc.) and the
