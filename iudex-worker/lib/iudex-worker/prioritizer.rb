@@ -55,7 +55,7 @@ module Iudex
 
       def filter( map )
 
-        map.priority, delta  = adjust( map, map.priority )
+        map.priority, delta = adjust( map, map.priority )
 
         map.next_visit_after = ( as_time( map.visit_start ) + delta if delta )
 
@@ -73,7 +73,11 @@ module Iudex
         priority = ( ( ( priority || 0.0 ) * @impedance + new_priority ) /
                      ( @impedance + 1 ) )
 
-        delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
+        if map.last_visit
+          delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
+        else
+          delta = 0.0
+        end
 
         [ priority, delta ]
       end
@@ -101,19 +105,20 @@ module Iudex
       end
 
       def oldest( refs )
-        ( refs.map { |r| r.ref_pub_data }.compact.min ) if refs
+        ( refs.map { |r| r.pub_date }.compact.min ) if refs
       end
 
       def sdiff( prev, now )
         as_time( now ) - as_time( prev || WWW_BEGINS )
       end
 
+      # FIXME: Generalize?
       def as_time( torj )
         if torj.is_a?( Time )
           torj
         else
-          Time.at( torj.time / 1000, #s
-                   ( torj.time % 1000 ) * 1000 ) #µs
+          ms = torj.time
+          Time.at( ms / 1_000, ( ms % 1_000 ) * 1_000 ) # s, µs
         end
       end
 
