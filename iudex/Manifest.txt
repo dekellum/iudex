@@ -1,0 +1,6 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+lib/iudex/base.rb
+lib/iudex.rb
