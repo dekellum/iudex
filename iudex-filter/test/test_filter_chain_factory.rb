@@ -36,7 +36,6 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
   import 'iudex.filter.core.MDCUnsetter'
 
   TKEY = UniMap.create_key( 'tkey' );
-  UniMap.define_accessors
 
   class RandomFilter < FilterBase
 

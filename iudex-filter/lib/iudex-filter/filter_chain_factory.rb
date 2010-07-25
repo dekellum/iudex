@@ -22,7 +22,6 @@ module Iudex
     module Core
 
       class FilterChainFactory
-
         attr_reader :description
 
         def initialize( description = "default" )
@@ -58,6 +57,10 @@ module Iudex
           @listener = ListenerChain.new( listeners )
           @chain = create_chain( @description, flts )
           @chain.listener = @listener
+
+          # With all filters loaded and thus key references, make sure
+          # UniMap accessors are defined (for ruby filters)
+          Gravitext::HTMap::UniMap.define_accessors
 
           nil
         end

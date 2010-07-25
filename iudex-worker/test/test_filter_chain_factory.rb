@@ -38,8 +38,6 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex::Worker
   include Gravitext::HTMap
 
-  UniMap.define_accessors #FIXME: FilterFactory after all filters created?
-
   def test_filter
     fcf = Iudex::Worker::FilterChainFactory.new( "test" )
 

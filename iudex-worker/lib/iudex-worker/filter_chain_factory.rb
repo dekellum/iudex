@@ -39,7 +39,6 @@ module Iudex
       include Iudex::Core
       include Iudex::Core::Filters
       include Iudex::ROME
-      include Gravitext::HTMap
 
       include Iudex::DA::Filters::FactoryHelper
       include FetchHelper
@@ -50,11 +49,6 @@ module Iudex
       def initialize( name )
         super
         setup_reporters
-      end
-
-      def open
-        super
-        UniMap.define_accessors #FIXME: Move to base?
       end
 
       def setup_reporters
