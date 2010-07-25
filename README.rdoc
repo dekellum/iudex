@@ -4,8 +4,10 @@
 
 == Description
 
-Iudex is a general purpose hybrid feed agregator and web crawler in
-ruby/java.
+Iudex provides general purpose and extendable web feed aggregation and
+web crawling facilities.
+
+See the documentation included in the www/ directory.
 
 == License
 
