@@ -1,0 +1,29 @@
+# -*- ruby -*-
+
+$LOAD_PATH << './lib'
+require 'iudex/base'
+
+require 'rubygems'
+gem     'rjack-tarpit', '~> 1.2'
+require 'rjack-tarpit'
+
+t = RJack::TarPit.new( 'iudex', Iudex::VERSION, :java_platform )
+
+t.specify do |h|
+  h.developer( "David Kellum", "dek-oss@gravitext.com" )
+
+  h.rubyforge_name = "iudex"
+end
+
+task :chk_hist_vers do
+  t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
+end
+task :chk_hist_date do
+  t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
+end
+
+task :gem  => [ :chk_hist_vers,                ]
+task :tag  => [ :chk_hist_vers, :chk_hist_date ]
+task :push => [                 :chk_hist_date ]
+
+t.define_tasks
