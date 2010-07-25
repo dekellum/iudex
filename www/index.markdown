@@ -2,25 +2,46 @@
 layout: home
 ---
 
-A feed aggregator/crawler, and content processing toolkit. Iūdex is
-pronounced as the Latin [/ˈjuː.deks/][wiki-ogg], meaning: judge or
-umpire.
+Iūdex provides general purpose and extendable web feed aggregation and
+web crawling facilities.  It is pronounced as the Latin
+[/ˈjuː.deks/][wiki-ogg][^wik], meaning: judge or umpire, in reference
+to its novel work [prioritization] and filtering features.
+
+Notable modules, features:
+
+* [BARC](/barc.html)
+* [Data Access](/da.html) (DA)
+* [Sitemaps](/sitemap.html)
+
+[prioritization]: /prioritization.html
 
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
 
-* [BARC](/barc.html)
-* [Data Access](/da.html)
-* [sitemaps](/sitemap.html)
+[^wik]: Pronunciation and audio from
+        [Wiktionary: Iudex](http://en.wiktionary.org/wiki/iudex)
+        (Creative Commons Licensed)
 
 ## Modules and Dependencies
 
-The Iūdex toolkit is constructed of modules with controlled dependencies,
-each delivered as both maven compatible java jars and jruby gems.
+Iūdex is constructed of modules with carefully controlled
+dependencies. All modules are packaged as jruby gems. Many modules
+include a java jar which is also made available as a maven artifact
+for java dependency management.
 
 {% svg svg/iudex.svg %}
 
-### Iūdex DA
+## License
 
-Additional external dependencies:
+All Iūdex code and documentation is licensed under the
+[Apache License, 2.0][AL2] (local [LICENSE.txt]).
 
-{% svg svg/iudex-da.svg %}
+To avoid any ambiguities with intellectual property and enable
+potential future transition to a foundation such as the Apache
+Software Foundation, contributor agreements are required (mail, or
+scan to PDF and email) before merging any contributions:
+
+* [Individual Contributor Agreement](license/icla.txt)
+* [Corporate Contributor Agreement](license/cla-corporate.txt)
+
+[AL2]: http://www.apache.org/licenses/LICENSE-2.0
+[LICENSE.txt]: license/LICENSE.txt

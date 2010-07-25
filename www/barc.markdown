@@ -6,6 +6,10 @@ layout: sub
 # Basic Archive
 
 ![LARC LX](/img/BARC-LARC-XV-2-c.jpg)
+[^cc]
+
+[^cc]: From [Wikipedia: BARC-LARC-XV-2.jpeg](http://en.wikipedia.org/wiki/File:BARC-LARC-XV-2.jpeg)
+       (public domain)
 
 ## ARC/WARC limitations
 

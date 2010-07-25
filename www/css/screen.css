@@ -101,15 +101,12 @@ caption {
     margin-bottom: 1em;
 }
 
-.footnotes { color: grey; }
-.footnotes:hover { color: black; }
-.footnotes ol li {
-    list-style-type: decimal;
-    list-style-position: inside;
+.footnotes li {
     font-size: 75%;
-    line-height: 1.5em;
 }
-.footnotes ol li > a { display: none; }
+.footnotes p {
+    margin: 0
+}
 
 .section {
     font-size: 87.5%;
