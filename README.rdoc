@@ -4,7 +4,7 @@
 
 == Description
 
-Iudex provides general purpose and extendable web feed aggregation and
+Iudex provides general purpose and extensible web feed aggregation and
 web crawling facilities.
 
 See the documentation included in the www/ directory.
