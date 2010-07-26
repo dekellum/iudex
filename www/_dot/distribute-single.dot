@@ -1,0 +1,13 @@
+digraph "distribute-single" {
+  rankdir=RL;
+  size="4,1";
+  bgcolor="transparent";
+  node [ shape=box, style="filled", fillcolor="#f8df8b",
+         fontname="Arial", margin="0.30,0.1" ];
+  edge [ fontname="Arial", labeldistance="2.6", arrowsize="0.8", minlen="2" ];
+
+  "database" [ label=<visit<br/>database>, shape=circle, margin="0.05,0.05" ];
+  "iudex-worker"
+
+  "iudex-worker" -> "database" [ dir=both, label="all urls" ];
+}

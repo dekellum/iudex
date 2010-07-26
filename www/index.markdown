@@ -2,18 +2,17 @@
 layout: home
 ---
 
-Iūdex provides general purpose and extendable web feed aggregation and
+Iūdex provides general purpose and extensible web feed aggregation and
 web crawling facilities.  It is pronounced as the Latin
 [/ˈjuː.deks/][wiki-ogg][^wik], meaning: judge or umpire, in reference
-to its novel work [prioritization] and filtering features.
+to its novel prioritization and filtering features.
 
-Notable modules, features:
+Notable features:
 
+* [Prioritization](/prioritization.html)
 * [BARC](/barc.html)
 * [Data Access](/da.html) (DA)
-* [Sitemaps](/sitemap.html)
-
-[prioritization]: /prioritization.html
+* [Scalability and Fault Tolerance](/distribution.html)
 
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
 

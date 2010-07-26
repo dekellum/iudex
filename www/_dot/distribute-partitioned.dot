@@ -1,0 +1,23 @@
+digraph "distribute-partitioned" {
+  rankdir=RL;
+  size="6,2.5";
+  bgcolor="transparent";
+  node [ shape=box, style="filled", fillcolor="#f8df8b",
+         fontname="Arial", margin="0.30,0.1" ];
+  edge [ fontname="Arial", labeldistance="2.7", arrowsize="0.8", minlen="2" ];
+
+  "database-1" [ label=<visit<br/>database<br/>part-1>, shape=circle, margin="0.05,0.05" ];
+  "database-2" [ label=<visit<br/>database<br/>part-2>, shape=circle, margin="0.05,0.05" ];
+
+  "exchange"
+
+#  subgraph cluster_worker {}
+  "iudex-worker-1";
+  "iudex-worker-2";
+  "iudex-worker-1" -> "exchange" [ dir=both, headlabel="other", taillabel="part-1" ]
+  "iudex-worker-2" -> "exchange" [ dir=both, headlabel="other", taillabel="part-2" ]
+
+  "iudex-worker-1" -> "database-1" [ dir=both, label="part-1" ];
+  "iudex-worker-2" -> "database-2" [ dir=both, label="part-2" ];
+
+}
