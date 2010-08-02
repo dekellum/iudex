@@ -20,7 +20,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-module BinScript
+module IudexBinScript
 
   require 'rjack-logback'
   include RJack
