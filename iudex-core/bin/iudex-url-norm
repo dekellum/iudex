@@ -23,32 +23,47 @@ require 'rubygems'
 module IudexBinScript
 
   require 'rjack-logback'
-  RJack::Logback.config_console
+  include RJack
 
-  require 'iudex-da'
+  Logback.config_console( :level => Logback::INFO, :stderr => true )
+
+  require 'iudex-core'
   include Iudex
 
-  # Apply all config before including ar
   Core::Config.parse_options do |opts|
-    opts.banner = <<END
-Usage: iudex-migrate [options] [target-migration-number]
-END
-    opts.on( "-s", "--set name=value", String,
-             "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
-      name,value = nv.split('=').map { |t| t.strip }
-      DA::CONFIG[ name.to_sym ] = value
+    opts.banner = "Usage: iudex-url-norm [options] [UrlsFile]..."
+    opts.on( "-v", "--version", "Display version" ) do |file|
+      puts "iudex-core: #{Core::VERSION}"
+      exit 1
     end
-    opts.on( "-d", "--debug" ) do
-      RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
-    end
-    opts.on( "-v", "--version", "Display version and exit" ) do |file|
-      puts "iudex-da: #{DA::VERSION}"
+    opts.on_tail( "-h", "--help", "Show help and exit" ) do
+      puts opts
+      puts
+      puts( "Write uhash and normalized URLs to STDOUT, " +
+            "from UrlsFile(s) or STDIN." )
       exit 1
     end
   end
 
-  require 'iudex-da/ar'
+  def self.run( argv = ARGV )
+    if ARGV.empty?
+      process( $stdin )
+    else
+      ARGV.each do |fname|
+        open( fname, "r" ) do |fin|
+          process( fin )
+        end
+      end
+    end
+  end
 
-  DA::migrate( ARGV[0] && ARGV[0].to_i )
+  def self.process( fin )
+    fin.each do |url|
+      vurl = Core::VisitURL.normalize( url.chomp )
+      puts vurl.uhash + ' ' + vurl.to_s
+    end
+  end
+
+  run
 
 end
