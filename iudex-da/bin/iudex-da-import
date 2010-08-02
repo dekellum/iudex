@@ -35,7 +35,7 @@ module IudexBinScript
   Core::Config.parse_options do |opts|
     opts.banner = <<END
 iudex-da: #{Iudex::DA::VERSION}
-Usage: iudex-da-import [options] import-csv...
+Usage: iudex-da-import [Options] ImportCSV...
 END
     opts.on( "-s", "--set name=value", String,
              "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
