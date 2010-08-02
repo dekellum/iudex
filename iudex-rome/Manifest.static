@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-rome/base.rb
+lib/iudex-rome.rb
+test/setup.rb
+test/test_rome.rb
