@@ -117,4 +117,9 @@ public class ContentKeys
     public static final Key<UniMap> CURRENT =
         create( "current", UniMap.class );
 
+    public static final Key<Integer> CACHE_FILE =
+        create( "cache_file", Integer.class );
+
+    public static final Key<Long> CACHE_FILE_OFFSET =
+        create( "cache_file_offset", Long.class );
 }

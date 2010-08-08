@@ -161,7 +161,8 @@ module Iudex
         [ :uhash, :host, :url, :type,
           :ref_pub_date, :pub_date,
           :priority, :last_visit, :next_visit_after,
-          :status, :etag, :reason, :referer, :referent ]
+          :status, :etag, :reason, :referer, :referent,
+          :cache_file, :cache_file_offset ]
       end
 
       def last_visit_setter

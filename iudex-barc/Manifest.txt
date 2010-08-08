@@ -3,6 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-barc
 bin/iudex-http-record
 lib/iudex-barc/base.rb
 lib/iudex-barc.rb

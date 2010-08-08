@@ -1,0 +1,161 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (c) 2008-2010 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+
+require 'optparse'
+
+module IudexBinScript
+
+  require 'rjack-logback'
+  include RJack
+
+  Logback.config_console( :level => Logback::INFO, :stderr => true )
+
+  require 'iudex-barc'
+
+  class BARCTool
+    include Iudex
+    import 'com.gravitext.util.Streams'
+
+    def initialize
+      @offset = 0
+      @sections = ALL_SECTIONS
+    end
+
+    COMMANDS = [ :show ]
+    ALL_SECTIONS = [ :meta, :request, :response, :body ]
+
+    def run( args = ARGV )
+      command = parse_args( args )
+      self.send( command, args )
+    end
+
+    def parse_args( args = ARGV )
+      osecs = []
+
+      parser = OptionParser.new do |opts|
+        opts.banner = ( "Usage: iudex-barc [options] {show} BARCFile...\n" +
+                        "Options:\n" )
+
+        opts.on( "-v", "--version", "Display version and exit" ) do |file|
+          puts "iudex-barc: #{BARC::VERSION}"
+          exit 1
+        end
+
+        opts.on( "-o", "--offset N", String,
+                 "Offset into (first) BARCFile (one record)" ) do |offset|
+          @offset = Integer( offset )
+        end
+
+        { :meta => 'm', :request => 'q', :response => 'r',
+          :body => 'b' }.each do |sec,c|
+          opts.on( '-' + c,
+                   '--' + sec.to_s,
+                   "Show #{sec} #{ 'headers' unless sec == :body }" ) do
+            osecs << sec
+          end
+        end
+
+        opts.on_tail( "-h", "--help", "Show help and exit" ) do
+          opts.usage
+        end
+      end
+
+      def parser.usage
+        puts self
+        puts
+        puts( "Commands:")
+        puts( "    show: Dump BARC record details." )
+        exit 1
+      end
+
+      parser.parse!( args )
+
+      @sections = osecs unless osecs.empty?
+
+      bsec, @h_sections = @sections.partition { |s| s == :body }
+      @body_section = ! bsec.empty?
+
+      command = args.shift
+
+      parser.usage unless command
+      command = command.to_sym
+
+      parser.usage unless COMMANDS.include?( command )
+      command
+    end
+
+    def show( barcs )
+      if @offset != 0
+        bfile = barc_open( barcs.first )
+        display( bfile.read( @offset ) )
+      else
+        barcs.each do |bname|
+          bfile = barc_open( bname )
+          rr = bfile.reader
+          while( rec = rr.next )
+            display( rec, ( bname if barcs.length > 0 ) )
+          end
+        end
+      end
+    end
+
+    def display( rec, meta = nil )
+      puts( "@BARC1 %c%s : 0x%x %s" %
+            [ rec.type,
+              rec.compressed? ? 'C':'',
+              rec.offset,
+              meta ] )
+
+      @h_sections.each do |ht|
+        display_headers( ht, rec.send( "#{ht}_headers" ) )
+      end
+
+      dump_body( rec ) if @body_section
+    end
+
+    def display_headers( htype, headers )
+      puts "=#{htype.to_s.upcase}="
+      headers.each { |h| puts h }
+      puts
+    end
+
+    def dump_body( rec )
+      body_in = rec.body_input_stream
+      if body_in
+        puts "=BODY BEGIN="
+        Streams::copy( body_in, Java::java.lang.System::out )
+        puts "\n=BODY END="
+        puts
+      end
+    end
+
+    def barc_open( bname )
+      #FIXME: Avoid opening new barc if not existing
+      raise "BARC File '#{bname}' not found" unless File.exist?( bname )
+      BARC::BARCFile.new( Java::java.io.File.new( bname ) )
+    end
+  end
+
+  bt = BARCTool.new
+  bt.run
+
+end
