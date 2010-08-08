@@ -5,44 +5,56 @@ layout: sub
 
 # Basic Archive
 
+The Iūdex BARC container format supports efficient block storage of
+raw downloaded or post-processed content. The format was inspired by
+Heritrix [ARC] and [WARC], but offers several unique
+features/advantages:
+
+* Concurrent and random-access reads by byte offset (external index).
+* Single-writer sessions safe with concurrent reads.
+* Per-record GZip compression (headers + body payload).
+* Efficient random access channel IO.
+* Minimal dependencies for read/write access.
+
 ![LARC LX](/img/BARC-LARC-XV-2-c.jpg)
 [^cc]
 
 [^cc]: From [Wikipedia: BARC-LARC-XV-2.jpeg](http://en.wikipedia.org/wiki/File:BARC-LARC-XV-2.jpeg)
        (public domain)
 
-## ARC/WARC limitations
-
-* Uses text based Content-Length, so not possible to perform concurrent record reads.
-* Many depdencies, too complicated.
+[ARC]:  http://crawler.archive.org/articles/developer_manual/arcs.html
+[WARC]: http://www.digitalpreservation.gov/formats/fdd/fdd000236.shtml
 
 ## BARC Format
 
-A Human/Machine readable header used for first record (offset zero)
+A Human/machine readable header used for first record (offset zero)
 and each subsequent record:
 
 {% highlight: text %}
-Magic  rlength tt meta reqt resp
+Magic  rlength tt meta rqst resp
 BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
 CRLF
 {% endhighlight %}
 
-"barc" utility use cases
-------------------------
+All lengths are in hexadecimal bytes, zero-padded and fixed width. The
+header 36 bytes.  The rlength does not include the header itself, so
+offset to next record is rlength + 36 bytes.
 
-A. Display(Read) Record(s)
+## iudex-barc utility
 
-    barc infile
-    barc -o 330391 -c 10 infile
+A. Show Record(s)
 
-* From BARC file (By absolute index?)
-* Decompress compressed
+    iudex-barc show barc/000000.barc
+    iudex-barc show -mqr -o 0xde411 barc/000015.barc
+
+* From BARC file (all or by record offset)
+* Decompresses compressed records
 
 (stored in db as integer, so use base-10 offset)
 
 B. HTTP fetch
 
-    barc [-z] [-t] url outfile
+    iudex-http-record [-z] [-t] url outfile
 
 * Append or Truncate existing file
 * Compress or not
@@ -50,45 +62,42 @@ B. HTTP fetch
 
 C. Copy/Concatenate record to file
 
-    barc [-zt] infile outfile
+    iudex-barc [-zt] copy infile outfile
 
 * Compress target or not
 
 (last file implicit write)
 
-Human input/output to/from BARC?
---------------------------------
+## Human-readable to/from BARC
 
 Format:
 
     @BARC1 H
     =META=
-    Meta-Header-1: value
-    Meta-Header-2: value
+    meta_header_1: value
+    meta_header_2: value
 
     =RQST=
-    Request
+    Request-Line: GET /foo/bar.html
 
     =RESP=
-    Response
+    Status-Line: HTTP/1.1 200 OK
 
-    =BODY=
+    =BODY BEGIN=
     <html>
     ...
-    ...
-    ...
+    =BODY END=
 
-Other records
--------------
+## Other records
 
 Sample DELETE:
 
     @BARC1 D
     =META=
-    URL: http://foobar/framis
-    UHASH: 98ASDz798a782hasfd79jbz
+    url: http://foobar/framis
+    uhash: 98ASDz798a782hasfd79jbz
 
-    @BARC R
+    @BARC1 R
     =META=
-    URL: http://foobar/framis
-    FROM: http://foobar
+    url: http://foobar/framis
+    referent: 98ASDz798a782hasfd79jbz
