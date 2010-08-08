@@ -84,6 +84,7 @@ public final class BARCWriter implements Filter, Closeable
             ContentSource cs = content.get( ContentKeys.CONTENT );
             if( cs != null ) {
                 session = _barcDir.startWriteSession();
+
                 Record rec = session.append();
                 rec.setCompressed( _doCompress );
 
@@ -97,6 +98,10 @@ public final class BARCWriter implements Filter, Closeable
 
                 Streams.copy( cs.stream(), rec.bodyOutputStream() );
                 //FIXME: Better ByteBuffer based copy?
+
+                // Save off file number and offset.
+                content.set( ContentKeys.CACHE_FILE, session.fileNumber() );
+                content.set( ContentKeys.CACHE_FILE_OFFSET, rec.offset() );
             }
         }
         finally {
