@@ -87,6 +87,13 @@ public final class BARCFile implements Closeable
         _channel.truncate( 0 );
     }
 
+    public void markReplaced( long offset ) throws IOException
+    {
+        Record rec = new Record( offset );
+        rec.markReplaced();
+        rec.close();
+    }
+
     public Record read( long offset ) throws IOException
     {
         return new Record( offset );
@@ -107,7 +114,8 @@ public final class BARCFile implements Closeable
     }
 
     /**
-     * Provides sequential access to each record in a BARC File.
+     * Provides sequential access to each record in a BARC File. This includes
+     * R-records, which many applications will want to skip.
      */
     public final class RecordReader
     {
@@ -286,6 +294,17 @@ public final class BARCFile implements Closeable
         }
 
         /**
+         * Mark this record as a replaced an rewrite its header.
+         * @throws IOException
+         */
+        public void markReplaced() throws IOException
+        {
+            _type = 'R';
+            writeBARCHeader();
+            _writeState = WriteState.CLOSED;
+        }
+
+        /**
          * Open for read.
          */
         Record( long offset ) throws IOException
@@ -389,7 +408,7 @@ public final class BARCFile implements Closeable
             while( hbuff.remaining() > 0 ) {
                 int rlen = _in.read( hbuff.array(), hbuff.position(),
                                      hbuff.remaining() );
-                if( rlen < 1 ) {
+                if( rlen < headerLength ) {
                     throw new IOException( "Incomplete header block." );
                 }
                 hbuff.position( hbuff.position() + rlen );
@@ -475,9 +494,12 @@ public final class BARCFile implements Closeable
         private void openInputStream() throws IOException
         {
             if( _in == null ) {
-                _in = new RecordInputStream( _offset + HEADER_LENGTH,
-                                             _length - 2 ); //-2 for end CRLF
-                if( _compressed ) _in = new GZIPInputStream( _in, BUFFER_SIZE );
+                int len = _length;
+                if( len >= 2 ) len -= 2; //-2 for end CRLF
+                _in = new RecordInputStream( _offset + HEADER_LENGTH, len );
+                if( _compressed && len > 0 ) {
+                    _in = new GZIPInputStream( _in, BUFFER_SIZE );
+                }
 
                 _metaHeadBytes = readHeaderBlock( _metaHeaderLength );
                 _rqstHeadBytes = readHeaderBlock( _rqstHeaderLength );
@@ -567,7 +589,7 @@ public final class BARCFile implements Closeable
 
         private final long _offset;
         private int _length = 0;
-        private char _type = 'H';
+        private char _type = 'R';
         private boolean _compressed = false;
         private int _metaHeaderLength = 0;
         private int _rqstHeaderLength = 0;
