@@ -38,6 +38,7 @@ module IudexBinScript
     def initialize
       @offset = 0
       @sections = ALL_SECTIONS
+      @show_replaced = false
     end
 
     COMMANDS = [ :show ]
@@ -78,6 +79,11 @@ module IudexBinScript
           end
         end
 
+        opts.on( "-x", "--show-replaced",
+                 "Show replaced records as well." ) do
+          @show_replaced = true
+        end
+
         opts.on_tail( "-h", "--help", "Show help and exit" ) do
           opts.usage
         end
@@ -116,7 +122,9 @@ module IudexBinScript
           bfile = barc_open( bname )
           rr = bfile.reader
           while( rec = rr.next )
-            display( rec, ( bname if barcs.length > 1 ) )
+            if @show_replaced || rec.type.chr != 'R'
+              display( rec, ( bname if barcs.length > 1 ) )
+            end
           end
         end
       end
