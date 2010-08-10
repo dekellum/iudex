@@ -19,6 +19,7 @@ package iudex.core.filters;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -61,6 +62,11 @@ public final class BARCWriter implements Filter, Closeable
         _metaHeaders = metaHeaders;
     }
 
+    public void setRecordType( char type )
+    {
+        _recordType = type;
+    }
+
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
@@ -87,6 +93,7 @@ public final class BARCWriter implements Filter, Closeable
 
                 Record rec = session.append();
                 rec.setCompressed( _doCompress );
+                rec.setType( _recordType );
 
                 rec.writeMetaHeaders( genMetaHeaders( content ) );
 
@@ -115,6 +122,7 @@ public final class BARCWriter implements Filter, Closeable
         List<Header> headers = new ArrayList<Header>( _metaHeaders.size() );
         for( Key key : _metaHeaders ) {
             Object value = content.get( key );
+
             if( value != null ) headers.add( new Header( key, value ) );
         }
         return headers;
@@ -134,6 +142,8 @@ public final class BARCWriter implements Filter, Closeable
     private final BARCDirectory _barcDir;
 
     private boolean _doCompress = false;
+    private char _recordType = 'H'; //HTML
+
     private List<Key> _metaHeaders = Arrays.asList( (Key) ContentKeys.URL,
                                                     ContentKeys.LAST_VISIT,
                                                     ContentKeys.TYPE );
