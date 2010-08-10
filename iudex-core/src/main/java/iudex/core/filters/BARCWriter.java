@@ -19,7 +19,6 @@ package iudex.core.filters;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -91,6 +90,8 @@ public final class BARCWriter implements Filter, Closeable
             if( cs != null ) {
                 session = _barcDir.startWriteSession();
 
+                replaceIfSameFile( content, session );
+
                 Record rec = session.append();
                 rec.setCompressed( _doCompress );
                 rec.setType( _recordType );
@@ -113,6 +114,24 @@ public final class BARCWriter implements Filter, Closeable
         }
         finally {
             if( session != null ) session.close(); //also closes record
+        }
+    }
+
+    private void replaceIfSameFile( UniMap content, WriteSession session )
+        throws IOException
+    {
+        UniMap current = content.get( ContentKeys.CURRENT );
+
+        if( current != null ) {
+            Integer cfile = current.get( ContentKeys.CACHE_FILE );
+            Long coffset  = current.get( ContentKeys.CACHE_FILE_OFFSET );
+
+            if( ( cfile != null ) && ( coffset != null ) &&
+                ( cfile == session.fileNumber() ) ) {
+                session.markReplaced( coffset );
+                _log.debug( "Replaced prior record, offset {} in same file {}",
+                            coffset, cfile );
+            }
         }
     }
 
