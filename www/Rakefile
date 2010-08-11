@@ -30,3 +30,13 @@ end
 task :server => [ :dot ] do
   sh "jekyll --auto --server"
 end
+
+DEST="/home/david/public_html/iudex"
+
+task :diff => [ :gen ]  do
+  sh "rsync -n -rc -i _site/ #{DEST}"
+end
+
+task :publish => [ :gen ] do
+  sh "rsync -rc -i _site/ #{DEST}"
+end
