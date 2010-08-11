@@ -16,8 +16,6 @@ features/advantages:
 * Efficient random access channel IO.
 * Minimal dependencies for read/write access.
 
-{:toc}
-
 [^cc]: From [Wikipedia: BARC-LARC-XV-2.jpeg](http://en.wikipedia.org/wiki/File:BARC-LARC-XV-2.jpeg)
        (public domain)
 
