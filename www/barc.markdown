@@ -3,7 +3,7 @@ title: BARC
 layout: sub
 ---
 
-# Basic Archive
+![LARC LX](/img/BARC-LARC-XV-2-c.jpg)[^cc]
 
 The Iūdex BARC container format supports efficient block storage of
 raw downloaded or post-processed content. The format was inspired by
@@ -16,8 +16,7 @@ features/advantages:
 * Efficient random access channel IO.
 * Minimal dependencies for read/write access.
 
-![LARC LX](/img/BARC-LARC-XV-2-c.jpg)
-[^cc]
+{:toc}
 
 [^cc]: From [Wikipedia: BARC-LARC-XV-2.jpeg](http://en.wikipedia.org/wiki/File:BARC-LARC-XV-2.jpeg)
        (public domain)
@@ -37,8 +36,35 @@ CRLF
 {% endhighlight %}
 
 All lengths are in hexadecimal bytes, zero-padded and fixed width. The
-header 36 bytes.  The rlength does not include the header itself, so
-offset to next record is rlength + 36 bytes.
+header itself is 36 bytes long
+
+Component | Description
+:--------:| ------------------------------------------------------
+rlength   | Length of record in hexadecimal bytes (not including header).
+tt        | Type and compresssion bytes (see below).
+meta      | Length of meta header block in hexadecimal bytes
+rqst      | Length of request header block in hexadecimal bytes
+resp      | Length of response header block in hexadecimal bytes
+
+### Types
+
+The following record types are currently defined:
+
+ Type | Description
+:----:| -----------
+R     | Replaced (or never completed) record. Most consumers will want to ignore these records.
+H     | HTML or other raw (web downloaded) content. For example, downloaded images would be suitable included as H values.
+D     | A Delete record containing meta headers, but no body.
+
+### Compression mode
+
+The following compression modes are currently defined:
+
+ Mode | Description
+:----:| -----------
+C     | Gzip compressed
+P     | Plain (uncompressed)
+
 
 ## iudex-barc utility
 
@@ -72,7 +98,7 @@ C. Copy/Concatenate record to file
 
 Format:
 
-    @BARC1 H
+    -BARC1 H
     =META=
     meta_header_1: value
     meta_header_2: value
@@ -83,21 +109,15 @@ Format:
     =RESP=
     Status-Line: HTTP/1.1 200 OK
 
-    =BODY BEGIN=
+    =BODY=
     <html>
     ...
-    =BODY END=
 
 ## Other records
 
 Sample DELETE:
 
-    @BARC1 D
+    -BARC1 D
     =META=
     url: http://foobar/framis
     uhash: 98ASDz798a782hasfd79jbz
-
-    @BARC1 R
-    =META=
-    url: http://foobar/framis
-    referent: 98ASDz798a782hasfd79jbz
