@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
 
@@ -94,8 +95,10 @@ public class HTTPClient3 implements HTTPClient
             List<Header> outHeaders =
                 new ArrayList<Header>( inHeaders.length + 1 );
 
-            outHeaders.add( new Header( "Status-Line",
-                                        _httpMethod.getStatusLine() ) );
+            StatusLine statusLine = _httpMethod.getStatusLine();
+            if( statusLine != null ) {
+                outHeaders.add( new Header( "Status-Line", statusLine ) );
+            }
 
             copyHeaders( inHeaders, outHeaders );
 
