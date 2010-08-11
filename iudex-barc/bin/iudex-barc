@@ -38,10 +38,15 @@ module IudexBinScript
     def initialize
       @offset = 0
       @sections = ALL_SECTIONS
+      @show_replaced = false
     end
 
     COMMANDS = [ :show ]
     ALL_SECTIONS = [ :meta, :request, :response, :body ]
+
+    HEADER_TITLES = { :meta => "META",
+                      :request => "RQST",
+                      :response => "RESP" }
 
     def run( args = ARGV )
       command = parse_args( args )
@@ -72,6 +77,11 @@ module IudexBinScript
                    "Show #{sec} #{ 'headers' unless sec == :body }" ) do
             osecs << sec
           end
+        end
+
+        opts.on( "-x", "--show-replaced",
+                 "Show replaced records as well." ) do
+          @show_replaced = true
         end
 
         opts.on_tail( "-h", "--help", "Show help and exit" ) do
@@ -112,16 +122,18 @@ module IudexBinScript
           bfile = barc_open( bname )
           rr = bfile.reader
           while( rec = rr.next )
-            display( rec, ( bname if barcs.length > 0 ) )
+            if @show_replaced || rec.type.chr != 'R'
+              display( rec, ( bname if barcs.length > 1 ) )
+            end
           end
         end
       end
     end
 
     def display( rec, meta = nil )
-      puts( "@BARC1 %c%s : 0x%x %s" %
+      puts( "-BARC1 %c%s : 0x%x %s" %
             [ rec.type,
-              rec.compressed? ? 'C':'',
+              rec.compressed? ? 'C':'P',
               rec.offset,
               meta ] )
 
@@ -133,17 +145,20 @@ module IudexBinScript
     end
 
     def display_headers( htype, headers )
-      puts "=#{htype.to_s.upcase}="
-      headers.each { |h| puts h }
-      puts
+      unless headers.empty?
+        puts "=#{ HEADER_TITLES[ htype ] }="
+        headers.each { |h| puts h }
+        puts
+      end
     end
 
     def dump_body( rec )
       body_in = rec.body_input_stream
-      if body_in
-        puts "=BODY BEGIN="
-        Streams::copy( body_in, Java::java.lang.System::out )
-        puts "\n=BODY END="
+      if body_in && ( c = body_in.read ) != -1
+        out = Java::java.lang.System::out
+        puts "=BODY="
+        out.write( c )
+        Streams::copy( body_in, out )
         puts
       end
     end

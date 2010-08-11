@@ -52,14 +52,21 @@ public class BARCFileTest
     {
 
         Record rec = _barc.append();
+        rec.setType( 'T' );
         rec.setCompressed( true );
         assertEquals( 0L, rec.offset() );
 
         rec = _barc.append();
+        rec.setType( 'T' );
         assertEquals( BARCFile.HEADER_LENGTH, rec.offset() );
 
         rec = _barc.append();
+        rec.setType( 'T' );
+        rec.setCompressed( true );
         assertEquals( BARCFile.HEADER_LENGTH * 2, rec.offset() );
+        rec.close();
+        rec = _barc.read( rec.offset() );
+        assertEquals( -1, rec.bodyInputStream().read( new byte[ 1024 ] ) );
     }
 
     @Test
@@ -214,6 +221,22 @@ public class BARCFileTest
             }
 
         }
+    }
+
+    @Test
+    public void testMarkReplaced() throws IOException
+    {
+        Record wrec = _barc.append();
+        wrec.setType( 'T' );
+        wrec.writeResponseHeaders(
+            Arrays.asList( new Header( "RESP", "value" ) ) );
+        OutputStream out = wrec.bodyOutputStream();
+        for( byte[] row : FILLER ) out.write( row );
+        out.close();
+        wrec.close();
+        _barc.markReplaced( 0 );
+        wrec = _barc.append();
+        wrec.close();
     }
 
     @Test

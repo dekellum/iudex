@@ -61,6 +61,11 @@ public final class BARCWriter implements Filter, Closeable
         _metaHeaders = metaHeaders;
     }
 
+    public void setRecordType( char type )
+    {
+        _recordType = type;
+    }
+
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
@@ -85,8 +90,11 @@ public final class BARCWriter implements Filter, Closeable
             if( cs != null ) {
                 session = _barcDir.startWriteSession();
 
+                replaceIfSameFile( content, session );
+
                 Record rec = session.append();
                 rec.setCompressed( _doCompress );
+                rec.setType( _recordType );
 
                 rec.writeMetaHeaders( genMetaHeaders( content ) );
 
@@ -109,12 +117,31 @@ public final class BARCWriter implements Filter, Closeable
         }
     }
 
+    private void replaceIfSameFile( UniMap content, WriteSession session )
+        throws IOException
+    {
+        UniMap current = content.get( ContentKeys.CURRENT );
+
+        if( current != null ) {
+            Integer cfile = current.get( ContentKeys.CACHE_FILE );
+            Long coffset  = current.get( ContentKeys.CACHE_FILE_OFFSET );
+
+            if( ( cfile != null ) && ( coffset != null ) &&
+                ( cfile == session.fileNumber() ) ) {
+                _log.debug( "Replacing prior record, offset {} in same file {}",
+                            coffset, cfile );
+                session.markReplaced( coffset );
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private List<Header> genMetaHeaders( UniMap content )
     {
         List<Header> headers = new ArrayList<Header>( _metaHeaders.size() );
         for( Key key : _metaHeaders ) {
             Object value = content.get( key );
+
             if( value != null ) headers.add( new Header( key, value ) );
         }
         return headers;
@@ -134,6 +161,8 @@ public final class BARCWriter implements Filter, Closeable
     private final BARCDirectory _barcDir;
 
     private boolean _doCompress = false;
+    private char _recordType = 'H'; //HTML
+
     private List<Key> _metaHeaders = Arrays.asList( (Key) ContentKeys.URL,
                                                     ContentKeys.LAST_VISIT,
                                                     ContentKeys.TYPE );

@@ -110,6 +110,7 @@ public class UpdateFilter implements FilterContainer
         {
             UniMap out = merge( updated, current );
 
+            out.set( CURRENT, current );
             out.set( NEW_REFERENCES,     _newReferences );
             out.set( UPDATED_REFERENCES, _updatedReferences );
 

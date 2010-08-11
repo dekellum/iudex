@@ -131,8 +131,7 @@ module Iudex
       end
 
       def page_receiver
-        [ barc_writer,
-          page_updater ]
+        [ page_updater ]
       end
 
       def barc_writer
@@ -151,7 +150,8 @@ module Iudex
       end
 
       def page_post
-        [ Prioritizer.new( "page-post",
+        [ barc_writer,
+          Prioritizer.new( "page-post",
                            :constant => 0,
                            :min_next => ( 30 * 60.0 ) ),
           last_visit_setter ]

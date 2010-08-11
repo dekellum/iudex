@@ -120,6 +120,11 @@ public final class BARCDirectory implements Closeable
             return _currentRecord;
         }
 
+        public void markReplaced( long offset ) throws IOException
+        {
+            _barc.markReplaced( offset );
+        }
+
         /**
          * End session, allowing another thread to write to this same file.
          */
