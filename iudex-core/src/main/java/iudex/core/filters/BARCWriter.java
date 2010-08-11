@@ -128,9 +128,9 @@ public final class BARCWriter implements Filter, Closeable
 
             if( ( cfile != null ) && ( coffset != null ) &&
                 ( cfile == session.fileNumber() ) ) {
-                session.markReplaced( coffset );
-                _log.debug( "Replaced prior record, offset {} in same file {}",
+                _log.debug( "Replacing prior record, offset {} in same file {}",
                             coffset, cfile );
+                session.markReplaced( coffset );
             }
         }
     }
