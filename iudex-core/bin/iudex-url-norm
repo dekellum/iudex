@@ -1,0 +1,69 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (c) 2008-2010 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+
+module IudexBinScript
+
+  require 'rjack-logback'
+  include RJack
+
+  Logback.config_console( :level => Logback::INFO, :stderr => true )
+
+  require 'iudex-core'
+  include Iudex
+
+  Core::Config.parse_options do |opts|
+    opts.banner = "Usage: iudex-url-norm [options] [UrlsFile]..."
+    opts.on( "-v", "--version", "Display version" ) do |file|
+      puts "iudex-core: #{Core::VERSION}"
+      exit 1
+    end
+    opts.on_tail( "-h", "--help", "Show help and exit" ) do
+      puts opts
+      puts
+      puts( "Write uhash and normalized URLs to STDOUT, " +
+            "from UrlsFile(s) or STDIN." )
+      exit 1
+    end
+  end
+
+  def self.run( argv = ARGV )
+    if ARGV.empty?
+      process( $stdin )
+    else
+      ARGV.each do |fname|
+        open( fname, "r" ) do |fin|
+          process( fin )
+        end
+      end
+    end
+  end
+
+  def self.process( fin )
+    fin.each do |url|
+      vurl = Core::VisitURL.normalize( url.chomp )
+      puts vurl.uhash + ' ' + vurl.to_s
+    end
+  end
+
+  run
+
+end

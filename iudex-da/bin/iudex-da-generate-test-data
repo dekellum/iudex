@@ -1,0 +1,116 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (c) 2008-2010 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+
+require 'rjack-logback'
+RJack::Logback.config_console( :thread => true )
+
+require 'iudex-da'
+require 'iudex-da/pool_data_source_factory'
+
+class Generator
+  include Iudex::DA
+  include Gravitext::HTMap
+
+  import 'iudex.core.VisitURL'
+  import 'iudex.core.ContentKeys'
+  import 'org.apache.commons.dbutils.ResultSetHandler'
+  import 'org.apache.commons.dbutils.QueryRunner'
+  import 'iudex.da.ContentMapper'
+  import 'iudex.da.ContentWriter'
+
+  # 26^3 or 17,576 hosts
+  def hosts
+    h = []
+    r = ('a'..'z')
+    r.each do |i|
+      r.each do |j|
+        r.each do |k|
+          h << i.to_s + j + k + ".com"
+        end
+      end
+    end
+    h
+  end
+
+  def initialize
+    @factory = PoolDataSourceFactory.new
+    @data_source = @factory.create
+
+    @kmap = ContentMapper.new( [ ContentMapper::UHASH,
+                                 ContentMapper::HOST,
+                                 ContentKeys::URL,
+                                 ContentKeys::TYPE,
+                                 ContentKeys::PRIORITY,
+                                 ContentKeys::NEXT_VISIT_AFTER ] )
+
+    UniMap.define_accessors
+  end
+
+  def clear
+    qrun = QueryRunner.new( @data_source )
+    qrun.update( "DELETE from urls;" )
+  end
+
+  def write( parts = 3 )
+    writer = ContentWriter.new( @data_source, @kmap )
+    hs = hosts
+    sl = hs.length / parts
+    threads = []
+    while( ( h = hs.slice!( 0, sl ) ).length > 0 )
+      threads << Thread.new( h, writer ) do |hi, out|
+        now = Time.now
+        batch = []
+        hi.each do |host|
+          (rand(50) + 1).times do |i|
+            c = UniMap.new
+            c.priority = ( rand * 9.99 + 0.01 )
+            c.url = VisitURL.normalize( "http://#{host}/#{i}" )
+            c.type = "FEED"
+            c.next_visit_after = now + ( rand(3) * 60 * 60 * 24 * 100 ) # 2/3 are in future
+            batch << c
+            if batch.length >= 10_000
+              out.write( batch )
+              batch.clear
+            end
+          end
+        end
+        out.write( batch ) unless batch.empty?
+      end
+    end
+    threads.each { |t| t.join }
+  end
+
+end
+
+Iudex::Core::Config.parse_options do |opts|
+  opts.on( "-d", "--debug" ) do
+    RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
+  end
+  opts.on( "-v", "--version", "Display version and exit" ) do |file|
+    puts "iudex-da: #{Iudex::DA::VERSION}"
+    exit 1
+  end
+end
+
+g = Generator.new
+g.clear
+g.write

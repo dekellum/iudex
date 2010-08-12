@@ -1,0 +1,14 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+bin/iudex-test-config
+bin/iudex-url-norm
+config/config.rb
+lib/iudex-core/base.rb
+lib/iudex-core.rb
+lib/iudex-core/config.rb
+test/setup.rb
+test/test_content_fetcher.rb
+test/test_log_writer.rb
