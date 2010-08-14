@@ -15,7 +15,7 @@
 #++
 
 require 'rjack-slf4j'
-require 'iudex-da'
+require 'iudex-da/config'
 require 'active_record'
 
 module Iudex::DA
