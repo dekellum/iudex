@@ -1,9 +1,9 @@
 ---
-title: Data Access
+title: DA
 layout: sub
 ---
 
-## Provides:
+# Data Access
 
 * A PostgreSQL-based content summary data store
 * A politeness-aware persistent priority queue using SQL:2003

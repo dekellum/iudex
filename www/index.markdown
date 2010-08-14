@@ -2,6 +2,8 @@
 layout: home
 ---
 
+# Iūdex
+
 Iūdex provides general purpose and extensible web feed aggregation and
 web crawling facilities.  It is pronounced as the Latin
 [/ˈjuː.deks/][wiki-ogg][^wik], meaning: judge or umpire, in reference
