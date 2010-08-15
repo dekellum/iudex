@@ -25,7 +25,12 @@ module IudexBinScript
   require 'rjack-logback'
   RJack::Logback.config_console
 
-  require 'iudex-da'
+  # Note: Avoid loading iudex-da with its jar dependency which would
+  # make it hard to boostrap the db from source alone.
+  # Instead load only nessary core, base, config, and ar (post config):
+  require 'iudex-core'
+  require 'iudex-da/base'
+  require 'iudex-da/config'
   include Iudex
 
   # Apply all config before including ar

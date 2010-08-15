@@ -1,3 +1,4 @@
+
 #--
 # Copyright (c) 2008-2010 David Kellum
 #
@@ -14,26 +15,28 @@
 # permissions and limitations under the License.
 #++
 
-require 'rjack-slf4j'
-require 'rjack-commons-dbcp'
-require 'rjack-commons-dbutils'
-
-require 'iudex-core'
-
-require 'iudex-da/base'
-require 'iudex-da/config'
-
 module Iudex
+
   module DA
-
-    require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
-
-    import 'iudex.da.WorkPoller'
-    import 'iudex.da.ContentMapper'
-
-    module Filters
-      import 'iudex.da.filters.UpdateFilter'
-    end
-
+    # Database connection configuration for both ActiveRecord
+    # (migrations, testing) and PoolDataSourceFactory.
+    # May (-c)onfig via Iudex::Core::Config.connect_props=
+    # Defaults are used by unit tests, migrate
+    CONFIG = {
+      :adapter  => 'jdbcpostgresql',
+      :host     => 'localhost',
+      :database => 'iudex_test',
+      :username => 'iudex',
+      :pool     => 10 }
   end
+
+  module Core
+    module Config
+      # Merge props to Iudex::DA::CONFIG
+      def self.connect_props=( props )
+        Iudex::DA::CONFIG.merge!( props )
+      end
+    end
+  end
+
 end
