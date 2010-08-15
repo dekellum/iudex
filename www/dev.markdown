@@ -1,41 +1,63 @@
 ---
-title: Style Guide
+title: Development Guide
 layout: sub
 ---
 
+# Development Guide
+
+* toc here
+{:toc}
+
+## Git
+
+Canonical Repository: [http://github.com/dekellum/iudex](http://github.com/dekellum/iudex)
+
+## License
+
+All Iūdex code and documentation is licensed under the
+[Apache License, 2.0][AL2] (local [LICENSE.txt]).
+
+To avoid any ambiguities with intellectual property and enable
+potential future transition to a foundation such as the Apache
+Software Foundation, contributor agreements are required (mail, or
+scan to PDF and email) before merging any contributions:
+
+* [Individual Contributor Agreement](license/icla.txt)
+* [Corporate Contributor Agreement](license/cla-corporate.txt)
+
+[AL2]: http://www.apache.org/licenses/LICENSE-2.0
+[LICENSE.txt]: license/LICENSE.txt
+
 ## Ruby Code
 
-* Avoid polluting the global namespace by a module hierarchy,
-  i.e. <code>Iudex::Worker</code>
+* Avoid polluting the global namespace by always using a module
+  hierarchy, i.e. <code>Iudex::Worker</code>
 
 * Even with bin scripts, use the effectively private <code>module
-  IudexBinScript</code> to contain <code>include</code>. This can seem
-  a bit strange, but a valid and purposeful ruby:
+  IudexBinScript</code> to contain any required <code>include</code>'s. This may seem
+  a bit strange, but is valid and purposeful:
 
-  {% highlight ruby %}
-  module IudexBinScript
+{% highlight ruby %}
+module IudexBinScript
 
-    require 'rjack-logback'
-    RJack::Logback.config_console
+  require 'rjack-logback'
+  RJack::Logback.config_console
 
-    require 'iudex-da'
-    include Iudex
+  require 'iudex-core'
+  include Iudex
 
-    #...
-  end
-  {% endhighlight %}
+  #...
+end
+{% endhighlight %}
 
-### Ruby Code Style
+### Ruby Style
 
 * 2 space indent, no tabs.
 * 80 column width accept in exceptional circumstances.
-* Use ASCII (or UTF-8, if you have to).
+* Use ASCII, or UTF-8 if necessary.
 * Avoid spurious whitespace (more than a single consecutive empty
   line, trailing space)[^gt-cleanws]
-* Liberal space around operators and internal to parens and braces, i.e.
-  <code>method_call( x, y )</code>,
-  <code>if ( a != b )</code>,
-  <code>[ :goo, :bar ].map { |m| m.to_s }</code>
+* Liberal space around operators and internal to parens and braces.
 * Favor parenthesis for most method calls and less ambiguity.
 * Use Unix-style line endings.
 * Indent when as deep as case.
@@ -43,10 +65,27 @@ layout: sub
   empty line between the comment block and the def.
 * Use empty lines to break up a long method into logical paragraphs.
 
+{% highlight ruby %}
+  def adjust( map )
+
+    priority = @factors.inject( @constant ) do | p, (w,func) |
+      p + ( w * send( func, map ) )
+    end
+
+    if map.last_visit
+      delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
+    else
+      delta = 0.0
+    end
+
+    [ priority, delta ]
+  end
+{% endhighlight %}
+
 ## Java Code
 
 * Java code is unaware of its ruby bootstrapping, or of ruby objects or
-  the interpreter in general. Thus the general style of java is POJO
+  the interpreter in general. Thus the general style of java is POJOs
   with no special "configuration" awareness.
 * Java is built using Maven, jar packaged, and included in Iūdex gems
   for distribution.
@@ -54,7 +93,7 @@ layout: sub
   management.
 * Maven utilization is however purposely practically very simple.
 
-### Java Code Style
+### Java Style
 
 * 4 space indent
 * 80 column width accept in exceptional circumstances.
@@ -76,14 +115,13 @@ with the following narrowing constraints:
 * No current plan to use "special" release versions aka
   alpha,beta,etc. as in my opinion this is often a distinction only
   visible in hindsight
-
 * Releasing often and as necessary with concurrent MAJOR/MINOR release
   (stable vs less-stable lines[^jetty]
 
 In development (and related to git):
 
 * Topic branches should avoid including version changes, release notes, etc.
-* Integration branches may include a version bump late or once it
+* Integration branches may include a version bump, late or once it
   becomes clear if the sum of integrated changes is a MAJOR, MINOR, or
   PATCH level candidate.
 

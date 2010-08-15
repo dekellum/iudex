@@ -16,6 +16,10 @@ Notable features:
 * [Data Access](/da.html) (DA)
 * [Scalability and Fault Tolerance](/distribution.html)
 
+See also:
+
+* [Development Guide](/dev.html)
+
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
 
 [^wik]: Pronunciation and audio from
@@ -34,15 +38,6 @@ for java dependency management.
 ## License
 
 All Iūdex code and documentation is licensed under the
-[Apache License, 2.0][AL2] (local [LICENSE.txt]).
-
-To avoid any ambiguities with intellectual property and enable
-potential future transition to a foundation such as the Apache
-Software Foundation, contributor agreements are required (mail, or
-scan to PDF and email) before merging any contributions:
-
-* [Individual Contributor Agreement](license/icla.txt)
-* [Corporate Contributor Agreement](license/cla-corporate.txt)
+[Apache License, 2.0][AL2].
 
 [AL2]: http://www.apache.org/licenses/LICENSE-2.0
-[LICENSE.txt]: license/LICENSE.txt
