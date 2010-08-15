@@ -95,9 +95,8 @@ caption {
 }
 
 #header {
-    font-weight: bold;
-    font-size: 190%;
-    margin-bottom: 1em;
+    font-size: 120%;
+    margin-bottom: 0.5em;
 }
 
 .footnotes li {
@@ -274,5 +273,5 @@ p img {
 }
 
 div.svg-object {
-	text-align: center
+    text-align: center
 }

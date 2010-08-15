@@ -3,6 +3,8 @@ title: BARC
 layout: sub
 ---
 
+# Basic Archive
+
 ![LARC LX](/img/BARC-LARC-XV-2-c.jpg)[^cc]
 
 The Iūdex BARC container format supports efficient block storage of
@@ -21,6 +23,10 @@ features/advantages:
 
 [ARC]:  http://crawler.archive.org/articles/developer_manual/arcs.html
 [WARC]: http://www.digitalpreservation.gov/formats/fdd/fdd000236.shtml
+
+* toc
+{:toc}
+
 
 ## BARC Format
 
