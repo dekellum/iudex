@@ -3,3 +3,5 @@ pkg/
 doc/
 lib/**/*.jar
 target
+.classpath
+.project

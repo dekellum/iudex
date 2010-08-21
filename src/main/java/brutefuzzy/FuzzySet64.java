@@ -1,34 +1,27 @@
+/*
+ * Copyright (c) 2010 David Kellum
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License.  You may
+ * obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package brutefuzzy;
 
-public final class FuzzySet64
+public interface FuzzySet64
 {
-    public FuzzySet64( int capacity, int thresholdBits )
-    {
-        //FIXME: throw on capacity < 1
-        _set = new long[ capacity ];
-        _thresholdBits = thresholdBits;
-    }
-
-    public boolean add( final long key )
-    {
-        final int end = _length;
-        for( int i = 0; i < end; ++i ) {
-            if ( fuzzyMatch( _set[i], key ) ) return false;
-        }
-        //FIXME: test length and auto expand
-        _set[ _length++ ] = key;
-        return true;
-    }
-
-    public boolean fuzzyMatch( final long a, final long b )
-    {
-        //Note: This could be further optimized by short circuit
-        //evaluation, i.e. stop counting bits once _thresholdBits is
-        //exceeded.
-        return ( Long.bitCount( a ^ b ) <= _thresholdBits );
-    }
-
-    private final long[] _set;
-    private final int _thresholdBits;
-    private int _length = 0;
+    /**
+     * Attempt to add key to set.
+     * @return true if key is unique (greater then threshold bits different) and
+     *         key was added.
+     */
+    public boolean add( final long key );
 }
