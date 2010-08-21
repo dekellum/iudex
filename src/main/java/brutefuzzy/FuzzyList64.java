@@ -45,10 +45,14 @@ public final class FuzzyList64
 
     public boolean fuzzyMatch( final long a, final long b )
     {
-        //Note: Might be further optimized by short circuit
-        //evaluation, i.e. stop counting bits once _thresholdBits is
-        //exceeded.
-        return ( Long.bitCount( a ^ b ) <= _thresholdBits );
+        final long xor = a ^ b;
+
+        int diff = Integer.bitCount( (int) xor );
+        if( diff <= _thresholdBits ) {
+            diff +=  Integer.bitCount( (int) ( xor >> 32 ) );
+            return ( diff <= _thresholdBits );
+        }
+        return false;
     }
 
     void store( final long key )
