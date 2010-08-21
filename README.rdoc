@@ -4,12 +4,17 @@
 
 == Description
 
-Fuzzy bit difference 64-bit key set in java with performance test.
+Provides set-like containers of 64-bit keys, constrained such that no
+two keys have bit difference (aka Hamming distance) less than some
+threshold number of bits. A performance test driver is also included.
 
 == Dependencies
 
 * Java 1.5+
-* JRuby 1.1.6+
+
+For tests:
+
+* JRuby 1.3+
 
 == License
 

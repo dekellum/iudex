@@ -1,4 +1,8 @@
-=== 2.0.0 (TBD)
+=== 2.0.0 (2010-8-21)
+* FuzzySet64 is now an interface, FizzyList64 for brute force search.
+* New FuzzyTree64 search tree impl. Faster for sets of keys
+  approx. greater than 100.
+* Other general perf. improvements.
 
 === 1.0.0 (2010-3-3)
 * Birthday.

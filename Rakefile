@@ -32,5 +32,4 @@ task :gem  => [ :check_pom_version, :check_history_version                      
 task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
 task :push => [                                             :check_history_date ]
 
-
 t.define_tasks
