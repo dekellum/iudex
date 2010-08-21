@@ -16,8 +16,6 @@
 
 package brutefuzzy;
 
-import gnu.trove.TByteObjectHashMap;
-
 public final class FuzzyTree64
     implements FuzzySet64
 {
@@ -25,26 +23,25 @@ public final class FuzzyTree64
 
     public FuzzyTree64( int capacity, int thresholdBits )
     {
-        _capacity = capacity;
         _thresholdBits = thresholdBits;
         _segmentBits = segmentBits( thresholdBits );
         _segments = 64 / _segmentBits;
         _mask = ( 1 << _segmentBits ) - 1;
-        _listCap = capacity / ( _segmentBits * 4 );
-        _index = setupIndex();
+        _listCap = Math.max( 2, Math.min( capacity /
+                                          ( _segmentBits * 4 ), 64 ) );
+        _tree = setupIndex();
     }
 
     public boolean add( final long key )
     {
         long skey = key;
-        byte[] segs = new byte[_segments];
+        short[] segs = new short[_segments];
         FuzzyList64[] lists = new FuzzyList64[_segments];
 
-        // Search for matches within each segment, saving of the segs value
-        // and existing
+        // Search for matches within each segment
         for( int s = 0; s < _segments; ++s ) {
-            segs[s] = (byte) ( skey & _mask );
-            lists[s] = _index[s].get( segs[s] );
+            segs[s] = (short) ( skey & _mask );
+            lists[s] = _tree[s][ segs[s] ];
             if( lists[s] != null ) {
                 if( lists[s].find( key ) ) return false; //found
             }
@@ -55,7 +52,7 @@ public final class FuzzyTree64
         for( int s = 0; s < _segments; ++s ) {
             if( lists[s] == null ) {
                 lists[s] = new FuzzyList64( _listCap, _thresholdBits );
-                _index[s].put( segs[s], lists[s] );
+                _tree[s][ segs[s ] ] = lists[s];
             }
             lists[s].store( key );
         }
@@ -65,30 +62,28 @@ public final class FuzzyTree64
 
     private int segmentBits( int thresholdBits )
     {
-        for( int l : SEG_LENGTHS ) {
+        for( int l : SEG_BIT_LENGTHS ) {
             if( ( 64 / l ) > thresholdBits ) return l;
         }
         throw new IllegalArgumentException( "threshold too long" );
     }
 
-    @SuppressWarnings("unchecked")
-    private TByteObjectHashMap<FuzzyList64>[] setupIndex()
+    private FuzzyList64[][] setupIndex()
     {
-        TByteObjectHashMap<FuzzyList64>[] index =
-            new TByteObjectHashMap[_segments];
+        FuzzyList64[][] index =
+            new FuzzyList64[_segments][256];
         for( int s = 0; s < _segments; ++s ) {
-            index[s] = new TByteObjectHashMap<FuzzyList64>( 256, 1.0F );
+            index[s] = new FuzzyList64[256];
         }
 
         return index;
     }
 
-    private final int _capacity;
     private final int _listCap;
 
-    private final TByteObjectHashMap<FuzzyList64>[] _index;
+    private final FuzzyList64[][] _tree;
 
-    private static final int[] SEG_LENGTHS = { 8, 4 };
+    private static final int[] SEG_BIT_LENGTHS = { 8, 4 };
 
     private final int _thresholdBits;
     private final int _segmentBits;

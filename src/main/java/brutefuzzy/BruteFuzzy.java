@@ -22,7 +22,7 @@ public class BruteFuzzy
 {
     public static FuzzySet64 createSet64( int capacity, int thresholdBits )
     {
-        if( capacity > 100 && thresholdBits <= FuzzyTree64.MAX_THRESHOLD ) {
+        if( capacity > 228 && thresholdBits <= FuzzyTree64.MAX_THRESHOLD ) {
             return new FuzzyTree64( capacity, thresholdBits );
         }
         else {
@@ -58,7 +58,7 @@ public class BruteFuzzy
         }
 
         // ~5% dup rate in sample, randomly distributed
-        int dups = length/10;
+        int dups = length / 10;
         for( int r = 0; r < dups; ++r ) {
             long k = keys[ random.nextInt(length) ];
             int bitsOff = random.nextInt( thresholdBits * 2 );

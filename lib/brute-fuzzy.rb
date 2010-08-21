@@ -18,7 +18,6 @@ require 'brute-fuzzy/base.rb'
 
 require 'java'
 require 'gravitext-util'
-require '/home/david/dist/trove-2.1.0/lib/trove-2.1.0.jar' #FIXME
 
 module BruteFuzzy
 
