@@ -1,8 +1,10 @@
 = brute-fuzzy
 
+* http://github.com/dekellum/brute-fuzzy
+
 == Description
 
-Fuzzy bit match 64-bit integer key set in java with performance test.
+Fuzzy bit difference 64-bit key set in java with performance test.
 
 == Dependencies
 
