@@ -49,14 +49,14 @@ public class FuzzySetPerfTest implements TestFactory
     {
         switch( _mode ) {
         case LIST:
-            return new BaseRunnable( seed ) {
+            return new BaseRunnable() {
                 FuzzySet64 createSet64( final int cap )
                 {
                     return new FuzzyList64( cap, _thresholdBits );
                 }
             };
         case TREE:
-            return new BaseRunnable( seed ) {
+            return new BaseRunnable() {
                 FuzzySet64 createSet64( final int cap )
                 {
                     return new FuzzyTree64( cap, _thresholdBits );
@@ -68,11 +68,6 @@ public class FuzzySetPerfTest implements TestFactory
 
     private abstract class BaseRunnable implements TestRunnable
     {
-
-        BaseRunnable( final int seed )
-        {
-        }
-
         public final int runIteration( int run )
         {
             final int end = _testKeys.length;

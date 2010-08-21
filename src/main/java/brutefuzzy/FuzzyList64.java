@@ -16,6 +16,9 @@
 
 package brutefuzzy;
 
+/**
+ * A brute force array scan implementation of FuzzySet64.
+ */
 public final class FuzzyList64
     implements FuzzySet64
 {

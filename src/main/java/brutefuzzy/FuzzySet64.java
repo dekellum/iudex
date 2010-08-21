@@ -16,12 +16,16 @@
 
 package brutefuzzy;
 
+/**
+ * Interface for a set-like container of 64-bit keys, with the
+ * constraint that no two keys have bit different (aka Hamming
+ * distance) less than some threshold number of bits.
+ */
 public interface FuzzySet64
 {
     /**
      * Attempt to add key to set.
-     * @return true if key is unique (greater then threshold bits different) and
-     *         key was added.
+     * @return true if the key was added (no matching key in set already).
      */
-    public boolean add( final long key );
+    boolean add( final long key );
 }

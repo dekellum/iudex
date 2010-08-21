@@ -16,6 +16,13 @@
 
 package brutefuzzy;
 
+/**
+ * A custom search tree implementation of FuzzySet64. The tree
+ * exploits the property that, if given some threshold bits T, if we
+ * break keys up into T+1 segments, then if a match exists, at least
+ * one of these segments must be an exact match.  8 or 16 segments
+ * with 256 FuzzyList64 lists per segment is used for the search tree.
+ */
 public final class FuzzyTree64
     implements FuzzySet64
 {
@@ -26,7 +33,9 @@ public final class FuzzyTree64
         _thresholdBits = thresholdBits;
         _segmentBits = segmentBits( thresholdBits );
         _segments = 64 / _segmentBits;
-        _mask = ( 1 << _segmentBits ) - 1;
+        _mask = ( 1L << _segmentBits ) - 1;
+
+        // Initial capacity for leaf nodes between 2 and 64 keys.
         _listCap = Math.max( 2, Math.min( capacity /
                                           ( _segmentBits * 4 ), 64 ) );
         _tree = setupIndex();
@@ -34,9 +43,9 @@ public final class FuzzyTree64
 
     public boolean add( final long key )
     {
+        final short[] segs = new short[_segments];
+        final FuzzyList64[] lists = new FuzzyList64[_segments];
         long skey = key;
-        short[] segs = new short[_segments];
-        FuzzyList64[] lists = new FuzzyList64[_segments];
 
         // Search for matches within each segment
         for( int s = 0; s < _segments; ++s ) {
@@ -70,8 +79,7 @@ public final class FuzzyTree64
 
     private FuzzyList64[][] setupIndex()
     {
-        FuzzyList64[][] index =
-            new FuzzyList64[_segments][256];
+        FuzzyList64[][] index = new FuzzyList64[_segments][256];
         for( int s = 0; s < _segments; ++s ) {
             index[s] = new FuzzyList64[256];
         }
