@@ -16,8 +16,6 @@
 
 package brutefuzzy;
 
-import java.util.Random;
-
 import com.gravitext.concurrent.TestFactory;
 import com.gravitext.concurrent.TestRunnable;
 
@@ -38,8 +36,8 @@ public class FuzzySetPerfTest implements TestFactory
     public FuzzySetPerfTest( Mode mode, int length, int thresholdBits )
     {
         _mode = mode;
-        _length = length;
         _thresholdBits = thresholdBits;
+        _testKeys = BruteFuzzy.testKeys( length, thresholdBits, 666 );
     }
 
     public String name()
@@ -70,17 +68,9 @@ public class FuzzySetPerfTest implements TestFactory
 
     private abstract class BaseRunnable implements TestRunnable
     {
-        final long _testKeys[];
 
         BaseRunnable( final int seed )
         {
-            // Pre define a random set of long keys
-            Random random = new Random( seed );
-
-            _testKeys = new long[_length];
-            for( int i = 0; i < _length; i++ ) {
-                _testKeys[i] = random.nextLong();
-            }
         }
 
         public final int runIteration( int run )
@@ -98,6 +88,6 @@ public class FuzzySetPerfTest implements TestFactory
    };
 
     private final Mode _mode;
-    private final int _length;
     private final int _thresholdBits;
+    private final long _testKeys[];
 }

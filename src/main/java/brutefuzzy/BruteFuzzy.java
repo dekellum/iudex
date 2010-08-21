@@ -16,6 +16,8 @@
 
 package brutefuzzy;
 
+import java.util.Random;
+
 public class BruteFuzzy
 {
     public static FuzzySet64 createSet64( int capacity, int thresholdBits )
@@ -40,6 +42,32 @@ public class BruteFuzzy
         }
 
         return v;
+    }
+
+    /**
+     * Generate a test set of keys.
+     */
+    public static long[] testKeys( int length, int thresholdBits, int seed )
+    {
+        Random random = new Random( seed );
+
+        // Start with totally random sample
+        long[] keys = new long[length];
+        for( int i = 0; i < length; ++i ) {
+            keys[i] = random.nextLong();
+        }
+
+        // ~5% dup rate in sample, randomly distributed
+        int dups = length/10;
+        for( int r = 0; r < dups; ++r ) {
+            long k = keys[ random.nextInt(length) ];
+            int bitsOff = random.nextInt( thresholdBits * 2 );
+            for( int bc = 0; bc < bitsOff; ++bc ) {
+                k ^= ( 1L << random.nextInt( 64 ) );
+            }
+            keys[ random.nextInt(length) ] = k;
+        }
+        return keys;
     }
 
 }

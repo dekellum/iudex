@@ -19,6 +19,13 @@
       <artifactId>gravitext-util</artifactId>
       <version>1.4.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>gnu</groupId>
+      <artifactId>trove</artifactId>
+      <version>2.1.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>

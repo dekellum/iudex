@@ -1,5 +1,7 @@
 #!/usr/bin/env jruby
 # -*- ruby -*-
+#.hashdot.vm.options += -Xmx1G
+
 #--
 # Copyright (c) 2010 David Kellum
 #
@@ -15,8 +17,6 @@
 # implied.  See the License for the specific language governing
 # permissions and limitations under the License.
 #++
-
-#.hashdot.vm.options += -Xmx4G
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
@@ -34,7 +34,7 @@ module PerfTest
       FuzzySetPerfTest.new( mode, *( ARGV.map {|a| a.to_i } ) )
     end
     harness = Gravitext::PerfTest::Harness.new( tests )
-    harness.thread_count = 4
+    # harness.thread_count = 4
     harness.execute
   end
 end
