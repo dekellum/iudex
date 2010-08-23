@@ -18,7 +18,7 @@ package brutefuzzy;
 
 /**
  * Interface for a set-like container of 64-bit keys, with the
- * constraint that no two keys have bit different (aka Hamming
+ * constraint that no two keys have bit difference (aka Hamming
  * distance) less than some threshold number of bits.
  */
 public interface FuzzySet64

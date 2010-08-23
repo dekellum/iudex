@@ -1,4 +1,6 @@
 #!/usr/bin/env jruby
+#.hashdot.profile += jruby-shortlived
+
 #--
 # Copyright (c) 2010 David Kellum
 #
@@ -15,8 +17,6 @@
 # permissions and limitations under the License.
 #++
 
-#.hashdot.profile += jruby-shortlived
-
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
@@ -32,7 +32,19 @@ class TestFuzzySet < Test::Unit::TestCase
   TEST_SERIES = [ %w[ FFFF_FFFF_FFFF_FFFF
                       7FFF_7FFF_7FFF_7FFF
                       F7FF_F7FF_F7FF_F7FF
-                      FF7F_FF7F_FF7F_FFFF ] ]
+                      FF7F_FF7F_FF7F_FFFF ],
+
+                  %w[ 0000_0000_0000_0000
+                      0100_1000_1000_0010
+                      1000_0100_0100_1000
+                      0010_0010_0010_0001
+                      0001_0001_0001_0000 ],
+
+                  %w[ 0000_0000_0000_0000
+                      0010_0100_0100_0100
+                      0001_0000_1000_1001
+                      0100_1001_0001_0000
+                      0000_0010_0010_0010 ] ]
 
   def test_hex
     assert_equal( 0x1000_0000, hex( "1000_0000" ) )

@@ -61,7 +61,7 @@ public final class FuzzyTree64
         for( int s = 0; s < _segments; ++s ) {
             if( lists[s] == null ) {
                 lists[s] = new FuzzyList64( _listCap, _thresholdBits );
-                _tree[s][ segs[s ] ] = lists[s];
+                _tree[s][ segs[s] ] = lists[s];
             }
             lists[s].store( key );
         }
