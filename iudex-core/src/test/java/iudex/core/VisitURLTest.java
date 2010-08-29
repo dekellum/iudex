@@ -46,8 +46,11 @@ public class VisitURLTest
     public void testNormalize() throws SyntaxException
     {
         String[][] sameURLs = new String[][] {
-            { "http://h.c/foo", "http://h.c/foo" },
-            { "http://h.c/foo", "http://h.c/foo?" },
+            { "http://h.c/foo",
+               "http://h.c/foo",
+               "http://h.c./foo",
+               "http://h.c/foo?" },
+
             { "http://h.c/", "http://h.c" },
 
             { "http://h.c/foo", " \thttp://h.c/foo\n\r\t" },
