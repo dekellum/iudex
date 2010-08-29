@@ -64,7 +64,7 @@ class TLDSetGenerator
   end
 
   def generate_java( java_file )
-    erb_file = File.join( File.dirname( __FILE__ ), 'TLDSets.java.erb' )
+    erb_file = File.join( BASEDIR, 'TLDSets.java.erb' )
     template = ERB.new( IO.read( erb_file ), nil, '%' )
 
     open( java_file, 'w' ) do |fout|
