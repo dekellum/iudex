@@ -42,7 +42,7 @@ module Iudex
         @factors = [ [ 30.0, :ref_change_rate ],
                      [ -1.0, :log_pub_age ] ]
 
-        @log = SLF4J[ self.class ]
+        @log = RJack::SLF4J[ self.class ]
 
         opts.each { |k,v| send( k.to_s + '=', v ) }
         yield self if block_given?
