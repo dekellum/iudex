@@ -13,12 +13,12 @@ t = RJack::TarPit.new( 'iudex-filter',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'gravitext-util', '~> 1.4.0'  ],
-                    [ 'rjack-slf4j',    '~> 1.5.11' ] ]
+  h.extra_deps += [ [ 'gravitext-util', '~> 1.5.0'  ],
+                    [ 'rjack-slf4j',    '~> 1.6.1' ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',      '~> 1.5.0'  ],
-                        [ 'rjack-logback', '>= 0.9.18' ] ]
+  h.extra_dev_deps += [ [ 'minitest',      '~> 1.5.0' ],
+                        [ 'rjack-logback', '>= 1.0.0' ] ]
 
   h.rubyforge_name = "iudex"
 end
