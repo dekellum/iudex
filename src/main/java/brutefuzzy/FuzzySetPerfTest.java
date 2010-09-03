@@ -29,7 +29,6 @@ public class FuzzySetPerfTest implements TestFactory
 
     public FuzzySetPerfTest( Mode mode )
     {
-
         this( mode, 500, 6 );
     }
 
@@ -42,7 +41,21 @@ public class FuzzySetPerfTest implements TestFactory
 
     public String name()
     {
-        return _mode.name();
+        String name = _mode.name();
+        if( _mode == Mode.TREE ) {
+            name += "-" + _maxBits;
+        }
+        return name;
+    }
+
+    public void setMaxBits( int maxBits )
+    {
+        _maxBits = maxBits;
+    }
+
+    public void setInitialCapacity( int initialCapacity )
+    {
+        _initialCapacity = initialCapacity;
     }
 
     public TestRunnable createTestRunnable( final int seed )
@@ -59,7 +72,7 @@ public class FuzzySetPerfTest implements TestFactory
             return new BaseRunnable() {
                 FuzzySet64 createSet64( final int cap )
                 {
-                    return new FuzzyTree64( cap, _thresholdBits );
+                    return new FuzzyTree64( cap, _thresholdBits, _maxBits );
                 }
             };
         }
@@ -71,7 +84,8 @@ public class FuzzySetPerfTest implements TestFactory
         public final int runIteration( int run )
         {
             final int end = _testKeys.length;
-            final FuzzySet64 set = createSet64( end );
+            int cap = ( _initialCapacity >= 0 ) ? _initialCapacity : end;
+            final FuzzySet64 set = createSet64( cap );
             int hits = 0;
             for( int i = 0; i < end; ++i ) {
                 if( ! set.add( _testKeys[i] ) ) ++hits;
@@ -84,5 +98,7 @@ public class FuzzySetPerfTest implements TestFactory
 
     private final Mode _mode;
     private final int _thresholdBits;
+    private int _maxBits = 8;
+    private int _initialCapacity = -1;
     private final long _testKeys[];
 }

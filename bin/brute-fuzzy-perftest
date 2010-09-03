@@ -22,6 +22,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 require 'brute-fuzzy'
+require 'optparse'
 
 require 'gravitext-util'
 require 'gravitext-util/perftest'
@@ -29,12 +30,46 @@ require 'gravitext-util/perftest'
 module PerfTest
   include BruteFuzzy
 
+  MD = FuzzySetPerfTest::Mode
+
   def self.run( args = ARGV )
-    tests = FuzzySetPerfTest::Mode.values.map do |mode|
-      FuzzySetPerfTest.new( mode, *( ARGV.map {|a| a.to_i } ) )
+
+    options = {}
+    OptionParser.new do |opts|
+      opts.banner = "Usage: brute-fuzzy-perftest [options] <length> <threshold-bits>"
+      opts.on( "-t", "--threads N", Integer, "Test with thread count" ) do |n|
+        options[ :threads ] = n
+      end
+      opts.on( "--tree-bits=N", Integer,
+               "Test TREE only, with segments from specified minimum bits" ) do |n|
+        options[ :tree_bits ] = n
+      end
+      opts.on( "--capacity=N", Integer,
+               "Set initial capacity to N (default: length)" ) do |n|
+        options[ :capacity ] = 0
+      end
+
+    end.parse!
+
+    length = ARGV.shift.to_i || 1000
+    threshold = ARGV.shift.to_i || 3
+
+    min_bits = options[ :tree_bits ] || 0
+    segbits = [ 0, 4, 8, 16 ].select do |b|
+      ( b == 0 || ( ( 64 / b ) > threshold ) ) && ( b >= min_bits )
     end
+
+    tests = segbits.map do |bits|
+      mode = ( bits == 0 ) ? MD::LIST : MD::TREE
+      pt = FuzzySetPerfTest.new( mode, length, threshold )
+      pt.max_bits = bits if bits > 0
+      pt.initial_capacity = options[ :capacity ] if options[ :capacity ]
+      pt
+    end
+
     harness = Gravitext::PerfTest::Harness.new( tests )
-    # harness.thread_count = 4
+
+    harness.thread_count = options[ :threads ] if options[ :threads ]
     harness.execute
   end
 end
