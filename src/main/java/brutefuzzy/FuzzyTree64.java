@@ -20,8 +20,9 @@ package brutefuzzy;
  * A custom search tree implementation of FuzzySet64. The tree
  * exploits the property that, if given some threshold bits T, if we
  * break keys up into T+1 segments, then if a match exists, at least
- * one of these segments must be an exact match.  8 or 16 segments
- * with 256 FuzzyList64 lists per segment is used for the search tree.
+ * one of these segments must be an exact match.  4, 8 or 16 segments
+ * with 2^segments FuzzyList64 lists per segment is used for the search
+ * tree.
  */
 public final class FuzzyTree64
     implements FuzzySet64
@@ -30,26 +31,32 @@ public final class FuzzyTree64
 
     public FuzzyTree64( int capacity, int thresholdBits )
     {
+        this( capacity, thresholdBits, 8 );
+    }
+
+    public FuzzyTree64( int capacity, int thresholdBits, int maxSegmentBits )
+    {
         _thresholdBits = thresholdBits;
-        _segmentBits = segmentBits( thresholdBits );
+        _segmentBits = segmentBits( thresholdBits, maxSegmentBits );
         _segments = 64 / _segmentBits;
         _mask = ( 1L << _segmentBits ) - 1;
 
-        // Initial capacity for leaf nodes between 2 and 64 keys.
-        _listCap = Math.max( 2, Math.min( capacity /
-                                          ( _segmentBits * 4 ), 64 ) );
+        // Initial capacity for leaf nodes
+        _listCap = capacity / ( _segments * ( 1 << _segmentBits ) );
+
         _tree = setupIndex();
     }
 
     public boolean add( final long key )
     {
-        final short[] segs = new short[_segments];
-        final FuzzyList64[] lists = new FuzzyList64[_segments];
+        // Use int segs to avoid sign complications with <= 16 bit segments.
+        final int[] segs = new int[ _segments ];
+        final FuzzyList64[] lists = new FuzzyList64[ _segments ];
         long skey = key;
 
         // Search for matches within each segment
         for( int s = 0; s < _segments; ++s ) {
-            segs[s] = (short) ( skey & _mask );
+            segs[s] = (int) ( skey & _mask );
             lists[s] = _tree[s][ segs[s] ];
             if( lists[s] != null ) {
                 if( lists[s].find( key ) ) return false; //found
@@ -69,10 +76,10 @@ public final class FuzzyTree64
         return true;
     }
 
-    private int segmentBits( int thresholdBits )
+    private int segmentBits( int thresholdBits, int maxBits )
     {
         for( int l : SEG_BIT_LENGTHS ) {
-            if( ( 64 / l ) > thresholdBits ) return l;
+            if( ( l <= maxBits ) && ( 64 / l ) > thresholdBits ) return l;
         }
         throw new IllegalArgumentException( "threshold too long" );
     }
@@ -91,7 +98,7 @@ public final class FuzzyTree64
 
     private final FuzzyList64[][] _tree;
 
-    private static final int[] SEG_BIT_LENGTHS = { 8, 4 };
+    private static final int[] SEG_BIT_LENGTHS = { 16, 8, 4 };
 
     private final int _thresholdBits;
     private final int _segmentBits;
