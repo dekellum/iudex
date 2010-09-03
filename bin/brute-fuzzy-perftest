@@ -1,6 +1,7 @@
 #!/usr/bin/env jruby
 # -*- ruby -*-
-#.hashdot.vm.options += -Xmx1G
+#.hashdot.vm.options += -Xmx4G
+# add: -XX:+UseCompressedOops
 
 #--
 # Copyright (c) 2010 David Kellum
