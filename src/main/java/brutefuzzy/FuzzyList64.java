@@ -24,8 +24,9 @@ public final class FuzzyList64
 {
     public FuzzyList64( int initialCapacity, int thresholdBits )
     {
-        if( initialCapacity < 0 ) initialCapacity = 0;
-        _set = new long[ initialCapacity ];
+        if( initialCapacity > 0 ) {
+            _set = new long[ initialCapacity ];
+        }
         _thresholdBits = thresholdBits;
     }
 
@@ -69,14 +70,15 @@ public final class FuzzyList64
         if( _set.length <= _length ) {
             int size = _set.length;
             size *= 2;
-            if( size < 8 ) size = 8;
+            if( size < 4 ) size = 4;
             long[] snew = new long[ size ];
             System.arraycopy( _set, 0, snew, 0, _length );
             _set = snew;
         }
     }
 
-    private long[] _set;
+    private static final long[] EMPTY_SET = {};
+    private long[] _set = EMPTY_SET;
     private final int _thresholdBits;
     private int _length = 0;
 }
