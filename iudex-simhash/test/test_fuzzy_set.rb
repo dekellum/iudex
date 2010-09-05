@@ -21,11 +21,11 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
 
-require 'brute-fuzzy'
+require 'iudex-simhash'
 require 'test/unit'
 
 class TestFuzzySet < Test::Unit::TestCase
-  include BruteFuzzy
+  include Iudex::Simhash::BruteFuzzy
 
   # Series that will allow all but last at 3 bit threshold, all at 2
   # bit threshold.

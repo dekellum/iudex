@@ -1,19 +1,19 @@
 # -*- ruby -*-
 
 $LOAD_PATH << './lib'
-require 'brute-fuzzy/base'
+require 'iudex-simhash/base'
 
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.2.0'
+gem     'rjack-tarpit', '~> 1.2'
 require 'rjack-tarpit'
 
-t = RJack::TarPit.new( 'brute-fuzzy',
-                       BruteFuzzy::VERSION,
+t = RJack::TarPit.new( 'iudex-simhash',
+                       Iudex::Simhash::VERSION,
                        :no_assembly, :java_platform )
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_dev_deps += [ [ 'gravitext-util', '>= 1.3.2' ] ]
+  h.extra_dev_deps += [ [ 'gravitext-util', '~> 1.4.0' ] ]
 end
 
 file 'Manifest.txt' => [ 'pom.xml' ]

@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package brutefuzzy;
+package iudex.simhash.brutefuzzy;
 
 /**
  * A brute force array scan implementation of FuzzySet64.

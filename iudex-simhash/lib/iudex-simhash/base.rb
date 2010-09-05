@@ -14,6 +14,8 @@
 # permissions and limitations under the License.
 #++
 
-module BruteFuzzy
-  VERSION = '2.0.0'
+module Iudex
+  module Simhash
+    VERSION = '1.0.0'
+  end
 end

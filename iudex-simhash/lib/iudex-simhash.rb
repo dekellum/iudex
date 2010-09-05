@@ -14,18 +14,22 @@
 # permissions and limitations under the License.
 #++
 
-require 'brute-fuzzy/base.rb'
+require 'iudex-simhash/base.rb'
 
 require 'java'
 require 'gravitext-util'
 
-module BruteFuzzy
+module Iudex
+  module Simhash
 
-  require "brute-fuzzy/brute-fuzzy-#{VERSION}.jar"
+    require "iudex-simhash/iudex-simhash-#{VERSION}.jar"
 
-  import 'brutefuzzy.BruteFuzzy'
-  import 'brutefuzzy.FuzzyList64'
-  import 'brutefuzzy.FuzzyTree64'
-  import 'brutefuzzy.FuzzySetPerfTest'
+    module BruteFuzzy
+      import 'iudex.simhash.brutefuzzy.BruteFuzzy'
+      import 'iudex.simhash.brutefuzzy.FuzzyList64'
+      import 'iudex.simhash.brutefuzzy.FuzzyTree64'
+      import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
+    end
 
+  end
 end

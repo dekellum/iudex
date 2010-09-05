@@ -1,7 +1,7 @@
 #!/usr/bin/env jruby
 # -*- ruby -*-
-#.hashdot.vm.options += -Xmx4G
-# add: -XX:+UseCompressedOops
+#.hashdot.vm.options += -Xmx1G
+# For 64b add: -XX:+UseCompressedOops
 
 #--
 # Copyright (c) 2010 David Kellum
@@ -22,14 +22,14 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-require 'brute-fuzzy'
+require 'iudex-simhash'
 require 'optparse'
 
 require 'gravitext-util'
 require 'gravitext-util/perftest'
 
 module PerfTest
-  include BruteFuzzy
+  include Iudex::Simhash::BruteFuzzy
 
   MD = FuzzySetPerfTest::Mode
 

@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package brutefuzzy;
+package iudex.simhash.brutefuzzy;
 
 /**
  * A custom search tree implementation of FuzzySet64. The tree

@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package brutefuzzy;
+package iudex.simhash.brutefuzzy;
 
 /**
  * Interface for a set-like container of 64-bit keys, with the

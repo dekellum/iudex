@@ -3,7 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
-bin/brute-fuzzy-perftest
-lib/brute-fuzzy/base.rb
-lib/brute-fuzzy.rb
+bin/iudex-simhash-perftest
+lib/iudex-simhash/base.rb
+lib/iudex-simhash.rb
 test/test_fuzzy_set.rb

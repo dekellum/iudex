@@ -1,12 +1,12 @@
-= brute-fuzzy
+= iudex-simhash
 
-* http://github.com/dekellum/brute-fuzzy
+* http://github.com/dekellum/iudex
 
 == Description
 
-Provides set-like containers of 64-bit keys, constrained such that no
-two keys have bit difference (aka Hamming distance) less than some
-threshold number of bits. A performance test driver is also included.
+Iudex is a general purpose web crawler and feed processor in
+ruby/java. The iudex-simhash gem contains support for generation and
+searching over simhash fingerprints
 
 == Dependencies
 
