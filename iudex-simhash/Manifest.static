@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+bin/brute-fuzzy-perftest
+lib/brute-fuzzy/base.rb
+lib/brute-fuzzy.rb
+test/test_fuzzy_set.rb
