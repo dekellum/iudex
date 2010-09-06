@@ -20,7 +20,9 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 /**
- * Tokenize a UTF-8 byte array on occurrences of the SPACE (0x20) byte.
+ * Tokenize a UTF-8 byte array on occurrences of the SPACE (0x20) byte. This
+ * tokenizer expects whitespace/special characters to be normalized prior to
+ * use.
  *
  * @see iudex.util.Characters
  */
@@ -69,26 +71,19 @@ public class ByteTokenizer
         int start = -1;
 
         while( pos < end ) {
-
             if( _in.get( pos ) == SPACE ) {
-                if( start >= 0 ) {
-                    _next = _in.duplicate();
-                    _next.position( start );
-                    _next.limit( pos );
-                    _in.position( pos + 1 );
-                    return;
-                }
+                if( start >= 0 ) break;
             }
             else if( start < 0 ) start = pos;
 
             ++pos;
         }
 
-        if( start >= 0 && start < end ) {
+        if( start >= 0 && start < pos ) {
             _next = _in.duplicate();
             _next.position( start );
-            _next.limit( end );
-            _in.position( end );
+            _next.limit( pos );
+            _in.position( ( pos < end ) ? pos + 1 : end );
         }
     }
 
