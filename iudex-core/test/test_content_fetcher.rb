@@ -69,7 +69,7 @@ module TestHTTPMocks
   class TestReceiver < FilterBase
     def initialize( &block )
       @block = block
-      @log = SLF4J[ self.class ]
+      @log = RJack::SLF4J[ self.class ]
     end
 
     def filter( out )
