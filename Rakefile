@@ -1,7 +1,7 @@
 # -*- ruby -*- coding: utf-8 -*-
 
-gems = %w[ iudex-filter iudex-http
-           iudex-barc iudex-core iudex-httpclient-3
+gems = %w[ iudex-filter iudex-http iudex-barc
+           iudex-simhash iudex-core iudex-httpclient-3
            iudex-da iudex-rome
            iudex-worker ]
 
