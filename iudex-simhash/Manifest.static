@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+bin/iudex-simhash-perftest
+lib/iudex-simhash/base.rb
+lib/iudex-simhash.rb
+test/test_fuzzy_set.rb

@@ -1,0 +1,2 @@
+=== 1.0.0 (TBD)
+* Import from 5308da41 of brute-fuzzy.
