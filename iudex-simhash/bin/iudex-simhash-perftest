@@ -37,7 +37,7 @@ module PerfTest
 
     options = {}
     OptionParser.new do |opts|
-      opts.banner = "Usage: brute-fuzzy-perftest [options] <length> <threshold-bits>"
+      opts.banner = "Usage: iudex-simhash-perftest [options] <length> <threshold-bits>"
       opts.on( "-t", "--threads N", Integer, "Test with thread count" ) do |n|
         options[ :threads ] = n
       end
