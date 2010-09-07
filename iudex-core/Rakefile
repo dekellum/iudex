@@ -42,4 +42,12 @@ task :gem  => [ :check_pom_version, :check_history_version                      
 task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
 task :push => [                                             :check_history_date ]
 
+file 'src/main/java/iudex/core/TLDSets.java' => FileList.new( "build/*" ) do
+  require 'build/tld_set_generator'
+  puts "Generating TLDSets.java"
+  TLDSetGenerator.new.run
+end
+
+file 'target/.tarpit' => [ 'src/main/java/iudex/core/TLDSets.java' ]
+
 t.define_tasks

@@ -192,7 +192,7 @@ public final class VisitURL
         // Lower case the host
         String host = uri.getHost();
         //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
-        if( host != null ) host = host.toLowerCase();
+        if( host != null ) host = Domains.normalize( host );
 
         // Drop superfluous port assignments
         int port = uri.getPort();
