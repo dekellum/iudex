@@ -50,4 +50,13 @@ end
 
 file 'target/.tarpit' => [ 'src/main/java/iudex/core/TLDSets.java' ]
 
+task :clean do
+  rm_f 'src/main/java/iudex/core/TLDSets.java'
+end
+
+task :refresh_tld_dat do
+  sh( "curl http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1" +
+      " -o build/effective_tld_name.dat" )
+end
+
 t.define_tasks
