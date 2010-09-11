@@ -16,6 +16,13 @@ digraph "iudex-gems" {
   "iudex-core"   -> "iudex-http"
   "iudex-core"     -> "iudex-barc"
 
+  "iudex-simhash";
+
+  "iudex-simhash" -> "iudex-filter";
+
+#  "iudex-simhash" -> "iudex-core";
+#  "iudex-core"    -> "iudex-simhash";
+
   "iudex-rome"   -> "iudex-core"
 
   "iudex-sitemap" [ style="rounded,dashed" ];
@@ -26,6 +33,7 @@ digraph "iudex-gems" {
   "iudex-barc"   -> "iudex-http"
   "iudex-barc"   [ target=_parent, URL="../barc.html" ];
 #  "iudex-http"   -> "gravitext-util"
+
 
   subgraph cluster_0 {
     style=invis;
@@ -42,6 +50,7 @@ digraph "iudex-gems" {
   "iudex-worker" -> "iudex-core"
   "iudex-worker" -> "iudex-httpclient-3"
   "iudex-worker" -> "iudex-barc"
+  "iudex-worker" -> "iudex-simhash"
 
   "iudex-publisher" [ style="rounded,dashed" ];
   "iudex-publisher" -> "iudex-da"
