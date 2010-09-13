@@ -14,23 +14,21 @@
 # implied.  See the License for the specific language governing
 # permissions and limitations under the License.
 #
-# HTML Tags
-#
 # Sources
 #  http://www.w3.org/TR/xhtml11/
 #  http://www.w3.org/TR/html4/
 #  http://www.w3schools.com/tags/default.asp
-#  http://xhtml.com
+#  http://xhtml.com/
 #
 # Codes:
 # E :: Empty Tag
 # S :: In Strict HTML 4.01/XHTML 1.0
 # T :: In Transitional HTML 4.01/XHTML 1.0
-# F :: In frameset addition
+# F :: In frameset annex
 # D :: Deprecated
 # I :: Inline elements (i: special case <br/>)
 # M :: Metadata elements (content not visible text), i.e. head
-# B :: Band/blacklisted elments from which text should not be extracted.
+# B :: Banned/blacklisted elements from which text should not be extracted.
 
 a            ,  S T F   I    , anchor
 abbr         ,  S T F   I    , abbreviation
