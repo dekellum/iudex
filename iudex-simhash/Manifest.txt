@@ -4,7 +4,9 @@ README.rdoc
 Rakefile
 pom.xml
 bin/iudex-simhash-perftest
+config/stopwords.en
 lib/iudex-simhash/base.rb
 lib/iudex-simhash.rb
+test/setup.rb
 test/test_fuzzy_set.rb
 lib/iudex-simhash/iudex-simhash-1.0.0.jar
