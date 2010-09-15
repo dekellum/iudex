@@ -24,9 +24,10 @@ import com.gravitext.xml.producer.Attribute;
 
 public class Tags
 {
-    private NamespaceCache _cache = new NamespaceCache();
+    public static final NamespaceCache CACHE = new NamespaceCache();
 
+    public static final Namespace NS_XHTML =
+        CACHE.namespace( Namespace.DEFAULT, "http://www.w3.org/1999/xhtml" );
 
-    private Namespace NS_XHTML =
-        _cache.namespace( null, "http://www.w3.org/1999/xhtml" );
+    public static final Tag P = CACHE.tag( "p", NS_XHTML );
 }
