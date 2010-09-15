@@ -29,8 +29,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.gravitext.xml.NamespaceCache;
 import com.gravitext.xml.producer.Attribute;
+import com.gravitext.xml.producer.Tag;
 import com.gravitext.xml.tree.AttributeValue;
 import com.gravitext.xml.tree.Characters;
 import com.gravitext.xml.tree.Element;
@@ -112,7 +112,12 @@ public class NekoHTMLParser
         {
             bufferToChars();
 
-            Element element = new Element( _cache.tag( localName, null ) );
+            Tag tag = HTML.TAGS.get( localName );
+
+            //FIXME: Handle missing tag (internal stack?)
+            //Handle banned tags by skipping insides as well?
+
+            Element element = new Element( tag );
 
             copyAttributes( attributes, element );
 
@@ -159,9 +164,11 @@ public class NekoHTMLParser
 
             for( int i = 0; i < end; ++i ) {
                 final Attribute attr =
-                    _cache.attribute( attributes.getLocalName( i ), null );
-                atts.add( new AttributeValue( attr,
-                                              attributes.getValue( i ) ) );
+                    HTML.ATTRIBUTES.get( attributes.getLocalName( i ) );
+                if( attr != null ) {
+                    atts.add(
+                        new AttributeValue( attr, attributes.getValue( i ) ) );
+                }
             }
 
             element.setAttributes( atts );
@@ -169,7 +176,6 @@ public class NekoHTMLParser
 
         private Element _root = null;
         private Element _current = null;
-        private final NamespaceCache _cache = new NamespaceCache();
         private StringBuilder _buffer = null;
     }
 }
