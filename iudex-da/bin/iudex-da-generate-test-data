@@ -103,7 +103,7 @@ end
 
 Iudex::Core::Config.parse_options do |opts|
   opts.on( "-d", "--debug" ) do
-    RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
+    RJack::Logback[ 'iudex.da' ].level = RJack::Logback::DEBUG
   end
   opts.on( "-v", "--version", "Display version and exit" ) do |file|
     puts "iudex-da: #{Iudex::DA::VERSION}"

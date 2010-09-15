@@ -23,7 +23,8 @@ require 'rubygems'
 module IudexBinScript
 
   require 'rjack-logback'
-  RJack::Logback.config_console
+  include RJack
+  Logback.config_console
 
   # Note: Avoid loading iudex-da with its jar dependency which would
   # make it hard to boostrap the db from source alone.
@@ -44,7 +45,7 @@ END
       DA::CONFIG[ name.to_sym ] = value
     end
     opts.on( "-d", "--debug" ) do
-      RJack::Logback[ 'iudex.da' ].level = Logback::DEBUG
+      Logback[ 'iudex.da' ].level = Logback::DEBUG
     end
     opts.on( "-v", "--version", "Display version and exit" ) do |file|
       puts "iudex-da: #{DA::VERSION}"
