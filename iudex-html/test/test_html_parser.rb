@@ -30,9 +30,10 @@ class TestHTMLParser < MiniTest::Unit::TestCase
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Iūdex</title>
  </head>
  <body>
-  <p>Iūdex</p>
+  <p>Iūdex test.</p>
  </body>
 </html>
 HTML
@@ -43,6 +44,11 @@ HTML
 
   def test_charset_rerun
     assert_xml( HTML_META, parse( HTML_META, "ISO-8859-1" ) )
+  end
+
+  def test_charset_bogus
+    alt = HTML_META.sub( /utf-8/, 'bogus' )
+    assert_xml( alt, parse( alt, "UTF-8" ) )
   end
 
   def parse( html, charset )

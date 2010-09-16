@@ -152,7 +152,8 @@ public class NekoHTMLParser
         {
             ContentType ctype = ContentType.parse( type );
             Charset newCharset = Charsets.lookup( ctype.charset() );
-            if( ! _inputEncoding.equals( newCharset ) ) {
+            if( ( newCharset != null ) &&
+                ! _inputEncoding.equals( newCharset ) ) {
                 throw new WrongEncoding( newCharset );
             }
         }
