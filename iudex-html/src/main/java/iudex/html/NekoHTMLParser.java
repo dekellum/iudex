@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import iudex.core.ContentSource;
+import iudex.http.ContentType;
 
 import org.cyberneko.html.parsers.SAXParser;
 import org.xml.sax.SAXException;
@@ -29,6 +30,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.gravitext.util.Charsets;
 import com.gravitext.xml.producer.Attribute;
 import com.gravitext.xml.producer.Tag;
 import com.gravitext.xml.tree.AttributeValue;
@@ -72,7 +74,7 @@ public class NekoHTMLParser
             throw new RuntimeException( e );
         }
 
-        HTMLHandler handler = new HTMLHandler();
+        HTMLHandler handler = new HTMLHandler( encoding );
 
         parser.setContentHandler( handler );
         parser.parse( new InputSource( content.stream() ) );
@@ -97,6 +99,11 @@ public class NekoHTMLParser
     static final class HTMLHandler
         extends DefaultHandler
     {
+        public HTMLHandler( Charset encoding )
+        {
+            _inputEncoding = encoding;
+        }
+
         /**
          * The root Element available after SAX parsing events have been
          * received.
@@ -114,8 +121,19 @@ public class NekoHTMLParser
 
             Tag tag = HTML.TAGS.get( localName );
 
-            //FIXME: Handle missing tag (internal stack?)
+            //FIXME: Handle missing tag (internal stack or counter?)
             //Handle banned tags by skipping insides as well?
+
+            if( ( tag == HTML.META ) &&
+                ( _current.tag() == HTML.HEAD ) &&
+                "Content-Type".equalsIgnoreCase(
+                    attributes.getValue( "http-equiv" ) ) ) {
+
+                String ctype = attributes.getValue( "content" );
+                if( ctype != null ) {
+                    throwOnCharsetChange( ctype );
+                }
+            }
 
             Element element = new Element( tag );
 
@@ -127,6 +145,15 @@ public class NekoHTMLParser
             else {
                 _current.addChild( element );
                 _current = element;
+            }
+        }
+
+        private void throwOnCharsetChange( String type )
+        {
+            ContentType ctype = ContentType.parse( type );
+            Charset newCharset = Charsets.lookup( ctype.charset() );
+            if( ! _inputEncoding.equals( newCharset ) ) {
+                throw new WrongEncoding( newCharset );
             }
         }
 
@@ -174,6 +201,7 @@ public class NekoHTMLParser
             element.setAttributes( atts );
         }
 
+        private final Charset _inputEncoding;
         private Element _root = null;
         private Element _current = null;
         private StringBuilder _buffer = null;
