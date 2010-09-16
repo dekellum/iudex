@@ -20,6 +20,7 @@ require 'java'
 require 'gravitext-xmlprod'
 require 'rjack-nekohtml'
 require 'iudex-filter'
+require 'iudex-core'
 
 module Iudex
   module HTML

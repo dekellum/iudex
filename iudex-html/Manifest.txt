@@ -9,4 +9,6 @@ build/java_generate.rb
 build/tags
 lib/iudex-html/base.rb
 lib/iudex-html.rb
+test/setup.rb
+test/test_html_parser.rb
 lib/iudex-html/iudex-html-1.0.0.jar
