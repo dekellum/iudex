@@ -42,10 +42,21 @@ public class HTML
     public static final Tag <%= twidth( tag.name.upcase ) %> = tag( <%= twidth( "\"#{tag.name}\"", 2 ) %> );
 % end
 
+% attributes.each do |a|
+    public static final Attribute <%= awidth( 'ATTR_' + const( a.name.upcase ), 5 ) %> = attr( <%= awidth( '"' + a.name + '"', 2 ) %> );
+% end
+
     private static Tag tag( String name )
     {
         Tag t = new Tag( name, NS_XHTML );
         TAGS.put( t.name(), t );
         return t;
+    }
+
+    private static Attribute attr( String name )
+    {
+        Attribute a = new Attribute( name, NS_XHTML );
+        ATTRIBUTES.put( a.name(), a );
+        return a;
     }
 }

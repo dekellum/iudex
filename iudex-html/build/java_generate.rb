@@ -23,7 +23,7 @@ require 'ostruct'
 # Generator for HTML.java tags/attribute input configuration
 class JavaGenerator
 
-  attr_reader :tags
+  attr_reader :tags, :attributes
 
   BASEDIR = File.dirname( __FILE__ )
 
@@ -31,11 +31,12 @@ class JavaGenerator
                          'main', 'java', 'iudex', 'html', 'HTML.java' )
 
   def run( java_file = JAVA_OUT )
-    parse
+    parse_tags
+    parse_attributes
     generate_java( java_file )
   end
 
-  def parse()
+  def parse_tags()
     @tags = []
 
     open( File.join( BASEDIR, 'tags' ), 'r' ) do |fin|
@@ -58,8 +59,39 @@ class JavaGenerator
     [ @tags ]
   end
 
+  def parse_attributes()
+    @attributes = []
+
+    open( File.join( BASEDIR, 'attributes' ), 'r' ) do |fin|
+      fin.each do |line|
+        case line
+        when /^\s*#/, /^\s*$/
+          # ignore comment, empty lines
+        when /^\s*[^\s,]+\s*,/
+          r = line.split(',').map { |c| c.strip }
+          r = r.compact.reject { |c| c.empty? }
+          # FIXME: Handle attributes, desc.
+          @attributes << OpenStruct.new( :name => r[0], :desc => r[2] )
+        else
+          raise "Parse ERROR: line [#{line}]"
+        end
+      end
+    end
+
+    @attr_max_len = @attributes.map { |t| t.name.length }.max
+    [ @attributes ]
+  end
+
   def twidth( val, extra = 0 )
     val + ( ' ' * ( @tag_max_len - val.length + extra )  )
+  end
+
+  def awidth( val, extra = 0 )
+    val + ( ' ' * ( @attr_max_len - val.length + extra )  )
+  end
+
+  def const( val )
+    val.gsub( /\-/, '_' )
   end
 
   def generate_java( java_file )
