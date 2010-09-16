@@ -33,8 +33,6 @@ import iudex.http.Headers;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
+import com.gravitext.util.Charsets;
 import com.gravitext.util.ResizableByteBuffer;
 
 public class ContentFetcher implements AsyncFilterContainer
@@ -192,7 +191,7 @@ public class ContentFetcher implements AsyncFilterContainer
                 if( ctype != null ) {
                     String eName = ctype.charset();
                     if( eName != null ) {
-                        encoding = lookupCharset( eName );
+                        encoding = Charsets.lookup( eName );
                     }
                 }
                 if( encoding == null ) encoding = _defaultEncoding;
@@ -256,17 +255,6 @@ public class ContentFetcher implements AsyncFilterContainer
             catch( IOException e ) {
                 _log.warn(  "On abort (ignored): ", e );
             }
-        }
-
-        private Charset lookupCharset( String charset )
-        {
-            Charset found = null;
-            try {
-                found = Charset.forName( charset );
-            }
-            catch( IllegalCharsetNameException x ) {}
-            catch( UnsupportedCharsetException x ) {}
-            return found;
         }
 
         private boolean testContentType( ContentType ctype )
