@@ -16,6 +16,9 @@ t.specify do |h|
   h.extra_deps += [ [ 'gravitext-util',    '~> 1.5.0'  ],
                     [ 'gravitext-xmlprod', '~> 1.4.0'  ],
                     [ 'rjack-nekohtml',    '~> 1.9.14' ] ]
+
+  h.testlib = :minitest
+  h.extra_dev_deps += [ [ 'minitest',      '~> 1.7.1'  ] ]
 end
 
 file 'Manifest.txt' => [ 'pom.xml' ]
