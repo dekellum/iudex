@@ -51,6 +51,33 @@ HTML
     assert_xml( alt, parse( alt, "UTF-8" ) )
   end
 
+  HTML_SKIP_TAGS = <<HTML
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <style>style me</style>
+ </head>
+ <body>
+  <unknown_empty/>
+  <p>normal text.</p>
+  <not_empty><p>foo</p><br/></not_empty>
+  <nostyle><p>foo</p><br/></nostyle>
+ </body>
+</html>
+HTML
+
+  HTML_SKIP_TAGS_SKIPPED = <<HTML
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head/>
+ <body>
+  <p>normal text.</p>
+ </body>
+</html>
+HTML
+
+  def test_skip_tags
+    assert_xml( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
+  end
+
   def parse( html, charset )
     comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
     HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )

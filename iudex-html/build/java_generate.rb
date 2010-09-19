@@ -36,6 +36,12 @@ class JavaGenerator
     generate_java( java_file )
   end
 
+  FLAGS = {
+    'D' => 'DEPRECATED',
+    'I' => 'INLINE',
+    'M' => 'METADATA',
+    'B' => 'BANNED' }
+
   def parse_tags()
     @tags = []
 
@@ -47,8 +53,10 @@ class JavaGenerator
         when /^\s*[^\s,]+\s*,[^,]*,[^,]*$/
           r = line.split(',').map { |c| c.strip }
           r = r.compact.reject { |c| c.empty? }
-          # FIXME: Handler flags?
-          @tags << OpenStruct.new( :name => r[0], :desc => r[3] )
+          flags = r[1].split(' ').map { |f| FLAGS[f] }.compact
+          @tags << OpenStruct.new( :name => r[0],
+                                   :flags => flags,
+                                   :desc => r[3] )
         else
           raise "Parse ERROR: line [#{line}]"
         end

@@ -19,8 +19,10 @@ package iudex.html;
 import java.util.HashMap;
 import java.util.Map;
 
+import iudex.html.HTMLTag.Flag;
+import static iudex.html.HTMLTag.Flag.*;
+
 import com.gravitext.xml.producer.Namespace;
-import com.gravitext.xml.producer.Tag;
 import com.gravitext.xml.producer.Attribute;
 
 /**
@@ -32,23 +34,23 @@ public class HTML
     public static final Namespace NS_XHTML =
         new Namespace( Namespace.DEFAULT, "http://www.w3.org/1999/xhtml" );
 
-    public static final Map<String,Tag>       TAGS =
-        new HashMap<String,Tag>( 127 );
+    public static final Map<String,HTMLTag>   TAGS =
+        new HashMap<String,HTMLTag>( 127 );
 
     public static final Map<String,Attribute> ATTRIBUTES =
         new HashMap<String,Attribute>( 59 );
 
 % tags.each do |tag|
-    public static final Tag <%= twidth( tag.name.upcase ) %> = tag( <%= twidth( "\"#{tag.name}\"", 2 ) %> );
+    public static final HTMLTag <%= twidth( tag.name.upcase ) %> = tag( <%= ( [ '"' + tag.name + '"' ] + tag.flags ).join( ', ' ) %> );
 % end
 
 % attributes.each do |a|
     public static final Attribute <%= awidth( 'ATTR_' + const( a.name.upcase ), 5 ) %> = attr( <%= awidth( '"' + a.name + '"', 2 ) %> );
 % end
 
-    private static Tag tag( String name )
+    private static HTMLTag tag( String name, Flag...flags )
     {
-        Tag t = new Tag( name, NS_XHTML );
+        HTMLTag t = new HTMLTag( name, NS_XHTML, flags );
         TAGS.put( t.name(), t );
         return t;
     }

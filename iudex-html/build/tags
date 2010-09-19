@@ -26,7 +26,7 @@
 # T :: In Transitional HTML 4.01/XHTML 1.0
 # F :: In frameset annex
 # D :: Deprecated
-# I :: Inline elements (i: special case <br/>)
+# I :: Inline elements (Note <br/> is not labeled inline.)
 # M :: Metadata elements (content not visible text), i.e. head
 # B :: Banned/blacklisted elements from which text should not be extracted.
 
@@ -43,7 +43,7 @@ bdo          ,  S T F   I    , the text direction
 big          ,  S T F   I    , big text
 blockquote   ,  S T F        , long quotation
 body         ,  S T F        , the document's body
-br           ,E S T F   i    , single line break
+br           ,E S T F        , single line break
 button       ,  S T F   I   B, push button
 caption      ,  S T F        , table caption
 center       ,    T F D      , centered text

@@ -32,7 +32,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.gravitext.util.Charsets;
 import com.gravitext.xml.producer.Attribute;
-import com.gravitext.xml.producer.Tag;
 import com.gravitext.xml.tree.AttributeValue;
 import com.gravitext.xml.tree.Characters;
 import com.gravitext.xml.tree.Element;
@@ -119,10 +118,7 @@ public class NekoHTMLParser
         {
             bufferToChars();
 
-            Tag tag = HTML.TAGS.get( localName );
-
-            //FIXME: Handle missing tag (internal stack or counter?)
-            //Handle banned tags by skipping insides as well?
+            HTMLTag tag = HTML.TAGS.get( localName );
 
             if( ( tag == HTML.META ) &&
                 ( _current.tag() == HTML.HEAD ) &&
@@ -135,16 +131,24 @@ public class NekoHTMLParser
                 }
             }
 
-            Element element = new Element( tag );
-
-            copyAttributes( attributes, element );
-
-            if( _root == null ) {
-                _root = _current = element;
+            if( _skipDepth > 0 ) {
+                ++_skipDepth;
+            }
+            else if( ( tag == null ) ||
+                     ( _skipBanned && tag.isBanned() ) ) {
+                _skipDepth = 1;
             }
             else {
-                _current.addChild( element );
-                _current = element;
+                Element element = new Element( tag );
+                copyAttributes( attributes, element );
+
+                if( _root == null ) {
+                    _root = _current = element;
+                }
+                else {
+                    _current.addChild( element );
+                    _current = element;
+                }
             }
         }
 
@@ -161,17 +165,24 @@ public class NekoHTMLParser
         @Override
         public void endElement( String iri, String localName, String qName )
         {
-            bufferToChars();
-            _current = _current.parent();
+            if( _skipDepth > 0 ) {
+                --_skipDepth;
+            }
+            else {
+                bufferToChars();
+                _current = _current.parent();
+            }
         }
 
         @Override
         public void characters( char[] ch, int start, int length )
         {
-            if( _buffer == null ) {
-                _buffer = new StringBuilder( length + 16 );
+            if( _skipDepth <= 0 ) {
+                if( _buffer == null ) {
+                    _buffer = new StringBuilder( length + 16 );
+                }
+                _buffer.append( ch, start, length );
             }
-            _buffer.append( ch, start, length );
         }
 
         private void bufferToChars()
@@ -206,5 +217,8 @@ public class NekoHTMLParser
         private Element _root = null;
         private Element _current = null;
         private StringBuilder _buffer = null;
+
+        private boolean _skipBanned = true;
+        private int _skipDepth = 0;
     }
 }
