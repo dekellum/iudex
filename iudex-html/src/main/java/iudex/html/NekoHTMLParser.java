@@ -58,12 +58,20 @@ public class NekoHTMLParser
 
         // http://nekohtml.sourceforge.net/settings.html
         try {
-            parser.setProperty(
-        "http://cyberneko.org/html/properties/default-encoding",
-                                encoding );
             parser.setFeature(
         "http://cyberneko.org/html/features/scanner/ignore-specified-charset",
                                true );
+            parser.setFeature(
+        "http://cyberneko.org/html/features/scanner/normalize-attrs",
+                               true );
+            //FIXME: Make parser option?
+            parser.setFeature(
+        "http://cyberneko.org/html/features/balance-tags/document-fragment",
+                               true );
+
+            parser.setProperty(
+        "http://cyberneko.org/html/properties/default-encoding",
+                                encoding );
             parser.setProperty(
         "http://cyberneko.org/html/properties/names/elems",
                                 "lower" );

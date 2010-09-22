@@ -24,7 +24,11 @@ import org.xml.sax.SAXException;
 
 import iudex.core.ContentSource;
 
+import com.gravitext.xml.producer.Indentor;
+import com.gravitext.xml.producer.XMLProducer;
 import com.gravitext.xml.tree.Element;
+import com.gravitext.xml.tree.Node;
+import com.gravitext.xml.tree.NodeWriter;
 
 public class HTMLUtils
 {
@@ -39,5 +43,24 @@ public class HTMLUtils
         throws SAXException, IOException
     {
         return new NekoHTMLParser().parse( source );
+    }
+
+    public static void produceFragment( Node root,
+                                        Indentor indent,
+                                        Appendable out )
+        throws IOException
+    {
+        XMLProducer pd = new XMLProducer( out );
+        pd.setIndent( indent );
+        pd.implyNamespace( HTML.NS_XHTML );
+        new NodeWriter( pd ).putTree( root );
+    }
+
+    public static String produceFragmentString( Node root, Indentor indent )
+        throws IOException
+    {
+        StringBuilder out = new StringBuilder( 256 );
+        produceFragment( root, indent, out );
+        return out.toString();
     }
 }
