@@ -26,6 +26,7 @@ class TestTreeWalker < MiniTest::Unit::TestCase
   import 'iudex.html.HTMLUtils'
   import 'iudex.html.tree.TreeFilter'
   import 'iudex.html.tree.TreeWalker'
+  import 'iudex.html.tree.TreeFilterChain'
 
   HTML_FRAG     = "<div>one<p>foo</p><br/> two</div>"
   HTML_FRAG_OUT = "<div>one<br/> two</div>"
@@ -54,6 +55,28 @@ class TestTreeWalker < MiniTest::Unit::TestCase
     tree = parse( HTML_FRAG )
     TreeWalker.send( func, DropFilter.new, tree )
     assert_xml( HTML_FRAG_OUT, tree )
+  end
+
+  class SkipFilter
+    include TreeFilter
+    def filter( node )
+      elm = node.as_element
+      if( elm && elm.tag == HTML::DIV )
+        TreeFilter::Action::SKIP
+      else
+        TreeFilter::Action::CONTINUE
+      end
+    end
+  end
+
+  MIXED     = "<form>first<p>drop</p><div><p>not dropped</p></div></form>"
+  MIXED_OUT = "<form>first<div><p>not dropped</p></div></form>"
+
+  def test_skip
+    chain = TreeFilterChain.new( [ SkipFilter.new, DropFilter.new ] )
+    tree = parse( MIXED )
+    TreeWalker.walk_breadth_first( chain, tree )
+    assert_xml( MIXED_OUT, tree )
   end
 
   def parse( html, charset="UTF-8" )
