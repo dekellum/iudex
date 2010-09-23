@@ -16,6 +16,8 @@
 
 package iudex.html.tree;
 
+import java.util.List;
+
 import iudex.html.tree.TreeFilter.Action;
 import static iudex.html.tree.TreeFilter.Action.*;
 
@@ -30,7 +32,10 @@ public class TreeWalker
 
         Element element = node.asElement();
         if( element != null ) {
-            for( Node child : element.children() ) {
+
+            final List<Node> children = element.children();
+            for( int i = 0; i < children.size(); ) {
+                Node child = children.get( i );
                 action = walkDepthFirst( filter, child );
                 switch( action ) {
                 case DROP:
@@ -38,6 +43,8 @@ public class TreeWalker
                     break;
                 case TERMINATE:
                     return TERMINATE;
+                default:
+                    ++i;
                 }
             }
         }
@@ -51,14 +58,17 @@ public class TreeWalker
         if( action == CONTINUE || action == CHAIN_END ) {
             Element element = node.asElement();
             if( element != null ) {
-                loop: for( Node child : element.children() ) {
-                    Action childAction = walkBreadthFirst( filter, child );
-                    switch( childAction ) {
+                final List<Node> children = element.children();
+                loop: for( int i = 0; i < children.size(); ) {
+                    Node child = children.get( i );
+                    switch( walkBreadthFirst( filter, child ) ) {
                     case DROP:
                         child.detach();
                         break;
                     case TERMINATE:
                         break loop;
+                    default:
+                        ++i;
                     }
                 }
             }

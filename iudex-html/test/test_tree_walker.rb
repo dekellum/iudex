@@ -27,8 +27,8 @@ class TestTreeWalker < MiniTest::Unit::TestCase
   import 'iudex.html.tree.TreeFilter'
   import 'iudex.html.tree.TreeWalker'
 
-  HTML_FRAG     = "<div>one<p>foo</p> two</div>"
-  HTML_FRAG_OUT = "<div>one two</div>"
+  HTML_FRAG     = "<div>one<p>foo</p><br/> two</div>"
+  HTML_FRAG_OUT = "<div>one<br/> two</div>"
 
   class DropFilter
     include TreeFilter
@@ -42,9 +42,17 @@ class TestTreeWalker < MiniTest::Unit::TestCase
     end
   end
 
-  def test_drop
+  def test_drop_depth
+    assert_dropped( :walk_depth_first )
+  end
+
+  def test_drop_breath
+    assert_dropped( :walk_breadth_first )
+  end
+
+  def assert_dropped( func )
     tree = parse( HTML_FRAG )
-    TreeWalker::walk_depth_first( DropFilter.new, tree )
+    TreeWalker.send( func, DropFilter.new, tree )
     assert_xml( HTML_FRAG_OUT, tree )
   end
 

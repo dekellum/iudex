@@ -24,8 +24,18 @@ public interface TreeFilter
    {
        CONTINUE,
        CHAIN_END,
+
+       /**
+        * Don't descend into this element. Only works for breadth first descent.
+        */
        SKIP,
+
+       /**
+        * Detach this element from the tree. Also don't process its children,
+        * in breadth first.
+        */
        DROP,
+
        TERMINATE
    }
 
