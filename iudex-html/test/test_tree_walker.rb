@@ -52,6 +52,19 @@ class TestTreeWalker < MiniTest::Unit::TestCase
     assert_transform( SKIP_HTML, chain, :walk_breadth_first )
   end
 
+  TERM_HTML = {
+    :in  => "<div><span>first</span><b>term</b><span><b>not</b></span></div>",
+    :out => "<div>~~~~~~~~~~~~~~~~~~<b>term</b><span><b>not</b></span></div>" }
+
+  def test_terminate
+    chain = TreeFilterChain.new( [ TagFilter.new( HTML::B, Action::TERMINATE ),
+                                   TagFilter.new( HTML::SPAN, Action::DROP ) ] )
+    [ :walk_depth_first, :walk_breadth_first ].each do |order|
+      assert_equal( Action::TERMINATE,
+                    assert_transform( TERM_HTML, chain, order ) )
+    end
+  end
+
   FOLD_HTML = {
     :in  => "<div>first <b>drop</b> <span> remain <b>drop</b> </span> </div>",
     :out => "<div>first ~~~~~~~~~~~ ~~~~~~ remain ~~~~~~~~~~~ ~~~~~~~ </div>" }
@@ -85,8 +98,9 @@ class TestTreeWalker < MiniTest::Unit::TestCase
 
   def assert_transform( html, filter, func )
     tree = parse( html[ :in ] )
-    TreeWalker.send( func, filter, tree )
+    action = TreeWalker.send( func, filter, tree )
     assert_xml( html[ :out ], tree )
+    action
   end
 
   def parse( html, charset="UTF-8" )

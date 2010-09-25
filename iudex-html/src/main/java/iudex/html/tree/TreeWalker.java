@@ -26,7 +26,8 @@ import com.gravitext.xml.tree.Node;
 
 public class TreeWalker
 {
-    public static Action walkDepthFirst( TreeFilter filter, Node node )
+    public static Action walkDepthFirst( final TreeFilter filter,
+                                         final Node node )
     {
         Element element = node.asElement();
         if( element != null ) {
@@ -53,7 +54,8 @@ public class TreeWalker
         return filter.filter( node );
     }
 
-    public static Action walkBreadthFirst( TreeFilter filter,  Node node )
+    public static Action walkBreadthFirst( final TreeFilter filter,
+                                           final Node node )
     {
         Action action = filter.filter( node );
 
@@ -61,7 +63,7 @@ public class TreeWalker
             Element element = node.asElement();
             if( element != null ) {
                 final List<Node> children = element.children();
-                loop: for( int i = 0; i < children.size(); ) {
+                for( int i = 0; i < children.size(); ) {
                     Node child = children.get( i );
                     switch( walkBreadthFirst( filter, child ) ) {
                     case FOLD:
@@ -73,7 +75,7 @@ public class TreeWalker
                         child.detach();
                         break;
                     case TERMINATE:
-                        break loop;
+                        return TERMINATE;
                     default:
                         ++i;
                     }
