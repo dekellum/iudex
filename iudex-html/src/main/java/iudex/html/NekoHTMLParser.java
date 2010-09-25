@@ -120,6 +120,7 @@ public class NekoHTMLParser
     final class HTMLHandler
         extends DefaultHandler
     {
+
         public HTMLHandler( Charset encoding )
         {
             _inputEncoding = encoding;
@@ -204,6 +205,13 @@ public class NekoHTMLParser
                 }
                 _buffer.append( ch, start, length );
             }
+        }
+
+        @Override
+        public void endDocument() throws SAXException
+        {
+            // Add any additional character child at end of fragment
+            bufferToChars();
         }
 
         private void bufferToChars()
