@@ -157,6 +157,8 @@ public class NekoHTMLParser
                     _current.addChild( element );
                     _current = element;
                 }
+
+                //FIXME: Support fragments by introducing a div parent?
             }
         }
 

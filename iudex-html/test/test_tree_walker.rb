@@ -36,8 +36,9 @@ class TestTreeWalker < MiniTest::Unit::TestCase
   # Note: ~~~ is padding removed in compare
 
   def test_drop
+    filter = TagFilter.new( HTML::P, Action::DROP )
     [ :walk_depth_first, :walk_breadth_first ].each do |order|
-      assert_transform( DROP_HTML, TagFilter.new( HTML::P, Action::DROP ), order )
+      assert_transform( DROP_HTML, filter, order )
     end
   end
 
@@ -47,8 +48,21 @@ class TestTreeWalker < MiniTest::Unit::TestCase
 
   def test_skip
     chain = TreeFilterChain.new( [ TagFilter.new( HTML::SPAN, Action::SKIP ),
-                                   TagFilter.new( HTML::B, Action::DROP ) ] )
+                                   TagFilter.new( HTML::B,    Action::DROP ) ] )
     assert_transform( SKIP_HTML, chain, :walk_breadth_first )
+  end
+
+  FOLD_HTML = {
+    :in  => "<div>first <b>drop</b> <span> remain <b>drop</b> </span> </div>",
+    :out => "<div>first ~~~~~~~~~~~ ~~~~~~ remain ~~~~~~~~~~~ ~~~~~~~ </div>" }
+
+  def test_fold
+    chain = TreeFilterChain.new( [ TagFilter.new( HTML::SPAN, Action::FOLD ),
+                                   TagFilter.new( HTML::B,    Action::DROP ) ] )
+
+    [ :walk_breadth_first, :walk_depth_first ].each do |order|
+      assert_transform( FOLD_HTML, chain, order )
+    end
   end
 
   class TagFilter

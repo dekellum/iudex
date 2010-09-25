@@ -26,18 +26,19 @@ import com.gravitext.xml.tree.Node;
 
 public class TreeWalker
 {
-    public static Action walkDepthFirst( TreeFilter filter,  Node node )
+    public static Action walkDepthFirst( TreeFilter filter, Node node )
     {
-        Action action = CONTINUE;
-
         Element element = node.asElement();
         if( element != null ) {
 
             final List<Node> children = element.children();
             for( int i = 0; i < children.size(); ) {
                 Node child = children.get( i );
-                action = walkDepthFirst( filter, child );
-                switch( action ) {
+                switch( walkDepthFirst( filter, child ) ) {
+                case FOLD:
+                    i = fold( element, child, i );
+                    // New children already walked, skip them.
+                    break;
                 case DROP:
                     child.detach();
                     break;
@@ -55,6 +56,7 @@ public class TreeWalker
     public static Action walkBreadthFirst( TreeFilter filter,  Node node )
     {
         Action action = filter.filter( node );
+
         if( action == CONTINUE || action == CHAIN_END ) {
             Element element = node.asElement();
             if( element != null ) {
@@ -62,6 +64,11 @@ public class TreeWalker
                 loop: for( int i = 0; i < children.size(); ) {
                     Node child = children.get( i );
                     switch( walkBreadthFirst( filter, child ) ) {
+                    case FOLD:
+                        fold( element, child, i );
+                        // The new children still need to be walked.
+                        // Don't skip them.
+                        break;
                     case DROP:
                         child.detach();
                         break;
@@ -75,4 +82,22 @@ public class TreeWalker
         }
         return action;
     }
+
+    private static int fold( final Element parent,
+                             final Node child,
+                             int childIndex )
+    {
+       Element celm = child.asElement();
+
+       if( celm != null ) {
+           final List<Node> gchildren = celm.children();
+           while( gchildren.size() > 0) {
+               parent.insertChild( ++childIndex, gchildren.get( 0 ) );
+           }
+       }
+       child.detach();
+
+       return childIndex;
+    }
+
 }

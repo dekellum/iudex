@@ -22,20 +22,37 @@ public interface TreeFilter
 {
    public enum Action
    {
+       /**
+        * Continue executing filter chain for this element.
+        */
        CONTINUE,
+
+       /**
+        * Stop execution of filter chain for this element.
+        */
        CHAIN_END,
 
        /**
-        * Don't descend into this element. Only works for breadth first descent.
+        * Don't descend into this element. Only applies to breadth first
+        * descent.
         */
        SKIP,
 
        /**
-        * Detach this element from the tree. Also don't process its children,
-        * in breadth first.
+        * Replace this element with its children. Equivalent to DROP if return
+        * for a non-Element node, or an element with no children.
+        */
+       FOLD,
+
+       /**
+        * Detach this element, and its children, from the tree. In breadth
+        * first descent, children will never be processed.
         */
        DROP,
 
+       /**
+        * Terminate the tree walk.
+        */
        TERMINATE
    }
 
