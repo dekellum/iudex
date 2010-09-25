@@ -28,55 +28,51 @@ class TestTreeWalker < MiniTest::Unit::TestCase
   import 'iudex.html.tree.TreeWalker'
   import 'iudex.html.tree.TreeFilterChain'
 
-  HTML_FRAG     = "<div>one<p>foo</p><br/> two</div>"
-  HTML_FRAG_OUT = "<div>one<br/> two</div>"
+  Action = TreeFilter::Action
 
-  class DropFilter
-    include TreeFilter
-    def filter( node )
-      elm = node.as_element
-      if( elm && elm.tag == HTML::P )
-        TreeFilter::Action::DROP
-      else
-        TreeFilter::Action::CONTINUE
-      end
+  DROP_HTML = {
+    :in  => "<div>one<p>foo</p><br/> two</div>",
+    :out => "<div>one~~~~~~~~~~<br/> two</div>" }
+  # Note: ~~~ is padding removed in compare
+
+  def test_drop
+    [ :walk_depth_first, :walk_breadth_first ].each do |order|
+      assert_transform( DROP_HTML, TagFilter.new( HTML::P, Action::DROP ), order )
     end
   end
 
-  def test_drop_depth
-    assert_dropped( :walk_depth_first )
-  end
-
-  def test_drop_breath
-    assert_dropped( :walk_breadth_first )
-  end
-
-  def assert_dropped( func )
-    tree = parse( HTML_FRAG )
-    TreeWalker.send( func, DropFilter.new, tree )
-    assert_xml( HTML_FRAG_OUT, tree )
-  end
-
-  class SkipFilter
-    include TreeFilter
-    def filter( node )
-      elm = node.as_element
-      if( elm && elm.tag == HTML::DIV )
-        TreeFilter::Action::SKIP
-      else
-        TreeFilter::Action::CONTINUE
-      end
-    end
-  end
-
-  MIXED     = "<form>first<p>drop</p><div><p>not dropped</p></div></form>"
-  MIXED_OUT = "<form>first<div><p>not dropped</p></div></form>"
+  SKIP_HTML = {
+    :in  => "<div>first<b>drop</b><span><b>not dropped</b></span></div>",
+    :out => "<div>first~~~~~~~~~~~<span><b>not dropped</b></span></div>" }
 
   def test_skip
-    chain = TreeFilterChain.new( [ SkipFilter.new, DropFilter.new ] )
-    tree = parse( MIXED )
-    TreeWalker.walk_breadth_first( chain, tree )
-    assert_xml( MIXED_OUT, tree )
+    chain = TreeFilterChain.new( [ TagFilter.new( HTML::SPAN, Action::SKIP ),
+                                   TagFilter.new( HTML::B, Action::DROP ) ] )
+    assert_transform( SKIP_HTML, chain, :walk_breadth_first )
+  end
+
+  class TagFilter
+    include TreeFilter
+
+    def initialize( tag, action )
+      @tag = tag
+      @action = action
+    end
+
+    def filter( node )
+      elm = node.as_element
+      if( elm && elm.tag == @tag )
+        @action
+      else
+        Action::CONTINUE
+      end
+    end
+  end
+
+  def assert_transform( html, filter, func )
+    tree = parse( html[ :in ] )
+    TreeWalker.send( func, filter, tree )
+    assert_xml( html[ :out ], tree )
   end
 
   def parse( html, charset="UTF-8" )
@@ -85,6 +81,7 @@ class TestTreeWalker < MiniTest::Unit::TestCase
   end
 
   def assert_xml( xml, root )
+    xml = xml.gsub( /~+/, '' ) # Remove padding.
     assert_equal( xml,
       HTMLUtils::produceFragmentString( root, Indentor::COMPRESSED ) )
   end
