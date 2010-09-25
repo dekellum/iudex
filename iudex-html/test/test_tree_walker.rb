@@ -91,7 +91,7 @@ class TestTreeWalker < MiniTest::Unit::TestCase
 
   def parse( html, charset="UTF-8" )
     comp_bytes = html.to_java_bytes
-    HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )
+    HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
   end
 
   def assert_xml( xml, root )

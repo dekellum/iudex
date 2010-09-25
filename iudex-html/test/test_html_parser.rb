@@ -78,6 +78,29 @@ HTML
     assert_xml( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
   end
 
+  HTML_OUTSIDE = <<HTML
+before
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head/>
+ <body>
+  <p>normal text.</p>
+ </body>
+</html>
+after
+HTML
+
+  HTML_INSIDE = <<HTML
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head/>
+ <body>before
+  <p>normal text.</p>after</body>
+</html>
+HTML
+
+  def test_outer_text
+    assert_xml( HTML_INSIDE, parse( HTML_OUTSIDE, "ISO-8859-1" ) )
+  end
+
   def parse( html, charset )
     comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
     HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )

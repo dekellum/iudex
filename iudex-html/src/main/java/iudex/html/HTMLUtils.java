@@ -39,6 +39,14 @@ public class HTMLUtils
         return cs;
     }
 
+    public static Element parseFragment( ContentSource source )
+        throws SAXException, IOException
+    {
+        NekoHTMLParser parser = new NekoHTMLParser();
+        parser.setParseAsFragment( true );
+        return parser.parse( source );
+    }
+
     public static Element parse( ContentSource source )
         throws SAXException, IOException
     {

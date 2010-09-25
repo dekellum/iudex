@@ -33,7 +33,7 @@ public class TreeFilterChain
 
     //FIXME: Support child inspection for reporting?
 
-    public Action filter( Node node )
+    public Action filter( final Node node )
     {
         Action action = CONTINUE;
         for( TreeFilter filter : _filters ) {
