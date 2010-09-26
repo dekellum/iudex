@@ -18,6 +18,7 @@ package iudex.html;
 
 import com.gravitext.xml.producer.Namespace;
 import com.gravitext.xml.producer.Tag;
+import com.gravitext.xml.tree.Element;
 
 public final class HTMLTag extends Tag
 {
@@ -26,6 +27,16 @@ public final class HTMLTag extends Tag
         INLINE,
         METADATA,
         BANNED
+    }
+
+    public static HTMLTag htmlTag( Element elem )
+    {
+        return (HTMLTag) elem.tag();
+    }
+
+    public static boolean isInline( Element elem )
+    {
+        return htmlTag( elem ).isInline();
     }
 
     public HTMLTag( String name, Namespace ns, Flag...flags )
