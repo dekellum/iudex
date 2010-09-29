@@ -38,7 +38,8 @@ class TestWordCounters < MiniTest::Unit::TestCase
              [ "<div>a b</div>",                              2, 2 ],
              [ "<div><span>a b</span></div>",                 2, 2 ],
              [ "<div><span>a b</span><span>c d</span></div>", 4, 4 ],
-             [ "<div>a b <span>c d</span> e f</div>",         6, 6 ],
+
+             [ "<div>a b <span><a name='foo'>c</a> d</span> e f</div>", 6, 6 ],
 
              [ "<div><a href='foo'>a b</a></div>",
                2, 2 * 0.25 ],

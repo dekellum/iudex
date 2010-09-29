@@ -75,8 +75,10 @@ public class WordyCounter implements TreeFilter
 
         //FIXME: Just examples.
         if( tag == HTML.A ) {
-            sum *= 0.25f;
-            //FIXME: && elem has href
+            CharSequence href = elem.attribute( HTML.ATTR_HREF );
+            if( ( href != null ) && href.length() > 0 ) {
+                sum *= 0.25f;
+            }
         }
         else if( tag == HTML.H1 ) {
             sum *= 2.0f;
