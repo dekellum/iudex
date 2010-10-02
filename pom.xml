@@ -12,10 +12,12 @@
     <module>iudex-filter</module>
     <module>iudex-http</module>
     <module>iudex-barc</module>
+    <module>iudex-simhash</module>
     <module>iudex-core</module>
     <module>iudex-rome</module>
     <module>iudex-httpclient-3</module>
     <module>iudex-da</module>
+    <module>iudex-html</module>
   </modules>
 
   <dependencyManagement>

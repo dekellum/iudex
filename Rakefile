@@ -2,7 +2,7 @@
 
 gems = %w[ iudex-filter iudex-http iudex-barc
            iudex-simhash iudex-core iudex-httpclient-3
-           iudex-da iudex-rome
+           iudex-html iudex-da iudex-rome
            iudex-worker ]
 
 desc "Run multi['task1 tasks2'] tasks over all sub gems"
