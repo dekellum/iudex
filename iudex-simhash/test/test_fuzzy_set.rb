@@ -17,14 +17,11 @@
 # permissions and limitations under the License.
 #++
 
-$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
-
-require 'rubygems'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-simhash'
-require 'test/unit'
 
-class TestFuzzySet < Test::Unit::TestCase
+class TestFuzzySet < MiniTest::Unit::TestCase
   include Iudex::Simhash::BruteFuzzy
 
   # Series that will allow all but last at 3 bit threshold, all at 2
