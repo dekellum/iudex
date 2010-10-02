@@ -26,8 +26,8 @@ import com.gravitext.util.ResizableCharBuffer;
 public final class Characters
 {
     /**
-     * Replace sequences of internal isCtrlWS() characters
-     * with a single SPACE, plus trims leading/trailing.
+     * Replace sequences of isCtrlWS() characters with a single SPACE,
+     * plus trims leading/trailing.
      */
     public static CharBuffer cleanCtrlWS( final CharSequence in )
     {
@@ -35,11 +35,23 @@ public final class Characters
     }
 
     /**
-     * Replace sequences of internal isCtrlWS() characters
-     * with a specified replacement sequence, plus trims leading/trailing.
+     * Replace sequences of isCtrlWS() characters with a specified
+     * replacement sequence, plus trims leading/trailing.
      */
     public static CharBuffer replaceCtrlWS( final CharSequence in,
                                             final CharSequence rep )
+    {
+        return replaceCtrlWS( in, rep, true );
+    }
+
+    /**
+     * Replace sequences of isCtrlWS() characters
+     * with a specified replacement sequence,and trim leading/trailing if
+     * specified/
+     */
+    public static CharBuffer replaceCtrlWS( final CharSequence in,
+                                            final CharSequence rep,
+                                            final boolean doTrim )
     {
         int size_est = in.length();
         if( rep.length() > 1 ) size_est += ( 8 * ( rep.length() - 1 ) );
@@ -47,24 +59,54 @@ public final class Characters
 
         int i = 0, last = 0;
         final int end = in.length();
-        boolean inside = false;
+        boolean ws = false;
 
         while( i < end ) {
             if( isCtrlWS( in.charAt( i ) ) ) {
-                if( !inside ) {
+                if( !ws ) {
                     out.append( in, last, i );
-                    inside = true;
+                    ws = true;
                 }
             }
-            else if( inside ) {
-                if( out.position() > 0 ) out.append( rep );
+            else if( ws ) {
+                if( out.position() > 0 || !doTrim ) out.append( rep );
                 last = i;
-                inside = false;
+                ws = false;
             }
             ++i;
         }
-        if( !inside ) out.append( in, last, end );
+        if( ws ) {
+            if( !doTrim ) out.append( rep );
+        }
+        else {
+            out.append( in, last, end );
+        }
         return out.flipAsCharBuffer();
+    }
+
+    /**
+     * Return the number or words in sequence when tokenized by isCtrlWS()
+     * and starting with a character of class LetterOrDigit.
+     */
+    public static int wordCount( final CharSequence in )
+    {
+        int i = 0;
+        boolean nonWord = true;
+        int count = 0;
+        final int end = in.length();
+        while( i < end ) {
+            final char c = in.charAt( i );
+            if( isCtrlWS( c ) ) {
+                nonWord = true;
+            }
+            else if( nonWord && Character.isLetterOrDigit( c ) ) {
+                nonWord = false;
+                ++count;
+            }
+
+            ++i;
+        }
+        return count;
     }
 
     /**

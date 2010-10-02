@@ -11,3 +11,5 @@ lib/iudex-html/base.rb
 lib/iudex-html.rb
 test/setup.rb
 test/test_html_parser.rb
+test/test_tree_walker.rb
+test/test_word_counters.rb

@@ -19,6 +19,7 @@ package iudex.html;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 import iudex.core.ContentSource;
 import iudex.http.ContentType;
@@ -35,9 +36,20 @@ import com.gravitext.xml.producer.Attribute;
 import com.gravitext.xml.tree.AttributeValue;
 import com.gravitext.xml.tree.Characters;
 import com.gravitext.xml.tree.Element;
+import com.gravitext.xml.tree.Node;
 
 public class NekoHTMLParser
 {
+    public void setParseAsFragment( boolean parseAsFragment )
+    {
+        _parseAsFragment = parseAsFragment;
+    }
+
+    public void setSkipBanned( boolean skipBanned )
+    {
+        _skipBanned = skipBanned;
+    }
+
     public Element parse( ContentSource content )
         throws SAXException, IOException
     {
@@ -58,12 +70,22 @@ public class NekoHTMLParser
 
         // http://nekohtml.sourceforge.net/settings.html
         try {
-            parser.setProperty(
-        "http://cyberneko.org/html/properties/default-encoding",
-                                encoding );
             parser.setFeature(
         "http://cyberneko.org/html/features/scanner/ignore-specified-charset",
                                true );
+            parser.setFeature(
+        "http://cyberneko.org/html/features/scanner/normalize-attrs",
+                               true );
+
+            if( _parseAsFragment ) {
+                parser.setFeature(
+        "http://cyberneko.org/html/features/balance-tags/document-fragment",
+                                   true );
+            }
+
+            parser.setProperty(
+        "http://cyberneko.org/html/properties/default-encoding",
+                                encoding );
             parser.setProperty(
         "http://cyberneko.org/html/properties/names/elems",
                                 "lower" );
@@ -95,9 +117,10 @@ public class NekoHTMLParser
         private final Charset _newEncoding;
     }
 
-    static final class HTMLHandler
+    final class HTMLHandler
         extends DefaultHandler
     {
+
         public HTMLHandler( Charset encoding )
         {
             _inputEncoding = encoding;
@@ -109,6 +132,10 @@ public class NekoHTMLParser
          */
         public Element root()
         {
+            List<Node> children = _root.children();
+            if( ( children.size() == 1 ) && children.get( 0 ).isElement() ) {
+                return children.get( 0 ).asElement();
+            }
             return _root;
         }
 
@@ -142,13 +169,8 @@ public class NekoHTMLParser
                 Element element = new Element( tag );
                 copyAttributes( attributes, element );
 
-                if( _root == null ) {
-                    _root = _current = element;
-                }
-                else {
-                    _current.addChild( element );
-                    _current = element;
-                }
+                _current.addChild( element );
+                _current = element;
             }
         }
 
@@ -185,6 +207,13 @@ public class NekoHTMLParser
             }
         }
 
+        @Override
+        public void endDocument() throws SAXException
+        {
+            // Add any additional character child at end of fragment
+            bufferToChars();
+        }
+
         private void bufferToChars()
         {
             if( _buffer != null ) {
@@ -214,11 +243,13 @@ public class NekoHTMLParser
         }
 
         private final Charset _inputEncoding;
-        private Element _root = null;
-        private Element _current = null;
+        private final Element _root = new Element( HTML.DIV );
+        private Element _current = _root;
         private StringBuilder _buffer = null;
 
-        private boolean _skipBanned = true;
         private int _skipDepth = 0;
     }
+
+    private boolean _parseAsFragment = false;
+    private boolean _skipBanned = true;
 }

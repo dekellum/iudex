@@ -78,13 +78,56 @@ HTML
     assert_xml( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
   end
 
+  HTML_OUTSIDE = <<HTML
+before
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head/>
+ <body>
+  <p>normal text.</p>
+ </body>
+</html>
+after
+HTML
+
+  HTML_INSIDE = <<HTML
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head/>
+ <body>before
+  <p>normal text.</p>after</body>
+</html>
+HTML
+
+  def test_outer_text
+    assert_xml( HTML_INSIDE, parse( HTML_OUTSIDE, "ISO-8859-1" ) )
+  end
+
+  HTML_FRAG = {
+    :in  =>      "one<p>two</p><br/> three",
+    :out => "<div>one<p>two</p><br/> three</div>" }
+
+  def test_parse_fragment
+    tree = parseFragment( HTML_FRAG[ :in ] )
+    assert_xml_fragment( HTML_FRAG[ :out ], tree )
+  end
+
   def parse( html, charset )
     comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
     HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )
   end
 
+  def parseFragment( html, charset = "UTF-8" )
+    comp_bytes = html.to_java_bytes
+    HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
+  end
+
   def assert_xml( xml, root )
     assert_equal( xml, TreeUtils::produceString( root, Indentor::PRETTY ) )
+  end
+
+  def assert_xml_fragment( xml, root )
+    assert_equal( xml,
+                  HTMLUtils::produceFragmentString( root,
+                                                    Indentor::COMPRESSED ) )
   end
 
 end

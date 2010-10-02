@@ -27,8 +27,8 @@ require 'minitest/unit'
 require 'minitest/autorun'
 
 # Make test output logging compatible: no partial lines.
-class TestOut
-  def print( *a ); $stdout.puts( *a ); end
-  def puts( *a );  $stdout.puts( *a ); end
-end
-MiniTest::Unit.output = TestOut.new
+# class TestOut
+#   def print( *a ); $stdout.puts( *a ); end
+#   def puts( *a );  $stdout.puts( *a ); end
+# end
+# MiniTest::Unit.output = TestOut.new
