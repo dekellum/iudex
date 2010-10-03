@@ -21,7 +21,7 @@ public final class Domains
 
     /**
      * Return the registration level domain (public domain suffix plus one) for
-     * the given name if one is found, or null.
+     * the given host name if one is found, or null otherwise.
      */
     public static String registrationLevelDomain( String name )
     {
