@@ -31,6 +31,7 @@ public class CharactersNormalizer implements TreeFilter
         if( node.isCharacters() ) {
             boolean isBlock = ! HTMLTag.isInline( node.parent() );
 
+            //Trim leading/trailing whitespace if isBlock.
             CharSequence clean =
                 replaceCtrlWS( node.characters(), " ", isBlock );
 
