@@ -23,6 +23,10 @@ import com.gravitext.util.Streams;
 
 public class ContentSource
 {
+    public ContentSource( CharSequence seq )
+    {
+        _source = seq;
+    }
 
     public ContentSource( ByteBuffer buffer )
     {
