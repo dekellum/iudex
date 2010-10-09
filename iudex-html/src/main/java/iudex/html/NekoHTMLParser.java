@@ -17,6 +17,7 @@
 package iudex.html;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,18 @@ public class NekoHTMLParser
         HTMLHandler handler = new HTMLHandler( encoding );
 
         parser.setContentHandler( handler );
-        parser.parse( new InputSource( content.stream() ) );
+
+        InputSource input = null;
+        InputStream inStream = content.stream();
+        if( inStream != null ) {
+             input = new InputSource( inStream );
+        }
+        else {
+            //FIXME: Crappy copy: Reader?
+            input = new InputSource( content.characters().toString() );
+        }
+
+        parser.parse( input );
 
         return handler.root();
     }
