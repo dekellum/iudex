@@ -16,7 +16,16 @@
 
 package iudex.html;
 
-public class HTMLKeys
-{
+import iudex.core.ContentKeys;
 
+import com.gravitext.htmap.Key;
+import com.gravitext.xml.tree.Element;
+
+public class HTMLKeys extends ContentKeys
+{
+    public static final Key<Element> TITLE_TREE =
+        create( "title_tree", Element.class );
+
+    public static final Key<Element> CONTENT_TREE =
+        create( "content_tree", Element.class );
 }
