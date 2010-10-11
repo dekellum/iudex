@@ -103,6 +103,9 @@ public class NekoHTMLParser
             parser.setProperty(
         "http://cyberneko.org/html/properties/names/elems",
                                 "lower" );
+
+        // FIXME: Must be set true for CDATA sections to passed as characters
+        // Feature: "http://cyberneko.org/html/features/scanner/cdata-sections"
         }
         // SAXNotRecognizedException, SAXNotSupportedException
         catch( SAXException e ) {
