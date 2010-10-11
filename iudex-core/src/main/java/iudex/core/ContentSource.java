@@ -60,6 +60,10 @@ public class ContentSource
         _defaultEncoding = encoding;
     }
 
+    /**
+     * Default encoding if set (i.e. HTTP Content-Type; charset hint) or null
+     * when the source is already characters.
+     */
     public Charset defaultEncoding()
     {
         return _defaultEncoding;
