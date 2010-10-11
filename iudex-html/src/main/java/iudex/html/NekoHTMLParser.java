@@ -18,6 +18,7 @@ package iudex.html;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,8 +112,9 @@ public class NekoHTMLParser
              input = new InputSource( inStream );
         }
         else {
-            //FIXME: Crappy copy: Reader?
-            input = new InputSource( content.characters().toString() );
+            //FIXME: Crappy copy: Use non-copying Reader?
+            input = new InputSource(
+                        new StringReader( content.characters().toString() ) );
         }
 
         parser.parse( input );
