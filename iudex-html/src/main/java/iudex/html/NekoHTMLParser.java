@@ -52,17 +52,17 @@ public class NekoHTMLParser
         _parseAsFragment = parseAsFragment;
     }
 
-    public void setSkipBanned( boolean skipBanned )
+    public final void setSkipBanned( boolean skipBanned )
     {
         _skipBanned = skipBanned;
     }
 
-    public Element parse( ContentSource content )
+    public final Element parse( ContentSource content )
         throws SAXException, IOException
     {
         Element root = null;
         try {
-             root = parse( content, content.defaultEncoding() );
+            root = parse( content, content.defaultEncoding() );
         }
         catch( WrongEncoding wenc ) {
             root = parse( content, wenc.newEncoding() );
@@ -70,7 +70,11 @@ public class NekoHTMLParser
         return root;
     }
 
-    private Element parse( ContentSource content, Charset encoding )
+    /**
+     * @param encoding assumed encoding for comparison, or null to
+     * disable checks.
+     */
+    final Element parse( ContentSource content, Charset encoding )
         throws SAXException, IOException
     {
         SAXParser parser = new SAXParser();
@@ -90,9 +94,12 @@ public class NekoHTMLParser
                                    true );
             }
 
-            parser.setProperty(
+            if( encoding != null ) {
+                parser.setProperty(
         "http://cyberneko.org/html/properties/default-encoding",
-                                encoding );
+                                    encoding );
+            }
+
             parser.setProperty(
         "http://cyberneko.org/html/properties/names/elems",
                                 "lower" );
@@ -139,7 +146,10 @@ public class NekoHTMLParser
     final class HTMLHandler
         extends DefaultHandler
     {
-
+        /**
+         * Given assumed encoding or null to disable check for meta-tag
+         * encoding.
+         */
         public HTMLHandler( Charset encoding )
         {
             _inputEncoding = encoding;
@@ -199,7 +209,7 @@ public class NekoHTMLParser
         {
             ContentType ctype = ContentType.parse( type );
             Charset newCharset = Charsets.lookup( ctype.charset() );
-            if( ( newCharset != null ) &&
+            if( ( newCharset != null ) && ( _inputEncoding != null ) &&
                 ! _inputEncoding.equals( newCharset ) ) {
                 throw new WrongEncoding( newCharset );
             }
