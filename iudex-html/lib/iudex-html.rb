@@ -24,8 +24,13 @@ require 'iudex-core'
 
 module Iudex
   module HTML
-
     require "iudex-html/iudex-html-#{VERSION}.jar"
+
+    import 'iudex.html.HTMLKeys'
+
+    module Filters
+      import 'iudex.html.filters.HTMLParseFilter'
+    end
 
   end
 end
