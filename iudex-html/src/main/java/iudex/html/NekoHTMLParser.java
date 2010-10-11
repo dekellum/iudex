@@ -41,7 +41,12 @@ import com.gravitext.xml.tree.Node;
 
 public class NekoHTMLParser
 {
-    public void setParseAsFragment( boolean parseAsFragment )
+    /**
+     * Set if input should be parsed as a fragment (default: false).
+     * When set true, the returned Element will always be a synthetic
+     * HTML.DIV container (possibly containing only a single child element).
+     */
+    public final void setParseAsFragment( boolean parseAsFragment )
     {
         _parseAsFragment = parseAsFragment;
     }
@@ -145,7 +150,9 @@ public class NekoHTMLParser
         public Element root()
         {
             List<Node> children = _root.children();
-            if( ( children.size() == 1 ) && children.get( 0 ).isElement() ) {
+            if( ! _parseAsFragment &&
+                ( children.size() == 1 ) &&
+                children.get( 0 ).isElement() ) {
                 return children.get( 0 ).asElement();
             }
             return _root;
