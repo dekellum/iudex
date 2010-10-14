@@ -54,15 +54,19 @@ class TestParseFilter < MiniTest::Unit::TestCase
   end
 
   def test_markup
-    tests = [ [ "simple",   0, "simple" ],
-              [ "&lt;",     1, "<" ],
-              [ "&amp;lt;", 2, "<" ] ]
+    tests = [ [ "simple",               0, "simple" ],
+              [ "<i>inner</i>",         1, nil ],
+              [ "&lt;i>inner&lt;/i>",   2, nil ],
+              [    "<!--ignore-->text", 1, "text" ],
+              [ "&lt;!--ignore-->text", 2, "text" ],
+              [ "&lt;",                 1, "<" ],
+              [ "&amp;lt;",             2, "<" ] ]
 
-    tests.each do |input,count,out|
+    tests.each do | input, count, out |
       map = UniMap.new
       map.title = input
       assert_equal( count, @filter.parse_loop( map ), input )
-      assert_equal( out, map.title.to_s )
+      assert_equal( out, map.title && map.title.to_s )
     end
   end
 
