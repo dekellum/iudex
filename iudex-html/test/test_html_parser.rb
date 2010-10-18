@@ -110,6 +110,16 @@ HTML
     assert_xml_fragment( HTML_FRAG[ :out ], tree )
   end
 
+  HTML_CDATA = {
+    :in  => "<p><![CDATA[two]]></p>",
+    :out => "<p/>" }
+  # By default (incl HTML browsers) CDATA sections are dropped.
+
+  def test_cdata
+    tree = parseFragment( HTML_CDATA[ :in ] )
+    assert_xml_fragment( HTML_CDATA[ :out ], tree )
+  end
+
   def parse( html, charset )
     comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
     HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )
@@ -117,7 +127,13 @@ HTML
 
   def parseFragment( html, charset = "UTF-8" )
     comp_bytes = html.to_java_bytes
-    HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
+    tree = HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
+    c = tree.children
+    if ( c.size == 1 && c[0].element? )
+      c[0]
+    else
+      tree
+    end
   end
 
   def assert_xml( xml, root )

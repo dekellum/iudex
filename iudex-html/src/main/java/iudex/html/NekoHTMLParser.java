@@ -17,6 +17,8 @@
 package iudex.html;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,22 +42,27 @@ import com.gravitext.xml.tree.Node;
 
 public class NekoHTMLParser
 {
-    public void setParseAsFragment( boolean parseAsFragment )
+    /**
+     * Set if input should be parsed as a fragment (default: false).
+     * When set true, the returned Element will always be a synthetic
+     * HTML.DIV container (possibly containing only a single child element).
+     */
+    public final void setParseAsFragment( boolean parseAsFragment )
     {
         _parseAsFragment = parseAsFragment;
     }
 
-    public void setSkipBanned( boolean skipBanned )
+    public final void setSkipBanned( boolean skipBanned )
     {
         _skipBanned = skipBanned;
     }
 
-    public Element parse( ContentSource content )
+    public final Element parse( ContentSource content )
         throws SAXException, IOException
     {
         Element root = null;
         try {
-             root = parse( content, content.defaultEncoding() );
+            root = parse( content, content.defaultEncoding() );
         }
         catch( WrongEncoding wenc ) {
             root = parse( content, wenc.newEncoding() );
@@ -63,7 +70,11 @@ public class NekoHTMLParser
         return root;
     }
 
-    private Element parse( ContentSource content, Charset encoding )
+    /**
+     * @param encoding assumed encoding for comparison, or null to
+     * disable checks.
+     */
+    final Element parse( ContentSource content, Charset encoding )
         throws SAXException, IOException
     {
         SAXParser parser = new SAXParser();
@@ -83,12 +94,18 @@ public class NekoHTMLParser
                                    true );
             }
 
-            parser.setProperty(
+            if( encoding != null ) {
+                parser.setProperty(
         "http://cyberneko.org/html/properties/default-encoding",
-                                encoding );
+                                    encoding );
+            }
+
             parser.setProperty(
         "http://cyberneko.org/html/properties/names/elems",
                                 "lower" );
+
+        // FIXME: Must be set true for CDATA sections to passed as characters
+        // Feature: "http://cyberneko.org/html/features/scanner/cdata-sections"
         }
         // SAXNotRecognizedException, SAXNotSupportedException
         catch( SAXException e ) {
@@ -98,7 +115,19 @@ public class NekoHTMLParser
         HTMLHandler handler = new HTMLHandler( encoding );
 
         parser.setContentHandler( handler );
-        parser.parse( new InputSource( content.stream() ) );
+
+        InputSource input = null;
+        InputStream inStream = content.stream();
+        if( inStream != null ) {
+             input = new InputSource( inStream );
+        }
+        else {
+            //FIXME: Crappy copy: Use non-copying Reader?
+            input = new InputSource(
+                        new StringReader( content.characters().toString() ) );
+        }
+
+        parser.parse( input );
 
         return handler.root();
     }
@@ -120,7 +149,10 @@ public class NekoHTMLParser
     final class HTMLHandler
         extends DefaultHandler
     {
-
+        /**
+         * Given assumed encoding or null to disable check for meta-tag
+         * encoding.
+         */
         public HTMLHandler( Charset encoding )
         {
             _inputEncoding = encoding;
@@ -133,7 +165,9 @@ public class NekoHTMLParser
         public Element root()
         {
             List<Node> children = _root.children();
-            if( ( children.size() == 1 ) && children.get( 0 ).isElement() ) {
+            if( ! _parseAsFragment &&
+                ( children.size() == 1 ) &&
+                children.get( 0 ).isElement() ) {
                 return children.get( 0 ).asElement();
             }
             return _root;
@@ -178,7 +212,7 @@ public class NekoHTMLParser
         {
             ContentType ctype = ContentType.parse( type );
             Charset newCharset = Charsets.lookup( ctype.charset() );
-            if( ( newCharset != null ) &&
+            if( ( newCharset != null ) && ( _inputEncoding != null ) &&
                 ! _inputEncoding.equals( newCharset ) ) {
                 throw new WrongEncoding( newCharset );
             }

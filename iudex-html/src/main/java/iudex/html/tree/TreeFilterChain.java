@@ -31,7 +31,10 @@ public class TreeFilterChain
         _filters = new ArrayList<TreeFilter>( filters );
     }
 
-    //FIXME: Support child inspection for reporting?
+    public List<? extends TreeFilter> children()
+    {
+        return _filters;
+    }
 
     public Action filter( final Node node )
     {
