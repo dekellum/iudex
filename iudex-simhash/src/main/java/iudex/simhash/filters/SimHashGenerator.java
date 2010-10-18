@@ -21,10 +21,15 @@ import java.util.List;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
+import com.gravitext.xml.tree.Element;
+import com.gravitext.xml.tree.Node;
 
 import iudex.filter.Described;
 import iudex.filter.Filter;
 import iudex.filter.FilterException;
+import iudex.html.tree.HTMLTreeKeys;
+import iudex.html.tree.TreeFilter;
+import iudex.html.tree.TreeWalker;
 import iudex.simhash.SimHashKeys;
 import iudex.simhash.gen.StopWordSet;
 import iudex.simhash.gen.TokenCounter;
@@ -35,12 +40,23 @@ public class SimHashGenerator implements Filter, Described
     {
         public static Input forText( Key<CharSequence> text )
         {
-            return new Input( text );
+            return new Input( text, null );
         }
 
-        Input( Key<CharSequence> text )
+        public static Input forTree( Key<Element> tree )
+        {
+            return new Input( null, tree );
+        }
+
+        Input( Key<CharSequence> text, Key<Element> tree )
         {
             textKey = text;
+            treeKey = tree;
+        }
+
+        public void setWordyRatio( float ratio )
+        {
+            wordyRatio = ratio;
         }
 
         @Override
@@ -49,7 +65,9 @@ public class SimHashGenerator implements Filter, Described
             return textKey.name();
         }
 
-        Key<CharSequence> textKey;
+        final Key<CharSequence> textKey;
+        final Key<Element> treeKey;
+        float wordyRatio = 0.0f;
     }
 
     public SimHashGenerator( List<Input> inputs )
@@ -80,7 +98,14 @@ public class SimHashGenerator implements Filter, Described
                 if( text != null ) counter.add( text );
             }
             else {
-                // ...
+                Element root = content.get( in.treeKey );
+                if( root != null ) {
+                    float minW = minWordiness( root, in.wordyRatio );
+                    TokenWalker walker = new TokenWalker( counter, minW );
+                    TreeWalker.walkBreadthFirst( walker, root );
+
+                    //FIXME: Avoid walking html>head>title, etc?
+                }
             }
         }
 
@@ -89,6 +114,44 @@ public class SimHashGenerator implements Filter, Described
 
         return true;
     }
+
+    private float minWordiness( Element root, float wordyRatio )
+    {
+        float overall = root.get( HTMLTreeKeys.WORDINESS );
+        return (float) ( Math.floor( overall * wordyRatio / WORDY_STEP )
+                         * WORDY_STEP );
+    }
+
+    private static final class TokenWalker
+        implements TreeFilter
+    {
+        TokenWalker( TokenCounter counter, float minWordiness )
+        {
+            _counter = counter;
+            _minWordiness = minWordiness;
+        }
+
+        @Override
+        public Action filter( Node node )
+        {
+            Action action = Action.CONTINUE;
+
+            if( node.isElement() ) {
+                if( node.get( HTMLTreeKeys.WORDINESS ) < _minWordiness ) {
+                    action = Action.SKIP;
+                }
+            }
+            else {
+                _counter.add( node.characters() );
+            }
+            return action;
+        }
+
+        private final TokenCounter _counter;
+        private final float _minWordiness;
+    }
+
+    private static final float WORDY_STEP = 2.0f;
 
     private final List<Input> _inputs;
     private final StopWordSet _stopWords;
