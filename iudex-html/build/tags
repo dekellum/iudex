@@ -37,8 +37,8 @@ address      ,  S T F        , contact information for the author or owner
 applet       ,    T F D      , embedded applet
 area         ,E S T F        , area inside an image-map
 b            ,  S T F   I    , bold text
-base         ,E S T F        , default address or a default target for all links on a page
-basefont     ,E   T F D I    , default font; color; or size for the text in a page
+base         ,E S T F     M  , default address or a default target for all links on a page
+basefont     ,E   T F D I M  , default font; color; or size for the text in a page
 bdo          ,  S T F   I    , the text direction
 big          ,  S T F   I    , big text
 blockquote   ,  S T F        , long quotation
@@ -121,7 +121,7 @@ textarea     ,  S T F   I   B, multi-line text input control
 tfoot        ,  S T F        , Groups the footer content in a table
 th           ,  S T F        , header cell in a table
 thead        ,  S T F        , Groups the header content in a table
-title        ,  S T F        , the title of a document
+title        ,  S T F     M  , the title of a document
 tr           ,  S T F        , row in a table
 tt           ,  S T F   I    , teletype text
 u            ,    T F D I    , underlined text
