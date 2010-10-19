@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package iudex.html;
+package iudex.html.neko;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import iudex.core.ContentSource;
+import iudex.html.HTML;
+import iudex.html.HTMLTag;
 import iudex.http.ContentType;
 
 import org.cyberneko.html.parsers.SAXParser;
