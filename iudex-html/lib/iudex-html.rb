@@ -33,5 +33,17 @@ module Iudex
       import 'iudex.html.filters.HTMLTreeFilter'
     end
 
+    module Tree
+      import 'iudex.html.tree.HTMLTreeKeys'
+      import 'iudex.html.tree.TreeFilterChain'
+
+      module Filters
+        import 'iudex.html.tree.filters.CharactersNormalizer'
+        import 'iudex.html.tree.filters.MetaSkipFilter'
+        import 'iudex.html.tree.filters.WordCounter'
+        import 'iudex.html.tree.filters.WordyCounter'
+      end
+    end
+
   end
 end

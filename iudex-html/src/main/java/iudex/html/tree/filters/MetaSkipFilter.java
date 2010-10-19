@@ -18,34 +18,22 @@ package iudex.html.tree.filters;
 
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
-import static iudex.util.Characters.*;
 
-import static iudex.html.tree.HTMLTreeKeys.*;
+import static iudex.html.HTMLTag.htmlTag;
 
 import iudex.html.tree.TreeFilter;
 
-public class WordCounter implements TreeFilter
+/**
+ * SKIP all elements of tag.isMetadata(). This includes HTML.HEAD and all of its
+ * legal children, HTML.TITLE, etc.
+ */
+public class MetaSkipFilter implements TreeFilter
 {
-    //FIXME: Define method to insure this is only run depth first?
-
     @Override
     public Action filter( Node node )
     {
-        int wcount = 0;
-
         Element elem = node.asElement();
-        if( elem != null ) {
-            for( Node child : elem.children() ) {
-                Integer count = child.get( WORD_COUNT );
-                if( count != null ) wcount += count;
-            }
-        }
-        else {
-            wcount = wordCount( node.characters() );
-        }
-
-        node.set( WORD_COUNT, wcount );
-
-        return Action.CONTINUE;
+        return ( ( ( elem != null ) && htmlTag( elem ).isMetadata() ) ?
+                 Action.SKIP : Action.CONTINUE );
     }
 }
