@@ -33,7 +33,7 @@ import iudex.filter.Described;
 import iudex.filter.Filter;
 import iudex.filter.FilterException;
 
-import iudex.html.NekoHTMLParser;
+import iudex.html.neko.NekoHTMLParser;
 
 /**
  * An HTML parsing filter. Supports complete HTML documents or fragments with

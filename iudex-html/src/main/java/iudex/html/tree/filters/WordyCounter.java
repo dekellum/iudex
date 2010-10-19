@@ -39,18 +39,21 @@ public class WordyCounter implements TreeFilter
             float blockSum  = 0.0f;
 
             for( Node child : elem.children() ) {
-                Element celm = child.asElement();
-                if( celm != null ) {
-                    if( isInline( celm ) ) {
-                        inlineSum += celm.get( WORDINESS );
+                final Integer cwords = child.get( WORD_COUNT );
+                if( cwords != null ) {
+                    Element celm = child.asElement();
+                    if( celm != null ) {
+                        final Float cwordy = celm.get( WORDINESS );
+                        if( isInline( celm ) ) {
+                            inlineSum += cwordy;
+                        }
+                        else {
+                            blockSum += ( cwordy * cwords );
+                        }
                     }
                     else {
-                        blockSum += ( celm.get( WORDINESS ) *
-                                      celm.get( WORD_COUNT ) );
+                        inlineSum += cwords;
                     }
-                }
-                else {
-                    inlineSum += child.get( WORD_COUNT );
                 }
             }
 
