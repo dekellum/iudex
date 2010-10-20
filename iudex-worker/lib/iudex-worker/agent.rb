@@ -51,12 +51,11 @@ module Iudex
         wpoller = WorkPoller.new( data_source, cmapper )
         Config.do_work_poller( wpoller )
 
-        mgr = Config.do_http_client_3
+        mgr = http_client_3_manager
         mgr.start
+        http_client = Iudex::HTTPClient3::HTTPClient3.new( mgr.client )
 
-        fcf = FilterChainFactory.new( 'agent' )
-        fcf.http_client = Iudex::HTTPClient3::HTTPClient3.new( mgr.client )
-        fcf.data_source = data_source
+        fcf = filter_chain_factory( http_client, data_source )
 
         Config.do_filter_factory( fcf )
 
@@ -70,6 +69,17 @@ module Iudex
         mgr.shutdown
         dsf.close
 
+      end
+
+      def http_client_3_manager
+        Config.do_http_client_3
+      end
+
+      def filter_chain_factory( http_client, data_source )
+        fcf = FilterChainFactory.new( 'agent' )
+        fcf.http_client = http_client
+        fcf.data_source = data_source
+        fcf
       end
 
     end
