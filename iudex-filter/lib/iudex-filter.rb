@@ -35,6 +35,7 @@ module Iudex
       import 'iudex.filter.core.FilterIndex'
       import 'iudex.filter.core.ListenerChain'
       import 'iudex.filter.core.LogListener'
+      import 'iudex.filter.core.MDCSetter'
       import 'iudex.filter.core.MDCUnsetter'
       import 'iudex.filter.core.Selector'
       import 'iudex.filter.core.SummaryReporter'
