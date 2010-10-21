@@ -23,7 +23,7 @@ require 'iudex-filter'
 require 'iudex-html'
 
 module Iudex
-  module Simhash
+  module SimHash
 
     require "iudex-simhash/iudex-simhash-#{VERSION}.jar"
 

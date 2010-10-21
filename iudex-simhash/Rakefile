@@ -8,7 +8,7 @@ gem     'rjack-tarpit', '~> 1.2'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-simhash',
-                       Iudex::Simhash::VERSION,
+                       Iudex::SimHash::VERSION,
                        :no_assembly, :java_platform )
 
 t.specify do |h|

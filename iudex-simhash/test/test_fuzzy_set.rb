@@ -22,7 +22,7 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-simhash'
 
 class TestFuzzySet < MiniTest::Unit::TestCase
-  include Iudex::Simhash::BruteFuzzy
+  include Iudex::SimHash::BruteFuzzy
 
   # Series that will allow all but last at 3 bit threshold, all at 2
   # bit threshold.
