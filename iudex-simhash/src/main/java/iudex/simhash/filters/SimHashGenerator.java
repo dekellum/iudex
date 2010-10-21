@@ -17,6 +17,7 @@
 package iudex.simhash.filters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
@@ -29,7 +30,9 @@ import iudex.filter.Filter;
 import iudex.filter.FilterException;
 import iudex.html.tree.HTMLTreeKeys;
 import iudex.html.tree.TreeFilter;
+import iudex.html.tree.TreeFilterChain;
 import iudex.html.tree.TreeWalker;
+import iudex.html.tree.filters.MetaSkipFilter;
 import iudex.simhash.SimHashKeys;
 import iudex.simhash.gen.StopWordSet;
 import iudex.simhash.gen.TokenCounter;
@@ -102,9 +105,10 @@ public class SimHashGenerator implements Filter, Described
                 if( root != null ) {
                     float minW = minWordiness( root, in.wordyRatio );
                     TokenWalker walker = new TokenWalker( counter, minW );
-                    TreeWalker.walkBreadthFirst( walker, root );
-
-                    //FIXME: Avoid walking html>head>title, etc?
+                    TreeFilterChain chain =
+                        new TreeFilterChain( Arrays.asList( new MetaSkipFilter(),
+                                                            walker ) );
+                    TreeWalker.walkBreadthFirst( chain, root );
                 }
             }
         }
