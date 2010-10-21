@@ -17,7 +17,10 @@
 require 'iudex-simhash/base.rb'
 
 require 'java'
+
 require 'gravitext-util'
+require 'iudex-filter'
+require 'iudex-html'
 
 module Iudex
   module Simhash
@@ -29,6 +32,10 @@ module Iudex
       import 'iudex.simhash.brutefuzzy.FuzzyList64'
       import 'iudex.simhash.brutefuzzy.FuzzyTree64'
       import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
+    end
+
+    module Filters
+      import 'iudex.simhash.filters.SimHashGenerator'
     end
 
   end
