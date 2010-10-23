@@ -34,11 +34,11 @@ public final class Domains
             final String parent = parent( name );
 
             if( TLDSets.TLD_PARENTS.contains( parent ) ) {
-               return TLDSets.REG_EXCEPTIONS.contains( name  ) ? name : child;
-           }
+                return TLDSets.REG_EXCEPTIONS.contains( name  ) ? name : child;
+            }
 
-           child = name;
-           name = parent;
+            child = name;
+            name = parent;
         }
         return null;
     }
