@@ -26,6 +26,7 @@ class TestOtherFilters < MiniTest::Unit::TestCase
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
+  include Iudex::Filter::Core
 
   import 'iudex.html.HTMLUtils'
 
@@ -33,7 +34,7 @@ class TestOtherFilters < MiniTest::Unit::TestCase
 
   def test_title_extractor
     html = <<HTML
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>I&#363;dex</title>
@@ -45,13 +46,22 @@ class TestOtherFilters < MiniTest::Unit::TestCase
 </html>
 HTML
 
+    map = content( html )
+    chain = filter_chain( TitleExtractor.new )
+    assert( chain.filter( map ) )
+    assert_equal( 'Iūdex', map.title.to_s )
+  end
+
+  def content( html, charset = "UTF-8" )
     map = UniMap.new
     map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
-    f = HTMLParseFilter.new( ContentKeys::CONTENT, nil, HTMLKeys::CONTENT_TREE )
-    assert( f.filter( map ) )
-    f = TitleExtractor.new
-    assert( f.filter( map ) )
-    assert_equal( 'Iūdex', map.title.to_s )
+    map
+  end
+
+  def filter_chain( *filters )
+    filters.unshift( HTMLParseFilter.new( ContentKeys::CONTENT,
+                                          nil, HTMLKeys::CONTENT_TREE ) )
+    FilterChain.new( "test", filters )
   end
 
 end
