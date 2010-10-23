@@ -27,6 +27,8 @@ module Iudex
 
     require "iudex-simhash/iudex-simhash-#{VERSION}.jar"
 
+    import 'iudex.simhash.SimHashKeys'
+
     module BruteFuzzy
       import 'iudex.simhash.brutefuzzy.BruteFuzzy'
       import 'iudex.simhash.brutefuzzy.FuzzyList64'
@@ -38,5 +40,8 @@ module Iudex
       import 'iudex.simhash.filters.SimHashGenerator'
     end
 
+    module Gen
+      import 'iudex.simhash.gen.StopWordSet'
+    end
   end
 end
