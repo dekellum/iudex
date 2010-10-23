@@ -31,6 +31,7 @@ module Iudex
     module Filters
       import 'iudex.html.filters.HTMLParseFilter'
       import 'iudex.html.filters.HTMLTreeFilter'
+      import 'iudex.html.filters.TitleExtractor'
     end
 
     module Tree

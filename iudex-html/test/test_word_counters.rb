@@ -25,7 +25,6 @@ class TestWordCounters < MiniTest::Unit::TestCase
   include Iudex::HTML::Tree
   include Iudex::HTML::Tree::Filters
 
-  import 'com.gravitext.xml.producer.Indentor'
   import 'iudex.html.HTMLUtils'
   import 'iudex.html.tree.TreeWalker'
 

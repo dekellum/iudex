@@ -45,9 +45,8 @@ public final class Characters
     }
 
     /**
-     * Replace sequences of isCtrlWS() characters
-     * with a specified replacement sequence,and trim leading/trailing if
-     * specified/
+     * Replace sequences of isCtrlWS() characters with a specified
+     * replacement sequence, and trim leading/trailing if specified.
      */
     public static CharBuffer replaceCtrlWS( final CharSequence in,
                                             final CharSequence rep,
