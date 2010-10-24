@@ -41,9 +41,9 @@ public final class TokenCounter
         _stopwords = stopwords;
     }
 
-    public void add( String chars )
+    public void add( CharSequence chars )
     {
-        add( UTF_8.encode( chars ) );
+        add( CharBuffer.wrap( chars ) );
     }
 
     public void add( CharBuffer chars )

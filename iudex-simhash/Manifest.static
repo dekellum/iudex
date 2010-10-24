@@ -7,5 +7,7 @@ bin/iudex-simhash-perftest
 config/stopwords.en
 lib/iudex-simhash/base.rb
 lib/iudex-simhash.rb
+lib/iudex-simhash/factory_helper.rb
 test/setup.rb
 test/test_fuzzy_set.rb
+test/test_simhash_generator.rb

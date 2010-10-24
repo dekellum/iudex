@@ -17,12 +17,17 @@
 require 'iudex-simhash/base.rb'
 
 require 'java'
+
 require 'gravitext-util'
+require 'iudex-filter'
+require 'iudex-html'
 
 module Iudex
-  module Simhash
+  module SimHash
 
     require "iudex-simhash/iudex-simhash-#{VERSION}.jar"
+
+    import 'iudex.simhash.SimHashKeys'
 
     module BruteFuzzy
       import 'iudex.simhash.brutefuzzy.BruteFuzzy'
@@ -31,5 +36,12 @@ module Iudex
       import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
     end
 
+    module Filters
+      import 'iudex.simhash.filters.SimHashGenerator'
+    end
+
+    module Gen
+      import 'iudex.simhash.gen.StopWordSet'
+    end
   end
 end

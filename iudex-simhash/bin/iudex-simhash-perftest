@@ -29,7 +29,7 @@ require 'gravitext-util'
 require 'gravitext-util/perftest'
 
 module PerfTest
-  include Iudex::Simhash::BruteFuzzy
+  include Iudex::SimHash::BruteFuzzy
 
   MD = FuzzySetPerfTest::Mode
 

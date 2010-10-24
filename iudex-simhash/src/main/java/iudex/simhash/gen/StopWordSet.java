@@ -47,6 +47,16 @@ public class StopWordSet
                  _tokens.contains( token ) );
     }
 
+    public Collection<ByteBuffer> tokens()
+    {
+        return _tokens;
+    }
+
+    public int maxLength()
+    {
+        return _maxLength;
+    }
+
     StopWordSet()
     {
         _maxLength = -1;
