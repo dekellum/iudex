@@ -31,6 +31,16 @@ import java.util.Map.Entry;
  */
 public final class TokenCounter
 {
+    public TokenCounter()
+    {
+        this( StopWordSet.EMPTY_SET );
+    }
+
+    public TokenCounter( StopWordSet stopwords )
+    {
+        _stopwords = stopwords;
+    }
+
     public void add( String chars )
     {
         add( UTF_8.encode( chars ) );
@@ -50,12 +60,15 @@ public final class TokenCounter
     {
         while( tokens.hasNext() ) {
             final ByteBuffer token = tokens.next();
-            Counter count = _counts.get( token );
-            if( count == null ) {
-                count = new Counter();
-                _counts.put( token, count );
+
+            if( ! _stopwords.contains( token ) ) {
+                Counter count = _counts.get( token );
+                if( count == null ) {
+                    count = new Counter();
+                    _counts.put( token, count );
+                }
+                count.incr();
             }
-            count.incr();
         }
     }
 
@@ -79,6 +92,8 @@ public final class TokenCounter
 
         int count = 0;
     }
+
+    private final StopWordSet _stopwords;
 
     private final Map<ByteBuffer,Counter> _counts =
         new HashMap<ByteBuffer,Counter>( 2048 );
