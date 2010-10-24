@@ -1,4 +1,5 @@
 #!/usr/bin/env jruby
+# -*- coding: utf-8 -*-
 #.hashdot.profile += jruby-shortlived
 
 #--
@@ -21,16 +22,13 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-html'
 
 class TestWordCounters < MiniTest::Unit::TestCase
-  import 'com.gravitext.xml.producer.Indentor'
+  include Iudex::HTML::Tree
+  include Iudex::HTML::Tree::Filters
+
   import 'iudex.html.HTMLUtils'
   import 'iudex.html.tree.TreeWalker'
-  import 'iudex.html.tree.TreeFilterChain'
-  import 'iudex.html.tree.HTMLTreeKeys'
 
-  import 'iudex.html.tree.filters.WordCounter'
-  import 'iudex.html.tree.filters.WordyCounter'
-
-  def test
+  def test_counts
     tset = [ [ "",                                            0, 0 ],
              [ "<div><span> </span></div>",                   0, 0 ],
 
@@ -74,6 +72,29 @@ class TestWordCounters < MiniTest::Unit::TestCase
                        1e-4,
                        " wordiness for: " + html )
     end
+  end
+
+  def test_doc
+    html = <<HTML
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Iūdex</title>
+  <style>style</style>
+ </head>
+ <body>
+  <p>Iūdex test.</p>
+ </body>
+</html>
+HTML
+    comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
+    tree = HTMLUtils::parse( HTMLUtils::source( comp_bytes, "UTF-8" ) )
+    chain = TreeFilterChain.new( [ MetaSkipFilter.new,
+                                   WordCounter.new,
+                                   WordyCounter.new ] )
+    TreeWalker::walk_depth_first( chain, tree )
+    assert_equal( 2, tree.get( HTMLTreeKeys::WORD_COUNT ) );
+    assert_equal( 2, tree.get( HTMLTreeKeys::WORDINESS ) );
   end
 
   def parse( html, charset="UTF-8" )

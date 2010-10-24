@@ -24,8 +24,27 @@ require 'iudex-core'
 
 module Iudex
   module HTML
-
     require "iudex-html/iudex-html-#{VERSION}.jar"
+
+    import 'iudex.html.HTMLKeys'
+
+    module Filters
+      import 'iudex.html.filters.HTMLParseFilter'
+      import 'iudex.html.filters.HTMLTreeFilter'
+      import 'iudex.html.filters.TitleExtractor'
+    end
+
+    module Tree
+      import 'iudex.html.tree.HTMLTreeKeys'
+      import 'iudex.html.tree.TreeFilterChain'
+
+      module Filters
+        import 'iudex.html.tree.filters.CharactersNormalizer'
+        import 'iudex.html.tree.filters.MetaSkipFilter'
+        import 'iudex.html.tree.filters.WordCounter'
+        import 'iudex.html.tree.filters.WordyCounter'
+      end
+    end
 
   end
 end
