@@ -21,7 +21,7 @@ public final class Domains
 
     /**
      * Return the registration level domain (public domain suffix plus one) for
-     * the given name if one is found, or null.
+     * the given host name if one is found, or null otherwise.
      */
     public static String registrationLevelDomain( String name )
     {
@@ -34,11 +34,11 @@ public final class Domains
             final String parent = parent( name );
 
             if( TLDSets.TLD_PARENTS.contains( parent ) ) {
-               return TLDSets.REG_EXCEPTIONS.contains( name  ) ? name : child;
-           }
+                return TLDSets.REG_EXCEPTIONS.contains( name  ) ? name : child;
+            }
 
-           child = name;
-           name = parent;
+            child = name;
+            name = parent;
         }
         return null;
     }
