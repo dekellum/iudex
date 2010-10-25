@@ -16,6 +16,9 @@
 
 package iudex.html.tree.filters;
 
+import java.util.List;
+
+import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
 import static iudex.util.Characters.*;
@@ -23,20 +26,69 @@ import static iudex.util.Characters.*;
 import iudex.html.HTMLTag;
 import iudex.html.tree.TreeFilter;
 
+/**
+ * Normalizes character nodes by replacing control characters and minimizing
+ * whitespace via {@link iudex.util.Characters#replaceCtrlWS}. Is aware of
+ * leading/trailing whitespace significance rules for HTML block vs inline
+ * elements. Compatible with both BREADTH_FIRST and DEPTH_FIRST traversal.
+ */
 public class CharactersNormalizer implements TreeFilter
 {
     @Override
     public Action filter( Node node )
     {
-        if( node.isCharacters() ) {
-            boolean isBlock = ! HTMLTag.isInline( node.parent() );
+        final Element elem = node.asElement();
+        if( elem != null ) {
+            final boolean parentIsBlock = isBlock( elem );
+            final List<Node> children = elem.children();
 
-            CharSequence clean =
-                replaceCtrlWS( node.characters(), " ", isBlock );
+            int i = 0;
+            while( i < children.size() ) {
+                Node cc = children.get( i );
+                if( cc.isCharacters() ) {
+                    CharSequence clean = clean( parentIsBlock, children, i );
 
-            node.setCharacters( clean );
+                    if( clean.length() > 0 ) {
+                        cc.setCharacters( clean );
+                        ++i;
+                    }
+                    else cc.detach();
+                }
+                else ++i;
+            }
         }
 
         return Action.CONTINUE;
+    }
+
+    private CharSequence clean( final boolean parentIsBlock,
+                                final List<Node> children,
+                                final int i )
+    {
+        final boolean trimL = parentIsBlock &&
+            ( ( i == 0 ) || isBlock( children.get( i-1 ) ) );
+        final boolean trimR = parentIsBlock &&
+            ( ( i == (children.size()-1) ) || isBlock( children.get( i+1 ) ) );
+        final boolean both = trimL && trimR;
+
+        CharSequence clean = replaceCtrlWS( children.get( i ).characters(),
+                                            " ", both );
+        int clen = clean.length();
+
+        if( !both && clen > 0 ) {
+            if( trimL && ( clean.charAt( 0 ) == ' ' ) ) {
+                clean = clean.subSequence( 1, clen );
+            }
+            else if( trimR && ( clean.charAt( clen-1 ) == ' ' ) ) {
+                clean = clean.subSequence( 0, clen-1 );
+            }
+        }
+        return clean;
+    }
+
+    private boolean isBlock( Node node )
+    {
+        Element elem = node.asElement();
+        return ( ( elem != null ) && ! HTMLTag.isInline( elem ) );
     }
 }

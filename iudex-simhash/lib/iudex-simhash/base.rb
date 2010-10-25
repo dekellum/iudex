@@ -15,7 +15,7 @@
 #++
 
 module Iudex
-  module Simhash
+  module SimHash
     VERSION = '1.0.0'
   end
 end

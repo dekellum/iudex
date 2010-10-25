@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import org.xml.sax.SAXException;
 
 import iudex.core.ContentSource;
+import iudex.html.neko.NekoHTMLParser;
 
 import com.gravitext.xml.producer.Indentor;
 import com.gravitext.xml.producer.XMLProducer;

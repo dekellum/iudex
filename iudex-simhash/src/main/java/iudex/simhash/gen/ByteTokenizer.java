@@ -29,7 +29,7 @@ import java.util.Iterator;
 public class ByteTokenizer
     implements Iterator<ByteBuffer>
 {
-    ByteTokenizer( ByteBuffer in )
+    public ByteTokenizer( ByteBuffer in )
     {
         _in = in;
     }
