@@ -18,6 +18,7 @@ package iudex.util;
 
 import java.nio.CharBuffer;
 
+import com.gravitext.util.CharSequences;
 import com.gravitext.util.ResizableCharBuffer;
 
 /**
@@ -81,6 +82,26 @@ public final class Characters
             out.append( in, last, end );
         }
         return out.flipAsCharBuffer();
+    }
+
+    /**
+     * Replace control characters (isCtrlWS() minus the set of isHTMLWS())
+     * with a specified replacement character.
+     */
+    public static CharBuffer replaceCtrl( final CharSequence in,
+                                          final char rep )
+    {
+        CharBuffer b = CharSequences.writableCharBuffer( in );
+
+        final int end = b.limit();
+        for( int i = b.position(); i < end; ++i ) {
+            char c = b.get( i );
+            if( !isHTMLWS( c ) && isCtrlWS( c ) ) {
+                b.put( i, rep );
+            }
+        }
+
+        return b;
     }
 
     /**
@@ -227,4 +248,22 @@ public final class Characters
         }
         return false;
     }
+
+    /**
+     * Return true if character is a recognized whitespace in HTML 4, and still
+     * XML safe.
+     */
+    public static boolean isHTMLWS( final char c )
+    {
+        switch( c ) {
+        case 0x0009: // HT
+        case 0x000A: // LF
+        case 0x000D: // CR
+        case 0x0020: // SPACE
+        case 0x200B: // ZERO WIDTH SPACE
+            return true;
+        }
+        return false;
+    }
+
 }
