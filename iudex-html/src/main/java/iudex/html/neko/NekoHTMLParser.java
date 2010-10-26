@@ -18,7 +18,6 @@ package iudex.html.neko;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.gravitext.util.CharSequences;
 import com.gravitext.util.Charsets;
+import com.gravitext.util.ResizableCharBuffer;
 import com.gravitext.xml.producer.Attribute;
 import com.gravitext.xml.tree.AttributeValue;
 import com.gravitext.xml.tree.Characters;
@@ -124,9 +125,8 @@ public class NekoHTMLParser
              input = new InputSource( inStream );
         }
         else {
-            //FIXME: Crappy copy: Use non-copying Reader?
             input = new InputSource(
-                        new StringReader( content.characters().toString() ) );
+                        CharSequences.reader( content.characters() ) );
         }
 
         parser.parse( input );
@@ -237,9 +237,9 @@ public class NekoHTMLParser
         {
             if( _skipDepth <= 0 ) {
                 if( _buffer == null ) {
-                    _buffer = new StringBuilder( length + 16 );
+                    _buffer = new ResizableCharBuffer( length + 16 );
                 }
-                _buffer.append( ch, start, length );
+                _buffer.put( ch, start, length );
             }
         }
 
@@ -253,7 +253,8 @@ public class NekoHTMLParser
         private void bufferToChars()
         {
             if( _buffer != null ) {
-                _current.addChild( new Characters( _buffer ) );
+                _current.addChild(
+                     new Characters( _buffer.flipAsCharBuffer() ) );
                 _buffer = null;
             }
         }
@@ -281,7 +282,7 @@ public class NekoHTMLParser
         private final Charset _inputEncoding;
         private final Element _root = new Element( HTML.DIV );
         private Element _current = _root;
-        private StringBuilder _buffer = null;
+        private ResizableCharBuffer _buffer = null;
 
         private int _skipDepth = 0;
     }
