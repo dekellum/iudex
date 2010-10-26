@@ -66,6 +66,13 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
     assert_transform( html )
   end
 
+  def test_pre
+    html = { :in  => "<div> x <pre>  \0x\n <a>  y </a></pre> </div>",
+             :out => "<div>~x~<pre>  ~ x\n <a>  y </a></pre>~</div>" }
+
+    assert_transform( html )
+  end
+
   def assert_transform( html )
     [ Order::BREADTH_FIRST, Order::DEPTH_FIRST ].each do |order|
       map = content( html[ :in ] )
