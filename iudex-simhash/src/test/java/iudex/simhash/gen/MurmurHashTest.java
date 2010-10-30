@@ -61,7 +61,7 @@ public class MurmurHashTest
     public void test32String()
     {
         int hash = MurmurHash32.hash( text );
-        assertTrue( hash == 0xb3bf597e );
+        assertEquals( 0x5c296e75, hash );
     }
 
     @Test
@@ -93,7 +93,7 @@ public class MurmurHashTest
     public void test64String()
     {
         long hash = MurmurHash64.hash( text );
-        assertTrue( hash == 0x0920e0c1b7eeb261l );
+        assertEquals( 0x3c00ba1705fec35dl, hash );
     }
 
     /**

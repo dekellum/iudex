@@ -17,9 +17,6 @@
 package iudex.simhash.gen;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-
-import com.gravitext.util.Charsets;
 
 /**
  * MurmurHash 64 bit hash utility.
@@ -35,20 +32,11 @@ import com.gravitext.util.Charsets;
 public final class MurmurHash64
 {
     /**
-     * Generate a 64 bit hash from String converted to UTF-8 bytes.
+     * Generate a 64 bit hash from CharSequence (as UCS-2, 16-bit characters).
      */
-    public static long hash( final String text )
+    public static long hash( final CharSequence text )
     {
-        final byte[] bytes = text.getBytes( Charsets.UTF_8 );
-        return hash( bytes, 0, bytes.length );
-    }
-
-    /**
-     * Generate a 64 bit hash from text converted to UTF-8 bytes.
-     */
-    public static long hash( final CharBuffer text )
-    {
-        return hash( Charsets.UTF_8.encode( text ) );
+        return hash( text, 0, text.length() );
     }
 
     /**
@@ -123,4 +111,61 @@ public final class MurmurHash64
 
         return h;
     }
+
+    /**
+     * Generate a 64 bit hash from the specified CharSequence(as UCS-2) ,
+     * with default seed value.
+     */
+    public static long hash( final CharSequence cs,
+                             final int offset,
+                             final int length )
+    {
+        return hash( cs, offset, length, 0xe17a1465 );
+    }
+
+    /**
+     * Generate a 64 bit hash from CharSequence (as UCS-2), with seed.
+     */
+    public static long hash( final CharSequence cs,
+                             int offset,
+                             final int length,
+                             final int seed )
+    {
+        // 'm' and 'r' are mixing constants generated offline.
+        // They're not really 'magic', they just happen to work well.
+        final long m = 0xc6a4a7935bd1e995L;
+        final int r = 47;
+
+        long h = ( seed & 0xffffffffL ) ^ ( length * m );
+
+        final int quartets = length / 4;
+        for( int i = 0; i < quartets; ++i ) {
+
+            long k = ( ( ( cs.charAt( offset++ ) & 0xffffL )       ) |
+                       ( ( cs.charAt( offset++ ) & 0xffffL ) << 16 ) |
+                       ( ( cs.charAt( offset++ ) & 0xffffL ) << 32 ) |
+                       ( ( cs.charAt( offset++ ) & 0xffffL ) << 48 ) );
+
+            k *= m;
+            k ^= k >>> r;
+            k *= m;
+
+            h ^= k;
+            h *= m;
+        }
+
+        switch( length % 4 ) {
+        case 3: h ^= ( cs.charAt( offset + 2 ) & 0xffffL ) << 32;
+        case 2: h ^= ( cs.charAt( offset + 1 ) & 0xffffL ) << 16;
+        case 1: h ^= ( cs.charAt( offset     ) & 0xffffL );
+                h *= m;
+        }
+
+        h ^= h >>> r;
+        h *= m;
+        h ^= h >>> r;
+
+        return h;
+    }
+
 }

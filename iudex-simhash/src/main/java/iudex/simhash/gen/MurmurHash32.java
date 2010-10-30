@@ -17,9 +17,6 @@
 package iudex.simhash.gen;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-
-import com.gravitext.util.Charsets;
 
 /**
  * MurmurHash 32 bit hash utility.
@@ -35,20 +32,11 @@ import com.gravitext.util.Charsets;
 public final class MurmurHash32
 {
     /**
-     * Generate a 32 bit hash from String converted to UTF-8 bytes.
+     * Generate a 32 bit hash from CharSequence (as UCS-2, 16-bit characters).
      */
-    public static int hash( final String text )
+    public static int hash( final CharSequence text )
     {
-        final byte[] bytes = text.getBytes( Charsets.UTF_8 );
-        return hash( bytes, 0, bytes.length );
-    }
-
-    /**
-     * Generate a 32 bit hash from text converted to UTF-8 bytes.
-     */
-    public static int hash( final CharBuffer text )
-    {
-        return hash( Charsets.UTF_8.encode( text ) );
+        return hash( text, 0, text.length() );
     }
 
     /**
@@ -71,8 +59,7 @@ public final class MurmurHash32
     }
 
     /**
-     * Generate a 32 bit hash from data of the given length, with
-     * seed.
+     * Generate a 32 bit hash from byte data, with seed.
      */
     public static int hash( final byte[] data,
                             int offset,
@@ -108,6 +95,59 @@ public final class MurmurHash32
         case 2: h ^= ( data[ offset + 1 ] & 0xff ) <<  8;
         case 1: h ^= ( data[ offset     ] & 0xff );
                 h *= m;
+        }
+
+        h ^= h >>> 13;
+        h *= m;
+        h ^= h >>> 15;
+
+        return h;
+    }
+
+    /**
+     * Generate a 32 bit hash from CharSequence (as UCS-2), with default
+     * seed value.
+     */
+    public static int hash( final CharSequence cs,
+                            final int offset,
+                            final int length )
+    {
+        return hash( cs, offset, length, 0x9747b28c );
+    }
+
+    /**
+     * Generate a 32 bit hash from CharSequence (as UCS-2), with seed.
+     */
+    public static int hash( final CharSequence cs,
+                            int offset,
+                            final int length,
+                            final int seed )
+    {
+        // 'm' and 'r' are mixing constants generated offline.
+        // They're not really 'magic', they just happen to work well.
+        final int m = 0x5bd1e995;
+        final int r = 24;
+
+        int h = seed ^ length;
+
+        final int pairs = length / 2;
+        for (int i = 0; i < pairs; ++i ) {
+
+            int k = ( ( ( cs.charAt( offset++ ) & 0xffff )       ) |
+                      ( ( cs.charAt( offset++ ) & 0xffff ) << 16 ) );
+
+            k *= m;
+            k ^= k >>> r;
+            k *= m;
+
+            h *= m;
+            h ^= k;
+        }
+
+        // Handle the last odd char of input
+        if( length % 2 == 1 ) {
+            h ^= ( cs.charAt( offset ) & 0xffff );
+            h *= m;
         }
 
         h ^= h >>> 13;
