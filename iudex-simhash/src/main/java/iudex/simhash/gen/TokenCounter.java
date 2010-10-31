@@ -53,8 +53,9 @@ public final class TokenCounter
     public void add( Iterator<CharBuffer> tokens )
     {
         while( tokens.hasNext() ) {
-            final CharBuffer token = tokens.next();
-            //FIXME: Convert to String for faster lookup?
+
+            // String looks are bit faster, so copy to String here.
+            final String token = tokens.next().toString();
 
             if( ! _stopwords.contains( token ) ) {
                 Counter count = _counts.get( token );
@@ -70,7 +71,7 @@ public final class TokenCounter
     public long simhash()
     {
         SimHasher sh = new SimHasher();
-        for( Entry<CharBuffer, Counter> e : _counts.entrySet() ) {
+        for( Entry<String, Counter> e : _counts.entrySet() ) {
             sh.addFeature( MurmurHash64.hash( e.getKey() ),
                            e.getValue().count );
         }
@@ -90,6 +91,6 @@ public final class TokenCounter
 
     private final StopWordSet _stopwords;
 
-    private final Map<CharBuffer,Counter> _counts =
-        new HashMap<CharBuffer,Counter>( 2048 );
+    private final Map<String,Counter> _counts =
+        new HashMap<String,Counter>( 2048 );
 }

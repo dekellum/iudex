@@ -19,7 +19,6 @@ package iudex.simhash.gen;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.nio.CharBuffer;
 
 public class StopWordSet
 {
@@ -27,25 +26,24 @@ public class StopWordSet
 
     public StopWordSet( Collection<String> words )
     {
-        _tokens = new HashSet<CharBuffer>( words.size() * 3 / 2 );
-        //FIXME: Or just use String tokens for faster lookup?
+        _tokens = new HashSet<String>( words.size() * 3 / 2 );
 
         int maxl = -1;
 
         for( String word : words ) {
             maxl = Math.max( maxl, word.length() );
-            _tokens.add( CharBuffer.wrap( word ) );
+            _tokens.add( word );
         }
         _maxLength = maxl;
     }
 
-    public boolean contains( CharBuffer token )
+    public boolean contains( String token )
     {
-        return ( ( token.remaining() <= _maxLength ) &&
+        return ( ( token.length() <= _maxLength ) &&
                  _tokens.contains( token ) );
     }
 
-    public Collection<CharBuffer> tokens()
+    public Collection<String> tokens()
     {
         return _tokens;
     }
@@ -61,6 +59,6 @@ public class StopWordSet
         _tokens = null;
     }
 
-    private final Set<CharBuffer> _tokens;
+    private final Set<String> _tokens;
     private final int _maxLength;
 }
