@@ -22,7 +22,11 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
+require 'rjack-logback'
+
 require 'iudex-simhash'
+require 'iudex-simhash/sim_hash_gen_perf_test_factory'
+
 require 'optparse'
 
 require 'gravitext-util'
@@ -36,8 +40,10 @@ module PerfTest
   def self.run( args = ARGV )
 
     options = {}
-    OptionParser.new do |opts|
-      opts.banner = "Usage: iudex-simhash-perftest [options] <length> <threshold-bits>"
+    oparser = OptionParser.new do |opts|
+      opts.banner = <<USAGE
+Usage: iudex-simhash-perftest (fuzzy|gen) [options] <length> <threshold-bits>
+USAGE
       opts.on( "-t", "--threads N", Integer, "Test with thread count" ) do |n|
         options[ :threads ] = n
       end
@@ -50,8 +56,27 @@ module PerfTest
         options[ :capacity ] = 0
       end
 
-    end.parse!
+    end
 
+    oparser.parse!
+
+    tests = case( ARGV.shift )
+            when 'fuzzy'
+              fuzzy_tests( options )
+            when 'gen'
+              gen_test
+            else
+              puts oparser
+              exit 1
+            end
+
+    harness = Gravitext::PerfTest::Harness.new( tests )
+
+    harness.thread_count = options[ :threads ] if options[ :threads ]
+    harness.execute
+  end
+
+  def self.fuzzy_tests( options )
     length = ARGV.shift.to_i || 1000
     threshold = ARGV.shift.to_i || 3
 
@@ -60,19 +85,19 @@ module PerfTest
       ( b == 0 || ( ( 64 / b ) > threshold ) ) && ( b >= min_bits )
     end
 
-    tests = segbits.map do |bits|
+    segbits.map do |bits|
       mode = ( bits == 0 ) ? MD::LIST : MD::TREE
       pt = FuzzySetPerfTest.new( mode, length, threshold )
       pt.max_bits = bits if bits > 0
       pt.initial_capacity = options[ :capacity ] if options[ :capacity ]
       pt
     end
-
-    harness = Gravitext::PerfTest::Harness.new( tests )
-
-    harness.thread_count = options[ :threads ] if options[ :threads ]
-    harness.execute
   end
+
+  def self.gen_test
+    [ SimHashGenPerfTestFactory.new.perf_test ]
+  end
+
 end
 
 PerfTest.run
