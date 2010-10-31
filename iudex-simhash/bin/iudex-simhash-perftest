@@ -34,6 +34,7 @@ require 'gravitext-util/perftest'
 
 module PerfTest
   include Iudex::SimHash::BruteFuzzy
+  import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
 
   MD = FuzzySetPerfTest::Mode
 

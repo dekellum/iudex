@@ -33,7 +33,6 @@ module Iudex
       import 'iudex.simhash.brutefuzzy.BruteFuzzy'
       import 'iudex.simhash.brutefuzzy.FuzzyList64'
       import 'iudex.simhash.brutefuzzy.FuzzyTree64'
-      import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
     end
 
     module Filters
