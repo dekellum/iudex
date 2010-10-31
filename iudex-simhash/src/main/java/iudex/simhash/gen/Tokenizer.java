@@ -16,6 +16,8 @@
 
 package iudex.simhash.gen;
 
+import iudex.util.Characters;
+
 import java.nio.CharBuffer;
 import java.util.Iterator;
 
@@ -89,12 +91,7 @@ public final class Tokenizer
 
     private boolean isWS( char c )
     {
-        return ( ( c == 0x0020 ) ||
-                 ( ( c < 0x0020 ) &&
-                   ( ( c == 0x0009 ) ||
-                     ( c == 0x000A ) ||
-                     ( c == 0x000D ) ) ) ||
-                 ( c == 0x200B ) );
+        return Characters.isHTMLWS( c );
     }
 
     private final CharBuffer _in;
