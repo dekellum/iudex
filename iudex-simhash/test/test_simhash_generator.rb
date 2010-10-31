@@ -68,13 +68,13 @@ HTML
     map = content( html )
     assert( filter_chain.filter( map ) )
     assert_equal( 'Title', map.title.to_s )
-    assert_equal( '4df1e5f11af811b4', hex( map.simhash ) )
+    assert_equal( 'eaa415092440bf4e', hex( map.simhash ) )
 
     html.gsub!( /the/, "\t" )       # Removing stop words doesn't matter
     html.gsub!( /cruft/, "xcruft" ) # cruft by any other name...
     map = content( html )
     assert( filter_chain.filter( map ) )
-    assert_equal( '4df1e5f11af811b4', hex( map.simhash ) )
+    assert_equal( 'eaa415092440bf4e', hex( map.simhash ) )
   end
 
   def content( html, charset = "UTF-8" )
