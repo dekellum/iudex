@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 import com.gravitext.util.CharSequences;
 
 /**
- * Accumulates token counts from tokenized char/byte additions, and provides a
+ * Accumulate token counts from tokenized CharSequences, and provide a
  * simhash summary.
  */
 public final class TokenCounter
@@ -54,7 +54,7 @@ public final class TokenCounter
     {
         while( tokens.hasNext() ) {
 
-            // String looks are bit faster, so copy to String here.
+            // String lookup is a bit faster, so copy to String here:
             final String token = tokens.next().toString();
 
             if( ! _stopwords.contains( token ) ) {
@@ -92,5 +92,5 @@ public final class TokenCounter
     private final StopWordSet _stopwords;
 
     private final Map<String,Counter> _counts =
-        new HashMap<String,Counter>( 2048 );
+        new HashMap<String,Counter>( 1024 );
 }

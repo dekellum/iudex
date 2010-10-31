@@ -22,15 +22,18 @@ import java.nio.CharBuffer;
 import java.util.Iterator;
 
 /**
- * Tokenize characters on . This
- * tokenizer expects whitespace/special characters to be normalized prior to
- * use.
+ * Tokenize a CharBuffer on (HTML-recognized) whitespace. Input
+ * CharBuffer should be control-char normalized prior.
  *
  * @see iudex.util.Characters
  */
 public final class Tokenizer
     implements Iterator<CharBuffer>
 {
+    /**
+     * Construct given input CharBuffer which will be consumed as
+     * tokenized (may be prudent to duplicate first.)
+     */
     public Tokenizer( CharBuffer in )
     {
         _in = in;
@@ -63,7 +66,7 @@ public final class Tokenizer
     @Override
     public void remove()
     {
-        throw new UnsupportedOperationException( "ByteTokenizer.remove()" );
+        throw new UnsupportedOperationException( "Tokenizer.remove()" );
     }
 
     private void scan()
