@@ -26,7 +26,7 @@ import java.util.Iterator;
  *
  * @see iudex.util.Characters
  */
-public class Tokenizer
+public final class Tokenizer
     implements Iterator<CharBuffer>
 {
     public Tokenizer( CharBuffer in )
@@ -89,8 +89,12 @@ public class Tokenizer
 
     private boolean isWS( char c )
     {
-        //return Characters.isCtrlWS( c );
-        return ( c == ' ' );
+        return ( ( c == 0x0020 ) ||
+                 ( ( c < 0x0020 ) &&
+                   ( ( c == 0x0009 ) ||
+                     ( c == 0x000A ) ||
+                     ( c == 0x000D ) ) ) ||
+                 ( c == 0x200B ) );
     }
 
     private final CharBuffer _in;
