@@ -19,9 +19,7 @@ package iudex.simhash.gen;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.nio.ByteBuffer;
-
-import static com.gravitext.util.Charsets.UTF_8;
+import java.nio.CharBuffer;
 
 public class StopWordSet
 {
@@ -29,25 +27,25 @@ public class StopWordSet
 
     public StopWordSet( Collection<String> words )
     {
-        _tokens = new HashSet<ByteBuffer>( words.size() * 3 / 2 );
+        _tokens = new HashSet<CharBuffer>( words.size() * 3 / 2 );
+        //FIXME: Or just use String tokens for faster lookup?
 
         int maxl = -1;
 
         for( String word : words ) {
-            ByteBuffer token = UTF_8.encode( word );
-            maxl = Math.max( maxl, token.remaining() );
-            _tokens.add( token );
+            maxl = Math.max( maxl, word.length() );
+            _tokens.add( CharBuffer.wrap( word ) );
         }
         _maxLength = maxl;
     }
 
-    public boolean contains( ByteBuffer token )
+    public boolean contains( CharBuffer token )
     {
         return ( ( token.remaining() <= _maxLength ) &&
                  _tokens.contains( token ) );
     }
 
-    public Collection<ByteBuffer> tokens()
+    public Collection<CharBuffer> tokens()
     {
         return _tokens;
     }
@@ -63,6 +61,6 @@ public class StopWordSet
         _tokens = null;
     }
 
-    private final Set<ByteBuffer> _tokens;
+    private final Set<CharBuffer> _tokens;
     private final int _maxLength;
 }

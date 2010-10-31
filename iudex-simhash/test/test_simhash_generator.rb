@@ -43,11 +43,12 @@ class TestSimhashGenerator < MiniTest::Unit::TestCase
 
   def test_default_stopwords
     stopwords = simhash_stopwords
-    assert( stopwords.contains( to_byte_buffer( 'or' ) ) )
+    assert( stopwords.contains( to_char_buffer( 'or' ) ) )
+    #FIXME: String?
   end
 
-  def to_byte_buffer( s )
-    Java::java.nio.ByteBuffer.wrap( s.to_java_bytes )
+  def to_char_buffer( s )
+    Java::java.nio.CharBuffer.wrap( s )
   end
 
   def test_generate
