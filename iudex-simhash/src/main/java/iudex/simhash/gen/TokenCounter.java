@@ -16,17 +16,16 @@
 
 package iudex.simhash.gen;
 
-import static com.gravitext.util.Charsets.UTF_8;
-
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.gravitext.util.CharSequences;
+
 /**
- * Accumulates token counts from tokenized char/byte additions, and provides a
+ * Accumulate token counts from tokenized CharSequences, and provide a
  * simhash summary.
  */
 public final class TokenCounter
@@ -43,23 +42,20 @@ public final class TokenCounter
 
     public void add( CharSequence chars )
     {
-        add( CharBuffer.wrap( chars ) );
+        add( CharSequences.asCharBuffer( chars ) );
     }
 
     public void add( CharBuffer chars )
     {
-        add( UTF_8.encode( chars ) );
+        add( new Tokenizer( chars.duplicate() ) );
     }
 
-    public void add( ByteBuffer bytes )
-    {
-        add( new ByteTokenizer( bytes ) );
-    }
-
-    public void add( Iterator<ByteBuffer> tokens )
+    public void add( Iterator<CharBuffer> tokens )
     {
         while( tokens.hasNext() ) {
-            final ByteBuffer token = tokens.next();
+
+            // String lookup is a bit faster, so copy to String here:
+            final String token = tokens.next().toString();
 
             if( ! _stopwords.contains( token ) ) {
                 Counter count = _counts.get( token );
@@ -75,7 +71,7 @@ public final class TokenCounter
     public long simhash()
     {
         SimHasher sh = new SimHasher();
-        for( Entry<ByteBuffer, Counter> e : _counts.entrySet() ) {
+        for( Entry<String, Counter> e : _counts.entrySet() ) {
             sh.addFeature( MurmurHash64.hash( e.getKey() ),
                            e.getValue().count );
         }
@@ -95,6 +91,6 @@ public final class TokenCounter
 
     private final StopWordSet _stopwords;
 
-    private final Map<ByteBuffer,Counter> _counts =
-        new HashMap<ByteBuffer,Counter>( 2048 );
+    private final Map<String,Counter> _counts =
+        new HashMap<String,Counter>( 1024 );
 }

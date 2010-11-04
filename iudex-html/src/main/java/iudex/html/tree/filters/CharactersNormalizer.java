@@ -23,14 +23,16 @@ import com.gravitext.xml.tree.Node;
 
 import static iudex.util.Characters.*;
 
+import iudex.html.HTML;
 import iudex.html.HTMLTag;
 import iudex.html.tree.TreeFilter;
+import iudex.util.Characters;
 
 /**
  * Normalizes character nodes by replacing control characters and minimizing
- * whitespace via {@link iudex.util.Characters#replaceCtrlWS}. Is aware of
- * leading/trailing whitespace significance rules for HTML block vs inline
- * elements. Compatible with both BREADTH_FIRST and DEPTH_FIRST traversal.
+ * whitespace. Is aware of whitespace significance rules in HTML
+ * &lt;pre> blocks as well as block vs inline elements in general. Compatible
+ * with both BREADTH_FIRST and DEPTH_FIRST traversal.
  */
 public class CharactersNormalizer implements TreeFilter
 {
@@ -41,12 +43,16 @@ public class CharactersNormalizer implements TreeFilter
         if( elem != null ) {
             final boolean parentIsBlock = isBlock( elem );
             final List<Node> children = elem.children();
+            final boolean inPre = inPreBlock( elem );
 
             int i = 0;
             while( i < children.size() ) {
                 Node cc = children.get( i );
                 if( cc.isCharacters() ) {
-                    CharSequence clean = clean( parentIsBlock, children, i );
+
+                    final CharSequence clean = inPre ?
+                        cleanPreBlock( cc.characters() ) :
+                        clean( parentIsBlock, children, i );
 
                     if( clean.length() > 0 ) {
                         cc.setCharacters( clean );
@@ -90,5 +96,21 @@ public class CharactersNormalizer implements TreeFilter
     {
         Element elem = node.asElement();
         return ( ( elem != null ) && ! HTMLTag.isInline( elem ) );
+    }
+
+    private boolean inPreBlock( Element elem )
+    {
+        while( elem != null ) {
+            HTMLTag tag = HTMLTag.htmlTag( elem );
+            if( tag == HTML.PRE ) return true;
+            else if( ! tag.isInline() ) break;
+            elem = elem.parent();
+        }
+        return false;
+    }
+
+    private CharSequence cleanPreBlock( CharSequence chars )
+    {
+        return Characters.replaceCtrl( chars, ' ' );
     }
 }
