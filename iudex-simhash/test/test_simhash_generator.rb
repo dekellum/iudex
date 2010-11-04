@@ -43,7 +43,7 @@ class TestSimhashGenerator < MiniTest::Unit::TestCase
 
   def test_default_stopwords
     stopwords = simhash_stopwords
-    assert( stopwords.contains( 'or' ) )
+    assert( stopwords.contains( 'from' ) )
   end
 
   def test_generate
@@ -63,13 +63,13 @@ HTML
     map = content( html )
     assert( filter_chain.filter( map ) )
     assert_equal( 'Title', map.title.to_s )
-    assert_equal( 'eaa415092440bf4e', hex( map.simhash ) )
+    assert_equal( 'eaa4172924c0bf6e', hex( map.simhash ) )
 
     html.gsub!( /the/, "\t" )       # Removing stop words doesn't matter
     html.gsub!( /cruft/, "xcruft" ) # cruft by any other name...
     map = content( html )
     assert( filter_chain.filter( map ) )
-    assert_equal( 'eaa415092440bf4e', hex( map.simhash ) )
+    assert_equal( 'eaa4172924c0bf6e', hex( map.simhash ) )
   end
 
   def content( html, charset = "UTF-8" )

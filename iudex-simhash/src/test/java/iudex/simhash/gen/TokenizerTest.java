@@ -31,28 +31,32 @@ public class TokenizerTest
         assertTokens( " " );
         assertTokens( "  " );
 
-        assertTokens( "a",  "a" );
-        assertTokens( " a", "a" );
-        assertTokens( "a ", "a" );
+        assertTokens( "a" );
+        assertTokens( " a" );
+        assertTokens( "a " );
 
-        assertTokens( "ab",  "ab" );
-        assertTokens( " ab", "ab" );
-        assertTokens( "ab ", "ab" );
+        assertTokens( "ab" );
 
-        assertTokens( "a b", "a", "b" );
+        assertTokens( "a abc", "abc" );
 
-        assertTokens( "ab cde fg",   "ab", "cde", "fg" );
-        assertTokens( " ab cde fg",  "ab", "cde", "fg" );
-        assertTokens( "ab  cde fg",  "ab", "cde", "fg" );
-        assertTokens( "ab cde fg ",  "ab", "cde", "fg" );
-        assertTokens( "ab cde fg  ", "ab", "cde", "fg" );
+        assertTokens( "abc", "abc" );
+        assertTokens( " abc", "abc" );
+        assertTokens( "abc ", "abc" );
+
+        assertTokens( "abc bde", "abc", "bde" );
+
+        assertTokens( "abc cde fgh",   "abc", "cde", "fgh" );
+        assertTokens( " abc cde fgh",  "abc", "cde", "fgh" );
+        assertTokens( "abc  cde fgh",  "abc", "cde", "fgh" );
+        assertTokens( "abc cde fgh ",  "abc", "cde", "fgh" );
+        assertTokens( "abc cde fgh  ", "abc", "cde", "fgh" );
 
     }
 
-    //FIXME: Not yet: @Test
+    @Test
     public void testWhitespace()
     {
-        assertTokens( "ab \n\t\u200bcde fg",   "ab", "cde", "fg" );
+        assertTokens( "abc \n\t\u200bcde fgh", "abc", "cde", "fgh" );
     }
 
     private void assertTokens( String input, String... tokens )

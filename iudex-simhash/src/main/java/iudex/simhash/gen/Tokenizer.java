@@ -28,7 +28,8 @@ import java.util.Iterator;
  * <h2>Implementation Notes</h2>
  *
  * This tokenizer makes no attempt to fully normalize tokens as words.
- * Tokens are not case folded, nor is common punctuation removed.
+ * Tokens are not case folded, nor is common punctuation removed. The minimum
+ * token length returned is 3 characters (shorter tokens are dropped.)
  *
  * @see iudex.util.Characters
  */
@@ -47,14 +48,8 @@ public final class Tokenizer
     @Override
     public boolean hasNext()
     {
-        if( _next == null ) {
-            if( _in.hasRemaining() ) {
-                scan();
-                return ( _next != null );
-            }
-            else return false;
-        }
-        return true;
+        while( ( _next == null ) && _in.hasRemaining() ) scan();
+        return ( _next != null );
     }
 
     @Override
@@ -89,12 +84,16 @@ public final class Tokenizer
             ++pos;
         }
 
-        if( start >= 0 && start < pos ) {
+        if( start >= 0 && ( pos - start ) > TOKEN_TOO_SMALL ) {
             _next = _in.duplicate();
             _next.position( start );
             _next.limit( pos );
-            _in.position( ( pos < end ) ? pos + 1 : end );
         }
+        else {
+            _next = null;
+        }
+
+        _in.position( ( pos < end ) ? pos + 1 : end );
     }
 
     private boolean isWS( final char c )
@@ -109,8 +108,8 @@ public final class Tokenizer
         case 0x201C: // [ “ ]
         case 0x201D: // [ ” ]
 
-        // Same with single quotes. Note this will orphan 's, 't, etc. in
-        // English.
+        // Same with single quotes. Note this would orphan 's, 't, etc. in
+        // English contractions, but we'll drop tokens < 3 chars.
         case 0x0027: // [ ' ]
         case 0x2018: // [ ‘ ]
         case 0x2019: // [ ’ ]
@@ -130,6 +129,8 @@ public final class Tokenizer
         // And the HTML whitespace set.
         return Characters.isHTMLWS( c );
     }
+
+    private static final int TOKEN_TOO_SMALL = 2;
 
     private final CharBuffer _in;
     private CharBuffer _next = null;
