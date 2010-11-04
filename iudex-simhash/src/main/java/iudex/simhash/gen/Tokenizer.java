@@ -25,6 +25,11 @@ import java.util.Iterator;
  * Tokenize a CharBuffer on (HTML-recognized) whitespace. Input
  * CharBuffer should be control-char normalized prior.
  *
+ * <h2>Implementation Notes</h2>
+ *
+ * This tokenizer makes no attempt to fully normalize tokens as words.
+ * Tokens are not case folded, nor is common punctuation removed.
+ *
  * @see iudex.util.Characters
  */
 public final class Tokenizer
@@ -92,8 +97,37 @@ public final class Tokenizer
         }
     }
 
-    private boolean isWS( char c )
+    private boolean isWS( final char c )
     {
+        // Specific characters to be treated as whitespace/token boundaries.
+
+        switch( c ) {
+
+        // Drop all double-quote forms, as dups could be rendered with smart
+        // vs plain forms.
+        case 0x0022: // [ " ]
+        case 0x201C: // [ “ ]
+        case 0x201D: // [ ” ]
+
+        // Same with single quotes. Note this will orphan 's, 't, etc. in
+        // English.
+        case 0x0027: // [ ' ]
+        case 0x2018: // [ ‘ ]
+        case 0x2019: // [ ’ ]
+
+        // Same for ASCII DASH vs Unicode EM DASH and friends.
+        case 0x002D: // [ - ]
+        case 0x2010: // [ ‐ ]
+        case 0x2011: // [ ‑ ]
+        case 0x2012: // [ ‒ ]
+        case 0x2013: // [ – ]
+        case 0x2014: // [ — ]
+        case 0x2015: // [ ― ]
+
+            return true;
+        }
+
+        // And the HTML whitespace set.
         return Characters.isHTMLWS( c );
     }
 
