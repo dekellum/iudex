@@ -16,42 +16,52 @@
 
 package iudex.simhash.gen;
 
-import static com.gravitext.util.Charsets.UTF_8;
 import static org.junit.Assert.*;
 
-import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 
 import org.junit.Test;
 
-public class ByteTokenizerTest
+public class TokenizerTest
 {
     @Test
-    public void test()
+    public void testTokens()
     {
         assertTokens( "" );
         assertTokens( " " );
         assertTokens( "  " );
 
-        assertTokens( "a",  "a" );
-        assertTokens( " a", "a" );
-        assertTokens( "a ", "a" );
+        assertTokens( "a" );
+        assertTokens( " a" );
+        assertTokens( "a " );
 
-        assertTokens( "ab",  "ab" );
-        assertTokens( " ab", "ab" );
-        assertTokens( "ab ", "ab" );
+        assertTokens( "ab" );
 
-        assertTokens( "a b", "a", "b" );
+        assertTokens( "a abc", "abc" );
 
-        assertTokens( "ab cde fg",   "ab", "cde", "fg" );
-        assertTokens( " ab cde fg",  "ab", "cde", "fg" );
-        assertTokens( "ab  cde fg",  "ab", "cde", "fg" );
-        assertTokens( "ab cde fg ",  "ab", "cde", "fg" );
-        assertTokens( "ab cde fg  ", "ab", "cde", "fg" );
+        assertTokens( "abc", "abc" );
+        assertTokens( " abc", "abc" );
+        assertTokens( "abc ", "abc" );
+
+        assertTokens( "abc bde", "abc", "bde" );
+
+        assertTokens( "abc cde fgh",   "abc", "cde", "fgh" );
+        assertTokens( " abc cde fgh",  "abc", "cde", "fgh" );
+        assertTokens( "abc  cde fgh",  "abc", "cde", "fgh" );
+        assertTokens( "abc cde fgh ",  "abc", "cde", "fgh" );
+        assertTokens( "abc cde fgh  ", "abc", "cde", "fgh" );
+
+    }
+
+    @Test
+    public void testWhitespace()
+    {
+        assertTokens( "abc \n\t\u200bcde fgh", "abc", "cde", "fgh" );
     }
 
     private void assertTokens( String input, String... tokens )
     {
-        ByteTokenizer tokenizer = new ByteTokenizer( bb( input ) );
+        Tokenizer tokenizer = new Tokenizer( bb( input ) );
 
         for( String t : tokens ) {
             assertTrue( tokenizer.hasNext() );
@@ -61,14 +71,14 @@ public class ByteTokenizerTest
         assertFalse( tokenizer.hasNext() );
     }
 
-    private String str( ByteBuffer next )
+    private String str( CharBuffer out )
     {
-        return UTF_8.decode( next ).toString();
+        return out.toString();
     }
 
-    private ByteBuffer bb( String input )
+    private CharBuffer bb( String input )
     {
-        return UTF_8.encode( input );
+        return CharBuffer.wrap( input );
     }
 
 }

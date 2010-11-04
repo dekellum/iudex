@@ -28,17 +28,17 @@ public class TokenCounterTest
         assertSimHash( 0x0000000000000000L, "" );
         assertSimHash( 0x0000000000000000L, " " );
 
-        assertSimHash( 0x6be0c71a2296a2ecL, "one" );
+        assertSimHash( 0xa6933e69bcbf30a0L, "one" );
 
-        assertSimHash( 0xd93a3da70c07e87aL, "Spaces not significant." );
-        assertSimHash( 0xd93a3da70c07e87aL, " Spaces  not significant.  " );
+        assertSimHash( 0xb2f4d7f3df446ce4L, "Spaces not significant." );
+        assertSimHash( 0xb2f4d7f3df446ce4L, " Spaces  not significant.  " );
 
-        assertSimHash( 0x636958e44a00c540L,
+        assertSimHash( 0xdf5ad76ddb2dfd20L,
                        "A much longer string to be simhashed, " +
                        "hopefully enough to see good mixing, i.e. the" +
                        "full key is used. " );
 
-        assertSimHash( 0x7310f1a44f10e544L,
+        assertSimHash( 0x8f5f93759badd900L,
                        "An even bigger string to be simhashed, " +
                        "clearly enough to see good mixing, i.e. the" +
                        "full key is used." );
