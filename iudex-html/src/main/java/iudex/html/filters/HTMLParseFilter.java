@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.xml.sax.SAXException;
 
+import com.gravitext.util.CharSequences;
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 import com.gravitext.xml.tree.Element;
@@ -161,7 +162,7 @@ public class HTMLParseFilter
             text = textIfFlat( root );
 
             // Stop now if not flat or no change in text.
-            if( ( text == null ) || equals( old, text ) ) break;
+            if( ( text == null ) || CharSequences.equals( old, text ) ) break;
         }
 
         if( _textKey != null ) content.set( _textKey, text ); //or remove
@@ -175,22 +176,6 @@ public class HTMLParseFilter
     boolean textMarked( CharSequence text )
     {
         return MARKUP_PATTERN.matcher( text ).find();
-    }
-
-    private boolean equals( CharSequence t1, CharSequence t2 )
-    {
-        //FIXME: CharSequence utilities?
-
-        if( t1 == t2 ) return true;
-        if( ( t1 == null ) || ( t2 == null ) ) return false;
-
-        final int len1 = t1.length();
-        if( len1 != t2.length() ) return false;
-
-        for( int i = 0; i < len1; ++i ) {
-            if( t1.charAt( i ) != t2.charAt( i ) ) return false;
-        }
-        return true;
     }
 
     private CharSequence textIfFlat( Element root )
