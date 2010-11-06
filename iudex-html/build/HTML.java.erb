@@ -16,6 +16,9 @@
 
 package iudex.html;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,17 +43,41 @@ public class HTML
     public static final Map<String,Attribute> ATTRIBUTES =
         new HashMap<String,Attribute>( 59 );
 
-% tags.each do |tag|
-    public static final HTMLTag <%= twidth( tag.name.upcase ) %> = tag( <%= ( [ '"' + tag.name + '"' ] + tag.flags ).join( ', ' ) %> );
-% end
-
+    public static final List<Attribute> EMPTY_ATTS = Collections.emptyList();
 % attributes.each do |a|
+%   if a.desc
+
+    /**
+     * Attribute <%= a.name %>: <%= a.desc %>
+     */
+%   end
     public static final Attribute <%= awidth( 'ATTR_' + const( a.name.upcase ), 5 ) %> = attr( <%= awidth( '"' + a.name + '"', 2 ) %> );
 % end
 
-    private static HTMLTag tag( String name, Flag...flags )
+% tags.each do |tag|
+%   targs = [ '"' + tag.name + '"' ]
+%   basic_atts = tag.basic_atts.map { |a| 'ATTR_' + const( a.name.upcase ) }
+%   targs << if basic_atts.empty?
+%              "EMPTY_ATTS"
+%            else
+%              "Arrays.asList( #{ basic_atts.join( ', ' ) } )"
+%            end
+%   targs += tag.flags
+%   if tag.desc
+    /**
+     * Tag <%= tag.name %>: <%= tag.desc %>
+     */
+%   end
+    public static final HTMLTag <%= twidth( tag.name.upcase ) %> =
+        tag( <%= targs.join( ', ' ) %> );
+
+% end
+
+    private static HTMLTag tag( String name,
+                                List<Attribute> basicAtts,
+                                Flag...flags )
     {
-        HTMLTag t = new HTMLTag( name, NS_XHTML, flags );
+        HTMLTag t = new HTMLTag( name, NS_XHTML, basicAtts, flags );
         TAGS.put( t.name(), t );
         return t;
     }

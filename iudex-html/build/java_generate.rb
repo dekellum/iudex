@@ -33,6 +33,7 @@ class JavaGenerator
   def run( java_file = JAVA_OUT )
     parse_tags
     parse_attributes
+    map_basic_attributes
     generate_java( java_file )
   end
 
@@ -56,7 +57,7 @@ class JavaGenerator
           flags = r[1].split(' ').map { |f| FLAGS[f] }.compact
           @tags << OpenStruct.new( :name => r[0],
                                    :flags => flags,
-                                   :desc => r[3] )
+                                   :desc => r[2] )
         else
           raise "Parse ERROR: line [#{line}]"
         end
@@ -69,22 +70,42 @@ class JavaGenerator
 
   def parse_attributes()
     @attributes = []
+    tagsets = {}
 
     open( File.join( BASEDIR, 'attributes' ), 'r' ) do |fin|
       fin.each do |line|
         case line
         when /^\s*#/, /^\s*$/
           # ignore comment, empty lines
+        when /^\s*([A-Z]+)\s*::\s*ALL\s+except:(.*)$/
+          sname = $1
+          except = $2.split( ' ' ).compact.reject { |t| t.empty? }
+          tset = @tags.reject { |t| except.include?( t.name ) }
+          tset.map! { |t| t.name }
+          tagsets[sname] = tset
         when /^\s*[^\s,]+\s*,/
           r = line.split(',').map { |c| c.strip }
           r = r.compact.reject { |c| c.empty? }
           # FIXME: Handle attributes, desc.
-          @attributes << OpenStruct.new( :name => r[0], :desc => r[2] )
+
+          btags = r[1].split(' ').compact.reject { |t| t.empty? || t =~ /^\*/ }
+          btags = btags.map { |t| tagsets[ t ] || t }.flatten
+
+          @attributes << OpenStruct.new( :name => r[0],
+                                         :basic_tags => btags,
+                                         :desc => r[2] )
         else
           raise "Parse ERROR: line [#{line}]"
         end
       end
     end
+
+  def map_basic_attributes()
+    @tags.each do |tag|
+      tag.basic_atts =
+        @attributes.select { |attr| attr.basic_tags.include?( tag.name ) }
+    end
+  end
 
     @attr_max_len = @attributes.map { |t| t.name.length }.max
     [ @attributes ]
