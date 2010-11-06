@@ -39,6 +39,7 @@ module Iudex
       import 'iudex.html.tree.TreeFilterChain'
 
       module Filters
+        import 'iudex.html.tree.filters.AttributeCleaner'
         import 'iudex.html.tree.filters.CharactersNormalizer'
         import 'iudex.html.tree.filters.MetaSkipFilter'
         import 'iudex.html.tree.filters.WordCounter'

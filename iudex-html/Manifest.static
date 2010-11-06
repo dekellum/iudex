@@ -13,6 +13,7 @@ test/setup.rb
 test/test_characters_normalizer.rb
 test/test_html_parser.rb
 test/test_other_filters.rb
+test/test_other_tree_filters.rb
 test/test_parse_filter.rb
 test/test_tree_walker.rb
 test/test_word_counters.rb
