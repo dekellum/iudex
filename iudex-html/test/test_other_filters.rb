@@ -22,13 +22,13 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-html'
 
 class TestOtherFilters < MiniTest::Unit::TestCase
+  include HTMLTestHelper
+
   include Gravitext::HTMap
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
   include Iudex::Filter::Core
-
-  import 'iudex.html.HTMLUtils'
 
   UniMap.define_accessors
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env jruby
-# -*- coding: utf-8 -*-
 #.hashdot.profile += jruby-shortlived
 
 #--
@@ -19,22 +18,18 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestOtherTreeFilters < MiniTest::Unit::TestCase
+  include HTMLTestHelper
   include Iudex::HTML::Tree
   include Iudex::HTML::Tree::Filters
-
-  import 'com.gravitext.xml.producer.Indentor'
-  import 'iudex.html.HTMLUtils'
-  import 'iudex.html.tree.TreeWalker'
 
   def test_non_html_atts_dropped
     # Bogus is dropped already by parser
     html = {}
     html[ :in ] = <<HTML
 <div bogus="not html">
- <p>Iūdex test.</p>
+ <p>test.</p>
 </div>
 HTML
     html[ :out ] = cut_atts( html[ :in ], 'bogus' )
@@ -61,30 +56,6 @@ HTML
       html = html.gsub( / #{att}="[^"]+"/, '' )
     end
     html
-  end
-
-  def assert_transform( html, filter = nil, func = :walk_depth_first )
-    tree = parse( html[ :in ] )
-    action = TreeWalker.send( func, filter, tree ) if func && filter
-    assert_xml( html[ :out ], tree )
-    action
-  end
-
-  def parse( html, charset="UTF-8" )
-    comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
-    tree = HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
-    c = tree.children
-    if ( c.size == 1 && c[0].element? )
-      c[0]
-    else
-      tree
-    end
-  end
-
-  def assert_xml( xml, root )
-    xml = xml.gsub( /\n\s*/, '' )
-    assert_equal( xml,
-      HTMLUtils::produceFragmentString( root, Indentor::COMPRESSED ) )
   end
 
 end
