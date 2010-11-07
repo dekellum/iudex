@@ -107,6 +107,13 @@ HTML
     assert_transform( html, CSSDisplayFilter.new )
   end
 
+  def test_xmp_to_pre_converter
+    html = { :in  => "<div><xmp> <i>keep</i> </xmp></div>",
+             :out => "<div><pre> &lt;i>keep&lt;/i> </pre></div>" }
+
+    assert_transform( html, XmpToPreConverter.new )
+  end
+
   def cut_atts( html, *atts )
     atts.each do |att|
       html = html.gsub( / #{att}="[^"]+"/, '' )

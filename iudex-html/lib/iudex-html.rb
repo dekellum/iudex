@@ -46,6 +46,7 @@ module Iudex
         import 'iudex.html.tree.filters.MetaSkipFilter'
         import 'iudex.html.tree.filters.WordCounter'
         import 'iudex.html.tree.filters.WordyCounter'
+        import 'iudex.html.tree.filters.XmpToPreConverter'
       end
     end
 
