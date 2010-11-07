@@ -37,7 +37,7 @@ HTML
     assert_transform( html ) #identity
   end
 
-  def test_drop_some
+  def test_attribute_cleaner
     html = {}
     html[ :in ] = <<HTML
 <div style="font:big">
@@ -49,6 +49,35 @@ HTML
     html[ :out ] = cut_atts( html[ :in ], 'style', 'align' )
 
     assert_transform( html, AttributeCleaner.new )
+  end
+
+  def test_empty_inline_remover
+
+    hs = [ { :in  => "<div><b> keep </b></div>",
+             :out => "<div><b> keep </b></div>" },
+
+           { :in  => '<div><b><img src="keep"/></b></div>',
+             :out => '<div><b><img src="keep"/></b></div>' },
+
+           { :in  => "<div>first<span/></div>",
+             :out => "<div>first~~~~~~~</div>" },
+
+           { :in  => "<div>first<b> </b></div>",
+             :out => "<div>first~~~ ~~~~</div>" },
+
+           { :in  => "<div><b><span/></b>last</div>",
+             :out => "<div>~~~~~~~~~~~~~~last</div>" },
+
+           { :in  => "<div><b><span/> </b>last</div>",
+             :out => "<div>~~~~~~~~~~ ~~~~last</div>" },
+
+           { :in  => "<div><b> <br/> </b>last</div>",
+             :out => "<div>~~~ <br/> ~~~~last</div>" } ]
+
+    hs.each do |html|
+      assert_transform( html, EmptyInlineRemover.new )
+    end
+
   end
 
   def cut_atts( html, *atts )
