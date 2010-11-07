@@ -24,7 +24,7 @@ import static iudex.html.tree.HTMLTreeKeys.*;
 
 import iudex.html.tree.TreeFilter;
 
-public class WordCounter implements TreeFilter
+public final class WordCounter implements TreeFilter
 {
     //FIXME: Define method to insure this is only run depth first?
 

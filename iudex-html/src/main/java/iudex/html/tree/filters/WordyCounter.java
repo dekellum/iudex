@@ -26,7 +26,7 @@ import iudex.html.tree.TreeFilter;
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
-public class WordyCounter implements TreeFilter
+public final class WordyCounter implements TreeFilter
 {
     //FIXME: Define method to insure this is only run depth first?
 

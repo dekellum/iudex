@@ -27,7 +27,7 @@ import iudex.html.tree.TreeFilter;
  * SKIP all elements of tag.isMetadata(). This includes HTML.HEAD and all of its
  * legal children, HTML.TITLE, etc.
  */
-public class MetaSkipFilter implements TreeFilter
+public final class MetaSkipFilter implements TreeFilter
 {
     @Override
     public Action filter( Node node )

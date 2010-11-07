@@ -31,7 +31,7 @@ import iudex.html.tree.TreeFilter;
  * Drops attributes outside the "basic" (non-style) set for each element.
  * Compatible with both BREADTH_FIRST and DEPTH_FIRST traversal.
  */
-public class AttributeCleaner implements TreeFilter
+public final class AttributeCleaner implements TreeFilter
 {
     @Override
     public Action filter( Node node )
