@@ -33,7 +33,7 @@ public final class WordyCounter implements TreeFilter
     @Override
     public Action filter( Node node )
     {
-        Element elem = node.asElement();
+        final Element elem = node.asElement();
         if( elem != null ) {
             float inlineSum = 0.0f;
             float blockSum  = 0.0f;

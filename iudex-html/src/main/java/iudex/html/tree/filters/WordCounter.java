@@ -33,7 +33,7 @@ public final class WordCounter implements TreeFilter
     {
         int wcount = 0;
 
-        Element elem = node.asElement();
+        final Element elem = node.asElement();
         if( elem != null ) {
             for( Node child : elem.children() ) {
                 Integer count = child.get( WORD_COUNT );

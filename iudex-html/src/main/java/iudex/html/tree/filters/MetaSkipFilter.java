@@ -32,7 +32,7 @@ public final class MetaSkipFilter implements TreeFilter
     @Override
     public Action filter( Node node )
     {
-        Element elem = node.asElement();
+        final Element elem = node.asElement();
         return ( ( ( elem != null ) && htmlTag( elem ).isMetadata() ) ?
                  Action.SKIP : Action.CONTINUE );
     }
