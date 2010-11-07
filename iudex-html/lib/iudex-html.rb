@@ -40,6 +40,7 @@ module Iudex
 
       module Filters
         import 'iudex.html.tree.filters.AttributeCleaner'
+        import 'iudex.html.tree.filters.CSSDisplayFilter'
         import 'iudex.html.tree.filters.CharactersNormalizer'
         import 'iudex.html.tree.filters.EmptyInlineRemover'
         import 'iudex.html.tree.filters.MetaSkipFilter'

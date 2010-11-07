@@ -80,6 +80,33 @@ HTML
 
   end
 
+  def test_css_display_filter_pattern
+    f = CSSDisplayFilter.new
+    assert( f.has_display_none( 'display: none' ) )
+    assert( f.has_display_none( '{display: none}' ) ) #lenient
+    assert( f.has_display_none( 'other:foo; DISPLAY:NONE;' ) )
+
+    assert( ! f.has_display_none( 'display: block' ) )
+    assert( ! f.has_display_none( 'other-display: none' ) )
+    assert( ! f.has_display_none( 'display: nonetheless' ) )
+  end
+
+  def test_css_display_filter
+    html = {}
+    html[ :in ] = <<HTML
+<div>
+ <b>keep</b>
+ <div style="display:none"><b>drop</b> me</div>
+</div>
+HTML
+    html[ :out ] = <<HTML
+<div>
+ <b>keep</b>
+</div>
+HTML
+    assert_transform( html, CSSDisplayFilter.new )
+  end
+
   def cut_atts( html, *atts )
     atts.each do |att|
       html = html.gsub( / #{att}="[^"]+"/, '' )
