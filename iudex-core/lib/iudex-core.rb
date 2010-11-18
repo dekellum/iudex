@@ -27,6 +27,7 @@ module Iudex
     require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
 
     import 'iudex.core.ContentKeys'
+    import 'iudex.core.ContentSource'
     import 'iudex.core.VisitExecutor'
     import 'iudex.core.VisitURL'
 
