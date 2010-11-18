@@ -44,6 +44,8 @@ public class HTMLParseFilter
     extends NekoHTMLParser
     implements Filter, Described
 {
+    //FIXME: Support option for strict (and faster) known good XHTML parsing?
+
     /**
      * Parse on text input key to tree output key.
      * Assumes setParseAsFragment( true ).
