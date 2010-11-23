@@ -5,7 +5,7 @@ layout: sub
 
 # Basic Archive
 
-![LARC LX](/img/BARC-LARC-XV-2-c.jpg)[^cc]
+![LARC LX]({{ page.root }}/img/BARC-LARC-XV-2-c.jpg)[^cc]
 
 The Iūdex BARC container format supports efficient block storage of
 raw downloaded or post-processed content. The format was inspired by
