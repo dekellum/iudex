@@ -191,6 +191,10 @@ pre:hover {
 
 code {
     background-color: #fffff0;
+    border: 1px solid #ddc;
+}
+pre code {
+    border: none;
 }
 
 /* Footer: */
