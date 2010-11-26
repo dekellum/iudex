@@ -35,8 +35,8 @@ import iudex.html.HTML;
 public class HTMLWriteFilter
     implements Filter, Described
 {
-    //FIXME: Use or support ContentSync equiv. as for out?
-    //FIXME: This is really XML generic.
+    //FIXME: Use or support ContentSink equiv. as for out?
+    //FIXME: This is really XML generic, accept for XHTML namespace.
 
     public HTMLWriteFilter( Key<Element> treeKey,
                             Key<CharSequence> outKey )
@@ -77,7 +77,7 @@ public class HTMLWriteFilter
                 XMLProducer pd = new XMLProducer( out );
                 pd.setIndent( _indent );
 
-                if( !_includeNamespace ) pd.implyNamespace( HTML.NS_XHTML );
+                if( ! _includeNamespace ) pd.implyNamespace( HTML.NS_XHTML );
 
                 new NodeWriter( pd ).putTree( root );
 
