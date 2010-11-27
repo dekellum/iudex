@@ -26,6 +26,9 @@ require 'iudex-da/factory_helper'
 
 require 'iudex-rome'
 
+require 'iudex-html'
+require 'iudex-html/factory_helper'
+
 require 'iudex-worker'
 require 'iudex-worker/fetch_helper'
 require 'iudex-worker/prioritizer'
@@ -41,6 +44,7 @@ module Iudex
       include Iudex::ROME
 
       include Iudex::DA::Filters::FactoryHelper
+      include Iudex::HTML::Filters::FactoryHelper
       include FetchHelper
 
       attr_accessor :http_client
@@ -122,12 +126,21 @@ module Iudex
       end
 
       def ref_common_cleanup
-        [ TextCtrlWSFilter.new( :title.to_k ),
-          FutureDateFilter.new( :pub_date.to_k ) ]
+        [ ref_html_filters,
+          TextCtrlWSFilter.new( :title.to_k ),
+          FutureDateFilter.new( :pub_date.to_k ) ].flatten
+      end
+
+      def ref_html_filters
+        [ html_clean_filters( :title,   :title_tree ),
+          html_clean_filters( :summary, :summary_tree ),
+          html_clean_filters( :content, :content_tree ),
+          html_write_filter( :summary_tree, :summary ),
+          html_write_filter( :content_tree, :content ) ].flatten
       end
 
       def feed_update_keys
-        page_update_keys # the same
+        page_update_keys + [ :title, :summary, :content ]
       end
 
       def page_receiver
