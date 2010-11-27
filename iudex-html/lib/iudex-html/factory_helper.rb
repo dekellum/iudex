@@ -26,7 +26,7 @@ module Iudex
 
         # Create html parse and clean filters
         # Expected usage:
-        #   PAGE: html_clean_filters( :content, :content_tree )
+        #   PAGE: html_clean_filters( :source,  :source_tree )
         #   FEED: html_clean_filters( :title,   :title_tree )
         #   FEED: html_clean_filters( :summary, :summary_tree )
         #   FEED: html_clean_filters( :content, :content_tree )

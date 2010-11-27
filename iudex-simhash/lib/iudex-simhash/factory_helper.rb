@@ -54,7 +54,7 @@ module Iudex
 
         def simhash_generator_inputs
           [ [ ContentKeys::TITLE ],
-            [ HTMLKeys::CONTENT_TREE, 0.30 ] ]
+            [ HTMLKeys::SOURCE_TREE, 0.30 ] ]
         end
 
       end
