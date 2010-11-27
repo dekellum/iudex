@@ -19,12 +19,9 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestHTMLParser < MiniTest::Unit::TestCase
-  import 'iudex.html.HTMLUtils'
-  import 'com.gravitext.xml.tree.TreeUtils'
-  import 'com.gravitext.xml.producer.Indentor'
+  include HTMLTestHelper
 
   HTML_META = <<HTML
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -39,16 +36,16 @@ class TestHTMLParser < MiniTest::Unit::TestCase
 HTML
 
   def test_charset_same
-    assert_xml( HTML_META, parse( HTML_META, "UTF-8" ) )
+    assert_doc( HTML_META, parse( HTML_META, "UTF-8" ) )
   end
 
   def test_charset_rerun
-    assert_xml( HTML_META, parse( HTML_META, "ISO-8859-1" ) )
+    assert_doc( HTML_META, parse( HTML_META, "ISO-8859-1" ) )
   end
 
   def test_charset_bogus
     alt = HTML_META.sub( /utf-8/, 'bogus' )
-    assert_xml( alt, parse( alt, "UTF-8" ) )
+    assert_doc( alt, parse( alt, "UTF-8" ) )
   end
 
   HTML_SKIP_TAGS = <<HTML
@@ -75,7 +72,7 @@ HTML
 HTML
 
   def test_skip_tags
-    assert_xml( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
+    assert_doc( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
   end
 
   HTML_OUTSIDE = <<HTML
@@ -98,7 +95,7 @@ HTML
 HTML
 
   def test_outer_text
-    assert_xml( HTML_INSIDE, parse( HTML_OUTSIDE, "ISO-8859-1" ) )
+    assert_doc( HTML_INSIDE, parse( HTML_OUTSIDE, "ISO-8859-1" ) )
   end
 
   HTML_FRAG = {
@@ -107,7 +104,7 @@ HTML
 
   def test_parse_fragment
     tree = parseFragment( HTML_FRAG[ :in ] )
-    assert_xml_fragment( HTML_FRAG[ :out ], tree )
+    assert_fragment( HTML_FRAG[ :out ], tree )
   end
 
   HTML_CDATA = {
@@ -117,33 +114,7 @@ HTML
 
   def test_cdata
     tree = parseFragment( HTML_CDATA[ :in ] )
-    assert_xml_fragment( HTML_CDATA[ :out ], tree )
-  end
-
-  def parse( html, charset )
-    comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
-    HTMLUtils::parse( HTMLUtils::source( comp_bytes, charset ) )
-  end
-
-  def parseFragment( html, charset = "UTF-8" )
-    comp_bytes = html.to_java_bytes
-    tree = HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
-    c = tree.children
-    if ( c.size == 1 && c[0].element? )
-      c[0]
-    else
-      tree
-    end
-  end
-
-  def assert_xml( xml, root )
-    assert_equal( xml, TreeUtils::produceString( root, Indentor::PRETTY ) )
-  end
-
-  def assert_xml_fragment( xml, root )
-    assert_equal( xml,
-                  HTMLUtils::produceFragmentString( root,
-                                                    Indentor::COMPRESSED ) )
+    assert_fragment( HTML_CDATA[ :out ], tree )
   end
 
 end
