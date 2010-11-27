@@ -15,11 +15,8 @@
  */
 package iudex.rome;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
+import com.gravitext.util.CharSequences;
 import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -163,19 +161,7 @@ public class RomeFeedParser implements Filter
             //FIXME: Or pass raw content-type?
         }
         else if( content.characters() != null ) {
-            CharSequence source = content.characters();
-            if( source instanceof CharBuffer ) {
-                CharBuffer inBuff = (CharBuffer) source;
-                if( inBuff.hasArray() ) {
-                    reader = new CharArrayReader(
-                        inBuff.array(),
-                        inBuff.arrayOffset() + inBuff.position(),
-                        inBuff.remaining() );
-                }
-            }
-            if( reader == null ) {
-                reader = new StringReader( source.toString() );
-            }
+            reader = CharSequences.reader( content.characters() );
         }
         else {
             throw new IllegalArgumentException
