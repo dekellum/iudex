@@ -62,7 +62,7 @@ class SimHashGenPerfTestFactory
   def filter_chain
     filters = []
     filters << HTMLParseFilter.new( ContentKeys::SOURCE,
-                                    nil, HTMLKeys::CONTENT_TREE )
+                                    nil, HTMLKeys::SOURCE_TREE )
     filters << TitleExtractor.new
     filters << TextCtrlWSFilter.new( ContentKeys::TITLE )
 
@@ -71,7 +71,7 @@ class SimHashGenPerfTestFactory
                                  WordCounter.new,
                                  WordyCounter.new ] )
 
-    filters << HTMLTreeFilter.new( HTMLKeys::CONTENT_TREE,
+    filters << HTMLTreeFilter.new( HTMLKeys::SOURCE_TREE,
                                    tfc, Order::DEPTH_FIRST )
 
     FilterChain.new( "perf_test", filters )
