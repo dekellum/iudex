@@ -19,6 +19,7 @@ t.specify do |h|
                     [ 'iudex-core',     '~> 1.0.0' ],
                     [ 'iudex-da',       '~> 1.0.0' ],
                     [ 'iudex-rome',     '~> 1.0.0' ],
+                    [ 'iudex-html',     '~> 1.0.0' ],
                     [ 'iudex-httpclient-3', '~> 1.0.0' ] ]
 
   h.testlib = :minitest
