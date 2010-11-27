@@ -84,12 +84,12 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
 
   def content( html, charset = "UTF-8" )
     map = UniMap.new
-    map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
     map
   end
 
   def filter_chain( *filters )
-    pf = HTMLParseFilter.new( ContentKeys::CONTENT,
+    pf = HTMLParseFilter.new( ContentKeys::SOURCE,
                               nil, HTMLKeys::CONTENT_TREE )
     pf.parse_as_fragment = true
     filters.unshift( pf )

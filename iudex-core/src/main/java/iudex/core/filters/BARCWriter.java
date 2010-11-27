@@ -86,7 +86,7 @@ public final class BARCWriter implements Filter, Closeable
     {
         WriteSession session = null;
         try {
-            ContentSource cs = content.get( ContentKeys.CONTENT );
+            ContentSource cs = content.get( ContentKeys.SOURCE );
             if( cs != null ) {
                 session = _barcDir.startWriteSession();
 

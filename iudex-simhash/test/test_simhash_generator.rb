@@ -74,13 +74,13 @@ HTML
 
   def content( html, charset = "UTF-8" )
     map = UniMap.new
-    map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
     map
   end
 
   def filter_chain
     filters = []
-    filters << HTMLParseFilter.new( ContentKeys::CONTENT,
+    filters << HTMLParseFilter.new( ContentKeys::SOURCE,
                                     nil, HTMLKeys::CONTENT_TREE )
     filters << TitleExtractor.new
     filters << TextCtrlWSFilter.new( ContentKeys::TITLE )
