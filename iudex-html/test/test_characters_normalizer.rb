@@ -26,11 +26,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
   include Iudex::HTML::Filters
   include Iudex::HTML::Tree
   include Iudex::HTML::Tree::Filters
-  include Gravitext::HTMap
   include Iudex::Core
-  include Iudex::Filter::Core
-
-  UniMap.define_accessors
 
   Order = HTMLTreeFilter::Order
 
@@ -80,12 +76,6 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
       assert( chain.filter( map ) )
       assert_fragment_ws( html[ :out ], inner( map.source_tree ), true )
     end
-  end
-
-  def content( html, charset = "UTF-8" )
-    map = UniMap.new
-    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
-    map
   end
 
 end

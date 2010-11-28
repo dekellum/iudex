@@ -28,14 +28,6 @@ require 'iudex-filter/filter_chain_factory'
 class TestFactoryHelper < MiniTest::Unit::TestCase
   include HTMLTestHelper
 
-  # include Gravitext::HTMap
-  # include Iudex::Core
-  # include Iudex::HTML
-  # include Iudex::HTML::Filters
-  # include Iudex::Filter::Core
-
-  # UniMap.define_accessors
-
   class TestFilterChainFactory < Iudex::Filter::Core::FilterChainFactory
     include Iudex::HTML::Filters::FactoryHelper
 
