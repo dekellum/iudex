@@ -58,9 +58,4 @@ HTML
     map
   end
 
-  def filter_chain( *filters )
-    filters.unshift( html_parse_filter( :source ) )
-    FilterChain.new( "test", filters )
-  end
-
 end

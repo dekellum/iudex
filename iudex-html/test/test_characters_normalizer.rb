@@ -76,7 +76,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
       map = content( html[ :in ] )
       tfc = TreeFilterChain.new( [ CharactersNormalizer.new ] )
       tf = HTMLTreeFilter.new( :source_tree.to_k, tfc, order )
-      chain = filter_chain( tf  )
+      chain = filter_chain( tf, :fragment )
       assert( chain.filter( map ) )
       assert_fragment_ws( html[ :out ], inner( map.source_tree ), true )
     end
@@ -86,13 +86,6 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
     map = UniMap.new
     map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
     map
-  end
-
-  def filter_chain( *filters )
-    pf = html_parse_filter( :source )
-    pf.parse_as_fragment = true
-    filters.unshift( pf )
-    FilterChain.new( "test", filters )
   end
 
 end

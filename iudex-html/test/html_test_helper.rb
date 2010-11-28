@@ -21,6 +21,7 @@ require 'iudex-filter/key_helper'
 
 module HTMLTestHelper
 
+  include Iudex::Filter::Core
   include Iudex::HTML::Filters::FactoryHelper
 
   import 'com.gravitext.xml.tree.TreeUtils'
@@ -78,4 +79,13 @@ module HTMLTestHelper
   def compress( html )
     html.gsub( /\n\s*/, '' )
   end
+
+  def filter_chain( filters, mode = :whole )
+    pf = html_parse_filter( :source )
+    pf.parse_as_fragment = true if mode == :fragment
+    filters = Array( filters )
+    filters.unshift( pf )
+    FilterChain.new( "test", filters )
+  end
+
 end
