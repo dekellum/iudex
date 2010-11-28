@@ -132,11 +132,11 @@ module Iudex
       end
 
       def ref_html_filters
-        [ html_clean_filters( :title,   :title_tree ),
-          html_clean_filters( :summary, :summary_tree ),
-          html_clean_filters( :content, :content_tree ),
-          html_write_filter( :summary_tree, :summary ),
-          html_write_filter( :content_tree, :content ) ].flatten
+        [ html_clean_filters( :title ),
+          html_clean_filters( :summary ),
+          html_clean_filters( :content ),
+          html_write_filter( :summary ),
+          html_write_filter( :content ) ].flatten
       end
 
       def feed_update_keys
