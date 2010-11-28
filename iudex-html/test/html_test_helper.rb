@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-html'
+require 'iudex-filter/key_helper'
 
 module HTMLTestHelper
 

@@ -59,8 +59,8 @@ HTML
   end
 
   def filter_chain( *filters )
-    filters.unshift( HTMLParseFilter.new( ContentKeys::SOURCE,
-                                          nil, HTMLKeys::SOURCE_TREE ) )
+    filters.unshift( HTMLParseFilter.new( :source.to_k, nil,
+                                          :source_tree.to_k ) )
     FilterChain.new( "test", filters )
   end
 

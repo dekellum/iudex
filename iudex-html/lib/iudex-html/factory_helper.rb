@@ -15,12 +15,13 @@
 #++
 
 require 'iudex-html'
+require 'iudex-filter/key_helper'
 
 module Iudex
   module HTML
     module Filters
       module FactoryHelper
-        include Iudex::Core # ContentKeys?, ContentSource
+        include Iudex::Core # ContentSource
         include Iudex::HTML::Tree
         include Iudex::HTML::Tree::Filters
 

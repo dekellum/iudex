@@ -27,7 +27,7 @@ class TestParseFilter < MiniTest::Unit::TestCase
   UniMap.define_accessors
 
   def setup
-    @filter = HTMLParseFilter.new( ContentKeys::TITLE, HTMLKeys::TITLE_TREE )
+    @filter = HTMLParseFilter.new( :title.to_k, :title_tree.to_k )
     @filter.min_parse = 0
   end
 

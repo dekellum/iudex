@@ -75,7 +75,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
     [ Order::BREADTH_FIRST, Order::DEPTH_FIRST ].each do |order|
       map = content( html[ :in ] )
       tfc = TreeFilterChain.new( [ CharactersNormalizer.new ] )
-      tf = HTMLTreeFilter.new( HTMLKeys::SOURCE_TREE, tfc, order )
+      tf = HTMLTreeFilter.new( :source_tree.to_k, tfc, order )
       chain = filter_chain( tf  )
       assert( chain.filter( map ) )
       assert_fragment_ws( html[ :out ], inner( map.source_tree ), true )
@@ -89,8 +89,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
   end
 
   def filter_chain( *filters )
-    pf = HTMLParseFilter.new( ContentKeys::SOURCE,
-                              nil, HTMLKeys::SOURCE_TREE )
+    pf = HTMLParseFilter.new( :source.to_k, nil, :source_tree.to_k )
     pf.parse_as_fragment = true
     filters.unshift( pf )
     FilterChain.new( "test", filters )
