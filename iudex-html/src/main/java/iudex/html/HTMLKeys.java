@@ -26,6 +26,12 @@ public class HTMLKeys extends ContentKeys
     public static final Key<Element> TITLE_TREE =
         create( "title_tree", Element.class );
 
+    public static final Key<Element> SUMMARY_TREE =
+        create( "summary_tree", Element.class );
+
     public static final Key<Element> CONTENT_TREE =
         create( "content_tree", Element.class );
+
+    public static final Key<Element> SOURCE_TREE =
+        create( "source_tree", Element.class );
 }

@@ -14,20 +14,43 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-da'
-require 'iudex-filter/key_helper'
+require 'iudex-filter'
+
+class Symbol
+  def to_k
+    Iudex::Filter::KeyHelper.lookup_key( self.to_s )
+  end
+end
+
+class Gravitext::HTMap::Key
+  def to_k
+    self
+  end
+end
 
 module Iudex
   module Filter
+
+    # Mixin module support for UniMap Keys
     module KeyHelper
 
-      # Override to lookup matching Key in ContentMapper::LOGICAL_KEYS
-      # or normal UniMap::KEY_SPACE
+      # Lookup matching Key in UniMap::KEY_SPACE
       def self.lookup_key( name )
-        Iudex::DA::ContentMapper::LOGICAL_KEYS.get( name ) or
-          lookup_key_space( name )
+        lookup_key_space( name )
       end
 
+      # Lookup matching Key in UniMap::KEY_SPACE
+      def self.lookup_key_space( name )
+        Gravitext::HTMap::UniMap::KEY_SPACE.get( name ) or
+          raise( "Key #{name} not found" )
+      end
+
+      # Map Symbols to Keys
+      def keys( *syms )
+        syms = syms[0] if ( syms[0] && syms[0].respond_to?( :each ) )
+        syms.map { |s| s.to_k }.uniq
+      end
+      module_function :keys
     end
   end
 end

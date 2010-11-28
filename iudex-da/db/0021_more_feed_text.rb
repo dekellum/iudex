@@ -2,8 +2,8 @@
 # Copyright (c) 2008-2010 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
-# may not use this file except in compliance with the License.  You may
-# obtain a copy of the License at
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
@@ -14,20 +14,16 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-da'
-require 'iudex-filter/key_helper'
+class MoreFeedText < ActiveRecord::Migration
 
-module Iudex
-  module Filter
-    module KeyHelper
-
-      # Override to lookup matching Key in ContentMapper::LOGICAL_KEYS
-      # or normal UniMap::KEY_SPACE
-      def self.lookup_key( name )
-        Iudex::DA::ContentMapper::LOGICAL_KEYS.get( name ) or
-          lookup_key_space( name )
-      end
-
-    end
+  def self.up
+    add_column( 'urls', 'summary', :text )
+    add_column( 'urls', 'content', :text )
   end
+
+  def self.down
+    remove_column( 'urls', 'summary' )
+    remove_column( 'urls', 'content' )
+  end
+
 end

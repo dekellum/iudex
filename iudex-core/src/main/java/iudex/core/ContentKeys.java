@@ -23,16 +23,6 @@ import com.gravitext.htmap.UniMap;
 
 public class ContentKeys
 {
-    protected static <T> Key<T> create( String name, Class<T> valueType )
-    {
-        return UniMap.KEY_SPACE.create( name, valueType );
-    }
-
-    protected static <T> Key<List<T>> createListKey( String name )
-    {
-        return UniMap.KEY_SPACE.createListKey( name );
-    }
-
     public static final Key<VisitURL> URL =
         create( "url", VisitURL.class );
 
@@ -67,6 +57,15 @@ public class ContentKeys
     public static final Key<CharSequence> EXTRACT =
         create( "extract", CharSequence.class );
 
+    public static final Key<CharSequence> SUMMARY =
+        create( "summary", CharSequence.class );
+
+    public static final Key<CharSequence> CONTENT =
+        create( "content", CharSequence.class );
+
+    public static final Key<ContentSource> SOURCE =
+        create( "source", ContentSource.class );
+
     public static final Key<Date> REF_PUB_DATE =
         create( "ref_pub_date", Date.class );
 
@@ -88,9 +87,6 @@ public class ContentKeys
 
     public static final Key<Date> NEXT_VISIT_AFTER =
         create( "next_visit_after", Date.class );
-
-    public static final Key<ContentSource> CONTENT =
-        create( "content", ContentSource.class );
 
     /**
      * Start of processing. Inherited from REFERER on REFERENCES. Used as
@@ -131,4 +127,14 @@ public class ContentKeys
 
     public static final Key<Long> CACHE_FILE_OFFSET =
         create( "cache_file_offset", Long.class );
+
+    protected static <T> Key<T> create( String name, Class<T> valueType )
+    {
+        return UniMap.KEY_SPACE.create( name, valueType );
+    }
+
+    protected static <T> Key<List<T>> createListKey( String name )
+    {
+        return UniMap.KEY_SPACE.createListKey( name );
+    }
 }
