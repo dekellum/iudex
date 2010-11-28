@@ -29,6 +29,7 @@ module Iudex
     import 'iudex.html.HTMLKeys'
 
     module Filters
+      import 'iudex.html.filters.ExtractFilter'
       import 'iudex.html.filters.HTMLParseFilter'
       import 'iudex.html.filters.HTMLTreeFilter'
       import 'iudex.html.filters.HTMLWriteFilter'

@@ -13,6 +13,7 @@ lib/iudex-html/factory_helper.rb
 test/html_test_helper.rb
 test/setup.rb
 test/test_characters_normalizer.rb
+test/test_extract_filter.rb
 test/test_factory_helper.rb
 test/test_html_parser.rb
 test/test_other_filters.rb
