@@ -89,7 +89,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
   end
 
   def filter_chain( *filters )
-    pf = HTMLParseFilter.new( :source.to_k, nil, :source_tree.to_k )
+    pf = html_parse_filter( :source )
     pf.parse_as_fragment = true
     filters.unshift( pf )
     FilterChain.new( "test", filters )

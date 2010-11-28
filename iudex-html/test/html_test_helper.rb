@@ -15,9 +15,13 @@
 #++
 
 require 'iudex-html'
+require 'iudex-html/factory_helper'
+
 require 'iudex-filter/key_helper'
 
 module HTMLTestHelper
+
+  include Iudex::HTML::Filters::FactoryHelper
 
   import 'com.gravitext.xml.tree.TreeUtils'
   import 'com.gravitext.xml.producer.Indentor'
