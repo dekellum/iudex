@@ -55,8 +55,7 @@ module Iudex
         end
 
         def html_tree_filters
-          [ MetaSkipFilter.new,       # FIXME: Only works breadth first?
-            XmpToPreConverter.new,    # Before CharactersNormalizer
+          [ XmpToPreConverter.new,    # Before CharactersNormalizer
             CSSDisplayFilter.new,     # Before AttributeCleaner
             AttributeCleaner.new,
             CharactersNormalizer.new,
