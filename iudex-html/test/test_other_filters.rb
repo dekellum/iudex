@@ -22,13 +22,13 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-html'
 
 class TestOtherFilters < MiniTest::Unit::TestCase
+  include HTMLTestHelper
+
   include Gravitext::HTMap
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
   include Iudex::Filter::Core
-
-  import 'iudex.html.HTMLUtils'
 
   UniMap.define_accessors
 
@@ -54,13 +54,13 @@ HTML
 
   def content( html, charset = "UTF-8" )
     map = UniMap.new
-    map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
     map
   end
 
   def filter_chain( *filters )
-    filters.unshift( HTMLParseFilter.new( ContentKeys::CONTENT,
-                                          nil, HTMLKeys::CONTENT_TREE ) )
+    filters.unshift( HTMLParseFilter.new( ContentKeys::SOURCE,
+                                          nil, HTMLKeys::SOURCE_TREE ) )
     FilterChain.new( "test", filters )
   end
 

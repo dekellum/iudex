@@ -18,7 +18,6 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestParseFilter < MiniTest::Unit::TestCase
   include Gravitext::HTMap

@@ -18,16 +18,11 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestTreeWalker < MiniTest::Unit::TestCase
-  import 'com.gravitext.xml.producer.Indentor'
-  import 'iudex.html.HTML'
-  import 'iudex.html.HTMLUtils'
-  import 'iudex.html.tree.TreeFilter'
-  import 'iudex.html.tree.TreeWalker'
-  import 'iudex.html.tree.TreeFilterChain'
+  include HTMLTestHelper
 
+  import 'iudex.html.tree.TreeFilter'
   Action = TreeFilter::Action
 
   DROP_HTML = {
@@ -94,30 +89,6 @@ class TestTreeWalker < MiniTest::Unit::TestCase
         Action::CONTINUE
       end
     end
-  end
-
-  def assert_transform( html, filter, func )
-    tree = parse( html[ :in ] )
-    action = TreeWalker.send( func, filter, tree )
-    assert_xml( html[ :out ], tree )
-    action
-  end
-
-  def parse( html, charset="UTF-8" )
-    comp_bytes = html.to_java_bytes
-    tree = HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
-    c = tree.children
-    if ( c.size == 1 && c[0].element? )
-      c[0]
-    else
-      tree
-    end
-  end
-
-  def assert_xml( xml, root )
-    xml = xml.gsub( /~+/, '' ) # Remove padding.
-    assert_equal( xml,
-      HTMLUtils::produceFragmentString( root, Indentor::COMPRESSED ) )
   end
 
 end

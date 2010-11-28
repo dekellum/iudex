@@ -24,13 +24,13 @@
 #  http://www.w3schools.com/tags/ref_standardattributes.asp
 #  http://xhtml.com
 
-# CORE :: All accept: base head html meta param script style title
+CORE :: ALL except: base head html meta param script style title
 class       ,*CORE
 id          ,*CORE
 style       ,*CORE
 title       ,CORE, extra title
 
-# LANG :: All accept: base br frame frameset hr iframe param
+LANG :: ALL except: base br frame frameset hr iframe param
 dir         ,LANG, Text direction; ltr or rtl
 lang        ,LANG, language_code; also xml:lang
 
@@ -43,17 +43,17 @@ scheme      ,meta, format URI
 charset     ,a link, char_encoding of link
 coords      ,*a, coordinates; i.e. image map
 hreflang    ,link, language_code of referent
-href        ,a link, URL
+href        ,a base link, URL
 media       ,link
 name        ,a, section_name anchor
 rel         ,a link
 rev         ,a link
 shape       ,*a
-target      ,*a *link
+target      ,*a *base *link
 type        ,link
 
 # Image and some frame attributes
-src         ,frame, img
+src         ,frame img
 alt         ,img
 height      ,img        *tr *th *td *iframe *object
 width       ,img *table *tr *th *td *iframe *object

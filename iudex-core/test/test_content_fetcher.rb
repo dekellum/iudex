@@ -112,7 +112,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 200, out.status )
       assert_equal( WEAK_ETAG, out.etag )
-      assert( out.content )
+      assert( out.source )
     end
   end
 
@@ -125,7 +125,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 304, out.status )
       assert_nil( out.etag )
-      assert_nil( out.content )
+      assert_nil( out.source )
     end
   end
 

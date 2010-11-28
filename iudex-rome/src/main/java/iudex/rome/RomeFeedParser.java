@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
+import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
@@ -54,7 +55,7 @@ public class RomeFeedParser implements Filter
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
-        ContentSource src = content.get( CONTENT );
+        ContentSource src = content.get( SOURCE );
         if( src != null ) {
             try {
                 Reader reader = contentReader( src );
@@ -114,7 +115,20 @@ public class RomeFeedParser implements Filter
 
         ref.set( TYPE, TYPE_PAGE );
 
-        //FIXME: se.getDescription() or se.getContents()?
+        SyndContent description = entry.getDescription();
+        if( description != null ) {
+            ref.set( SUMMARY, description.getValue() );
+        }
+
+        List contents = entry.getContents();
+        if( ( contents != null ) && ( contents.size() > 0 ) ) {
+            SyndContent first = (SyndContent) contents.get( 0 );
+            ref.set( SOURCE, new ContentSource( first.getValue() ) );
+            if( contents.size() > 1 ) {
+                _log.info( "Found {} contents (only using first)",
+                           contents.size() );
+            }
+        }
 
         return ref;
     }

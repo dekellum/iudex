@@ -18,9 +18,10 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestCharactersNormalizer < MiniTest::Unit::TestCase
+  include HTMLTestHelper
+
   include Iudex::HTML
   include Iudex::HTML::Filters
   include Iudex::HTML::Tree
@@ -28,9 +29,6 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
   include Gravitext::HTMap
   include Iudex::Core
   include Iudex::Filter::Core
-
-  import 'com.gravitext.xml.producer.Indentor'
-  import 'iudex.html.HTMLUtils'
 
   UniMap.define_accessors
 
@@ -42,75 +40,60 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
     html = { :in  => "<p> x  y </p>",
              :out => "<p>~x ~y~</p>" }
 
-    assert_transform( html )
+    assert_normalize( html )
   end
 
   def test_simple_inline
     html = { :in  => "<i> x  y </i>",
              :out => "<i> x ~y </i>" }
 
-    assert_transform( html )
+    assert_normalize( html )
   end
 
   def test_mixed_inline
     html = { :in  => "<p> x  y <i>z </i> </p>",
              :out => "<p>~x ~y <i>z </i>~</p>" }
 
-    assert_transform( html )
+    assert_normalize( html )
   end
 
   def test_empty
     html = { :in  => "<div><p> </p>  <p>foo</p> </div>",
              :out => "<div><p/>~~~~~~<p>foo</p>~</div>" }
 
-    assert_transform( html )
+    assert_normalize( html )
   end
 
   def test_pre
     html = { :in  => "<div> x <pre>  \0x\n <a>  y </a></pre> </div>",
              :out => "<div>~x~<pre>  ~ x\n <a>  y </a></pre>~</div>" }
 
-    assert_transform( html )
+    assert_normalize( html )
   end
 
-  def assert_transform( html )
+  def assert_normalize( html )
     [ Order::BREADTH_FIRST, Order::DEPTH_FIRST ].each do |order|
       map = content( html[ :in ] )
       tfc = TreeFilterChain.new( [ CharactersNormalizer.new ] )
-      tf = HTMLTreeFilter.new( HTMLKeys::CONTENT_TREE, tfc, order )
+      tf = HTMLTreeFilter.new( HTMLKeys::SOURCE_TREE, tfc, order )
       chain = filter_chain( tf  )
       assert( chain.filter( map ) )
-      assert_xml( html[ :out ], inner( map.content_tree ) )
+      assert_fragment_ws( html[ :out ], inner( map.source_tree ), true )
     end
   end
 
   def content( html, charset = "UTF-8" )
     map = UniMap.new
-    map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
     map
   end
 
-  def inner( tree )
-    c = tree.children
-    if ( c.size == 1 && c[0].element? )
-      c[0]
-    else
-      tree
-    end
-  end
-
   def filter_chain( *filters )
-    pf = HTMLParseFilter.new( ContentKeys::CONTENT,
-                              nil, HTMLKeys::CONTENT_TREE )
+    pf = HTMLParseFilter.new( ContentKeys::SOURCE,
+                              nil, HTMLKeys::SOURCE_TREE )
     pf.parse_as_fragment = true
     filters.unshift( pf )
     FilterChain.new( "test", filters )
-  end
-
-  def assert_xml( xml, root )
-    xml = xml.gsub( /~+/, '' ) # Remove padding.
-    assert_equal( xml,
-      HTMLUtils::produceFragmentString( root, Indentor::COMPRESSED ) )
   end
 
 end

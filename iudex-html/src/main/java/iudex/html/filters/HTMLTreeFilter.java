@@ -16,8 +16,7 @@
 
 package iudex.html.filters;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
@@ -29,7 +28,6 @@ import iudex.filter.Filter;
 import iudex.filter.FilterException;
 import iudex.html.tree.TreeFilter;
 import iudex.html.tree.TreeFilter.Action;
-import iudex.html.tree.TreeFilterChain;
 import iudex.html.tree.TreeWalker;
 
 /**
@@ -61,17 +59,24 @@ public class HTMLTreeFilter implements Filter, Described
     @Override
     public List<?> describe()
     {
+        return Arrays.asList( _treeKey, _order );
+
+        /* FIXME: Any way to get subfilter reporting in here?
         List<? extends TreeFilter> children =
             Collections.singletonList( _filter );
         if( _filter instanceof TreeFilterChain ) {
             children = ((TreeFilterChain) _filter).children();
         }
 
-        List<Class> tfilters = new ArrayList<Class>();
+        List<Object> tfilters = new ArrayList<Object>();
+        tfilters.add( _treeKey );
+        tfilters.add( _order );
+
         for( TreeFilter tf : children ) {
-            tfilters.add( tf.getClass() );
+            tfilters.add( tf.getClass().getSimpleName() );
         }
         return tfilters;
+        */
     }
 
     @Override

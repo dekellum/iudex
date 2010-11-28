@@ -198,7 +198,7 @@ public class ContentFetcher implements AsyncFilterContainer
 
                 cs.setDefaultEncoding( encoding );
 
-                _content.set( CONTENT, cs );
+                _content.set( SOURCE, cs );
             }
             _receiver.filter( _content );
         }

@@ -16,7 +16,9 @@
 
 #### General test setup: LOAD_PATH, logging, console output ####
 
-ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
+test_dir = File.dirname( __FILE__ )
+
+ldir = File.join( test_dir, "..", "lib" )
 $LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
 
 require 'rubygems'
@@ -25,6 +27,8 @@ RJack::Logback.config_console( :stderr => true )
 
 require 'minitest/unit'
 require 'minitest/autorun'
+
+require File.join( test_dir, 'html_test_helper.rb' )
 
 # Make test output logging compatible: no partial lines.
 # class TestOut
