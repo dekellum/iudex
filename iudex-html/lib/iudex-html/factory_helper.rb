@@ -27,17 +27,17 @@ module Iudex
 
         # Create html parse and clean filters
         # Expected usage:
-        #   PAGE: html_clean_filters( :source,  :source_tree )
-        #   FEED: html_clean_filters( :title,   :title_tree )
-        #   FEED: html_clean_filters( :summary, :summary_tree )
-        #   FEED: html_clean_filters( :content, :content_tree )
+        #   PAGE: html_clean_filters( :source  )
+        #   FEED: html_clean_filters( :title   )
+        #   FEED: html_clean_filters( :summary )
+        #   FEED: html_clean_filters( :content )
         #
-        def html_clean_filters( src_key, tree_key )
+        def html_clean_filters( src_key, tree_key = nil )
+
+          tree_key = "#{src_key}_tree".to_sym unless tree_key
+          src_key, tree_key = src_key.to_k, tree_key.to_k
+
           filters = []
-
-          src_key  = src_key.to_k
-          tree_key = tree_key.to_k
-
           filters << html_parse_filter( src_key, tree_key )
 
           #FIXME: PAGE: filters << TitleExtractor.new, or after?
@@ -65,7 +65,11 @@ module Iudex
             WordyCounter.new ]        # Depth; only with cleaners/simhash?
         end
 
-        def html_parse_filter( src_key, tree_key )
+        def html_parse_filter( src_key, tree_key = nil )
+
+          tree_key = "#{src_key}_tree".to_sym unless tree_key
+          src_key, tree_key = src_key.to_k, tree_key.to_k
+
           if( src_key.value_type == ContentSource.java_class )
             HTMLParseFilter.new( src_key, nil, tree_key )
           else
@@ -74,8 +78,15 @@ module Iudex
         end
 
         # Expected usage:
-        #   FEED: html_write_filter( :summary_tree, :summary )
-        def html_write_filter( tree_key, out_key )
+        #   FEED: html_write_filter( :summary )
+        def html_write_filter( key1, key2 = nil )
+
+          tree_key, out_key = if key2
+                                [ key1, key2 ]
+                              else
+                                [ "#{key1}_tree".to_sym, key1 ]
+                              end
+
           HTMLWriteFilter.new( tree_key.to_k, out_key.to_k )
         end
       end

@@ -40,9 +40,9 @@ class TestFactoryHelper < MiniTest::Unit::TestCase
     include Iudex::HTML::Filters::FactoryHelper
 
     def filters
-     [ html_clean_filters( :title,   :title_tree ),
-       html_clean_filters( :summary, :summary_tree ),
-       html_write_filter( :summary_tree, :summary ) ].flatten
+     [ html_clean_filters( :title, :title_tree ), # _tree optional arg
+       html_clean_filters( :summary ),            # implied :summary_tree
+        html_write_filter( :summary ) ].flatten
     end
   end
 
