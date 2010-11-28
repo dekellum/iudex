@@ -24,7 +24,7 @@ module Iudex
 
       # Mixin FilterChainFactory helper methods
       module FactoryHelper
-        include KeyHelper
+        include Iudex::Filter::KeyHelper
 
         # Lazy initialize DataSource
         def data_source
