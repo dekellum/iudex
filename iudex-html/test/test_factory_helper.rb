@@ -21,6 +21,9 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-html'
+
+RJack::Logback.config_console( :stderr => true, :level => RJack::Logback::WARN  )
+
 require 'iudex-html/factory_helper'
 
 require 'iudex-filter/filter_chain_factory'
