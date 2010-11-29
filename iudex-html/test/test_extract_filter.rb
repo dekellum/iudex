@@ -31,9 +31,9 @@ class TestExtractFilter < MiniTest::Unit::TestCase
     html = <<HTML
 <div>
  <p>Short junk</p>
- <br/>
  <hr/>
  <p>A more <i>substantive </i>paragraph.</p>
+ <p>A similarly <i>substantive </i>paragraph.</p>
 </div>
 HTML
     map = content( html )
@@ -42,7 +42,7 @@ HTML
            ExtractFilter.new( [ :source_tree.to_k ] ) ]
     chain = filter_chain( fc, :fragment )
     assert( chain.filter( map ) )
-    assert_equal( "A more substantive paragraph", map.extract )
+    assert_equal( "A more substantive paragraph.", map.extract.to_s )
   end
 
 end

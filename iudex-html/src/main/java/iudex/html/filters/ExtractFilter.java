@@ -16,11 +16,13 @@
 
 package iudex.html.filters;
 
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
+import com.gravitext.util.ResizableCharBuffer;
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
@@ -34,8 +36,18 @@ import static iudex.html.tree.HTMLTreeKeys.*;
 
 import static iudex.html.HTMLTag.*;
 
+/**
+ * Extracts the first contiguous block of text from a search list of HTML
+ * Element trees. Contiguous means no intervening block element. Inline elements
+ * will be ignored, i.e. stripped out of the block. This filter depends on the
+ * WordCounter having already been applied to tree in the search list.
+ */
 public class ExtractFilter implements Filter, Described
 {
+    /**
+     * Construct given ordered list of Element trees to search, and default
+     * ContentKeys.EXTRACT output key.
+     */
     public ExtractFilter( List< Key<Element> > treeKeys )
     {
         this( treeKeys, ContentKeys.EXTRACT );
@@ -46,6 +58,24 @@ public class ExtractFilter implements Filter, Described
     {
         _treeKeys = treeKeys;
         _extractKey = extractKey;
+    }
+
+    /**
+     * Set the minimum number of words to extract. Nothing below this
+     * word count will be returned. (Default: 4)
+     */
+    public void setMinWords( int minWords )
+    {
+        _minWords = minWords;
+    }
+
+    /**
+     * Set the preferred number of words at which point the search will
+     * be terminated. (Default: 8)
+     */
+    public void setPreferredWords( int minWords )
+    {
+        _preferredWords = minWords;
     }
 
     @Override
@@ -59,61 +89,120 @@ public class ExtractFilter implements Filter, Described
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
+        final Walker walker = new Walker( _minWords );
+
         for( Key<Element> treeKey : _treeKeys ) {
-            Element root = content.get( treeKey );
+            final Element root = content.get( treeKey );
             if( root != null ) {
-                Walker walker = new Walker();
                 TreeWalker.walkBreadthFirst( walker, root );
+                if( walker.foundWords() > _preferredWords ) break;
             }
         }
+
+        content.set( _extractKey, walker.extract() );
 
         return true;
     }
 
-    private static final class Walker
+    private final class Walker
         implements TreeFilter
     {
+        /**
+         * Construct given initial minimum words to find.
+         */
+        public Walker( int minFindWords )
+        {
+            _minFindWords = minFindWords;
+        }
+
         @Override
         public Action filter( Node node )
         {
             Action action = Action.CONTINUE;
 
             // Check each block level element.
+            // FIXME: Skip <pre> blocks?
+
             final Element elem = node.asElement();
             if( ( elem != null ) && !isInline( elem ) ) {
 
-                // Optimize: if total word count for this block is less than prior,
-                // than can safely skip it.
+                // Optimization: if total word count for this block is less
+                // than minimum, it can be safely skipped.
+                if( elem.get( WORD_COUNT ) < _minFindWords ) {
+                    action = Action.SKIP;
+                }
+                else {
+                    List<Node> children = elem.children();
 
-                int foundWords = 0;
-                int start = 0;
+                    int rangeWords = 0;
+                    int start = 0;
+                    final int end = children.size();
 
-                List<Node> children = elem.children();
-                final int end = children.size();
-                for( int i = 0; i < end; ++i ) {
+                    for( int i = 0; i < end; ++i ) {
 
-                    Node child = children.get( i );
-                    final int words = child.get( WORD_COUNT );
+                        Node child = children.get( i );
 
-                    Element celm = child.asElement();
-                    if( ( celm == null ) || isInline( celm ) ) {
-                        foundWords += words;
+                        Element celm = child.asElement();
+                        if( ( celm == null ) || isInline( celm ) ) {
+                            rangeWords += child.get( WORD_COUNT );
+                        }
+                        else {
+                            if( rangeWords >= _minFindWords ) {
+                                extractRange( rangeWords, children, start, i );
+                            }
+
+                            rangeWords = 0;
+                            start = i + 1;
+
+                            if( _foundWords >= _preferredWords ) break;
+                        }
                     }
-                    else {
-                        // check if found words reaches minimum.
-                        // break or continue searching this block with:
-                        foundWords = 0;
-                        start = i + 1;
 
+                    if( rangeWords >= _minFindWords ) {
+                        extractRange( rangeWords, children, start, end );
+                    }
+
+                    if( _foundWords >= _preferredWords ) {
+                        action = Action.TERMINATE;
                     }
                 }
-                // check if found words reaches minimum?
-
             }
             return action;
         }
+
+        public int foundWords()
+        {
+            return _foundWords;
+        }
+
+        public CharBuffer extract()
+        {
+            return _extract;
+        }
+
+        private void extractRange( final int rangeWords,
+                                   final List<Node> children,
+                                   final int start,
+                                   final int end )
+        {
+            ResizableCharBuffer extract = new ResizableCharBuffer( 256 );
+            for( int i = start; i < end; ++i ) {
+                extract.put( children.get( i ).characters() );
+            }
+            _extract = extract.flipAsCharBuffer();
+
+            _foundWords   = rangeWords;
+            _minFindWords = rangeWords + 1;
+        }
+
+        private int _minFindWords;
+        private int _foundWords = 0;
+        private CharBuffer _extract = null;
     }
 
-    private final List<Key<Element>> _treeKeys;
+    private final List< Key<Element> > _treeKeys;
     private final Key<CharSequence> _extractKey;
+
+    private int _minWords = 4;
+    private int _preferredWords = 8;
 }
