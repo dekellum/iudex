@@ -16,7 +16,6 @@
 
 package iudex.html.filters;
 
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,7 +174,7 @@ public class ExtractFilter implements Filter, Described
             return _foundWords;
         }
 
-        public CharBuffer extract()
+        public CharSequence extract()
         {
             return _extract;
         }
@@ -185,11 +184,23 @@ public class ExtractFilter implements Filter, Described
                                    final int start,
                                    final int end )
         {
-            ResizableCharBuffer extract = new ResizableCharBuffer( 256 );
+            CharSequence first = null;
+            ResizableCharBuffer buff = null;
+
             for( int i = start; i < end; ++i ) {
-                extract.put( children.get( i ).characters() );
+                CharSequence cc = children.get( i ).characters();
+                if( cc != null ) {
+                    if( buff != null ) buff.put( cc );
+                    else if( first == null ) first = cc;
+                    else {
+                        buff = new ResizableCharBuffer( first.length() +
+                                                        cc.length() + 32 );
+                        buff.put( first ).put( cc );
+                    }
+                }
             }
-            _extract = extract.flipAsCharBuffer();
+
+            _extract = ( buff != null ) ? buff.flipAsCharBuffer() : first;
 
             _foundWords   = rangeWords;
             _minFindWords = rangeWords + 1;
@@ -197,7 +208,7 @@ public class ExtractFilter implements Filter, Described
 
         private int _minFindWords;
         private int _foundWords = 0;
-        private CharBuffer _extract = null;
+        private CharSequence _extract = null;
     }
 
     private final List< Key<Element> > _treeKeys;

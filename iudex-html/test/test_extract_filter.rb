@@ -36,24 +36,24 @@ class TestExtractFilter < MiniTest::Unit::TestCase
                  </div>
                  HTML
                [ <<-'HTML', nil ],
-                 <div>one two<br/>
-                      three four</div>
+                 <div>a1 a2<br/>
+                      a3 a4</div>
                  HTML
-               [ <<-'HTML', "one two three four" ],
-                 <div>one two three four</div>
+               [ <<-'HTML', "a1 a2 a3 a4" ],
+                 <div>a1 a2 a3 a4</div>
                  HTML
-               [ <<-'HTML', "one two three four" ],
+               [ <<-'HTML', "a1 a2 a3 a4" ],
                  <div>
-                   <p>one two three four</p>
+                   <p>a1 a2 a3 a4</p>
                  </div>
                  HTML
-               [ <<-'HTML', "one two three four" ],
-                 <div>one two three four<br/>
+               [ <<-'HTML', "a1 a2 a3 a4" ],
+                 <div>a1 a2 a3 a4<br/>
                       not part of extract</div>
                  HTML
-               [ <<-'HTML', "one two three four" ],
+               [ <<-'HTML', "a1 a2 a3 a4" ],
                  <div>not<br/>
-                      one two three four
+                      a1 a2 a3 a4
                       </div>
                  HTML
                [ <<-'HTML', "A more substantive paragraph." ],
