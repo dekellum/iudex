@@ -22,13 +22,15 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 
 class TestExtractFilter < MiniTest::Unit::TestCase
   include HTMLTestHelper
-
   include Iudex::HTML::Filters
+  include Iudex::Filter::KeyHelper
+
   include Iudex::HTML::Tree::Filters
   Order = HTMLTreeFilter::Order
 
-  def test_doc
-    htests = [ [ '<div></div>',          nil ],
+  def test_single_tree
+    htests = [ [ nil,                    nil ],
+               [ '<div></div>',          nil ],
                [ '<div>too short</div>', nil ],
                [ <<-'HTML', nil ],
                  <div>
@@ -86,8 +88,8 @@ class TestExtractFilter < MiniTest::Unit::TestCase
                  HTML
              ]
 
-    htests.each do |html,exp_extract|
-      map = content( html )
+    htests.each do | html, exp_extract |
+      map = ( content( html ) if html ) || UniMap.new
       tfc = TreeFilterChain.new( [ CharactersNormalizer.new,
                                    WordCounter.new ] )
       fc = [ HTMLTreeFilter.new( :source_tree.to_k, tfc, Order::DEPTH_FIRST ),
@@ -95,8 +97,45 @@ class TestExtractFilter < MiniTest::Unit::TestCase
       chain = filter_chain( fc, :fragment )
       assert( chain.filter( map ) )
       assert_equal( exp_extract, map.extract && map.extract.to_s,
-                    "from:\n" + html )
+                    "from:\n" + html.to_s )
     end
+  end
+
+  def test_multi_tree
+    htests = [ [ nil, nil, nil ],
+               [ <<-'HTML1', <<-'HTML2', 'a1 a2 a3 a4' ],
+                  <div>too short</div>
+                 HTML1
+                  <div>a1 a2 a3 a4</div>
+                 HTML2
+               [ <<-'HTML1', <<-'HTML2', 'a1 a2 a3 a4' ],
+                  <div>a1 a2 a3 a4</div>
+                 HTML1
+                  <div>too short</div>
+                 HTML2
+               [ <<-'HTML1', <<-'HTML2', 'a1 a2 a3 a4 a5 a6 a7 a8' ],
+                  <div>a1 a2 a3 a4 a5 a6 a7 a8</div>
+                 HTML1
+                  <div>a1 a2 a3 a4 a5 a6 a7 a8 a9</div>
+                 HTML2
+             ]
+
+    htests.each do | summary, content, exp_extract |
+      map = UniMap.new
+      map.summary = summary
+      map.content = content
+
+      filters = [ html_clean_filters( :summary ),
+                  html_clean_filters( :content ),
+                  ExtractFilter.new( keys( :summary_tree, :content_tree ) ) ]
+
+      chain = FilterChain.new( "test", filters.flatten )
+      assert( chain.filter( map ) )
+      assert_equal( exp_extract, map.extract && map.extract.to_s,
+                    "summary: #{summary}\n" +
+                    "content: #{content}" )
+    end
+
   end
 
 end
