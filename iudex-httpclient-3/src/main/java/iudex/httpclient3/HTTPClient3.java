@@ -117,7 +117,9 @@ public class HTTPClient3 implements HTTPClient
 
         public void abort() throws IOException
         {
-            _httpMethod.abort();
+            if( _httpMethod != null ) {
+                _httpMethod.abort();
+            }
             close(); //FIXME: Good idea to also close?
         }
 
