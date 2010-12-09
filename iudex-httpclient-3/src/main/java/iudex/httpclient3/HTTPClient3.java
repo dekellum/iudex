@@ -23,6 +23,7 @@ import iudex.http.ResponseHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -79,31 +80,34 @@ public class HTTPClient3 implements HTTPClient
 
         public int responseCode()
         {
-            return _httpMethod.getStatusCode();
+            return ( _httpMethod == null ) ? 0 : _httpMethod.getStatusCode();
         }
 
         public String statusText()
         {
-            return _httpMethod.getStatusText();
+            return ( _httpMethod == null ) ? null : _httpMethod.getStatusText();
         }
 
         public List<Header> responseHeaders()
         {
-            org.apache.commons.httpclient.Header[] inHeaders =
-                _httpMethod.getResponseHeaders();
+            if( _httpMethod != null ) {
+                org.apache.commons.httpclient.Header[] inHeaders =
+                    _httpMethod.getResponseHeaders();
 
-            List<Header> outHeaders =
-                new ArrayList<Header>( inHeaders.length + 1 );
+                List<Header> outHeaders =
+                    new ArrayList<Header>( inHeaders.length + 1 );
 
-            StatusLine statusLine = _httpMethod.getStatusLine();
-            if( statusLine != null ) {
-                outHeaders.add( new Header( "Status-Line", statusLine ) );
+                StatusLine statusLine = _httpMethod.getStatusLine();
+                if( statusLine != null ) {
+                    outHeaders.add( new Header( "Status-Line", statusLine ) );
+                }
+
+                copyHeaders( inHeaders, outHeaders );
+                return outHeaders;
+                //FIXME: Adapter? Lazy Cache?            }
             }
 
-            copyHeaders( inHeaders, outHeaders );
-
-            return outHeaders;
-            //FIXME: Adapter? Lazy Cache?
+            return Collections.emptyList();
         }
 
         public InputStream responseStream() throws IOException
