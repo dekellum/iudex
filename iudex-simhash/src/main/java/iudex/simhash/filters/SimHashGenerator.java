@@ -147,7 +147,6 @@ public class SimHashGenerator implements Filter, Described
             }
             else {
                 _counter.add( node.characters() );
-                //FIXME: Has tokenization problem on pre-blocks with alt spaces.
             }
             return action;
         }
