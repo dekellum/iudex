@@ -1,6 +1,6 @@
 # -*- ruby -*-
 
-task :default => :dot
+task :default => [ :gen ]
 
 directory 'svg'
 

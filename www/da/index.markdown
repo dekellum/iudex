@@ -19,7 +19,7 @@ Great care has been taken to isolate all PostgreSQL dependencies to
 the iudex-da package. This should make is possible to experement with
 alternativs such as fully distributed "nosql" stores in the future.
 
-[prioritization]: /prioritization.html
+[prioritization]: {{ page.root }}/prioritization.html
 
 ## Postgresql Setup
 
@@ -42,4 +42,4 @@ can be run directly from the source tree:
 
 Additional external dependencies:
 
-{% svg svg/iudex-da.svg %}
+{% svg ../svg/iudex-da.svg %}
