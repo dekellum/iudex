@@ -6,4 +6,5 @@ pom.xml
 lib/iudex-rome/base.rb
 lib/iudex-rome.rb
 test/setup.rb
+test/simple_rss.xml
 test/test_rome.rb
