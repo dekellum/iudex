@@ -19,14 +19,11 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-html'
 
 class TestWordCounters < MiniTest::Unit::TestCase
+  include HTMLTestHelper
   include Iudex::HTML::Tree
   include Iudex::HTML::Tree::Filters
-
-  import 'iudex.html.HTMLUtils'
-  import 'iudex.html.tree.TreeWalker'
 
   def test_counts
     tset = [ [ "",                                            0, 0 ],
@@ -87,19 +84,13 @@ class TestWordCounters < MiniTest::Unit::TestCase
  </body>
 </html>
 HTML
-    comp_bytes = html.gsub( /\n\s*/, '' ).to_java_bytes
-    tree = HTMLUtils::parse( HTMLUtils::source( comp_bytes, "UTF-8" ) )
+    tree = parse( html, "UTF-8" )
     chain = TreeFilterChain.new( [ MetaSkipFilter.new,
                                    WordCounter.new,
                                    WordyCounter.new ] )
     TreeWalker::walk_depth_first( chain, tree )
     assert_equal( 2, tree.get( HTMLTreeKeys::WORD_COUNT ) );
     assert_equal( 2, tree.get( HTMLTreeKeys::WORDINESS ) );
-  end
-
-  def parse( html, charset="UTF-8" )
-    comp_bytes = html.to_java_bytes
-    HTMLUtils::parseFragment( HTMLUtils::source( comp_bytes, charset ) )
   end
 
 end

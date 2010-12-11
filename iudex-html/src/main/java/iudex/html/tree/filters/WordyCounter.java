@@ -26,14 +26,14 @@ import iudex.html.tree.TreeFilter;
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
-public class WordyCounter implements TreeFilter
+public final class WordyCounter implements TreeFilter
 {
     //FIXME: Define method to insure this is only run depth first?
 
     @Override
     public Action filter( Node node )
     {
-        Element elem = node.asElement();
+        final Element elem = node.asElement();
         if( elem != null ) {
             float inlineSum = 0.0f;
             float blockSum  = 0.0f;

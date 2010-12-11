@@ -16,24 +16,30 @@
 
 package iudex.html.tree.filters;
 
+import static iudex.html.HTMLTag.htmlTag;
+import iudex.html.HTML;
+import iudex.html.tree.TreeFilter;
+
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
-import static iudex.html.HTMLTag.htmlTag;
-
-import iudex.html.tree.TreeFilter;
-
 /**
- * SKIP all elements of tag.isMetadata(). This includes HTML.HEAD and all of its
- * legal children, HTML.TITLE, etc.
+ * Convert &lt;xmp> to &lt;pre>. XMP is deprecated in later HTML versions and is
+ * X(HT)ML incompatible, but can still can be found in the wild. After the HTML
+ * parse where special internal markup rules are applied, it is effectively the
+ * same as PRE, and will cause less trouble if converted to PRE.This should be
+ * applied before any filter with specific behavior for PRE.
  */
-public final class MetaSkipFilter implements TreeFilter
+public final class XmpToPreConverter implements TreeFilter
 {
     @Override
     public Action filter( Node node )
     {
         final Element elem = node.asElement();
-        return ( ( ( elem != null ) && htmlTag( elem ).isMetadata() ) ?
-                 Action.SKIP : Action.CONTINUE );
+        if( ( elem != null ) && htmlTag( elem ) == HTML.XMP ) {
+            elem.setTag( HTML.PRE );
+        }
+
+        return Action.CONTINUE;
     }
 }

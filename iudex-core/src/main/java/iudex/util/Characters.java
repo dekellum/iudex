@@ -130,7 +130,7 @@ public final class Characters
     }
 
     /**
-     * Return true if in has at least one character !isCtrlWS().
+     * Return true if all characters in input are isCtrlWS().
      */
     public static boolean isEmptyCtrlWS( final CharSequence in )
     {

@@ -16,6 +16,9 @@
 
 package iudex.html;
 
+import java.util.List;
+
+import com.gravitext.xml.producer.Attribute;
 import com.gravitext.xml.producer.Namespace;
 import com.gravitext.xml.producer.Tag;
 import com.gravitext.xml.tree.Element;
@@ -39,7 +42,10 @@ public final class HTMLTag extends Tag
         return htmlTag( elem ).isInline();
     }
 
-    public HTMLTag( String name, Namespace ns, Flag...flags )
+    public HTMLTag( String name,
+                    Namespace ns,
+                    List<Attribute> list,
+                    Flag...flags )
     {
         super( name, ns );
 
@@ -47,6 +53,8 @@ public final class HTMLTag extends Tag
         _inline     = find( flags, Flag.INLINE );
         _metadata   = find( flags, Flag.METADATA );
         _banned     = find( flags, Flag.BANNED );
+
+        _basicAtts  = list;
     }
 
     public boolean isDeprecated()
@@ -69,6 +77,15 @@ public final class HTMLTag extends Tag
         return _banned;
     }
 
+    /**
+     * The basic set of HTML attributes, not including any style attributes,
+     * that may be placed on this tag.
+     */
+    public List<Attribute> basicAttributes()
+    {
+        return _basicAtts;
+    }
+
     private static boolean find( Flag[] flags, Flag flag )
     {
         for( Flag f : flags ) {
@@ -81,4 +98,6 @@ public final class HTMLTag extends Tag
     private final boolean _inline;
     private final boolean _metadata;
     private final boolean _banned;
+
+    private final List<Attribute> _basicAtts;
 }
