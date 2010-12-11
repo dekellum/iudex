@@ -28,7 +28,7 @@ module Iudex
 
     class Agent
       include Iudex::DA
-      include Iudex::DA::KeyHelper
+      include Iudex::Filter::KeyHelper
       include Iudex::Core
       include Iudex::HTTPClient3
       include Iudex::Worker
