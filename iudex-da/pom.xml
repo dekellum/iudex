@@ -79,7 +79,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql-jdbc4</artifactId>
-      <version>8.4.701</version>
+      <version>[8.4.702,9.1)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
