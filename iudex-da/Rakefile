@@ -15,7 +15,7 @@ t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
   h.extra_deps += [ [ 'iudex-core',            '~> 1.1.0'  ],
-                    [ 'activerecord',          '~> 2.3.10' ],
+                    [ 'activerecord',          '~> 3.0.3'  ],
                     [ 'jdbc-postgres',         '>= 8.4.702',  '< 9.1' ],
                     [ 'activerecord-jdbcpostgresql-adapter', '~> 1.1.0' ],
                     [ 'rjack-commons-dbcp',    '~> 1.4.0'  ],
@@ -41,9 +41,5 @@ end
 task :gem  => [ :check_pom_version, :check_history_version                      ]
 task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
 task :push => [                                             :check_history_date ]
-
-# Disable verbose warnings, which are a bit much with ActiveRecord
-# 2.3.x at least.
-Hoe::RUBY_FLAGS.sub!( /\-w(\s|$)/, '-W1\1' )
 
 t.define_tasks
