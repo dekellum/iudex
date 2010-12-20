@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-filter'
+require 'iudex-filter/key_helper'
 require 'iudex-filter/by_filter_logger'
 
 module Iudex
@@ -23,6 +24,8 @@ module Iudex
 
       class FilterChainFactory
         attr_reader :description
+
+        include KeyHelper
 
         def initialize( description = "default" )
           @description = description

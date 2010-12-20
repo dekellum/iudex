@@ -49,5 +49,5 @@ Postgres database. Features:
 * SQL 2003 Window Functions are utilized for efficient calculation of
   host depth priority adjustments.
 
-[iudex-core]: /index.html
-[iudex-da]: /da.html
+[iudex-core]: index.html
+[iudex-da]: da/index.html

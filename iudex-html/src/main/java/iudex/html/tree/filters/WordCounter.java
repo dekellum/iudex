@@ -24,7 +24,7 @@ import static iudex.html.tree.HTMLTreeKeys.*;
 
 import iudex.html.tree.TreeFilter;
 
-public class WordCounter implements TreeFilter
+public final class WordCounter implements TreeFilter
 {
     //FIXME: Define method to insure this is only run depth first?
 
@@ -33,7 +33,7 @@ public class WordCounter implements TreeFilter
     {
         int wcount = 0;
 
-        Element elem = node.asElement();
+        final Element elem = node.asElement();
         if( elem != null ) {
             for( Node child : elem.children() ) {
                 Integer count = child.get( WORD_COUNT );

@@ -48,7 +48,7 @@ public final class Tokenizer
     @Override
     public boolean hasNext()
     {
-        while( ( _next == null ) && _in.hasRemaining() ) scan();
+        if( _next == null ) scan();
         return ( _next != null );
     }
 
@@ -77,7 +77,10 @@ public final class Tokenizer
 
         while( pos < end ) {
             if( isWS( _in.get( pos ) ) ) {
-                if( start >= 0 ) break;
+                if( start >= 0 ) {
+                    if( ( pos - start ) > TOKEN_TOO_SMALL ) break;
+                    start = -1;
+                }
             }
             else if( start < 0 ) start = pos;
 
@@ -88,9 +91,6 @@ public final class Tokenizer
             _next = _in.duplicate();
             _next.position( start );
             _next.limit( pos );
-        }
-        else {
-            _next = null;
         }
 
         _in.position( ( pos < end ) ? pos + 1 : end );

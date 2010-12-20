@@ -34,7 +34,7 @@ import iudex.util.Characters;
  * &lt;pre> blocks as well as block vs inline elements in general. Compatible
  * with both BREADTH_FIRST and DEPTH_FIRST traversal.
  */
-public class CharactersNormalizer implements TreeFilter
+public final class CharactersNormalizer implements TreeFilter
 {
     @Override
     public Action filter( Node node )

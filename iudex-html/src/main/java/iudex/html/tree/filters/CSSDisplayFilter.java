@@ -16,24 +16,42 @@
 
 package iudex.html.tree.filters;
 
+import java.util.regex.Pattern;
+
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.Node;
 
-import static iudex.html.HTMLTag.htmlTag;
-
+import iudex.html.HTML;
 import iudex.html.tree.TreeFilter;
 
 /**
- * SKIP all elements of tag.isMetadata(). This includes HTML.HEAD and all of its
- * legal children, HTML.TITLE, etc.
+ * Drop elements with attribute style="display:none". Note this should be
+ * applied before {@link AttributeCleaner} which removes style attributes.
  */
-public final class MetaSkipFilter implements TreeFilter
+public final class CSSDisplayFilter implements TreeFilter
 {
     @Override
     public Action filter( Node node )
     {
+        Action action = Action.CONTINUE;
+
         final Element elem = node.asElement();
-        return ( ( ( elem != null ) && htmlTag( elem ).isMetadata() ) ?
-                 Action.SKIP : Action.CONTINUE );
+        if( elem != null ) {
+            CharSequence style = elem.attribute( HTML.ATTR_STYLE );
+            if( ( style != null ) && hasDisplayNone( style ) ) {
+                action = Action.DROP;
+            }
+        }
+
+        return action;
     }
+
+    boolean hasDisplayNone( CharSequence style )
+    {
+        return DISPLAY_NONE_RE.matcher( style ).find();
+    }
+
+    private static final Pattern DISPLAY_NONE_RE =
+        Pattern.compile( "(^|[\\s;{])display\\s*:\\s*none([\\s;}]|$)",
+                         Pattern.CASE_INSENSITIVE );
 }
