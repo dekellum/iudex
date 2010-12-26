@@ -18,7 +18,7 @@ t.specify do |h|
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'minitest',      '~> 1.7.1' ],
-                        [ 'rjack-logback', '>= 1.0.0' ] ]
+                        [ 'rjack-logback', '>= 1.0'   ] ]
 
   h.rubyforge_name = "iudex"
 end
