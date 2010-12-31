@@ -17,7 +17,7 @@
 class AddPriority < ActiveRecord::Migration
 
   def self.up
-    add_column( 'urls',  'priority', :float, :null => false, :default => 0.0 )
+    add_column( 'urls',  'priority', 'real', :null => false, :default => 0.0 )
     # Prioritization of next visit, range -INF,+INF
   end
 
