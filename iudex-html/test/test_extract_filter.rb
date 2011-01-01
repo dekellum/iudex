@@ -92,8 +92,22 @@ class TestExtractFilter < MiniTest::Unit::TestCase
                    <p>a1 a2 a3</p>
                    <p>a1 a2 a3 a4 a5</p>
                    <p>a1 a2 a3 a4 a5 a6</p>
-                   <p>a1 a2 a3 a4 a5 a6 a7 a8</p>
-                   <p>a1 a2 a3 a4 a5 a6 a7 a8 a9</p>
+                   <div>
+                      <p>a1 a2 a3 a4 a5 a6 a7 a8</p>
+                         a1 a2 a3 a4 a5 a6 a7 a8 a9
+                   </div>
+                 </div>
+                 HTML
+               [ <<-'HTML', "a1 a2 a3 a4 a5 a6 a7 a8" ],
+                 <div>
+                   <p>a1 a2 a3</p>
+                   <p>a1 a2 a3 a4 a5</p>
+                   <p>a1 a2 a3 a4 a5 a6</p>
+                   <p>a1 a2 a3 a4 a5 a6 a7</p>
+                   <div>
+                        a1 a2 a3 a4 a5 a6 a7 a8
+                     <p>a1 a2 a3 a4 a5 a6 a7 a8 a9</p>
+                   </div>
                  </div>
                  HTML
              ]
