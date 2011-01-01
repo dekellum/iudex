@@ -48,10 +48,6 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
     dsf = PoolDataSourceFactory.new
     fcf.data_source = dsf.create
 
-    def fcf.more_feed_update_fields
-      super + [ ContentKeys::TITLE ]
-    end
-
     fcf.filter do |chain|
       # Run twice (assume new the first time, updates the second).
       2.times do

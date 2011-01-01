@@ -9,6 +9,7 @@ bin/iudex-migrate
 config/config.rb
 db/0010_base_urls.rb
 db/0020_add_feed_metadata.rb
+db/0021_more_feed_text.rb
 db/0030_add_priority.rb
 db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
