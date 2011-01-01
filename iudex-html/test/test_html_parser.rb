@@ -117,4 +117,12 @@ HTML
     assert_fragment( HTML_CDATA[ :out ], tree )
   end
 
+  # Neko doesn't ban/reorder blocks in inline elements.
+  def test_inline_nest
+    html = { :in  => "<div><i>begin <p>block</p> end.</i></div>",
+             :out => "<div><i>begin <p>block</p> end.</i></div>" }
+    tree = parseFragment( html[ :in ] )
+    assert_fragment( html[ :out ], tree )
+  end
+
 end

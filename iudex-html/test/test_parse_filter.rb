@@ -25,7 +25,6 @@ class TestParseFilter < MiniTest::Unit::TestCase
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
-  UniMap.define_accessors
 
   def setup
     @filter = html_parse_filter( :title )

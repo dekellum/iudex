@@ -54,6 +54,9 @@ public class ContentKeys
     public static final Key<CharSequence> TITLE =
         create( "title", CharSequence.class );
 
+    public static final Key<CharSequence> EXTRACT =
+        create( "extract", CharSequence.class );
+
     public static final Key<CharSequence> SUMMARY =
         create( "summary", CharSequence.class );
 

@@ -24,13 +24,9 @@ require 'iudex-html'
 class TestOtherFilters < MiniTest::Unit::TestCase
   include HTMLTestHelper
 
-  include Gravitext::HTMap
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
-  include Iudex::Filter::Core
-
-  UniMap.define_accessors
 
   def test_title_extractor
     html = <<HTML
@@ -50,17 +46,6 @@ HTML
     chain = filter_chain( TitleExtractor.new )
     assert( chain.filter( map ) )
     assert_equal( 'Iūdex', map.title.to_s )
-  end
-
-  def content( html, charset = "UTF-8" )
-    map = UniMap.new
-    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
-    map
-  end
-
-  def filter_chain( *filters )
-    filters.unshift( html_parse_filter( :source ) )
-    FilterChain.new( "test", filters )
   end
 
 end
