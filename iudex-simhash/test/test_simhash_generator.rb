@@ -80,18 +80,16 @@ HTML
 
   def filter_chain
     filters = []
-    filters << HTMLParseFilter.new( ContentKeys::SOURCE,
-                                    nil, HTMLKeys::SOURCE_TREE )
+    filters << HTMLParseFilter.new( :source.to_k, nil, :source_tree.to_k )
     filters << TitleExtractor.new
-    filters << TextCtrlWSFilter.new( ContentKeys::TITLE )
+    filters << TextCtrlWSFilter.new( :title.to_k )
 
     tfc = TreeFilterChain.new( [ MetaSkipFilter.new,
                                  CharactersNormalizer.new,
                                  WordCounter.new,
                                  WordyCounter.new ] )
 
-    filters << HTMLTreeFilter.new( HTMLKeys::SOURCE_TREE,
-                                   tfc, Order::DEPTH_FIRST )
+    filters << HTMLTreeFilter.new( :source_tree.to_k, tfc, Order::DEPTH_FIRST )
 
     filters << simhash_generator
 
