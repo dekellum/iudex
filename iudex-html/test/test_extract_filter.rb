@@ -66,6 +66,16 @@ class TestExtractFilter < MiniTest::Unit::TestCase
                    <p>A similarly <i>substantive </i>paragraph.</p>
                  </div>
                  HTML
+               [ <<-'HTML', "A more substantive paragraph." ],
+                 <i>
+                   <p>Short junk</p>
+                   <i>
+                     <hr/>
+                     <p>A more <i>substantive </i>paragraph.</p>
+                   </i>
+                   <p>A similarly <i>substantive </i>paragraph.</p>
+                 </i>
+                 HTML
                [ <<-'HTML', "a1 a2 a3 a4 a5 a6 a7 a8" ],
                  <div>
                    <p>a1 a2 a3</p>
