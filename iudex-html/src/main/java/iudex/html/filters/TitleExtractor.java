@@ -34,7 +34,7 @@ public class TitleExtractor implements Filter, Described
 {
     public TitleExtractor()
     {
-        this( HTMLKeys.CONTENT_TREE, ContentKeys.TITLE );
+        this( HTMLKeys.SOURCE_TREE, ContentKeys.TITLE );
     }
 
     public TitleExtractor( Key<Element> tree, Key<CharSequence> title )

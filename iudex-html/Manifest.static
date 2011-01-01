@@ -9,6 +9,7 @@ build/java_generate.rb
 build/tags
 lib/iudex-html/base.rb
 lib/iudex-html.rb
+lib/iudex-html/factory_helper.rb
 test/html_test_helper.rb
 test/setup.rb
 test/test_characters_normalizer.rb
