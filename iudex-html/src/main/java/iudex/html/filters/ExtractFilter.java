@@ -29,8 +29,6 @@ import iudex.core.ContentKeys;
 import iudex.filter.Described;
 import iudex.filter.Filter;
 import iudex.filter.FilterException;
-import iudex.html.tree.TreeFilter;
-import iudex.html.tree.TreeWalker;
 import static iudex.html.tree.HTMLTreeKeys.*;
 
 import static iudex.html.HTMLTag.*;
@@ -88,90 +86,109 @@ public class ExtractFilter implements Filter, Described
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
-        final Walker walker = new Walker( _minWords );
+        final Extractor extractor = new Extractor( _minWords );
 
         for( Key<Element> treeKey : _treeKeys ) {
             final Element root = content.get( treeKey );
             if( root != null ) {
-                TreeWalker.walkBreadthFirst( walker, root );
-                if( walker.foundWords() > _preferredWords ) break;
+                if( extractor.search( root ) >= _preferredWords ) break;
             }
         }
 
-        content.set( _extractKey, walker.extract() );
+        content.set( _extractKey, extractor.extract() );
 
         return true;
     }
 
-    private final class Walker
-        implements TreeFilter
+    private final class Extractor
     {
         /**
          * Construct given initial minimum words to find.
          */
-        public Walker( int minFindWords )
+        public Extractor( int minFindWords )
         {
             _minFindWords = minFindWords;
         }
 
-        @Override
-        public Action filter( Node node )
+        public int search( Element elem )
         {
-            Action action = Action.CONTINUE;
-
-            // Check each block level element.
-            // FIXME: Skip <pre> blocks?
-
-            final Element elem = node.asElement();
-            if( ( elem != null ) && !isInline( elem ) ) {
-
-                // Optimization: if total word count for this block is less
-                // than minimum, it can be safely skipped.
-                if( elem.get( WORD_COUNT ) < _minFindWords ) {
-                    action = Action.SKIP;
-                }
-                else {
-                    List<Node> children = elem.children();
-
-                    int rangeWords = 0;
-                    int start = 0;
-                    final int end = children.size();
-
-                    for( int i = 0; i < end; ++i ) {
-
-                        Node child = children.get( i );
-
-                        Element celm = child.asElement();
-                        if( ( celm == null ) || isInline( celm ) ) {
-                            rangeWords += child.get( WORD_COUNT );
-                        }
-                        else {
-                            if( rangeWords >= _minFindWords ) {
-                                extractRange( rangeWords, children, start, i );
-                            }
-
-                            rangeWords = 0;
-                            start = i + 1;
-
-                            if( _foundWords >= _preferredWords ) break;
-                        }
-                    }
-
-                    if( rangeWords >= _minFindWords ) {
-                        extractRange( rangeWords, children, start, end );
-                    }
-
-                    if( _foundWords >= _preferredWords ) {
-                        action = Action.TERMINATE;
-                    }
-                }
-            }
-            return action;
+            search( new Range( elem ), elem );
+            return foundWords();
         }
 
         public int foundWords()
         {
-            return _foundWords;
+            return ( _found != null ) ? _found.words() : 0;
+        }
+
+        public CharSequence extract()
+        {
+            return ( _found != null ) ? _found.extract() : null;
+        }
+
+        private void search( Range range, final Element elem )
+        {
+            final List<Node> children = elem.children();
+            final int end = children.size();
+            for( int i = 0; i < end; ++i ) {
+                final Node cnode = children.get( i );
+                final Element celm = cnode.asElement();
+
+                if( celm == null ) { //characters
+                    range.add( cnode );
+                }
+                else if( isInline( celm ) ) {
+                    search( range, celm );
+                }
+                else { //block
+                    if( range.words() >= _minFindWords ) {
+                        _found = range.terminate( celm );
+                        _minFindWords = _found.words() + 1;
+                    }
+                    if( foundWords() >= _preferredWords ) break;
+
+                    // Optimization: if total word count for this block is less
+                    // than minimum, it can be safely skipped.
+                    if( celm.get( WORD_COUNT ) >= _minFindWords ) {
+                        search( new Range( celm ), celm );
+                    }
+
+                    range = new Range( elem, i + 1 );
+                }
+                if( foundWords() >= _preferredWords ) break;
+            }
+
+            if( range.words() >= _minFindWords ) {
+                _found = range.terminate( null );
+                _minFindWords = _found.words() + 1;
+            }
+        }
+
+        private int _minFindWords;
+        private Range _found = null;
+    }
+
+    private static final class Range
+    {
+        public Range( Element elem )
+        {
+            this( elem, 0 );
+        }
+
+        public Range( Element elem, int index )
+        {
+            _start = elem;
+            _startIndex = index;
+        }
+
+        public void add( Node cnode )
+        {
+            _words += cnode.get( WORD_COUNT );
+        }
+
+        public int words()
+        {
+            return _words;
         }
 
         public CharSequence extract()
@@ -179,35 +196,55 @@ public class ExtractFilter implements Filter, Described
             return _extract;
         }
 
-        private void extractRange( final int rangeWords,
-                                   final List<Node> children,
-                                   final int start,
-                                   final int end )
+        public Range terminate( final Element end )
         {
-            CharSequence first = null;
-            ResizableCharBuffer buff = null;
+            _extract = null;
 
-            for( int i = start; i < end; ++i ) {
-                CharSequence cc = children.get( i ).characters();
-                if( cc != null ) {
-                    if( buff != null ) buff.put( cc );
-                    else if( first == null ) first = cc;
-                    else {
-                        buff = new ResizableCharBuffer( first.length() +
-                                                        cc.length() + 32 );
-                        buff.put( first ).put( cc );
+            extractRange( _start, _startIndex, end );
+
+            if( _buff != null ) {
+                _extract = _buff.flipAsCharBuffer();
+                _buff = null;
+            }
+
+            return this;
+        }
+
+        private void extractRange( final Element parent,
+                                   final int start,
+                                   final Element end )
+        {
+            List<Node> children = parent.children();
+            final int cend = children.size();
+            for( int i = start; i < cend; ++i ) {
+                Node cnode = children.get( i );
+
+                Element celm = cnode.asElement();
+                if( celm != null ) {
+                    if( celm == end ) break;
+
+                    extractRange( celm, 0, end );
+                }
+                else {
+                    CharSequence cc = cnode.characters();
+                    if( cc != null ) {
+                        if( _buff != null ) _buff.put( cc );
+                        else if( _extract == null ) _extract = cc;
+                        else {
+                            _buff = new ResizableCharBuffer(
+                                        _extract.length() + cc.length() + 32 );
+                            _buff.put( _extract ).put( cc );
+                        }
                     }
                 }
             }
-
-            _extract = ( buff != null ) ? buff.flipAsCharBuffer() : first;
-
-            _foundWords   = rangeWords;
-            _minFindWords = rangeWords + 1;
         }
 
-        private int _minFindWords;
-        private int _foundWords = 0;
+        private final Element _start;
+        private final int _startIndex;
+
+        private int _words = 0;
+        private ResizableCharBuffer _buff = null;
         private CharSequence _extract = null;
     }
 
