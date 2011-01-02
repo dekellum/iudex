@@ -1,0 +1,20 @@
+package iudex.simhash.service;
+// option java_package = "iudex.simhash.service";
+
+option java_outer_classname = "ProtocolBuffers";
+
+message Request  {
+  required sfixed64 simhash    = 1;
+  enum Action {
+    CHECK_ONLY                   = 0;
+    ADD                          = 1;
+    // ADD_IF_NO_MATCH              = 2;
+    // REMOVE                       = 3;
+  }
+  optional Action action       = 2 [ default = CHECK_ONLY ];
+}
+
+message Response {
+  required sfixed64 simhash    = 1;
+  repeated sfixed64 matches    = 2;
+}

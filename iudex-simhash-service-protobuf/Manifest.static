@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-simhash-service-protobuf/base.rb
+lib/iudex-simhash-service-protobuf.rb
+proto/simhash.proto
+test/test_protobuf.rb
