@@ -1,5 +1,8 @@
+#!/usr/bin/env jruby
+#.hashdot.profile += jruby-shortlived
+
 #--
-# Copyright (c) 2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -14,16 +17,16 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-simhash-service-protobuf/base.rb'
+require 'minitest/unit'
+require 'minitest/autorun'
 
-require 'java'
+require 'iudex-brutefuzzy-protobuf'
 
-module Iudex
-  module SimHashService
-    module Protobuf
+class TestProtobuf < MiniTest::Unit::TestCase
+  include Iudex::Brutefuzzy::Protobuf
 
-    require "iudex-simhash-service-protobuf/iudex-simhash-service-protobuf-#{VERSION}.jar"
-
-    end
+  def test_load
+    assert( true )
   end
+
 end

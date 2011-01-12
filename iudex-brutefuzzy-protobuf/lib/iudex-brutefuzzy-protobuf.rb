@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 David Kellum
+# Copyright (c) 2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -14,10 +14,16 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-brutefuzzy-protobuf/base.rb'
+
+require 'java'
+
 module Iudex
-  module SimHashService
+  module Brutefuzzy
     module Protobuf
-      VERSION = '1.0.0'
+
+    require "iudex-brutefuzzy-protobuf/iudex-brutefuzzy-protobuf-#{VERSION}.jar"
+
     end
   end
 end

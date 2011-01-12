@@ -1,12 +1,12 @@
-= iudex-simhash-service-protobuf
+= iudex-brutefuzzy-protobuf
 
 * http://github.com/dekellum/iudex
 
 == Description
 
 Iudex is a general purpose web crawler and feed processor in
-ruby/java. The iudex-simhash-service-protobuf gem contains the
-protocol buffer generated java classes for the iudex-simhash-service.
+ruby/java. The iudex-brutefuzzy-protobuf gem contains the protocol
+buffer generated java classes for the iudex-brutefuzzy-service.
 
 == Dependencies
 
@@ -18,7 +18,7 @@ For tests:
 
 == License
 
-Copyright (c) 2010 David Kellum
+Copyright (c) 2011 David Kellum
 
 Licensed under the Apache License, Version 2.0 (the "License"); you
 may not use this file except in compliance with the License.  You
