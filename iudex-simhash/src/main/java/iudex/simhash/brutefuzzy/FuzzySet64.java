@@ -16,10 +16,10 @@
 
 package iudex.simhash.brutefuzzy;
 
+import java.util.Collection;
+
 /**
- * Interface for a set-like container of 64-bit keys, with the
- * constraint that no two keys have bit difference (aka Hamming
- * distance) less than some threshold number of bits.
+ * Interface for a set-like container of 64-bit keys.
  */
 public interface FuzzySet64
 {
@@ -28,4 +28,20 @@ public interface FuzzySet64
      * @return true if the key was added (no matching key in set already).
      */
     boolean add( final long key );
+
+    /**
+     * Find all hamming-distance matches from the specified key.
+     * @param key to find
+     * @param matches to which all existing matching keys are added
+     * @return true if an exact match was found.
+     */
+    boolean findAll( final long key, Collection<Long> matches );
+
+    /**
+     * Find all existing hamming-distance matches and add the current key.
+     * @param key to find and add
+     * @param matches to which all existing matching keys are added
+     * @return true if an exact match was found.
+     */
+    boolean addFindAll( final long key, Collection<Long> matches );
 }

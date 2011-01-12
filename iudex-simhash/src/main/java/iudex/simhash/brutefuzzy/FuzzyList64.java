@@ -16,6 +16,8 @@
 
 package iudex.simhash.brutefuzzy;
 
+import java.util.Collection;
+
 /**
  * A brute force array scan implementation of FuzzySet64.
  */
@@ -45,6 +47,27 @@ public final class FuzzyList64
             if ( fuzzyMatch( set[i], key ) ) return true;
         }
         return false;
+    }
+
+    public boolean findAll( final long key, final Collection<Long> matches )
+    {
+        boolean exactMatch = false;
+        final int end = _length;
+        final long[] set = _set;
+        for( int i = 0; i < end; ++i ) {
+            if ( fuzzyMatch( set[i], key ) ) {
+                matches.add( set[i] );
+                if( set[i] == key ) exactMatch = true;
+            }
+        }
+        return exactMatch;
+    }
+
+    public boolean addFindAll( long key, Collection<Long> matches )
+    {
+        boolean exactMatch = findAll( key, matches );
+        if( ! exactMatch ) store( key );
+        return exactMatch;
     }
 
     public boolean fuzzyMatch( final long a, final long b )

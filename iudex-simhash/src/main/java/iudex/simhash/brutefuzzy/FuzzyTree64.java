@@ -16,6 +16,8 @@
 
 package iudex.simhash.brutefuzzy;
 
+import java.util.Collection;
+
 /**
  * A custom search tree implementation of FuzzySet64. The tree
  * exploits the property that, if given some threshold bits T, if we
@@ -74,6 +76,47 @@ public final class FuzzyTree64
         }
 
         return true;
+    }
+
+    public boolean findAll( final long key, Collection<Long> matches )
+    {
+        long skey = key;
+        boolean exactMatch = false;
+
+        // Find all matches within each segment
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list != null ) {
+                if( list.findAll( key, matches ) ) exactMatch = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return exactMatch;
+    }
+
+    public boolean addFindAll( final long key, Collection<Long> matches )
+    {
+        long skey = key;
+        boolean exactMatch = false;
+
+        // Search for matches and add new key to each segment
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list == null ) {
+                list = new FuzzyList64( _listCap, _thresholdBits );
+                list.store( key );
+                _tree[s][ seg ] = list;
+            }
+            else {
+                if( list.addFindAll( key, matches ) ) exactMatch = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return exactMatch;
     }
 
     private int segmentBits( int thresholdBits, int maxBits )
