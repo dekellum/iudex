@@ -99,6 +99,45 @@ class TestFuzzySet < MiniTest::Unit::TestCase
     s.each { |k| assert( fset.add( hex( k ) ), k ) }
   end
 
+  def test_find_series_list
+    assert_find_series( FuzzyList64 )
+  end
+
+  def test_find_series_tree
+    assert_find_series( FuzzyTree64 )
+  end
+
+  def assert_find_series( fclz )
+    TEST_SERIES.each do |s|
+      assert_find_series_last( fclz.new( 5, 3 ), s )
+      assert_find_series_all(  fclz.new( 5, 2 ), s )
+    end
+  end
+
+  def assert_find_series_last( fset, s )
+    s = s.dup
+    last = s.pop # Remove last for now
+    assert_find_series_all( fset, s )
+    l = Java::java.util.ArrayList.new;
+    assert( ! fset.addFindAll( hex( last ), l ) )
+    assert( l.size(), 1 );
+
+    # Remove the match and try again.
+    assert( fset.remove( l.get( 0 ) ), "remove match" )
+    assert( fset.remove( hex( last ) ), "remove last" )
+    l.clear
+    assert( ! fset.addFindAll( hex( last ), l ) )
+    assert( l.empty? )
+  end
+
+  def assert_find_series_all( fset, s )
+    s.each do |k|
+      l = Java::java.util.ArrayList.new;
+      assert( ! fset.addFindAll( hex( k ), l ) )
+      assert( l.empty? )
+    end
+  end
+
   def hex( h )
     BruteFuzzy::unsignedHexToLong( h.gsub( /_/, '' ) )
   end
