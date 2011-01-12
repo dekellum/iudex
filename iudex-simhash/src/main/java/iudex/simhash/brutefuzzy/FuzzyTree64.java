@@ -86,7 +86,7 @@ public final class FuzzyTree64
 
     private FuzzyList64[][] setupIndex()
     {
-        FuzzyList64[][] index = new FuzzyList64[_segments][256];
+        FuzzyList64[][] index = new FuzzyList64[_segments][];
         for( int s = 0; s < _segments; ++s ) {
             index[s] = new FuzzyList64[ 1 << _segmentBits ];
         }
