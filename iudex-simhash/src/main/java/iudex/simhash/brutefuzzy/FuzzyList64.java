@@ -70,6 +70,24 @@ public final class FuzzyList64
         return exactMatch;
     }
 
+    public boolean remove( final long key )
+    {
+        boolean found = false;
+        final int end = _length;
+        final long[] set = _set;
+        for( int i = 0; i < end; ++i ) {
+            if ( set[i] == key ) {
+                if( _length - i - 1 > 0 ) {
+                    System.arraycopy( _set, i + 1, _set, i, _length - i - 1 );
+                }
+                --_length;
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
     public boolean fuzzyMatch( final long a, final long b )
     {
         final long xor = a ^ b;

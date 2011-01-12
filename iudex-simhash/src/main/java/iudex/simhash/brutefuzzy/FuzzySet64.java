@@ -44,4 +44,11 @@ public interface FuzzySet64
      * @return true if an exact match was found.
      */
     boolean addFindAll( final long key, Collection<Long> matches );
+
+    /**
+     * Remove the specified (exact) key if present.
+     * @param key to remove
+     * @return true if the specified key was found and removed.
+     */
+    boolean remove( final long key );
 }

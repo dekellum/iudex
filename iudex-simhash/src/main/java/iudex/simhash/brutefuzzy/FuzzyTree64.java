@@ -119,6 +119,24 @@ public final class FuzzyTree64
         return exactMatch;
     }
 
+    public boolean remove( final long key )
+    {
+        long skey = key;
+        boolean found = false;
+
+        // Find all matches within each segment
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list != null ) {
+                if( list.remove( key ) ) found = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return found;
+    }
+
     private int segmentBits( int thresholdBits, int maxBits )
     {
         for( int l : SEG_BIT_LENGTHS ) {
