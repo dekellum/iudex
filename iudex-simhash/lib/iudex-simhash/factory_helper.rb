@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-simhash'
+require 'iudex-filter/key_helper'
 
 module Iudex
   module SimHash
@@ -40,6 +41,7 @@ module Iudex
                                stopwords = simhash_stopwords )
 
           inputs = send( input ).map { |r| r.to_a }.map do | key, ratio |
+            key = key.to_k
             i = if( key.value_type == Element.java_class )
                   SimHashGenerator::Input.forTree( key )
                 else
@@ -53,8 +55,8 @@ module Iudex
         end
 
         def simhash_generator_inputs
-          [ [ ContentKeys::TITLE ],
-            [ HTMLKeys::CONTENT_TREE, 0.30 ] ]
+          [ [ :title ],
+            [ :source_tree, 0.30 ] ]
         end
 
       end

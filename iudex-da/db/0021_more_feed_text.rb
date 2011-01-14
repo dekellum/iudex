@@ -14,15 +14,16 @@
 # permissions and limitations under the License.
 #++
 
-class AddPriority < ActiveRecord::Migration
+class MoreFeedText < ActiveRecord::Migration
 
   def self.up
-    add_column( 'urls',  'priority', 'real', :null => false, :default => 0.0 )
-    # Prioritization of next visit, range -INF,+INF
+    add_column( 'urls', 'summary', :text )
+    add_column( 'urls', 'content', :text )
   end
 
   def self.down
-    remove_column( 'urls', 'priority' )
+    remove_column( 'urls', 'summary' )
+    remove_column( 'urls', 'content' )
   end
 
 end

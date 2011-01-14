@@ -38,9 +38,9 @@ class TestRome < MiniTest::Unit::TestCase
     map = UniMap.new
 
     rss_bytes = ByteBuffer.wrap( File.read( SIMPLE_RSS ).to_java_bytes )
-    content = ContentSource.new( rss_bytes )
-    content.default_encoding = Charsets::UTF_8
-    map.content = content
+    source = ContentSource.new( rss_bytes )
+    source.default_encoding = Charsets::UTF_8
+    map.source = source
 
     parser.filter( map )
 

@@ -19,33 +19,33 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
+
 require 'iudex-html'
 
-class TestOtherFilters < MiniTest::Unit::TestCase
+RJack::Logback.config_console( :stderr => true, :level => RJack::Logback::WARN  )
+
+require 'iudex-html/factory_helper'
+
+require 'iudex-filter/filter_chain_factory'
+
+class TestFactoryHelper < MiniTest::Unit::TestCase
   include HTMLTestHelper
 
-  include Iudex::Core
-  include Iudex::HTML
-  include Iudex::HTML::Filters
+  class TestFilterChainFactory < Iudex::Filter::Core::FilterChainFactory
+    include Iudex::HTML::Filters::FactoryHelper
 
-  def test_title_extractor
-    html = <<HTML
-<html>
- <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>I&#363;dex</title>
-  <style>style</style>
- </head>
- <body>
-  <p>Iūdex test.</p>
- </body>
-</html>
-HTML
+    def filters
+     [ html_clean_filters( :title, :title_tree ), # _tree optional arg
+       html_clean_filters( :summary ),            # implied :summary_tree
+        html_write_filter( :summary ) ].flatten
+    end
+  end
 
-    map = content( html )
-    chain = filter_chain( TitleExtractor.new )
-    assert( chain.filter( map ) )
-    assert_equal( 'Iūdex', map.title.to_s )
+  def test
+    fcf = TestFilterChainFactory.new( "test" )
+    fcf.open
+    assert( fcf.open? )
+    fcf.close
   end
 
 end

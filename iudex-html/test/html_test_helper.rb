@@ -15,8 +15,17 @@
 #++
 
 require 'iudex-html'
+require 'iudex-html/factory_helper'
+
+require 'iudex-filter/key_helper'
 
 module HTMLTestHelper
+
+  include Gravitext::HTMap
+  UniMap.define_accessors
+
+  include Iudex::Filter::Core
+  include Iudex::HTML::Filters::FactoryHelper
 
   import 'com.gravitext.xml.tree.TreeUtils'
   import 'com.gravitext.xml.producer.Indentor'
@@ -73,4 +82,19 @@ module HTMLTestHelper
   def compress( html )
     html.gsub( /\n\s*/, '' )
   end
+
+  def filter_chain( filters, mode = :whole )
+    pf = html_parse_filter( :source )
+    pf.parse_as_fragment = true if mode == :fragment
+    filters = Array( filters )
+    filters.unshift( pf )
+    FilterChain.new( "test", filters )
+  end
+
+  def content( html, charset = "UTF-8" )
+    map = UniMap.new
+    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map
+  end
+
 end

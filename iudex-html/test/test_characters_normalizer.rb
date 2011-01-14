@@ -26,11 +26,7 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
   include Iudex::HTML::Filters
   include Iudex::HTML::Tree
   include Iudex::HTML::Tree::Filters
-  include Gravitext::HTMap
   include Iudex::Core
-  include Iudex::Filter::Core
-
-  UniMap.define_accessors
 
   Order = HTMLTreeFilter::Order
 
@@ -75,25 +71,11 @@ class TestCharactersNormalizer < MiniTest::Unit::TestCase
     [ Order::BREADTH_FIRST, Order::DEPTH_FIRST ].each do |order|
       map = content( html[ :in ] )
       tfc = TreeFilterChain.new( [ CharactersNormalizer.new ] )
-      tf = HTMLTreeFilter.new( HTMLKeys::CONTENT_TREE, tfc, order )
-      chain = filter_chain( tf  )
+      tf = HTMLTreeFilter.new( :source_tree.to_k, tfc, order )
+      chain = filter_chain( tf, :fragment )
       assert( chain.filter( map ) )
-      assert_fragment_ws( html[ :out ], inner( map.content_tree ), true )
+      assert_fragment_ws( html[ :out ], inner( map.source_tree ), true )
     end
-  end
-
-  def content( html, charset = "UTF-8" )
-    map = UniMap.new
-    map.content = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
-    map
-  end
-
-  def filter_chain( *filters )
-    pf = HTMLParseFilter.new( ContentKeys::CONTENT,
-                              nil, HTMLKeys::CONTENT_TREE )
-    pf.parse_as_fragment = true
-    filters.unshift( pf )
-    FilterChain.new( "test", filters )
   end
 
 end

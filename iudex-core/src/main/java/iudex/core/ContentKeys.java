@@ -54,11 +54,17 @@ public class ContentKeys
     public static final Key<CharSequence> TITLE =
         create( "title", CharSequence.class );
 
+    public static final Key<CharSequence> EXTRACT =
+        create( "extract", CharSequence.class );
+
     public static final Key<CharSequence> SUMMARY =
         create( "summary", CharSequence.class );
 
-    public static final Key<ContentSource> CONTENT =
-        create( "content", ContentSource.class );
+    public static final Key<CharSequence> CONTENT =
+        create( "content", CharSequence.class );
+
+    public static final Key<ContentSource> SOURCE =
+        create( "source", ContentSource.class );
 
     public static final Key<Date> REF_PUB_DATE =
         create( "ref_pub_date", Date.class );

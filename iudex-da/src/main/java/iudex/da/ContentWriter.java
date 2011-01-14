@@ -67,6 +67,7 @@ public class ContentWriter
     {
         Connection conn = _dataSource.getConnection();
         try {
+            conn.setAutoCommit( false );
             return write( content, conn );
         }
         catch( SQLException orig ) {

@@ -20,14 +20,14 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 class TestParseFilter < MiniTest::Unit::TestCase
+  include HTMLTestHelper
   include Gravitext::HTMap
   include Iudex::Core
   include Iudex::HTML
   include Iudex::HTML::Filters
-  UniMap.define_accessors
 
   def setup
-    @filter = HTMLParseFilter.new( ContentKeys::TITLE, HTMLKeys::TITLE_TREE )
+    @filter = html_parse_filter( :title )
     @filter.min_parse = 0
   end
 

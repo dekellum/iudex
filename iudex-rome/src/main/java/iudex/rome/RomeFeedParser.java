@@ -53,7 +53,7 @@ public class RomeFeedParser implements Filter
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
-        ContentSource src = content.get( CONTENT );
+        ContentSource src = content.get( SOURCE );
         if( src != null ) {
             try {
                 Reader reader = contentReader( src );
@@ -121,7 +121,7 @@ public class RomeFeedParser implements Filter
         List contents = entry.getContents();
         if( ( contents != null ) && ( contents.size() > 0 ) ) {
             SyndContent first = (SyndContent) contents.get( 0 );
-            ref.set( CONTENT, new ContentSource( first.getValue() ) );
+            ref.set( CONTENT, first.getValue() );
             if( contents.size() > 1 ) {
                 _log.info( "Found {} contents (only using first)",
                            contents.size() );

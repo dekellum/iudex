@@ -33,7 +33,7 @@ module Iudex
           @log = RJack::SLF4J[ [ RJack::SLF4J.to_log_name( self.class ),
                                  description ].join('.') ]
 
-          @summery_period = nil
+          @summary_period = nil
           @by_filter_period = nil
 
           @index = nil
