@@ -88,7 +88,7 @@ public class FuzzySetPerfTest implements TestFactory
             final FuzzySet64 set = createSet64( cap );
             int hits = 0;
             for( int i = 0; i < end; ++i ) {
-                if( ! set.add( _testKeys[i] ) ) ++hits;
+                if( ! set.addIfNotFound( _testKeys[i] ) ) ++hits;
             }
             return hits;
         }

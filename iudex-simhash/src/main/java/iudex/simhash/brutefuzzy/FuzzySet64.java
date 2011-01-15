@@ -24,10 +24,10 @@ import java.util.Collection;
 public interface FuzzySet64
 {
     /**
-     * Attempt to add key to set.
-     * @return true if the key was added (no matching key in set already).
+     * Add key if no matching keys are present.
+     * @return true if the key was added.
      */
-    boolean add( final long key );
+    boolean addIfNotFound( final long key );
 
     /**
      * Find all hamming-distance matches from the specified key.

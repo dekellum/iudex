@@ -49,7 +49,7 @@ public final class FuzzyTree64
         _tree = setupIndex();
     }
 
-    public boolean add( final long key )
+    public boolean addIfNotFound( final long key )
     {
         // Use int segs to avoid sign complications with <= 16 bit segments.
         final int[] segs = new int[ _segments ];

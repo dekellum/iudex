@@ -32,7 +32,7 @@ public final class FuzzyList64
         _thresholdBits = thresholdBits;
     }
 
-    public boolean add( final long key )
+    public boolean addIfNotFound( final long key )
     {
         final boolean vacant = ! find( key );
         if( vacant ) store( key );
