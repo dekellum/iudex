@@ -54,7 +54,7 @@ USAGE
       end
       opts.on( "--capacity=N", Integer,
                "Set initial capacity to N (default: length)" ) do |n|
-        options[ :capacity ] = 0
+        options[ :capacity ] = n
       end
 
     end
