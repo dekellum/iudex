@@ -18,6 +18,8 @@
     <module>iudex-httpclient-3</module>
     <module>iudex-da</module>
     <module>iudex-html</module>
+    <module>iudex-brutefuzzy-protobuf</module>
+    <module>iudex-brutefuzzy-service</module>
   </modules>
 
   <dependencyManagement>
