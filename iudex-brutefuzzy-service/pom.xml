@@ -14,11 +14,19 @@
   </parent>
 
   <dependencies>
-     <dependency>
+
+    <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1.1</version>
+      <version>[1.1.1,1.2)</version>
     </dependency>
+
+    <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-brutefuzzy-protobuf</artifactId>
+      <version>[1.0,1.1)</version>
+    </dependency>
+
   </dependencies>
 
   <build>
