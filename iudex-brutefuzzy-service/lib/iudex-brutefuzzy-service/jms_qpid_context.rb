@@ -71,6 +71,7 @@ module Iudex
 
     def close
       @context.close if @context
+      @context = nil
     end
 
     # 3.2. Apache Qpid JNDI Properties for AMQP Messaging

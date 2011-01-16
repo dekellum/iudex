@@ -21,9 +21,7 @@ require 'java'
 module Iudex
   module Brutefuzzy
     module Protobuf
-
-    require "iudex-brutefuzzy-protobuf/iudex-brutefuzzy-protobuf-#{VERSION}.jar"
-
+      require "iudex-brutefuzzy-protobuf/iudex-brutefuzzy-protobuf-#{VERSION}.jar"
     end
   end
 end
