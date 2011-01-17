@@ -16,6 +16,11 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <version>[1.1.1,1.2)</version>
@@ -24,6 +29,12 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-brutefuzzy-protobuf</artifactId>
+      <version>[1.0,1.1)</version>
+    </dependency>
+
+    <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-simhash</artifactId>
       <version>[1.0,1.1)</version>
     </dependency>
 

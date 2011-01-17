@@ -13,27 +13,38 @@ t = RJack::TarPit.new( 'iudex-brutefuzzy-service',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps   += [ [ 'iudex-brutefuzzy-protobuf', '~> 1.0.0' ],
-                      [ 'rjack-jms-spec', '~> 1.1.1' ] ]
+  h.extra_deps   += [ [ 'rjack-slf4j',               '~> 1.6.1' ],
+                      [ 'rjack-logback',             '~> 1.0'   ],
+                      [ 'iudex-core',                '~> 1.0.0' ],
+                      [ 'iudex-simhash',             '~> 1.0.0' ],
+                      [ 'iudex-brutefuzzy-protobuf', '~> 1.0.0' ],
+                      [ 'rjack-jms-spec',            '~> 1.1.1' ],
+                      [ 'rjack-qpid-client',         '~> 0.8.0' ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps << [ 'minitest',       '>= 1.7.1', '< 2.1' ]
+  h.extra_dev_deps << [ 'minitest',         '>= 1.7.1', '< 2.1' ]
+
+  h.rubyforge_name = "iudex"
 end
 
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"
 
-task :check_pom_version do
+task :chk_pom_v do
   t.test_line_match( 'pom.xml', /<version>/, /#{t.version}/ )
 end
-task :check_history_version do
+task :chk_hist_v do
   t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
 end
-task :check_history_date do
+task :chk_init_v do
+  t.test_line_match( 'init/iudex-brutefuzzy-service',
+                     /^gem.+#{t.name}/, /= #{t.version}/ )
+end
+task :chk_hist_date do
   t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
 end
 
-task :gem  => [ :check_pom_version, :check_history_version                      ]
-task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
-task :push => [                                             :check_history_date ]
+task :gem  => [ :chk_pom_v, :chk_hist_v, :chk_init_v                 ]
+task :tag  => [ :chk_pom_v, :chk_hist_v, :chk_init_v, :chk_hist_date ]
+task :push => [                                       :chk_hist_date ]
 
 t.define_tasks

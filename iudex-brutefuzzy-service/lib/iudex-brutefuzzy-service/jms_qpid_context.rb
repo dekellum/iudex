@@ -66,10 +66,12 @@ module Iudex
     end
 
     def lookup_destination( name )
-      @context.lookup( name )
+      context.lookup( name )
     end
 
     def close
+      @con_factory = nil
+
       @context.close if @context
       @context = nil
     end

@@ -16,7 +16,12 @@
 
 package iudex.brutefuzzy.service;
 
+import java.util.TreeSet;
+
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
+import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
+
+import iudex.simhash.brutefuzzy.FuzzySet64;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -25,8 +30,12 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.NamingException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -34,21 +43,25 @@ import iudex.jms.JMSContext;
 
 public class Service implements MessageListener
 {
-    public Service( JMSContext context ) throws JMSException, NamingException
+    public Service( FuzzySet64 fuzzySet, JMSContext context )
+        throws JMSException, NamingException
     {
-        _context = context;
+        _fuzzySet = fuzzySet;
 
-        Connection connection = _context.createConnection();
+        Connection connection = context.createConnection();
 
-        Session session = _context.createSession( connection );
+        _session = context.createSession( connection );
+
+        _producer = _session.createProducer( null ); //destination from request.
 
         Destination requestQueue =
-            _context.lookupDestination( "iudex-brutefuzzy-service" );
+            context.lookupDestination( "iudex-brutefuzzy-request" );
 
-        //FIXME: Useful here? _context.close()
+        context.close();
 
-        MessageConsumer consumer = session.createConsumer( requestQueue );
+        MessageConsumer consumer = _session.createConsumer( requestQueue );
         consumer.setMessageListener( this );
+
         connection.start();
      }
 
@@ -60,21 +73,79 @@ public class Service implements MessageListener
                 BytesMessage bmsg = (BytesMessage) msg;
                 byte[] body = new byte[ (int) bmsg.getBodyLength() ];
                 bmsg.readBytes( body );
-                onRequest( Request.parseFrom( body ) );
+                onRequest( bmsg, Request.parseFrom( body ) );
             }
+            else {
+                _log.error( "Received invalid message type: {}",
+                            msg.getClass().getName() );
+            }
+            msg.acknowledge();
         }
         catch( JMSException x ) {
-            //FIXME:
+            if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
+            else _log.error( "onMessage: {}", x.toString() );
         }
-        catch( InvalidProtocolBufferException e ) {
-            //FIXME:
+        catch( InvalidProtocolBufferException x ) {
+            if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
+            else _log.error( "onMessage: {}", x.toString() );
         }
     }
 
-    private void onRequest( Request parseFrom )
+    private void onRequest( BytesMessage msg, Request request )
+        throws JMSException
     {
-        // TODO Auto-generated method stub
+        _log.debug( "Received request: {}", request );
+
+        final long simhash = request.getSimhash();
+
+        switch( request.getAction() ) {
+        case ADD: {
+            TreeSet<Long> matches = new TreeSet<Long>();
+            _fuzzySet.addFindAll( simhash, matches );
+            sendResponse( msg, simhash, matches );
+            break;
+        }
+
+        case CHECK_ONLY: {
+            TreeSet<Long> matches = new TreeSet<Long>();
+            _fuzzySet.findAll( simhash, matches );
+            sendResponse( msg, simhash, matches );
+            break;
+        }
+
+        case REMOVE:
+            _fuzzySet.remove( simhash );
+            break;
+
+        default:
+            _log.warn( "Dropping unknown request action, number: {}",
+                       request.getAction().getNumber() );
+        }
     }
 
-    private JMSContext _context;
+    private void sendResponse( BytesMessage msg,
+                               long simhash,
+                               TreeSet<Long> matches )
+        throws JMSException
+    {
+        BytesMessage response = _session.createBytesMessage();
+        response.setJMSCorrelationID( msg.getJMSMessageID() );
+
+        Response.Builder builder = Response.newBuilder();
+        builder.setSimhash( simhash );
+        builder.addAllMatches( matches );
+
+        response.writeBytes( builder.build().toByteArray() );
+
+        Destination destination = msg.getJMSReplyTo();
+
+        _producer.send( destination, response );
+
+        _log.debug( "Sent response: {}", response );
+    }
+
+    private final FuzzySet64 _fuzzySet;
+    private final Logger _log = LoggerFactory.getLogger( getClass() );
+    private Session _session = null;
+    private MessageProducer _producer;
 }

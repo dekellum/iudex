@@ -3,8 +3,11 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-brutefuzzy-service-fg
+init/iudex-brutefuzzy-service
 lib/iudex-brutefuzzy-service/base.rb
 lib/iudex-brutefuzzy-service.rb
+lib/iudex-brutefuzzy-service/agent.rb
 lib/iudex-brutefuzzy-service/jms_qpid_context.rb
 test/setup.rb
 test/test_qpid_context.rb

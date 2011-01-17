@@ -25,11 +25,9 @@ class TestQpidContext < MiniTest::Unit::TestCase
   include Iudex
 
   def test_load
-
     ctx = JMSQpidContext.new
-
     assert( ctx.create_connection )
-
+    ctx.close
   end
 
 end
