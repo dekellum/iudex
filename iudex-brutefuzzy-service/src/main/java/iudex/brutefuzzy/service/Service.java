@@ -65,6 +65,8 @@ public class Service implements MessageListener
         connection.start();
      }
 
+    //FIXME: Add open/close methods?
+
     @Override
     public void onMessage( Message msg )
     {

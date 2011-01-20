@@ -16,7 +16,7 @@
 
 require 'iudex-brutefuzzy-protobuf/base.rb'
 
-require 'java'
+require 'rjack-protobuf'
 
 module Iudex
   module Brutefuzzy

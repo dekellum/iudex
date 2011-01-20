@@ -107,20 +107,29 @@ module Iudex
     end
 
     def option_serialize( obj )
-      if obj.is_a?( Symbol )
+      if obj.is_a?( Symbol ) || obj.kind_of?( Integer )
         obj.to_s
       elsif obj.is_a?( String )
         obj.to_s.inspect #quote/escape
       elsif obj.respond_to?( :each_pair ) #Hash
         pairs = obj.map do | key, value |
-          [ key.to_s, option_serialize( value ) ].join( ": " )
+          [ wrap_key( key ), option_serialize( value ) ].join( ": " )
         end
         '{ ' + pairs.join( ', ' ) + ' }'
-      else # Try to map it as an array.
+      else
         values = obj.map do | value |
           option_serialize( value )
         end
         '[ ' + values.join( ', ' ) + ' ]'
+      end
+    end
+
+    def wrap_key( key )
+      k = key.to_s
+      if ( k =~ /^[a-zA-Z_][a-zA-Z0-9_-]*[a-zA-Z0-9_]$/ )
+        k
+      else
+        "'" + k + "'"
       end
     end
 

@@ -1,0 +1,75 @@
+#!/usr/bin/env jruby
+#.hashdot.vm.options += -Xmx1g
+# -*- ruby -*-
+
+#--
+# Copyright (c) 2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+module IudexBinScript
+
+  require 'rubygems'
+  require 'rjack-logback'
+
+  include RJack
+  Logback.config_console( :thread => true )
+
+  require 'iudex-brutefuzzy-service'
+  require 'iudex-brutefuzzy-service/jms_qpid_context'
+
+  include Iudex
+
+  Core::Config.parse_options do |opts|
+    opts.on( "-v", "--version", "Display version" ) do |file|
+      puts "iudex-brutefuzzy-client: #{Brutefuzzy::Service::VERSION}"
+      exit 1
+    end
+    opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
+      Logback[ 'iudex' ].level = Logback::DEBUG
+    end
+  end
+
+  import 'iudex.brutefuzzy.client.Client'
+  import 'iudex.simhash.brutefuzzy.BruteFuzzy'
+
+  def self.run
+
+    ctx = Iudex::JMSQpidContext.new
+
+    ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
+      :assert => :always,
+      :create => :never,
+      :node => {
+        :type => :queue
+      }
+    }
+
+    client = Client.new( ctx )
+    client.open
+
+    tkeys = BruteFuzzy.testKeys( 1_000_000, 3, rand( 999_999_999 ) )
+    tkeys.each do |k|
+      client.check( k, true )
+    end
+
+    client.close
+
+  end
+
+  run
+
+end

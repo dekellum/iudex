@@ -29,11 +29,19 @@ module Iudex::Brutefuzzy::Service
     def run
       ctx = Iudex::JMSQpidContext.new
 
+      # http://apache-qpid-users.2158936.n2.nabble.com/JMS-Dyname-Ring-Queues-td5813023.html
+
       ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
         :assert => :always,
         :create => :always,
         :node => {
-          :type => :queue
+          :type => :queue,
+          'x-declare' => {
+            :arguments => {
+              'qpid.max_size' => 100_000,
+              'qpid.policy_type'=> :reject,
+            }
+          }
         }
       }
 
