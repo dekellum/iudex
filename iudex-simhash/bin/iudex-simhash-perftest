@@ -1,6 +1,6 @@
 #!/usr/bin/env jruby
 # -*- ruby -*-
-#.hashdot.vm.options += -Xmx1G
+#.hashdot.vm.options += -Xmx1g
 # For 64b add: -XX:+UseCompressedOops
 
 #--
