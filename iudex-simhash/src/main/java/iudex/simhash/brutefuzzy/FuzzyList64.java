@@ -27,11 +27,11 @@ public final class FuzzyList64
     public FuzzyList64( int capacity, final int thresholdBits )
     {
         // Use 2, 4, or 8k bytes list segments.
-        // The -8 (*8 = 56 bytes) is for size of this + array overhead
+        // The -8 (*8 = 64 bytes) is for size of this + array overhead
         // (see below) to keep complete segment at page boundary size.
-             if( capacity > ( 1024 * 3 / 2 ) ) capacity = 1024 - 8;
-        else if( capacity > (  512 * 3 / 2 ) ) capacity =  512 - 8;
-        else                                   capacity =  256 - 8;
+             if( capacity > ( ( 1024 - 8 ) * 2 ) ) capacity = 1024 - 8;
+        else if( capacity > ( (  512 - 8 ) * 2 ) ) capacity =  512 - 8;
+        else                                       capacity =  256 - 8;
 
         _set = new long[ capacity ];
         _thresholdBits = thresholdBits;

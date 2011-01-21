@@ -44,7 +44,7 @@ public final class FuzzyTree64
         _mask = ( 1L << _segmentBits ) - 1;
 
         // Initial capacity for leaf nodes
-        _listCap = capacity / ( _segments * ( 1 << _segmentBits ) );
+        _listCap = capacity / ( 1 << _segmentBits );
 
         _tree = setupIndex();
     }
