@@ -124,7 +124,7 @@ public final class FuzzyTree64
         long skey = key;
         boolean found = false;
 
-        // Find all matches within each segment
+        // Remove from all matching segments
         for( int s = 0; s < _segments; ++s ) {
             int seg = (int) ( skey & _mask );
             FuzzyList64 list = _tree[s][ seg ];
