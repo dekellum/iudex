@@ -126,7 +126,7 @@ public final class FuzzyList64
             _set[ _length++ ] = key;
         }
         else {
-            // Start chaining at 2048 total segment size
+            // Start chaining at 1024 total segment size
             if( ( _set.length < ( 128 - 8 ) ) ) {
 
                 long[] snew = new long[ _set.length * 2 + 8 ];
