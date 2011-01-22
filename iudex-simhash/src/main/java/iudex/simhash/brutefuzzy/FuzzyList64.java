@@ -26,14 +26,20 @@ public final class FuzzyList64
 {
     public FuzzyList64( int capacity, final int thresholdBits )
     {
-        // Use 2, 4, or 8k bytes list segments.
+        // Use ... 1, 2, 4, 8k bytes list segments.
         // The -8 (*8 = 64 bytes) is for size of this + array overhead
         // (see below) to keep complete segment at page boundary size.
-             if( capacity > ( ( 1024 - 8 ) * 2 ) ) capacity = 1024 - 8;
-        else if( capacity > ( (  512 - 8 ) * 2 ) ) capacity =  512 - 8;
-        else                                       capacity =  256 - 8;
+             if( capacity > ( ( 1024 - 8 ) *  2  ) ) capacity = 1024 - 8;
+        else if( capacity > ( (  512 - 8 ) *  2  ) ) capacity =  512 - 8;
+        else if( capacity > ( (  256 - 8 ) * 3/2 ) ) capacity =  256 - 8;
+        else if( capacity > ( (  128 - 8 ) * 3/2 ) ) capacity =  128 - 8;
+        else if( capacity > ( (   64 - 8 ) * 3/2 ) ) capacity =   64 - 8;
+        else if( capacity > ( (   32 - 8 ) * 3/2 ) ) capacity =   32 - 8;
+        else capacity = 0;
 
-        _set = new long[ capacity ];
+        if( capacity > 0 ) {
+            _set = new long[ capacity ];
+        }
         _thresholdBits = thresholdBits;
     }
 
@@ -47,8 +53,9 @@ public final class FuzzyList64
     public boolean find( final long key )
     {
         final int end = _length;
+        final long[] set = _set;
         for( int i = 0; i < end; ++i ) {
-            if ( fuzzyMatch( _set[i], key ) ) return true;
+            if ( fuzzyMatch( set[i], key ) ) return true;
         }
         if( _next != null ) return _next.find( key );
         return false;
@@ -58,10 +65,11 @@ public final class FuzzyList64
     {
         boolean exactMatch = false;
         final int end = _length;
+        final long[] set = _set;
         for( int i = 0; i < end; ++i ) {
-            if ( fuzzyMatch( _set[i], key ) ) {
-                matches.add( _set[i] );
-                if( _set[i] == key ) exactMatch = true;
+            if ( fuzzyMatch( set[i], key ) ) {
+                matches.add( set[i] );
+                if( set[i] == key ) exactMatch = true;
             }
         }
         if( _next != null ) {
@@ -82,10 +90,11 @@ public final class FuzzyList64
     {
         boolean found = false;
         final int end = _length;
+        final long[] set = _set;
         for( int i = 0; i < end; ++i ) {
-            if ( _set[i] == key ) {
+            if ( set[i] == key ) {
                 if( _length - i - 1 > 0 ) {
-                    System.arraycopy( _set, i + 1, _set, i, _length - i - 1 );
+                    System.arraycopy( set, i + 1, set, i, _length - i - 1 );
                 }
                 --_length;
                 found = true;
@@ -117,17 +126,29 @@ public final class FuzzyList64
             _set[ _length++ ] = key;
         }
         else {
-            if( _next == null ) {
-                _next = new FuzzyList64( _set.length, _thresholdBits );
+            // Start chaining at 2048 total segment size
+            if( ( _set.length < ( 128 - 8 ) ) ) {
+
+                long[] snew = new long[ _set.length * 2 + 8 ];
+                System.arraycopy( _set, 0, snew, 0, _length );
+                _set = snew;
+
+                _set[ _length++ ] = key;
             }
-            _next.store( key );
+            else {
+                if( _next == null ) {
+                    _next = new FuzzyList64( _set.length, _thresholdBits );
+                }
+                _next.store( key );
+            }
         }
     }
 
     //x86_64 size: (this: 2 * 8 ) + 4 + 8 + 4 + 8 +
     //                            (array: 3*8 ) = 8 * 8 = 64 bytes
     private final int _thresholdBits;
-    private final long[] _set;
+    private static final long[] EMPTY_SET = {};
+    private long[] _set = EMPTY_SET;
     private int _length = 0;
     private FuzzyList64 _next = null;
 }
