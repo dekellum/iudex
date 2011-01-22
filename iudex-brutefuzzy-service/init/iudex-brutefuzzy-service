@@ -3,9 +3,9 @@
 #. hashdot.profile    += daemon
 #. hashdot.pid_file         = ./iudex-brutefuzzy-service.pid
 #. hashdot.io_redirect.file = ./iudex-brutefuzzy-service.log
-#. hashdot.vm.options += -Xmx3g
+#. hashdot.vm.options += -Xmx2g
 #. hashdot.vm.options += -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled
-##. hashdot.vm.options += -XX:+UseCompressedOops
+#. hashdot.vm.options += -XX:+UseCompressedOops
 
 #--
 # Copyright (c) 2011 David Kellum

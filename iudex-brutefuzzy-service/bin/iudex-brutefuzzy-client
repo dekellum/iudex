@@ -52,16 +52,20 @@ module IudexBinScript
     ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
       :assert => :always,
       :create => :never,
-      :node => {
-        :type => :queue
-      }
+      :node   => { :type => :queue }
+    }
+
+    ctx.destinations[ 'iudex-brutefuzzy-response' ] = {
+      :assert => :always,
+      :create => :never,
+      :node => { :type => :queue }
     }
 
     client = Client.new( ctx )
     client.open
 
     cnt = 0
-    100.times do
+    160.times do
       tkeys = BruteFuzzy.testKeys( 100_000, 3, rand( 999_999_999 ) )
       tkeys.each do |k|
         client.check( k, true )

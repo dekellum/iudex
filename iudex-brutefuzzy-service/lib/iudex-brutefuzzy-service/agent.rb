@@ -38,7 +38,21 @@ module Iudex::Brutefuzzy::Service
           :type => :queue,
           'x-declare' => {
             :arguments => {
-              'qpid.max_size' => 100_000,
+              'qpid.max_size'   => 100_000,
+              'qpid.policy_type'=> :reject,
+            }
+          }
+        }
+      }
+
+      ctx.destinations[ 'iudex-brutefuzzy-response' ] = {
+        :assert => :always,
+        :create => :always,
+        :node => {
+          :type => :queue,
+          'x-declare' => {
+            :arguments => {
+              'qpid.max_size'   => 100_000,
               'qpid.policy_type'=> :reject,
             }
           }

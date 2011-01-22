@@ -58,17 +58,16 @@ public class Client
             context.lookupDestination( "iudex-brutefuzzy-request" );
         _producer = _session.createProducer( requestQueue );
 
+        Destination responseQueue =
+            context.lookupDestination( "iudex-brutefuzzy-response" );
+
+        _session.createConsumer( responseQueue ).setMessageListener( this );
+
         context.close();
     }
 
     public void open() throws JMSException
     {
-        if( _createTemporaryResponseQueue ) {
-            //destination for requests
-            _responseQueue = _session.createTemporaryQueue();
-            _session.createConsumer( _responseQueue ).setMessageListener(this);
-        }
-
         _connection.start();
     }
 
@@ -95,10 +94,6 @@ public class Client
         BytesMessage response = _session.createBytesMessage();
         response.writeBytes( bldr.build().toByteArray() );
 
-        if( _responseQueue != null ) {
-            response.setJMSReplyTo( _responseQueue );
-        }
-
         _semaphore.acquire();
 
         _producer.send( response );
@@ -108,7 +103,7 @@ public class Client
     public void onMessage( Message msg )
     {
         try {
-            _semaphore.release();
+            msg.acknowledge();
             if( msg instanceof BytesMessage ) {
                 BytesMessage bmsg = (BytesMessage) msg;
                 byte[] body = new byte[ (int) bmsg.getBodyLength() ];
@@ -121,7 +116,6 @@ public class Client
                 _log.error( "Received invalid message type: {}",
                             msg.getClass().getName() );
             }
-            msg.acknowledge();
         }
         catch( JMSException x ) {
             if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
@@ -131,7 +125,9 @@ public class Client
             if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
             else _log.error( "onMessage: {}", x.toString() );
         }
-
+        finally {
+            _semaphore.release();
+        }
     }
 
     @Override
@@ -149,8 +145,6 @@ public class Client
 
     private Session _session;
     private MessageProducer _producer;
-    private boolean _createTemporaryResponseQueue = true;
-    private Destination _responseQueue = null;
     private Connection _connection = null;
     private Logger _log = LoggerFactory.getLogger( getClass() );
 

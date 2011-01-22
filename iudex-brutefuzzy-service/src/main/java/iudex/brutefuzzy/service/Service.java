@@ -52,10 +52,13 @@ public class Service implements MessageListener
 
         _session = context.createSession( connection );
 
-        _producer = _session.createProducer( null ); //destination from request.
-
         Destination requestQueue =
             context.lookupDestination( "iudex-brutefuzzy-request" );
+
+        Destination responseQueue =
+            context.lookupDestination( "iudex-brutefuzzy-response" );
+
+        _producer = _session.createProducer( responseQueue );
 
         context.close();
 
@@ -139,9 +142,7 @@ public class Service implements MessageListener
 
         response.writeBytes( builder.build().toByteArray() );
 
-        Destination destination = msg.getJMSReplyTo();
-
-        _producer.send( destination, response );
+        _producer.send( response );
 
         _log.debug( "Sent response: {}", response );
     }
