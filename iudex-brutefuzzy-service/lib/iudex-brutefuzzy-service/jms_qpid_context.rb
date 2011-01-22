@@ -24,7 +24,7 @@ module Iudex
     import 'java.util.Properties'
     import 'javax.naming.Context'
     import 'javax.naming.InitialContext'
-    import 'javax.jms.Session';
+    import 'javax.jms.Session'
 
     attr_accessor :username  #Required non-nil
     attr_accessor :password  #Required non-nil
