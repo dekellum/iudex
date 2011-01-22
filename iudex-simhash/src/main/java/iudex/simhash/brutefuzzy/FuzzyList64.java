@@ -35,11 +35,9 @@ public final class FuzzyList64
         else if( capacity > ( (  128 - 8 ) * 3/2 ) ) capacity =  128 - 8;
         else if( capacity > ( (   64 - 8 ) * 3/2 ) ) capacity =   64 - 8;
         else if( capacity > ( (   32 - 8 ) * 3/2 ) ) capacity =   32 - 8;
-        else capacity = 0;
+        else                                         capacity =      8;
 
-        if( capacity > 0 ) {
-            _set = new long[ capacity ];
-        }
+        _set = new long[ capacity ];
         _thresholdBits = thresholdBits;
     }
 
@@ -147,8 +145,7 @@ public final class FuzzyList64
     //x86_64 size: (this: 2 * 8 ) + 4 + 8 + 4 + 8 +
     //                            (array: 3*8 ) = 8 * 8 = 64 bytes
     private final int _thresholdBits;
-    private static final long[] EMPTY_SET = {};
-    private long[] _set = EMPTY_SET;
+    private long[] _set;
     private int _length = 0;
     private FuzzyList64 _next = null;
 }
