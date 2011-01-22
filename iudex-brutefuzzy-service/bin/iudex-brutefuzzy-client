@@ -1,5 +1,4 @@
 #!/usr/bin/env jruby
-#.hashdot.vm.options += -Xmx1g
 # -*- ruby -*-
 
 #--
@@ -61,9 +60,14 @@ module IudexBinScript
     client = Client.new( ctx )
     client.open
 
-    tkeys = BruteFuzzy.testKeys( 1_000_000, 3, rand( 999_999_999 ) )
-    tkeys.each do |k|
-      client.check( k, true )
+    cnt = 0
+    100.times do
+      tkeys = BruteFuzzy.testKeys( 100_000, 3, rand( 999_999_999 ) )
+      tkeys.each do |k|
+        client.check( k, true )
+        cnt += 1
+      end
+      puts "Processed: #{cnt}"
     end
 
     client.close
