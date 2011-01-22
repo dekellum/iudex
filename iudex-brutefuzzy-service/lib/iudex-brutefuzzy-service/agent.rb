@@ -61,7 +61,7 @@ module Iudex::Brutefuzzy::Service
 
       Config.do_jms_context( ctx )
 
-      fuzzy_tree = Iudex::SimHash::BruteFuzzy::FuzzyTree64.new( 500_000, 3 )
+      fuzzy_tree = Iudex::SimHash::BruteFuzzy::FuzzyTree64.new( 500_000, 3, 16 )
 
       Config.do_fuzzy_tree( fuzzy_tree ) #FIXME: pointless
 
