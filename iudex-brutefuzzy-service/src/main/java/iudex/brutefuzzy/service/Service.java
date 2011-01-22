@@ -38,8 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.gravitext.util.Metric;
 
 import iudex.jms.JMSContext;
+import iudex.filter.core.PeriodicNotifier;
 
 public class Service implements MessageListener
 {
@@ -94,6 +96,9 @@ public class Service implements MessageListener
             if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
             else _log.error( "onMessage: {}", x.toString() );
         }
+        finally {
+            _notifier.tick();
+        }
     }
 
     private void onRequest( BytesMessage msg, Request request )
@@ -106,7 +111,8 @@ public class Service implements MessageListener
         switch( request.getAction() ) {
         case ADD: {
             TreeSet<Long> matches = new TreeSet<Long>();
-            _fuzzySet.addFindAll( simhash, matches );
+            if( ! _fuzzySet.addFindAll( simhash, matches ) ) ++_count;
+            _found += matches.size();
             sendResponse( msg, simhash, matches );
             break;
         }
@@ -114,12 +120,13 @@ public class Service implements MessageListener
         case CHECK_ONLY: {
             TreeSet<Long> matches = new TreeSet<Long>();
             _fuzzySet.findAll( simhash, matches );
+            _found += matches.size();
             sendResponse( msg, simhash, matches );
             break;
         }
 
         case REMOVE:
-            _fuzzySet.remove( simhash );
+            if( _fuzzySet.remove( simhash ) ) --_count;
             break;
 
         default:
@@ -147,8 +154,49 @@ public class Service implements MessageListener
         _log.debug( "Sent response: {}", response );
     }
 
+    class Notifier extends PeriodicNotifier
+    {
+        Notifier()
+        {
+            super( 10.0d ); //seconds
+        }
+
+        @Override
+        protected void notify( long total, long tDelta, long duration )
+        {
+            long cDelta = _count - _lastCount;
+            long fDelta = _found - _lastFound;
+
+            double tRate = ( (double) tDelta ) / duration * 1e9d;
+            double cRate = ( (double) cDelta ) / duration * 1e9d;
+            double fRate = ( (double) fDelta ) / duration * 1e9d;
+
+            double cRatio = ( (double) _count ) / total * 100.0d;
+
+            _lastFound = _found;
+            _lastCount = _count;
+
+            _log.info( String.format(
+                "Q: %s %s/s C: %s %3.0f%% %s/s F: %s %s/s ",
+                Metric.format( total ),
+                Metric.format( tRate ),
+                Metric.format( _count ),
+                cRatio,
+                Metric.format( cRate ),
+                Metric.format( _found ),
+                Metric.format( fRate ) ) );
+        }
+    }
+
     private final FuzzySet64 _fuzzySet;
     private final Logger _log = LoggerFactory.getLogger( getClass() );
     private Session _session = null;
     private MessageProducer _producer;
+
+    private final Notifier _notifier = new Notifier();
+    private long _count = 0;
+    private long _lastCount = 0;
+    private long _found = 0;
+    private long _lastFound = 0;
+
 }
