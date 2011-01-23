@@ -16,6 +16,7 @@
 
 require 'iudex-brutefuzzy-service'
 require 'iudex-brutefuzzy-service/jms_qpid_context'
+require 'iudex-brutefuzzy-service/destinations'
 
 module Iudex::Brutefuzzy::Service
 
@@ -29,35 +30,7 @@ module Iudex::Brutefuzzy::Service
     def run
       ctx = Iudex::JMSQpidContext.new
 
-      # http://apache-qpid-users.2158936.n2.nabble.com/JMS-Dyname-Ring-Queues-td5813023.html
-
-      ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
-        :assert => :always,
-        :create => :always,
-        :node => {
-          :type => :queue,
-          'x-declare' => {
-            :arguments => {
-              'qpid.max_size'   => 100_000,
-              'qpid.policy_type'=> :reject,
-            }
-          }
-        }
-      }
-
-      ctx.destinations[ 'iudex-brutefuzzy-response' ] = {
-        :assert => :always,
-        :create => :always,
-        :node => {
-          :type => :queue,
-          'x-declare' => {
-            :arguments => {
-              'qpid.max_size'   => 100_000,
-              'qpid.policy_type'=> :reject,
-            }
-          }
-        }
-      }
+      Destinations.apply( ctx )
 
       Config.do_jms_context( ctx )
 

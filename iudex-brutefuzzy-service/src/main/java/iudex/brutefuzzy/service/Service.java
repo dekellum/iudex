@@ -57,10 +57,10 @@ public class Service implements MessageListener
         Destination requestQueue =
             context.lookupDestination( "iudex-brutefuzzy-request" );
 
-        Destination responseQueue =
+        Destination responseDest =
             context.lookupDestination( "iudex-brutefuzzy-response" );
 
-        _producer = _session.createProducer( responseQueue );
+        _producer = _session.createProducer( responseDest );
 
         context.close();
 

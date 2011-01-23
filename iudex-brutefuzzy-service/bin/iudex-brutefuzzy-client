@@ -29,6 +29,7 @@ module IudexBinScript
 
   require 'iudex-brutefuzzy-service'
   require 'iudex-brutefuzzy-service/jms_qpid_context'
+  require 'iudex-brutefuzzy-service/destinations'
 
   include Iudex
 
@@ -49,17 +50,7 @@ module IudexBinScript
 
     ctx = Iudex::JMSQpidContext.new
 
-    ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
-      :assert => :always,
-      :create => :never,
-      :node   => { :type => :queue }
-    }
-
-    ctx.destinations[ 'iudex-brutefuzzy-response' ] = {
-      :assert => :always,
-      :create => :never,
-      :node => { :type => :queue }
-    }
+    Brutefuzzy::Service::Destinations.apply( ctx )
 
     client = Client.new( ctx )
     client.open

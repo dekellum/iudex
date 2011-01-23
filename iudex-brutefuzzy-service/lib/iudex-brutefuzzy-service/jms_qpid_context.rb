@@ -159,5 +159,13 @@ module Iudex
       l.join( ';' )
     end
 
+    # Appends Socket.gethostname and the current Process.pid to the
+    # specified prefix to create a (transient) unique address name
+    def address_per_process( prefix )
+      [ prefix,
+        Socket.gethostname.to_s.split( '.' ).first,
+        Process.pid.to_s ].compact.join( '-' )
+    end
+
   end
 end

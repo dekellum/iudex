@@ -59,7 +59,7 @@ public class Client
         _producer = _session.createProducer( requestQueue );
 
         Destination responseQueue =
-            context.lookupDestination( "iudex-brutefuzzy-response" );
+            context.lookupDestination( "iudex-brutefuzzy-listener" );
 
         _session.createConsumer( responseQueue ).setMessageListener( this );
 
