@@ -15,9 +15,18 @@
 #++
 
 require 'rjack-qpid-client'
+require 'socket'
+require 'rjack-slf4j'
 
 module Iudex
 
+  # Implementation of Java::JMSContext for Qpid, using the
+  # {Qpid JNDI Properties}[http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch03s02.html]
+  # syntax. Provides scripted setup and a factory for JMS Connection,
+  # Session, and Destinations (including full AMQP queue and exchange
+  # creation) via Qpid
+  # {Addresses}[http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch02s04.html]
+  # created from ruby.
   class JMSQpidContext
     include Java::iudex.jms.JMSContext
 
@@ -26,19 +35,46 @@ module Iudex
     import 'javax.naming.InitialContext'
     import 'javax.jms.Session'
 
-    attr_accessor :username  #Required non-nil
-    attr_accessor :password  #Required non-nil
+    # User to connect with (required, often unused by broker,
+    # default: 'qpid')
+    attr_accessor :username
+
+    # Password to connect with (required, often unused by broker.)
+    attr_accessor :password
+
+    # Array of [ host[,port] ] arrays to brokers (default: [['localhost']] )
+    # Default port is 5672.
     attr_accessor :brokers
+
+    # Connection 'virtualhost' (default: 'default-vhost')
+    # See JNDI Properties, 3.2.2 Connection URLs
     attr_accessor :virtual_host
+
+    # Connection 'clientid' (default: 'default-clieint')
+    # See JNDI Properties, 3.2.2 Connection URLs
     attr_accessor :client_id
+
+    # Connection factory, JNDI name (default: 'local')
     attr_accessor :factory_jndi_name
+
+    # Acknowledge Mode specified on create_session
+    # (default: javax.jms.Session::AUTO_ACKNOWLEDGE).
     attr_accessor :session_acknowledge_mode
+
+    # Hash of destination JNDI name to an 'address; options' Hash.
+    # The option hash may use ruby Symbol or String keys, and
+    # true, false, Symbol, String, Hash, or Array values. This will be
+    # serialized into the Qpid
+    # {Addresses}[http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch02s04.html]
+    # Syntax. The special keys :address (default: same as JNDI name)
+    # and :subject (optional address/subject) are also supported when
+    # serializing. (Default: empty)
     attr_accessor :destinations
 
     def initialize
       @username = 'qpid'
-      @password = 'password'
-      @brokers = [ [ "localhost" ] ]
+      @password = 'pswd'
+      @brokers = [ [ 'localhost' ] ]
 
       @virtual_host = 'default-vhost'
       @client_id    = 'default-client'
@@ -47,28 +83,54 @@ module Iudex
 
       @session_acknowledge_mode = Session::AUTO_ACKNOWLEDGE
       @destinations = {}
+      @log = RJack::SLF4J[ self.class ]
     end
 
+    # The JNDI InitialContext, created on first call, from properties.
     def context
       @context ||= InitialContext.new( properties )
     end
 
+    # The javax.jms.ConnectionFactory, created on first call, by lookup
+    # of factory_jndi_name from context.
+    #
+    # Throws javax.naming.NamingException
     def connection_factory
       @con_factory ||= context.lookup( factory_jndi_name )
     end
 
+    # Creates a new
+    # {javax.jms.Connection}[http://download.oracle.com/javaee/5/api/javax/jms/Connection.html]
+    # from the connection_factory. Caller should close this connection when done with it.
+    #
+    # Throws javax.jms.JMSException, javax.naming.NamingException
     def create_connection
       connection_factory.create_connection
     end
 
+    # Create a
+    # {javax.jms.Session}[http://download.oracle.com/javaee/5/api/javax/jms/Session.html]
+    # from the connection previously obtained via create_connection.
+    #
+    # Throws javax.jms.JMSException
     def create_session( connection )
       connection.create_session( false, session_acknowledge_mode )
     end
 
+    # Lookup (and thus create) a
+    # {javax.jms.Destination}[http://download.oracle.com/javaee/5/api/javax/jms/Destination.html]
+    # by JNDI name as key into destination.  The name and full address
+    # specification is logged at this point.
+    #
+    # Throws javax.naming.NamingException
     def lookup_destination( name )
+      @log.info( "Lookup of destinations[ '%s' ] =\n    %s" %
+                 [ name,
+                   address_serialize( name, @destinations[ name ] ) ] )
       context.lookup( name )
     end
 
+    # Close the JNDI context (no more lookups may be made.)
     def close
       @con_factory = nil
 
@@ -76,8 +138,7 @@ module Iudex
       @context = nil
     end
 
-    # 3.2. Apache Qpid JNDI Properties for AMQP Messaging
-    # http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch03s02.html
+    # Qpid JNDI Properties including connection_url and destinations.
     def properties
       props = Properties.new
 
@@ -87,43 +148,49 @@ module Iudex
       props.put( [ "connectionfactory", factory_jndi_name ].join( '.' ),
                  connection_url )
 
-      @destinations.each_pair do |name,opts|
-        opts = opts.dup
-        subject = opts.delete( :subject )
+      destinations.each_pair do |name,opts|
         props.put( [ "destination", name ].join( '.' ),
-                   address_serialize( name, subject, opts ) )
+                   address_serialize( name, opts ) )
       end
 
       props
     end
 
-    # Serialize destination addresses (new format)
-    # http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch02s04.html
-    # Reference: section 2.3.4.5
-    def address_serialize( address, subject = nil, opts = nil )
-      out = address.to_s
+    # Serialize destination
+    # {Addresses}[http://qpid.apache.org/books/0.8/Programming-In-Apache-Qpid/html/ch02s04.html]
+    # (new format). Reference: section 2.4.3.5
+    def address_serialize( name, opts = nil )
+      opts = opts.dup
+      out = ( opts.delete( :address ) || name ).to_s
+      subject = opts.delete( :subject )
       out += '/' + subject.to_s if subject
       out += '; ' + option_serialize( opts ) if opts
     end
 
-    def option_serialize( obj )
-      if obj.is_a?( Symbol ) || obj.kind_of?( Integer )
-        obj.to_s
-      elsif obj.is_a?( String )
-        obj.to_s.inspect #quote/escape
-      elsif obj.respond_to?( :each_pair ) #Hash
-        pairs = obj.map do | key, value |
+    # Serialize addresses options Hash
+    def option_serialize( val )
+      case( val )
+      when TrueClass, FalseClass, Symbol, Integer
+        val.to_s
+      when String
+        val.to_s.inspect #quote/escape
+      when Hash
+        pairs = val.map do | key, value |
           [ wrap_key( key ), option_serialize( value ) ].join( ": " )
         end
         '{ ' + pairs.join( ', ' ) + ' }'
-      else
-        values = obj.map do | value |
+      when Array
+        values = val.map do | value |
           option_serialize( value )
         end
         '[ ' + values.join( ', ' ) + ' ]'
+      else
+        raise "Unknown option value class: " + val.class.to_s
       end
     end
 
+    # Quote keys that require it based on Qpid address scheme (most
+    # commonly, those with '.' in them).
     def wrap_key( key )
       k = key.to_s
       if ( k =~ /^[a-zA-Z_][a-zA-Z0-9_-]*[a-zA-Z0-9_]$/ )
@@ -133,6 +200,8 @@ module Iudex
       end
     end
 
+    # The AMQP specific Connection URL as defined in Qpid JNDI
+    # Properities.
     def connection_url
       url = "amqp://"
 
@@ -151,6 +220,7 @@ module Iudex
       url
     end
 
+    # Broker list Connection URL parameter value from input brokers.
     def broker_list
       l = brokers.map do | host, port |
         'tcp://%s:%s' % [ host, port || 5672 ]
