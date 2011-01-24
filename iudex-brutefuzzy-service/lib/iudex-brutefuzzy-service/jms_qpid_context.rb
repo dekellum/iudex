@@ -30,7 +30,6 @@ module Iudex
   class JMSQpidContext
     include Java::iudex.jms.JMSContext
 
-    import 'java.util.Properties'
     import 'javax.naming.Context'
     import 'javax.naming.InitialContext'
     import 'javax.jms.Session'
@@ -140,17 +139,17 @@ module Iudex
 
     # Qpid JNDI Properties including connection_url and destinations.
     def properties
-      props = Properties.new
+      props = Java::java.util.Hashtable.new
 
-      props.put( Context.INITIAL_CONTEXT_FACTORY,
-                 "org.apache.qpid.jndi.PropertiesFileInitialContextFactory" )
+      props[ Context::INITIAL_CONTEXT_FACTORY ] =
+        "org.apache.qpid.jndi.PropertiesFileInitialContextFactory"
 
-      props.put( [ "connectionfactory", factory_jndi_name ].join( '.' ),
-                 connection_url )
+      props[ [ "connectionfactory", factory_jndi_name ].join( '.' ) ] =
+        connection_url
 
       destinations.each_pair do |name,opts|
-        props.put( [ "destination", name ].join( '.' ),
-                   address_serialize( name, opts ) )
+        props[ [ "destination", name ].join( '.' ) ] =
+          address_serialize( name, opts )
       end
 
       props
