@@ -129,7 +129,7 @@ public class WorkPoller extends GenericWorkPollStrategy
     "                     FROM ( SELECT %s " +
     "                            FROM urls " +
     "                            WHERE next_visit_after <= now() " +
-    "                            ORDER BY priority DESC " +
+    "                            ORDER BY priority DESC, next_visit_after DESC " +
     "                            LIMIT ? " +
     "                          ) AS subP " +
     "                   ) AS subH " +
