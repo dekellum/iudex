@@ -10,6 +10,5 @@ lib/iudex-brutefuzzy-service/base.rb
 lib/iudex-brutefuzzy-service.rb
 lib/iudex-brutefuzzy-service/agent.rb
 lib/iudex-brutefuzzy-service/destinations.rb
-lib/iudex-brutefuzzy-service/jms_qpid_context.rb
 test/setup.rb
 test/test_qpid_context.rb

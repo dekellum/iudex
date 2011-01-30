@@ -16,7 +16,7 @@
 
 require 'iudex-brutefuzzy-service/base.rb'
 
-require 'rjack-jms-spec'
+require 'rjack-qpid-client'
 require 'iudex-core'
 require 'iudex-simhash'
 require 'iudex-brutefuzzy-protobuf'
@@ -57,5 +57,4 @@ module Iudex
   end
 end
 
-require 'iudex-brutefuzzy-service/jms_qpid_context'
 require 'iudex-brutefuzzy-service/agent'

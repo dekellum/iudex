@@ -15,7 +15,6 @@
 #++
 
 require 'iudex-brutefuzzy-service'
-require 'iudex-brutefuzzy-service/jms_qpid_context'
 require 'iudex-brutefuzzy-service/destinations'
 
 module Iudex::Brutefuzzy::Service
@@ -24,11 +23,13 @@ module Iudex::Brutefuzzy::Service
     include Iudex::Core
     include Iudex::Brutefuzzy
 
+    include RJack::QpidClient
+
     def initialize
     end
 
     def run
-      ctx = Iudex::JMSQpidContext.new
+      ctx = QpidJMSContext.new
 
       Destinations.apply( ctx )
 

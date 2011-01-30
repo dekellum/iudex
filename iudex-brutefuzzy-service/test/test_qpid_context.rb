@@ -20,14 +20,23 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-brutefuzzy-service'
+require 'iudex-brutefuzzy-service/destinations'
 
 class TestQpidContext < MiniTest::Unit::TestCase
-  include Iudex
+  include RJack::QpidClient
+  include Iudex::Brutefuzzy::Service
 
-  def test_load
-    ctx = JMSQpidContext.new
-    assert( ctx.create_connection )
-    ctx.close
+  def test_destinations
+    con = nil
+    ctx = QpidJMSContext.new
+    Destinations.apply( ctx )
+
+    assert( con = ctx.create_connection )
+    assert( ctx.lookup_destination( 'iudex-brutefuzzy-request' ) )
+    assert( ctx.lookup_destination( 'iudex-brutefuzzy-listener' ) )
+  ensure
+    ctx.close if ctx
+    con.close if con
   end
 
 end

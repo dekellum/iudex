@@ -16,9 +16,12 @@
 
 package iudex.brutefuzzy.client;
 
-import java.util.concurrent.Semaphore;
+import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
+import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
+import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
+import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
 
-import iudex.jms.JMSContext;
+import java.util.concurrent.Semaphore;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -34,13 +37,10 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rjack.jms.JMSContext;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gravitext.util.Closeable;
-
-import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
-import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
-import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
-import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
 
 public class Client
     implements MessageListener, Closeable, ExceptionListener

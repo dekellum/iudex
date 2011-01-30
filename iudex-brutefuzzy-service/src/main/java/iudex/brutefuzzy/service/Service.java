@@ -16,12 +16,12 @@
 
 package iudex.brutefuzzy.service;
 
-import java.util.TreeSet;
-
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
-
+import iudex.filter.core.PeriodicNotifier;
 import iudex.simhash.brutefuzzy.FuzzySet64;
+
+import java.util.TreeSet;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -37,11 +37,10 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rjack.jms.JMSContext;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gravitext.util.Metric;
-
-import iudex.jms.JMSContext;
-import iudex.filter.core.PeriodicNotifier;
 
 public class Service implements MessageListener
 {

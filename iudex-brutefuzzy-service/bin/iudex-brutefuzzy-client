@@ -28,7 +28,6 @@ module IudexBinScript
   Logback.config_console( :thread => true )
 
   require 'iudex-brutefuzzy-service'
-  require 'iudex-brutefuzzy-service/jms_qpid_context'
   require 'iudex-brutefuzzy-service/destinations'
 
   include Iudex
@@ -48,7 +47,7 @@ module IudexBinScript
 
   def self.run
 
-    ctx = Iudex::JMSQpidContext.new
+    ctx = QpidClient::QpidJMSContext.new
 
     Brutefuzzy::Service::Destinations.apply( ctx )
 
