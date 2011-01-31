@@ -29,6 +29,7 @@ import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 import static iudex.core.ContentKeys.*;
+import static iudex.da.ContentMapper.HOST;
 
 public class WorkPoller extends GenericWorkPollStrategy
 {
@@ -54,6 +55,26 @@ public class WorkPoller extends GenericWorkPollStrategy
         return _hostDepthDivisor;
     }
 
+    public void setMaxPriorityUrls( int maxPriorityUrls )
+    {
+        _maxPriorityUrls = maxPriorityUrls;
+    }
+
+    public int maxPriorityUrls()
+    {
+        return _maxPriorityUrls;
+    }
+
+    public void setMaxHostUrls( int maxHostUrls )
+    {
+        _maxHostUrls = maxHostUrls;
+    }
+
+    public int maxHostUrls()
+    {
+        return _maxHostUrls;
+    }
+
     /**
      * Set maximum VisitURLs to load per poll.
      */
@@ -69,10 +90,19 @@ public class WorkPoller extends GenericWorkPollStrategy
 
     public List<UniMap> poll() throws SQLException
     {
-        String query = String.format( POLL_QUERY,
-                                      _contentReader.mapper().fieldNames() );
+        CharSequence fs = _contentReader.mapper().fieldNames();
+        CharSequence fsh = fs;
+        if( ! _contentReader.mapper().fields().contains( HOST ) ) {
+            fsh = fs.toString() + ", host";
+        }
 
-        return _contentReader.select( query, _hostDepthDivisor, _maxUrls );
+        String query = String.format( POLL_QUERY, fs, fsh, fsh, fsh, fsh );
+
+        return _contentReader.select( query,
+                                      _hostDepthDivisor,
+                                      _maxPriorityUrls,
+                                      _maxHostUrls,
+                                      _maxUrls );
     }
 
     @Override
@@ -91,16 +121,22 @@ public class WorkPoller extends GenericWorkPollStrategy
 
     private static final String POLL_QUERY =
     "SELECT %s " +
-    "FROM ( SELECT *, " +
-    "       row_number() OVER( ORDER BY adj_priority DESC ) as apos " +
-    "       FROM ( SELECT *, " +
-    "              ( priority - " +
-    "               ( ( row_number() OVER " +
-    "                   ( PARTITION BY host ORDER BY priority DESC ) - 1 ) " +
-    "                  / ? ) ) as adj_priority " +
-    "              FROM urls " +
-    "              WHERE next_visit_after <= now() ) AS sub1 ) as sub2 " +
-    "WHERE apos <= ? " +
+    "FROM ( SELECT %s " +
+    "       FROM ( SELECT %s, ( priority - ( ( hpos - 1 ) / ? ) ) AS adj_priority " +
+    "              FROM ( SELECT %s, " +
+    "                            row_number() OVER ( PARTITION BY host " +
+    "                                                ORDER BY priority DESC ) AS hpos " +
+    "                     FROM ( SELECT %s " +
+    "                            FROM urls " +
+    "                            WHERE next_visit_after <= now() " +
+    "                            ORDER BY priority DESC, next_visit_after DESC " +
+    "                            LIMIT ? " +
+    "                          ) AS subP " +
+    "                   ) AS subH " +
+    "              WHERE hpos <= ? " +
+    "            ) AS subA " +
+    "      ORDER BY adj_priority DESC " +
+    "      LIMIT ? ) AS subF " +
     "ORDER BY host, priority DESC; ";
 
     private static final List<Key> REQUIRED_KEYS =
@@ -108,5 +144,8 @@ public class WorkPoller extends GenericWorkPollStrategy
 
     private final ContentReader _contentReader;
     private float _hostDepthDivisor = 8.0f;
-    private int _maxUrls = 50000;
+
+    private int _maxPriorityUrls = 500000;
+    private int _maxHostUrls     =  10000;
+    private int _maxUrls         =  50000;
 }

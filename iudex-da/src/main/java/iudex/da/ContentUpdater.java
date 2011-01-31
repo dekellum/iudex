@@ -41,10 +41,6 @@ public class ContentUpdater
                            Transformer transformer )
     {
         super( source, mapper );
-        if( ! mapper.fields().contains( ContentMapper.UHASH ) ) {
-            throw new IllegalArgumentException(
-               "ContentUpdater needs mapper with UHASH included." );
-        }
         _transformer = transformer;
     }
 
