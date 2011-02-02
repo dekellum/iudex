@@ -117,6 +117,8 @@ module Iudex
                            :min_next => 0.0 ) ].flatten
       end
 
+      # Note: *_post is run possibly twice, once for both base content
+      # map and referer map.
       def feed_post
         [ UHashMDCSetter.new,
           ref_common_cleanup,
@@ -162,8 +164,11 @@ module Iudex
         create_update_filter( keys( page_update_keys ), :page_post )
       end
 
+      # Note: *_post is run possibly twice, once for both base content
+      # map and referer map.
       def page_post
-        [ barc_writer,
+        [ UHashMDCSetter.new,
+          barc_writer, # Not run in 302 referer case, since no SOURCE.
           Prioritizer.new( "page-post",
                            :constant => 0,
                            :min_next => ( 30 * 60.0 ) ),
