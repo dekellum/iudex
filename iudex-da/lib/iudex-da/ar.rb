@@ -17,14 +17,20 @@
 require 'rjack-slf4j'
 require 'iudex-da/config'
 require 'active_record'
+require 'hooker'
 
 module Iudex::DA
 
-  @log = RJack::SLF4J[ "iudex.da.ActiveRecord" ]
-  ActiveRecord::Base.logger = @log
+  def self.setup
+    log = RJack::SLF4J[ "iudex.da.ActiveRecord" ]
+    conf = Hooker.merge( [ :iudex, :connect_props ], CONFIG )
+    log.info { "Connecting: #{ conf.inspect }" }
 
-  @log.info { "Connecting: #{CONFIG.inspect}" }
-  ActiveRecord::Base.establish_connection( CONFIG )
+    ActiveRecord::Base.logger = log
+    ActiveRecord::Base.establish_connection( conf )
+  end
+
+  setup #FIXME
 
   def migrate( target_version = nil )
     ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),

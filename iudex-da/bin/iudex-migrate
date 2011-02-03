@@ -19,6 +19,7 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
+require 'optparse'
 
 module IudexBinScript
 
@@ -35,7 +36,7 @@ module IudexBinScript
   include Iudex
 
   # Apply all config before including ar
-  Core::Config.parse_options do |opts|
+  OptionParser.new do |opts|
     opts.banner = <<END
 Usage: iudex-migrate [options] [target-migration-number]
 END
@@ -51,7 +52,8 @@ END
       puts "iudex-da: #{DA::VERSION}"
       exit 1
     end
-  end
+    Hooker.register_config( opts )
+  end.parse!
 
   require 'iudex-da/ar'
 
