@@ -80,7 +80,11 @@ module Iudex
         priority = ( ( ( priority || 0.0 ) * @impedance + new_priority ) /
                      ( @impedance + 1 ) )
 
-        delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
+        if map.last_visit
+          delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
+        else
+          delta = 0.0
+        end
 
         @log.debug do
           memo.join( ' + ' ) +
