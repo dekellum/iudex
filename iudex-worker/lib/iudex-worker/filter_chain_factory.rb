@@ -123,7 +123,8 @@ module Iudex
         [ UHashMDCSetter.new,
           ref_common_cleanup,
           Prioritizer.new( "feed-post",
-                           :constant => 30 ),
+                           :constant => 30,
+                           :visiting_now => true ),
           last_visit_setter ].flatten
       end
 
@@ -171,7 +172,8 @@ module Iudex
           barc_writer, # Not run in 302 referer case, since no SOURCE.
           Prioritizer.new( "page-post",
                            :constant => 0,
-                           :min_next => ( 30 * 60.0 ) ),
+                           :min_next => ( 30 * 60.0 ),
+                           :visiting_now => true ),
           last_visit_setter ]
       end
 
