@@ -22,6 +22,13 @@
     <module>iudex-brutefuzzy-service</module>
   </modules>
 
+  <repositories>
+    <repository>
+      <id>gravitext</id>
+      <url>http://gravitext.com/repo/releases</url>
+    </repository>
+  </repositories>
+
   <dependencyManagement>
     <dependencies>
 

@@ -19,6 +19,8 @@
 
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
+require 'optparse'
+
 module IudexBinScript
 
   require 'rubygems'
@@ -30,18 +32,21 @@ module IudexBinScript
   require 'iudex-worker'
 
   include Iudex
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
-  Core::Config.parse_options do |opts|
+  OptionParser.new do |opts|
     opts.on( "-v", "--version", "Display version" ) do |file|
-      puts "iudex-worker: #{Worker::VERSION}"
+      puts "iudex-worker: #{ Worker::VERSION }"
       exit 1
     end
     opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
       Logback[ 'iudex' ].level = Logback::DEBUG
     end
-  end
+    Hooker.register_config( opts )
+  end.parse!
 
   agent = Worker::Agent.new
+
   agent.run
 
 end

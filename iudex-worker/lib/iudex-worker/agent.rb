@@ -23,6 +23,8 @@ require 'iudex-httpclient-3'
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
 
+require 'hooker'
+
 module Iudex
   module Worker
 
@@ -30,12 +32,11 @@ module Iudex
       include Iudex::DA
       include Iudex::Filter::KeyHelper
       include Iudex::Core
-      include Iudex::HTTPClient3
       include Iudex::Worker
       include Gravitext::HTMap
 
       def initialize
-        Config.do_agent( self )
+        Hooker.apply( [:iudex,:worker], self )
       end
 
       def poll_keys
@@ -43,43 +44,36 @@ module Iudex
       end
 
       def run
-        dsf = PoolDataSourceFactory.new
-        data_source = dsf.create
+        Hooker.with( :iudex ) do
+          dsf = PoolDataSourceFactory.new
+          data_source = dsf.create
 
-        cmapper = ContentMapper.new( keys( poll_keys ) )
+          cmapper = ContentMapper.new( keys( poll_keys ) )
+          wpoller = WorkPoller.new( data_source, cmapper )
+          Hooker.apply( :work_poller, wpoller )
 
-        wpoller = WorkPoller.new( data_source, cmapper )
-        Config.do_work_poller( wpoller )
+          mgr = HTTPClient3.create_manager
+          mgr.start
+          http_client = HTTPClient3::HTTPClient3.new( mgr.client )
 
-        mgr = http_client_3_manager
-        mgr.start
-        http_client = Iudex::HTTPClient3::HTTPClient3.new( mgr.client )
+          fcf = FilterChainFactory.new( 'agent' )
+          fcf.http_client = http_client
+          fcf.data_source = data_source
+          Hooker.apply( :filter_factory, fcf )
 
-        fcf = filter_chain_factory( http_client, data_source )
+          fcf.filter do |chain|
+            vexec = VisitExecutor.new( chain, wpoller )
+            Hooker.apply( :visit_executor, vexec )
 
-        Config.do_filter_factory( fcf )
+            Hooker.log_not_applied # All hooks should be used by now
 
-        fcf.filter do |chain|
-          vexec = VisitExecutor.new( chain, wpoller )
-          Config.do_visit_executor( vexec )
-          vexec.start
-          vexec.join    #Run until interrupted
-        end # fcf closes
+            vexec.start
+            vexec.join    #Run until interrupted
+          end # fcf closes
 
-        mgr.shutdown
-        dsf.close
-
-      end
-
-      def http_client_3_manager
-        Config.do_http_client_3
-      end
-
-      def filter_chain_factory( http_client, data_source )
-        fcf = FilterChainFactory.new( 'agent' )
-        fcf.http_client = http_client
-        fcf.data_source = data_source
-        fcf
+          mgr.shutdown
+          dsf.close
+        end
       end
 
     end

@@ -23,6 +23,7 @@ lib/iudex-da/importer.rb
 lib/iudex-da/key_helper.rb
 lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
+test/test_migrate.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
 lib/iudex-da/iudex-da-1.0.0.jar

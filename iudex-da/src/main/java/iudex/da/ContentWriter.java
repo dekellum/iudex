@@ -16,15 +16,21 @@
 
 package iudex.da;
 
+import static iudex.core.ContentKeys.*;
+import static iudex.da.ContentMapper.*;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 public class ContentWriter
@@ -32,6 +38,14 @@ public class ContentWriter
     public ContentWriter( DataSource source, ContentMapper mapper )
     {
         _dataSource = source;
+
+        for( Key req : REQUIRED_KEYS ) {
+            if( ! mapper.fields().contains( req ) ) {
+                throw new IllegalArgumentException(
+                   "ContentWriter needs mapper with " + req + " included." );
+            }
+        }
+
         _mapper = mapper;
     }
 
@@ -141,6 +155,9 @@ public class ContentWriter
 
     protected static final Logger _log =
         LoggerFactory.getLogger( ContentWriter.class  );
+
+    private static final List<Key> REQUIRED_KEYS =
+        Arrays.asList( new Key[] { URL, UHASH, HOST, TYPE } );
 
     private final DataSource _dataSource;
     private final ContentMapper _mapper;

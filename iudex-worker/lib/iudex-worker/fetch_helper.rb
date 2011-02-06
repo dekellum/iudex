@@ -32,8 +32,6 @@ module Iudex
         headers = [ [ 'User-Agent', http_user_agent ],
                     [ 'Accept',     accept_header( accept_types ) ] ]
 
-        puts headers.inspect
-
         cf.request_headers = headers.map { |kv| Header.new( *kv ) }
 
         cf
