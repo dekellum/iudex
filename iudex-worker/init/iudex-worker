@@ -34,7 +34,12 @@ module IudexInitScript
 
   require 'iudex-worker'
   include Iudex
-  Core::Config.parse_options
+
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
+
+  if File.exist?( './config.rb' )
+    Hooker.load_file( './config.rb' )
+  end
 
   agent = Worker::Agent.new
   agent.run
