@@ -40,7 +40,7 @@ module Iudex::DA
     include Iudex::Core
     include Gravitext::HTMap
 
-    include KeyHelper
+    include Iudex::Filter::KeyHelper
 
     import 'iudex.da.BaseTransformer'
     import 'iudex.da.ContentUpdater'
