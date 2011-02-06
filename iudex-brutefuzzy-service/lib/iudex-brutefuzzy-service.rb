@@ -24,7 +24,7 @@ require 'iudex-brutefuzzy-protobuf'
 require 'java'
 
 module Iudex
-  module Brutefuzzy
+  module BruteFuzzy
     module Service
       require "iudex-brutefuzzy-service/iudex-brutefuzzy-service-#{VERSION}.jar"
 

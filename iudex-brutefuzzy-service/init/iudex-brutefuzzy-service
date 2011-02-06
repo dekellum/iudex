@@ -39,7 +39,7 @@ module IudexInitScript
     Core::Config.load_config( './config.rb' )
   end
 
-  agent = Brutefuzzy::Service::Agent.new
+  agent = BruteFuzzy::Service::Agent.new
   agent.run
 
 end

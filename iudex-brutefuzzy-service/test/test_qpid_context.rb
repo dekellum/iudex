@@ -24,7 +24,7 @@ require 'iudex-brutefuzzy-service/destinations'
 
 class TestQpidContext < MiniTest::Unit::TestCase
   include RJack::QpidClient
-  include Iudex::Brutefuzzy::Service
+  include Iudex::BruteFuzzy::Service
 
   def test_destinations
     con = nil

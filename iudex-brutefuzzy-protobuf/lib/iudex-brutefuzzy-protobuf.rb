@@ -19,7 +19,7 @@ require 'iudex-brutefuzzy-protobuf/base.rb'
 require 'rjack-protobuf'
 
 module Iudex
-  module Brutefuzzy
+  module BruteFuzzy
     module Protobuf
       require "iudex-brutefuzzy-protobuf/iudex-brutefuzzy-protobuf-#{VERSION}.jar"
     end

@@ -17,11 +17,11 @@
 require 'iudex-brutefuzzy-service'
 require 'iudex-brutefuzzy-service/destinations'
 
-module Iudex::Brutefuzzy::Service
+module Iudex::BruteFuzzy::Service
 
   class Agent
     include Iudex::Core
-    include Iudex::Brutefuzzy
+    include Iudex::BruteFuzzy
 
     include RJack::QpidClient
 

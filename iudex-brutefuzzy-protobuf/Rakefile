@@ -8,7 +8,7 @@ gem     'rjack-tarpit', '~> 1.2'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-brutefuzzy-protobuf',
-                       Iudex::Brutefuzzy::Protobuf::VERSION,
+                       Iudex::BruteFuzzy::Protobuf::VERSION,
                        :no_assembly, :java_platform )
 
 t.specify do |h|

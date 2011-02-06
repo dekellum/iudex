@@ -34,7 +34,7 @@ module IudexBinScript
 
   Core::Config.parse_options do |opts|
     opts.on( "-v", "--version", "Display version" ) do |file|
-      puts "iudex-brutefuzzy-service: #{Brutefuzzy::Service::VERSION}"
+      puts "iudex-brutefuzzy-service: #{BruteFuzzy::Service::VERSION}"
       exit 1
     end
     opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
@@ -42,7 +42,7 @@ module IudexBinScript
     end
   end
 
-  agent = Brutefuzzy::Service::Agent.new
+  agent = BruteFuzzy::Service::Agent.new
   agent.run
 
 end

@@ -14,7 +14,7 @@
 # permissions and limitations under the License.
 #++
 
-module Iudex::Brutefuzzy::Service
+module Iudex::BruteFuzzy::Service
 
   module Destinations
 

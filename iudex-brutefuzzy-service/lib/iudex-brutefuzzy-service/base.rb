@@ -15,7 +15,7 @@
 #++
 
 module Iudex
-  module Brutefuzzy
+  module BruteFuzzy
     module Service
       VERSION = '1.0.0'
     end

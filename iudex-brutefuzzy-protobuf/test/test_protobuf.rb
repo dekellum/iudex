@@ -23,7 +23,7 @@ require 'minitest/autorun'
 require 'iudex-brutefuzzy-protobuf'
 
 class TestProtobuf < MiniTest::Unit::TestCase
-  include Iudex::Brutefuzzy::Protobuf
+  include Iudex::BruteFuzzy::Protobuf
 
   def test_load
     assert( true )

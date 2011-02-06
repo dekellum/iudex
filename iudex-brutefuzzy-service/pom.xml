@@ -4,7 +4,7 @@
   <artifactId>iudex-brutefuzzy-service</artifactId>
   <packaging>jar</packaging>
   <version>1.0.0</version>
-  <name>Iudex Brutefuzzy Service</name>
+  <name>Iudex BruteFuzzy Service</name>
 
   <parent>
     <groupId>iudex</groupId>

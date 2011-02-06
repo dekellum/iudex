@@ -34,7 +34,7 @@ module IudexBinScript
 
   Core::Config.parse_options do |opts|
     opts.on( "-v", "--version", "Display version" ) do |file|
-      puts "iudex-brutefuzzy-client: #{Brutefuzzy::Service::VERSION}"
+      puts "iudex-brutefuzzy-client: #{BruteFuzzy::Service::VERSION}"
       exit 1
     end
     opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
@@ -43,20 +43,21 @@ module IudexBinScript
   end
 
   import 'iudex.brutefuzzy.client.Client'
-  import 'iudex.simhash.brutefuzzy.BruteFuzzy'
+
+  BruteFuzzyUtil = Java::iudex.simhash.brutefuzzy.BruteFuzzy
 
   def self.run
 
     ctx = QpidClient::QpidJMSContext.new
 
-    Brutefuzzy::Service::Destinations.apply( ctx )
+    BruteFuzzy::Service::Destinations.apply( ctx )
 
     client = Client.new( ctx )
     client.open
 
     cnt = 0
     160.times do
-      tkeys = BruteFuzzy.testKeys( 100_000, 3, rand( 999_999_999 ) )
+      tkeys = BruteFuzzyUtil.testKeys( 100_000, 3, rand( 999_999_999 ) )
       tkeys.each do |k|
         client.check( k, true )
         cnt += 1
