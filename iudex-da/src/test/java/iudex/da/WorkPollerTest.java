@@ -48,8 +48,8 @@ public class WorkPollerTest
     public void test() throws SQLException, SyntaxException
     {
         ContentMapper mapper =
-            new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
-                               PRIORITY, NEXT_VISIT_AFTER );
+            new ContentMapper( UHASH, HOST, URL, TYPE, PRIORITY,
+                               NEXT_VISIT_AFTER );
 
         ContentWriter writer = new ContentWriter( dataSource(), mapper );
         List<UniMap> in = new ArrayList<UniMap>();
@@ -58,6 +58,7 @@ public class WorkPollerTest
 
         assertEquals( 1, writer.write( in ) );
 
+        mapper = new ContentMapper( URL, TYPE, PRIORITY, NEXT_VISIT_AFTER );
         WorkPoller wpoller = new WorkPoller( dataSource(), mapper );
         List<UniMap> out = wpoller.poll();
         assertNotNull( out );
