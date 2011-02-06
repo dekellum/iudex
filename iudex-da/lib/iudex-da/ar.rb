@@ -30,7 +30,7 @@ module Iudex::DA
     ActiveRecord::Base.establish_connection( conf )
   end
 
-  setup #FIXME
+  setup #FIXME: Require explicit setup for use?
 
   def migrate( target_version = nil )
     ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),

@@ -15,8 +15,6 @@
 # permissions and limitations under the License.
 #++
 
-require 'hooker'
-
 module Iudex
 
   module DA

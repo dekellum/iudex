@@ -35,6 +35,8 @@ module IudexBinScript
   require 'iudex-da/config'
   include Iudex
 
+  Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m ) }
+
   # Apply all config before including ar
   OptionParser.new do |opts|
     opts.banner = <<END
@@ -43,7 +45,9 @@ END
     opts.on( "-s", "--set name=value", String,
              "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
       name,value = nv.split('=').map { |t| t.strip }
-      DA::CONFIG[ name.to_sym ] = value
+      Hooker.add( [ :iudex, :connect_props ] ) do
+        { name.to_sym => value }
+      end
     end
     opts.on( "-d", "--debug" ) do
       Logback[ 'iudex.da' ].level = Logback::DEBUG
