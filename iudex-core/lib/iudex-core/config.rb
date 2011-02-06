@@ -22,7 +22,7 @@ Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m.rstrip ) }
 
 module Iudex
 
-  # Yield Iudex::Core::Config module to block
+  # Apply configuration from block
   def self.configure( &block )
     Hooker.with( :iudex, &block )
   end
