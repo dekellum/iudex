@@ -1,7 +1,7 @@
 
 Iudex.configure do |c|
 
-  c.not_specified { raise "Shouldn't call" }
+  c.setup_bogus { raise "Shouldn't call" }
 
   c.setup_visit_executor do |vx|
     vx.max_threads             = 10

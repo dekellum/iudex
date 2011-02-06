@@ -42,17 +42,5 @@ module Iudex
       import 'iudex.core.filters.UHashMDCSetter'
     end
 
-    module Config
-      @visit_exec_proc = nil
-
-      def self.setup_visit_executor( &block )
-        @visit_exec_proc = block
-      end
-
-      def self.do_visit_executor( vx )
-        @visit_exec_proc.call( vx ) if @visit_exec_proc
-        vx
-      end
-    end
   end
 end
