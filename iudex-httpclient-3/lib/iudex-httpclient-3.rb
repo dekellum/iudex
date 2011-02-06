@@ -18,6 +18,7 @@ require 'iudex-http'
 require 'rjack-httpclient-3'
 
 require 'iudex-httpclient-3/base'
+require 'hooker'
 
 module Iudex
 
@@ -26,7 +27,7 @@ module Iudex
 
     import 'iudex.httpclient3.HTTPClient3'
 
-    def self.default_manager
+    def self.create_manager
       mgr = RJack::HTTPClient3::ManagerFacade.new
 
       # Sensible defaults:
@@ -44,27 +45,11 @@ module Iudex
       cp = Java::org.apache.commons.httpclient.cookie.CookiePolicy
       mgr.client_params.cookie_policy = cp::IGNORE_COOKIES
 
+      Hooker.apply( [ :iudex, :http_client_3 ], mgr )
+
       mgr
     end
 
-  end
-
-  module Core
-    module Config
-      @http_client_3_proc = nil
-
-      # Yields RJack::HTTPClient3::ManagerFacade to block for setup.
-      def self.setup_http_client_3( &block )
-        @http_client_3_proc = block
-      end
-
-      # Apply setup block and returns manager
-      def self.do_http_client_3( mgr = HTTPClient3.default_manager )
-        @http_client_3_proc.call( mgr ) if @http_client_3_proc
-        mgr
-      end
-
-    end
   end
 
 end
