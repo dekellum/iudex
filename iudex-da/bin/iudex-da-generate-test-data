@@ -101,7 +101,16 @@ class Generator
 
 end
 
-Iudex::Core::Config.parse_options do |opts|
+Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m ) }
+
+OptionParser.new do |opts|
+  opts.on( "-s", "--set name=value", String,
+             "Set connect prop (ex: database=iudex)" ) do |nv|
+    name,value = nv.split('=').map { |t| t.strip }
+    Hooker.add( [ :iudex, :connect_props ] ) do
+      { name.to_sym => value }
+    end
+  end
   opts.on( "-d", "--debug" ) do
     RJack::Logback[ 'iudex.da' ].level = RJack::Logback::DEBUG
   end
@@ -109,7 +118,8 @@ Iudex::Core::Config.parse_options do |opts|
     puts "iudex-da: #{Iudex::DA::VERSION}"
     exit 1
   end
-end
+  Hooker.register_config( opts )
+end.parse!
 
 g = Generator.new
 g.clear

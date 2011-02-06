@@ -35,7 +35,7 @@ module IudexBinScript
   require 'iudex-da/config'
   include Iudex
 
-  Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m ) }
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m ) }
 
   # Apply all config before including ar
   OptionParser.new do |opts|
@@ -43,7 +43,7 @@ module IudexBinScript
 Usage: iudex-migrate [options] [target-migration-number]
 END
     opts.on( "-s", "--set name=value", String,
-             "Set Iudex::DA::CONFIG value (ex: database=iudex)" ) do |nv|
+             "Set connect prop (ex: database=iudex)" ) do |nv|
       name,value = nv.split('=').map { |t| t.strip }
       Hooker.add( [ :iudex, :connect_props ] ) do
         { name.to_sym => value }
