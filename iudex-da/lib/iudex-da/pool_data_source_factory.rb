@@ -36,7 +36,8 @@ module Iudex::DA
     attr_accessor :data_source
 
     def initialize( in_props = {} )
-      @props = CONFIG.merge( in_props )
+      @props = Hooker.merge( [ :iudex, :connect_props ],
+                             CONFIG.merge( in_props ) )
 
       # Tweeks specific for Java datasource/pool
       @props[ :user ] ||= @props[ :username ]

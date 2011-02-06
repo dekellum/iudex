@@ -22,22 +22,22 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 require 'iudex-httpclient-3'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
-  include Iudex::Core
-  include Iudex::HTTPClient3
+  include Iudex
 
   def test_config
-    assert( Config.do_http_client_3 )
 
     called = :not
-    Config.setup_http_client_3 do |mgr|
-      assert_equal( 100, mgr.manager_params.max_total_connections )
-      called = :called
+    Hooker.with( :iudex ) do |h|
+      h.setup_http_client_3 do |mgr|
+        assert_equal( 100, mgr.manager_params.max_total_connections )
+        called = :called
+      end
     end
-    assert( Config.do_http_client_3 )
+
+    mgr = HTTPClient3.create_manager
+    assert( mgr )
     assert_equal( :called, called )
 
-    mgr = Config.do_http_client_3
-    assert( mgr )
     mgr.start
     assert( mgr.client )
     mgr.shutdown

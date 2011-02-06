@@ -18,22 +18,6 @@ require 'iudex-da'
 require 'iudex-da/key_helper'
 require 'iudex-da/pool_data_source_factory'
 
-module Iudex::Core
-
-  module Config
-    @importer_proc = nil
-
-    def self.setup_importer( &block )
-      @importer_proc = block
-    end
-
-    def self.do_importer( importer )
-      @importer_proc.call( importer ) if @importer_proc
-    end
-  end
-
-end
-
 module Iudex::DA
 
   class Importer
@@ -49,7 +33,7 @@ module Iudex::DA
       @dsf = PoolDataSourceFactory.new
       UniMap.define_accessors
 
-      Config.do_importer( self )
+      Hooker.apply( [ :iudex, :importer ], self )
     end
 
     def import_files( files = ARGV )
