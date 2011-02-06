@@ -35,7 +35,7 @@ module IudexBinScript
   require 'iudex-da/config'
   include Iudex
 
-  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m ) }
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
   # Apply all config before including ar
   OptionParser.new do |opts|

@@ -21,6 +21,7 @@ $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 module IudexBinScript
 
   require 'rubygems'
+  require 'optparse'
 
   require 'rjack-logback'
   include RJack
@@ -31,7 +32,7 @@ module IudexBinScript
 
   include Iudex
 
-  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m ) }
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
   OptionParser.new do |opts|
     opts.banner = <<END

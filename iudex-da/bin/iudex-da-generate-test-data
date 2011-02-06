@@ -25,6 +25,7 @@ RJack::Logback.config_console( :thread => true )
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
+require 'optparse'
 
 class Generator
   include Iudex::DA
@@ -101,7 +102,7 @@ class Generator
 
 end
 
-Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m ) }
+Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m.rstrip ) }
 
 OptionParser.new do |opts|
   opts.on( "-s", "--set name=value", String,
