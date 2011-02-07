@@ -31,12 +31,14 @@ module IudexInitScript
 
   require 'rjack-logback'
   include RJack
+
   Logback.config_console( :full => true, :thread => true )
 
   require 'iudex-brutefuzzy-service'
   include Iudex
+
   if File.exist?( './config.rb' )
-    Core::Config.load_config( './config.rb' )
+    Hooker.load_file( './config.rb' )
   end
 
   agent = BruteFuzzy::Service::Agent.new
