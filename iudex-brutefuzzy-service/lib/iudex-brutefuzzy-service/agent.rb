@@ -17,32 +17,38 @@
 require 'iudex-brutefuzzy-service'
 require 'iudex-brutefuzzy-service/destinations'
 
+require 'hooker'
+
 module Iudex::BruteFuzzy::Service
 
   class Agent
     include Iudex::Core
     include Iudex::BruteFuzzy
+    include Iudex::SimHash::BruteFuzzy
 
     include RJack::QpidClient
 
     def initialize
+      Hooker.apply( [:iudex,:brutefuzzy_agent], self )
     end
 
     def run
-      ctx = QpidJMSContext.new
 
-      Destinations.apply( ctx )
+      service = Hooker.with( :iudex ) do |h|
+        ctx = QpidJMSContext.new
+        Destinations.apply( ctx )
+        ctx = h.apply( :jms_context, ctx )
 
-      Config.do_jms_context( ctx )
+        h.apply( :brutefuzzy_service, Service.new( create_fuzzy_set, ctx ) )
+      end
 
-      fuzzy_tree = Iudex::SimHash::BruteFuzzy::FuzzyTree64.new( 500_000, 3, 16 )
+      Hooker.log_not_applied # All hooks should be used by now
 
-      Config.do_fuzzy_tree( fuzzy_tree ) #FIXME: pointless
+      sleep #forever
+    end
 
-      svc = Service.new( fuzzy_tree, ctx )
-
-      sleep #FIXME
-
+    def create_fuzzy_set
+      FuzzyTree64.new( 500_000, 3, 16 )
     end
 
   end

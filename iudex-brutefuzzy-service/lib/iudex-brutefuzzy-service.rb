@@ -31,30 +31,6 @@ module Iudex
       import 'iudex.brutefuzzy.service.Service'
     end
   end
-
-  module Core
-    module Config
-      @jms_context_proc = nil
-      @fuzzy_tree_proc = nil
-
-      def self.setup_jms_context( &block )
-        @jms_context_proc = block
-      end
-
-      def self.do_jms_context( jms_context )
-        @jms_context_proc.call( jms_context ) if @jms_context_proc
-      end
-
-      def self.setup_fuzzy_tree( &block )
-        @fuzzy_tree_proc = block
-      end
-
-      def self.do_fuzzy_tree( fuzzy_tree )
-        @fuzzy_tree_proc.call( fuzzy_tree ) if @fuzzy_tree_proc
-      end
-
-    end
-  end
 end
 
 require 'iudex-brutefuzzy-service/agent'

@@ -5,6 +5,7 @@ Rakefile
 pom.xml
 bin/iudex-brutefuzzy-client
 bin/iudex-brutefuzzy-service-fg
+config/config.rb
 init/iudex-brutefuzzy-service
 lib/iudex-brutefuzzy-service/base.rb
 lib/iudex-brutefuzzy-service.rb

@@ -37,6 +37,8 @@ module IudexInitScript
   require 'iudex-brutefuzzy-service'
   include Iudex
 
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
+
   if File.exist?( './config.rb' )
     Hooker.load_file( './config.rb' )
   end
