@@ -37,7 +37,7 @@ module Iudex::BruteFuzzy::Service
       service = Hooker.with( :iudex ) do |h|
         ctx = QpidJMSContext.new
         Destinations.apply( ctx )
-        ctx = h.apply( :jms_context, ctx )
+        h.apply( :jms_context, ctx )
 
         h.apply( :brutefuzzy_service, Service.new( create_fuzzy_set, ctx ) )
       end
