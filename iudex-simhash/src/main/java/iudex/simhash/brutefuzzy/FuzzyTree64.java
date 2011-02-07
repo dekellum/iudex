@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 David Kellum
+ * Copyright (c) 2010-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -15,6 +15,8 @@
  */
 
 package iudex.simhash.brutefuzzy;
+
+import java.util.Collection;
 
 /**
  * A custom search tree implementation of FuzzySet64. The tree
@@ -42,12 +44,12 @@ public final class FuzzyTree64
         _mask = ( 1L << _segmentBits ) - 1;
 
         // Initial capacity for leaf nodes
-        _listCap = capacity / ( _segments * ( 1 << _segmentBits ) );
+        _listCap = capacity / ( 1 << _segmentBits );
 
         _tree = setupIndex();
     }
 
-    public boolean add( final long key )
+    public boolean addIfNotFound( final long key )
     {
         // Use int segs to avoid sign complications with <= 16 bit segments.
         final int[] segs = new int[ _segments ];
@@ -76,6 +78,65 @@ public final class FuzzyTree64
         return true;
     }
 
+    public boolean findAll( final long key, Collection<Long> matches )
+    {
+        long skey = key;
+        boolean exactMatch = false;
+
+        // Find all matches within each segment
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list != null ) {
+                if( list.findAll( key, matches ) ) exactMatch = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return exactMatch;
+    }
+
+    public boolean addFindAll( final long key, Collection<Long> matches )
+    {
+        long skey = key;
+        boolean exactMatch = false;
+
+        // Search for matches and add new key to each segment
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list == null ) {
+                list = new FuzzyList64( _listCap, _thresholdBits );
+                list.store( key );
+                _tree[s][ seg ] = list;
+            }
+            else {
+                if( list.addFindAll( key, matches ) ) exactMatch = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return exactMatch;
+    }
+
+    public boolean remove( final long key )
+    {
+        long skey = key;
+        boolean found = false;
+
+        // Remove from all matching segments
+        for( int s = 0; s < _segments; ++s ) {
+            int seg = (int) ( skey & _mask );
+            FuzzyList64 list = _tree[s][ seg ];
+            if( list != null ) {
+                if( list.remove( key ) ) found = true;
+            }
+            skey >>>= _segmentBits;
+        }
+
+        return found;
+    }
+
     private int segmentBits( int thresholdBits, int maxBits )
     {
         for( int l : SEG_BIT_LENGTHS ) {
@@ -86,7 +147,7 @@ public final class FuzzyTree64
 
     private FuzzyList64[][] setupIndex()
     {
-        FuzzyList64[][] index = new FuzzyList64[_segments][256];
+        FuzzyList64[][] index = new FuzzyList64[_segments][];
         for( int s = 0; s < _segments; ++s ) {
             index[s] = new FuzzyList64[ 1 << _segmentBits ];
         }

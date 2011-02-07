@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 David Kellum
+ * Copyright (c) 2010-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -88,7 +88,7 @@ public class FuzzySetPerfTest implements TestFactory
             final FuzzySet64 set = createSet64( cap );
             int hits = 0;
             for( int i = 0; i < end; ++i ) {
-                if( ! set.add( _testKeys[i] ) ) ++hits;
+                if( ! set.addIfNotFound( _testKeys[i] ) ) ++hits;
             }
             return hits;
         }

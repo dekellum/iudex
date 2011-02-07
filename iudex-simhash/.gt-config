@@ -6,7 +6,7 @@ Gravitext::DevTools.configure do |c|
     h.holder = "David Kellum"
     h.inception = 2010
     h.license = :apache
-    h.exclusions += [ 'pom.xml' ]
+    h.exclusions += [ 'pom.xml', 'config/stopwords.en', 'etc/*', 'test/html/*' ]
   end
 
 end

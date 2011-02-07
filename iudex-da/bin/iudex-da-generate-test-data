@@ -1,7 +1,7 @@
 #!/usr/bin/env jruby
 # -*- ruby -*-
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -25,6 +25,7 @@ RJack::Logback.config_console( :thread => true )
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
+require 'optparse'
 
 class Generator
   include Iudex::DA
@@ -101,7 +102,16 @@ class Generator
 
 end
 
-Iudex::Core::Config.parse_options do |opts|
+Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m.rstrip ) }
+
+OptionParser.new do |opts|
+  opts.on( "-s", "--set name=value", String,
+             "Set connect prop (ex: database=iudex)" ) do |nv|
+    name,value = nv.split('=').map { |t| t.strip }
+    Hooker.add( [ :iudex, :connect_props ] ) do
+      { name.to_sym => value }
+    end
+  end
   opts.on( "-d", "--debug" ) do
     RJack::Logback[ 'iudex.da' ].level = RJack::Logback::DEBUG
   end
@@ -109,7 +119,8 @@ Iudex::Core::Config.parse_options do |opts|
     puts "iudex-da: #{Iudex::DA::VERSION}"
     exit 1
   end
-end
+  Hooker.register_config( opts )
+end.parse!
 
 g = Generator.new
 g.clear
