@@ -32,7 +32,7 @@ public class PeriodicNotifier
      * input tick rate. In general high tick rate/period ratio yields more
      * accurate interval.
      */
-    PeriodicNotifier( double period_s )
+    public PeriodicNotifier( double period_s )
     {
         _period    = (long) ( period_s * 1e9d );                   //ns
         _minPeriod = (long) ( period_s * 1e9d * ( 2.0d / 3.0d ) ); //ns
