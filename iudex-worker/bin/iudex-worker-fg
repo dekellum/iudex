@@ -30,8 +30,8 @@ module IudexBinScript
   Logback.config_console( :mdc => "uhash", :thread => true )
 
   require 'iudex-worker'
-
   include Iudex
+
   Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
   OptionParser.new do |opts|
