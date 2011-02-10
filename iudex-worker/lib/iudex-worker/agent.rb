@@ -43,6 +43,11 @@ module Iudex
         [ :url, :type, :priority, :next_visit_after, :last_visit, :etag ]
       end
 
+      # Note this can/is used to override factory in derived classes.
+      def filter_chain_factory
+        FilterChainFactory.new( 'agent' )
+      end
+
       def run
         Hooker.with( :iudex ) do
           dsf = PoolDataSourceFactory.new
@@ -56,9 +61,10 @@ module Iudex
           mgr.start
           http_client = HTTPClient3::HTTPClient3.new( mgr.client )
 
-          fcf = FilterChainFactory.new( 'agent' )
+          fcf = filter_chain_factory
           fcf.http_client = http_client
           fcf.data_source = data_source
+
           Hooker.apply( :filter_factory, fcf )
 
           fcf.filter do |chain|
@@ -75,7 +81,6 @@ module Iudex
           dsf.close
         end
       end
-
     end
 
   end
