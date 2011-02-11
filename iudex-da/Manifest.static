@@ -14,6 +14,7 @@ db/0030_add_priority.rb
 db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
 db/0060_url_indexes.rb
+db/0070_add_created_at.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
