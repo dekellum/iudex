@@ -14,6 +14,8 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-filter'
+
 module Iudex
   module Filter
 
