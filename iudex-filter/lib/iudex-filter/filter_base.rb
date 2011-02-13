@@ -16,31 +16,31 @@
 
 require 'iudex-filter'
 
-module Iudex
-  module Filter
+module Iudex::Filter
 
-    class FilterBase
-      include Filter
-      include Described
-      include Named
+  # Default implementation of Filter, Described, and Named interfaces
+  class FilterBase
+    include Filter
+    include Described
+    include Named
 
-      def describe
-        []
-      end
-
-      # Implements Named.name using abbreviated/lower case module
-      # names plus class name, in dot notation.
-      def name
-        n = self.class.name
-        n = n.gsub( /::/, '.' )
-        n = n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
-        n
-      end
-
-      def filter( map )
-        true
-      end
+    # Returns empty list
+    def describe
+      []
     end
 
+    # Returns abbreviated/lower case module names plus class name, in
+    # dot notation.
+    def name
+      n = self.class.name
+      n.gsub!( /::/, '.' )
+      n.gsub!( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
+    end
+
+    # Returns true
+    def filter( map )
+      true
+    end
   end
+
 end
