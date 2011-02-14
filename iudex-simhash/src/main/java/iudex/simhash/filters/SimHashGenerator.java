@@ -65,7 +65,7 @@ public class SimHashGenerator implements Filter, Described
         @Override
         public String toString()
         {
-            return textKey.name();
+            return ( textKey != null ) ? textKey.name() : treeKey.name();
         }
 
         final Key<CharSequence> textKey;
