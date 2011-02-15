@@ -46,3 +46,4 @@ module Iudex
 end
 
 require 'iudex-filter/filter_base'
+require 'iudex-filter/proc_filter'
