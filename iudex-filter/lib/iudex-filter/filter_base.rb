@@ -34,7 +34,7 @@ module Iudex::Filter
     def name
       n = self.class.name
       n.gsub!( /::/, '.' )
-      n.gsub!( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
+      n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
     end
 
     # Returns true
