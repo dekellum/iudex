@@ -30,6 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.NamingException;
@@ -42,34 +43,33 @@ import rjack.jms.JMSContext;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gravitext.util.Metric;
 
-public class Service implements MessageListener
+public class Service
+    extends BaseService
+    implements MessageListener
 {
     public Service( FuzzySet64 fuzzySet, JMSContext context )
+    {
+        super( context );
+        _fuzzySet = fuzzySet;
+    }
+
+    @Override
+    protected void onConnect( Connection connection )
         throws JMSException, NamingException
     {
-        _fuzzySet = fuzzySet;
-
-        Connection connection = context.createConnection();
-
-        _session = context.createSession( connection );
+        _session = context().createSession( connection );
 
         Destination requestQueue =
-            context.lookupDestination( "iudex-brutefuzzy-request" );
+            context().lookupDestination( "iudex-brutefuzzy-request" );
 
         Destination responseDest =
-            context.lookupDestination( "iudex-brutefuzzy-response" );
+            context().lookupDestination( "iudex-brutefuzzy-response" );
 
         _producer = _session.createProducer( responseDest );
 
-        context.close();
-
         MessageConsumer consumer = _session.createConsumer( requestQueue );
         consumer.setMessageListener( this );
-
-        connection.start();
-     }
-
-    //FIXME: Add open/close methods?
+    }
 
     @Override
     public void onMessage( Message msg )
@@ -197,5 +197,4 @@ public class Service implements MessageListener
     private long _lastCount = 0;
     private long _found = 0;
     private long _lastFound = 0;
-
 }

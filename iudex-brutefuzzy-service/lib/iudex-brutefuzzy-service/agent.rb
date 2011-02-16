@@ -44,7 +44,7 @@ module Iudex::BruteFuzzy::Service
 
       Hooker.log_not_applied # All hooks should be used by now
 
-      sleep #forever
+      service.connect_loop
     end
 
     def create_fuzzy_set
