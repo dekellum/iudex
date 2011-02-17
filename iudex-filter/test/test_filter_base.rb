@@ -1,3 +1,6 @@
+#!/usr/bin/env jruby
+#.hashdot.profile += jruby-shortlived
+
 #--
 # Copyright (c) 2008-2011 David Kellum
 #
@@ -14,33 +17,26 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-filter'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
-module Iudex::Filter
+require 'gravitext-util'
+require 'iudex-filter/proc_filter'
 
-  # Default implementation of Filter, Described, and Named interfaces
-  class FilterBase
-    include Filter
-    include Described
-    include Named
+class TestFilter < Iudex::Filter::FilterBase
+end
 
-    # Returns empty list
-    def describe
-      []
-    end
+class TestFilterBase < MiniTest::Unit::TestCase
+  include Iudex::Filter
+  include Gravitext::HTMap
 
-    # Returns abbreviated/lower case module names plus class name, in
-    # dot notation.
-    def name
-      n = self.class.name
-      n.gsub!( /::/, '.' )
-      n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
-    end
+  def test_base_name
+    f = FilterBase.new
+    assert_equal( "i.f.FilterBase", f.name )
+  end
 
-    # Returns true
-    def filter( map )
-      true
-    end
+  def test_top_level_name
+    f = TestFilter.new
+    assert_equal( "TestFilter", f.name )
   end
 
 end
