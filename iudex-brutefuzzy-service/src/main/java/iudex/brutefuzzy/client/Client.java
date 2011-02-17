@@ -94,6 +94,7 @@ public class Client
         BytesMessage response = _session.createBytesMessage();
         response.writeBytes( bldr.build().toByteArray() );
 
+        //FIXME: Replace with wait/notify to support a max wait
         _semaphore.acquire();
 
         _producer.send( response );

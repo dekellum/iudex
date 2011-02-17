@@ -153,15 +153,19 @@ public class BaseService
         long slept = 0;
 
         while( _connectRef.get() == null ) {
-
+            Connection connection = null;
             try {
-                Connection connection = _context.createConnection();
-                _connectRef.set( connection );
+                connection = _context.createConnection();
                 connection.setExceptionListener( this );
 
                 onConnect( connection );
 
+                //FIXME: Connection should be closed if onConnect fails.
+                //JMSException from onConnect should not be retried?
+
                 connection.start();
+                _connectRef.set( connection );
+                connection = null;
             }
             catch( JMSException x ) {
                 if( slept < _maxConnectDelay ) {
@@ -179,7 +183,7 @@ public class BaseService
                 else throw x;
             }
             finally {
-                _context.close(); //FIXME: finally?
+                _context.close();
             }
         }
     }
