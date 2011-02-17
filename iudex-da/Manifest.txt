@@ -5,6 +5,7 @@ Rakefile
 pom.xml
 bin/iudex-da-generate-test-data
 bin/iudex-da-import
+bin/iudex-da-simhash-dump
 bin/iudex-migrate
 config/config.rb
 db/0010_base_urls.rb
@@ -15,6 +16,7 @@ db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
 db/0060_url_indexes.rb
 db/0070_add_created_at.rb
+db/0080_add_simhash.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
