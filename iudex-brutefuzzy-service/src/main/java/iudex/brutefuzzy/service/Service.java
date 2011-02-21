@@ -44,26 +44,24 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.gravitext.util.Metric;
 
 public class Service
-    extends BaseService
-    implements MessageListener
+    implements MessageListener, ConnectListener
 {
-    public Service( FuzzySet64 fuzzySet, JMSContext context )
+    public Service( FuzzySet64 fuzzySet )
     {
-        super( context );
         _fuzzySet = fuzzySet;
     }
 
     @Override
-    protected void onConnect( Connection connection )
+    public void onConnect( JMSContext context, Connection connection )
         throws JMSException, NamingException
     {
-        _session = context().createSession( connection );
+        _session = context.createSession( connection );
 
         Destination requestQueue =
-            context().lookupDestination( "iudex-brutefuzzy-request" );
+            context.lookupDestination( "iudex-brutefuzzy-request" );
 
         Destination responseDest =
-            context().lookupDestination( "iudex-brutefuzzy-response" );
+            context.lookupDestination( "iudex-brutefuzzy-response" );
 
         _producer = _session.createProducer( responseDest );
 
