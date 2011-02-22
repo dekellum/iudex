@@ -65,6 +65,8 @@ BANNER
   end
 
   import 'iudex.brutefuzzy.client.Client'
+  import 'iudex.brutefuzzy.service.JMSConnector'
+
   BruteFuzzyUtil = Java::iudex.simhash.brutefuzzy.BruteFuzzy
 
   def self.random_keys( n )
@@ -117,18 +119,21 @@ BANNER
       ctx = QpidClient::QpidJMSContext.new
       Destinations.apply( ctx )
       h.apply( :jms_context, ctx )
-      @client = h.apply( :brutefuzzy_client, Client.new( ctx ) )
-      @client.open
-      ctx.close
+
+      @connector = h.apply( :jms_connector, JMSConnector.new( ctx ) )
+      @connector.start
+
+      @client = h.apply( :brutefuzzy_client, Client.new( @connector ) )
+
     end
 
     yield
   ensure
     if @client
-      sleep 1.5
       @client.close
       @client = nil
     end
+    @connector.stop if @connector
   end
 
   def self.check_batch( keys )

@@ -18,7 +18,6 @@ package iudex.brutefuzzy.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
@@ -78,6 +77,32 @@ public class JMSConnector
         _maxConnectDelay = maxConnectDelay;
     }
 
+    public synchronized void start()
+    {
+        if( _running ) {
+            throw new IllegalStateException( "JMSConnector already running." );
+        }
+        _thread = new Thread( this, "JMSConnector" );
+        _thread.setDaemon( true );
+        _running = true; //Running as of now, avoid race in awaitConnection()
+        _thread.start();
+    }
+
+    public void stop() throws InterruptedException
+    {
+        Thread t = null;
+
+        synchronized ( this ) {
+            if( _running ) {
+                _running = false;
+                notifyAll();
+            }
+            t = _thread;
+        }
+
+        if( t != null ) t.join();
+    }
+
     public void run()
     {
         try {
@@ -91,7 +116,7 @@ public class JMSConnector
         }
     }
 
-    public void connectLoop()
+    public synchronized void connectLoop()
         throws JMSException, NamingException
     {
         try {
@@ -99,10 +124,7 @@ public class JMSConnector
 
             while( _running ) {
                 connect();
-
-                synchronized( this ) {
-                    wait( 1000 );
-                }
+                wait( 1000 );
             }
         }
         catch( InterruptedException i ) {
@@ -110,8 +132,27 @@ public class JMSConnector
         }
         finally {
             _running = false;
+            notifyAll();
         }
+
+        //FIXME: Close connection on exit?
     }
+
+    public synchronized Connection awaitConnection()
+        throws InterruptedException
+    {
+        while( _running && ( _connection == null ) ) {
+            wait();
+        }
+
+        if( _connection == null ) {
+            throw new IllegalStateException( "JMSConnector not running." );
+        }
+
+        return _connection;
+    }
+
+    //FIXME: Support maximum awaitConnection() time?
 
     @Override
     public void onException( JMSException x )
@@ -119,11 +160,13 @@ public class JMSConnector
          if( _log.isDebugEnabled() ) _log.warn( "onException: ", x );
          else _log.warn( "onException: {}", x.toString() );
 
+         Connection connection = null;
          synchronized( this ) {
-             Connection connection = _connectRef.getAndSet( null );
-             safeClose( connection );
+             connection = _connection;
+             _connection = null;
              notifyAll();
          }
+         safeClose( connection );
     }
 
     /**
@@ -138,17 +181,16 @@ public class JMSConnector
         }
     }
 
-    private void connect()
+    private synchronized void connect()
         throws JMSException, NamingException, InterruptedException
     {
         long sleep = _minConnectPoll;
         long slept = 0;
 
-        while( _connectRef.get() == null ) {
+        while( _running && _connection == null ) {
             Connection connection = null;
             try {
                 connection = _context.createConnection();
-                connection.setExceptionListener( this );
 
                 // onConnect JMSException will be retried
                 // NamingExpetion will not
@@ -156,8 +198,9 @@ public class JMSConnector
 
                 connection.start();
 
-                _connectRef.set( connection );
+                _connection = connection;
                 connection = null;
+                _connection.setExceptionListener( this );
             }
             catch( JMSException x ) {
                 if( slept < _maxConnectDelay ) {
@@ -166,9 +209,9 @@ public class JMSConnector
                     else _log.warn( "On connect: {}", x.toString() );
 
                     long s = Math.min( sleep, _maxConnectDelay - slept );
-                    _log.info( "Sleeping for {}ms before next connect attempt",
+                    _log.info( "Waiting for {}ms before next connect attempt",
                                s );
-                    Thread.sleep( s );
+                    wait( s );
                     slept += s;
                     sleep = Math.min( sleep * 2, _maxConnectPoll );
                 }
@@ -203,9 +246,10 @@ public class JMSConnector
 
     private volatile boolean _running = false;
 
-    private AtomicReference<Connection> _connectRef
-        = new AtomicReference<Connection>( null );
+    private Connection _connection = null;
 
     private List<ConnectListener> _listeners =
         new ArrayList<ConnectListener>();
+
+    private Thread _thread = null;
 }

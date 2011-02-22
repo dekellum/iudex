@@ -20,18 +20,18 @@ import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
+import iudex.brutefuzzy.service.JMSConnector;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.Destination;
-import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Session;
 import javax.naming.NamingException;
 
 import org.slf4j.Logger;
@@ -40,114 +40,136 @@ import org.slf4j.LoggerFactory;
 import rjack.jms.JMSContext;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.gravitext.util.Closeable;
 
-public class Client
-    implements MessageListener, Closeable, ExceptionListener
+public class Client implements SessionStateFactory<Client.State>
 {
-    public Client( JMSContext context )
-        throws JMSException, NamingException
+    public Client( JMSConnector connector )
     {
-        _connection = context.createConnection();
-
-        _connection.setExceptionListener( this );
-
-        _session = context.createSession( _connection );
-
-        Destination requestQueue =
-            context.lookupDestination( "iudex-brutefuzzy-request" );
-        _producer = _session.createProducer( requestQueue );
-
-        Destination responseQueue =
-            context.lookupDestination( "iudex-brutefuzzy-listener" );
-
-        _session.createConsumer( responseQueue ).setMessageListener( this );
-
-        context.close();
+        _executor = new SessionExecutor<State>( connector, this );
     }
 
-    public void open() throws JMSException
+    public void check( long simhash, boolean doAdd )
+        throws JMSException, NamingException, InterruptedException
     {
-        _connection.start();
+        _executor.execute( new CheckTask( simhash, doAdd ) );
     }
 
     public void close()
     {
+        _executor.shutdown();
         try {
-            _connection.close();
+            _executor.awaitTermination( 10, TimeUnit.SECONDS );
         }
-        catch( JMSException e ) {
-            _log.warn(  "On Client.close: ", e );
+        catch( InterruptedException e ) {
+            Thread.currentThread().interrupt();
         }
-
-    }
-
-    public void check( long simhash, boolean doAdd )
-        throws JMSException, InterruptedException
-    {
-        //FIXME: Wrap JMSException to avoid leaking JMS dep?
-
-        Builder bldr = Request.newBuilder();
-        bldr.setSimhash( simhash );
-        bldr.setAction( doAdd ? RequestAction.ADD : RequestAction.CHECK_ONLY );
-
-        BytesMessage response = _session.createBytesMessage();
-        response.writeBytes( bldr.build().toByteArray() );
-
-        //FIXME: Replace with wait/notify to support a max wait
-        _semaphore.acquire();
-
-        _producer.send( response );
     }
 
     @Override
-    public void onMessage( Message msg )
+    public State createSessionState( JMSContext context, Connection connection )
+        throws JMSException, NamingException
     {
-        try {
-            msg.acknowledge();
-            if( msg instanceof BytesMessage ) {
-                BytesMessage bmsg = (BytesMessage) msg;
-                byte[] body = new byte[ (int) bmsg.getBodyLength() ];
-                bmsg.readBytes( body );
-                if( _log.isDebugEnabled() ) {
-                    onResponse( Response.parseFrom( body ) );
+        return new State( context, connection );
+    }
+
+    class CheckTask extends SessionTask<State>
+    {
+        CheckTask( long simhash, boolean doAdd )
+        {
+            _simhash = simhash;
+            _doAdd = doAdd;
+        }
+
+        @Override
+        public void runTask( State state ) throws JMSException
+        {
+            try {
+                state.check( _simhash, _doAdd );
+            }
+            catch( InterruptedException e ) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        private long _simhash;
+        private boolean _doAdd;
+    }
+
+    class State extends SessionState
+        implements MessageListener
+    {
+        public State( JMSContext context, Connection connection )
+            throws JMSException, NamingException
+        {
+            super( context, connection );
+
+            Destination requestQ =
+                context.lookupDestination( "iudex-brutefuzzy-request" );
+            _producer = session().createProducer( requestQ );
+
+            Destination responseQ =
+                context.lookupDestination( "iudex-brutefuzzy-listener" );
+
+            session().createConsumer( responseQ ).setMessageListener( this );
+        }
+
+        @Override
+        public void onMessage( Message msg )
+        {
+            try {
+                msg.acknowledge();
+                if( msg instanceof BytesMessage ) {
+                    BytesMessage bmsg = (BytesMessage) msg;
+                    byte[] body = new byte[ (int) bmsg.getBodyLength() ];
+                    bmsg.readBytes( body );
+                    if( _log.isDebugEnabled() ) {
+                        onResponse( Response.parseFrom( body ) );
+                    }
+                }
+                else {
+                    _log.error( "Received invalid message type: {}",
+                                msg.getClass().getName() );
                 }
             }
-            else {
-                _log.error( "Received invalid message type: {}",
-                            msg.getClass().getName() );
+            catch( JMSException x ) {
+                if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
+                else _log.error( "onMessage: {}", x.toString() );
+            }
+            catch( InvalidProtocolBufferException x ) {
+                if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
+                else _log.error( "onMessage: {}", x.toString() );
+            }
+            finally {
+                _semaphore.release();
             }
         }
-        catch( JMSException x ) {
-            if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
-            else _log.error( "onMessage: {}", x.toString() );
+
+        private void onResponse( Response response )
+        {
+            _log.debug( "Received response: {}", response );
         }
-        catch( InvalidProtocolBufferException x ) {
-            if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
-            else _log.error( "onMessage: {}", x.toString() );
+
+        public void check( long simhash, boolean doAdd )
+            throws JMSException, InterruptedException
+        {
+            Builder bldr = Request.newBuilder();
+            bldr.setSimhash( simhash );
+            bldr.setAction( doAdd ? RequestAction.ADD :
+                                    RequestAction.CHECK_ONLY );
+
+            BytesMessage response = session().createBytesMessage();
+            response.writeBytes( bldr.build().toByteArray() );
+
+            //FIXME: Replace with proper flow control?
+            _semaphore.tryAcquire( 1, TimeUnit.SECONDS );
+
+            _producer.send( response );
         }
-        finally {
-            _semaphore.release();
-        }
+
+        private final MessageProducer _producer;
+        private final Semaphore _semaphore = new Semaphore( 5000 );
     }
 
-    @Override
-    public void onException( JMSException x )
-    {
-        Throwable cause = x.getCause();
-        if( cause == null ) cause = x;
-        _log.warn( "Connection.onException: ", cause.toString() );
-    }
-
-    private void onResponse( Response response )
-    {
-        _log.debug( "Received response: {}", response );
-    }
-
-    private Session _session;
-    private MessageProducer _producer;
-    private Connection _connection = null;
-    private Logger _log = LoggerFactory.getLogger( getClass() );
-
-    private final Semaphore _semaphore = new Semaphore( 1000 );
+    private final SessionExecutor<State> _executor;
+    private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
