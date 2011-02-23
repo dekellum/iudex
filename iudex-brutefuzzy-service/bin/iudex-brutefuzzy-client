@@ -52,7 +52,7 @@ BANNER
         options[ :add_random_keys ] = n
       end
       opts.on( "-v", "--version", "Display version and exit" ) do |file|
-        puts "iudex-brutefuzzy-client: #{ BruteFuzzy::Service::VERSION }"
+        puts "iudex-brutefuzzy-client: #{ Iudex::BruteFuzzy::Service::VERSION }"
         exit 1
       end
       opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
