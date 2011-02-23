@@ -50,11 +50,11 @@ public class SessionExecutor<T extends SessionState>
                                     new SessionThreadFactory() );
     }
 
-    public void execute( Runnable command )
+    public void execute( SessionTask<T> task )
         throws JMSException, NamingException, InterruptedException
     {
         try {
-            _execService.execute( command );
+            _execService.execute( task );
 
             //FIXME: Or possibly just log these, as would be the case
             //if added to queue?

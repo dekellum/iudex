@@ -17,6 +17,7 @@
 package iudex.brutefuzzy.client;
 
 import iudex.brutefuzzy.client.SessionExecutor.JMSRuntimeException;
+import iudex.brutefuzzy.client.SessionExecutor.SessionThread;
 
 import javax.jms.JMSException;
 
@@ -27,8 +28,7 @@ public abstract class SessionTask<T extends SessionState>
     public void run()
     {
         @SuppressWarnings("unchecked")
-        SessionExecutor.SessionThread<T> st =
-            (SessionExecutor.SessionThread<T>) Thread.currentThread();
+        SessionThread<T> st = ( SessionThread<T> ) Thread.currentThread();
 
         try {
             runTask( st.state() );
