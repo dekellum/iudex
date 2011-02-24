@@ -82,7 +82,7 @@ public class JMSConnector
         if( _running ) {
             throw new IllegalStateException( "JMSConnector already running." );
         }
-        _thread = new Thread( this, "JMSConnector" );
+        _thread = new Thread( this, "jms-cntr" );
         _thread.setDaemon( true );
         _running = true; //Running as of now, avoid race in awaitConnection()
         _thread.start();

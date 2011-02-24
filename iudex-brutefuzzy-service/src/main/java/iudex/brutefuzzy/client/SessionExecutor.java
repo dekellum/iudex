@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -89,11 +90,12 @@ public class SessionExecutor<T extends SessionState>
     {
         public SessionThread( Runnable r,
                               JMSConnector connector,
-                              SessionStateFactory<T> factory )
+                              SessionStateFactory<T> factory,
+                              int factoryId,
+                              int threadId )
             throws InterruptedException, JMSException, NamingException
         {
-            super( r );
-            //FIXME: Add self incrementing thread name.
+            super( r, String.format( "jms-st-%d-%d", factoryId, threadId ) );
             Connection connection = connector.awaitConnection();
             _state = factory.createSessionState( connector.context(),
                                                  connection );
@@ -149,7 +151,11 @@ public class SessionExecutor<T extends SessionState>
         public Thread newThread( Runnable r )
         {
             try {
-                return new SessionThread<T>( r, _connector, _factory );
+                return new SessionThread<T>( r,
+                                             _connector,
+                                             _factory,
+                                             _factoryId,
+                                             _threadCounter.incrementAndGet() );
             }
             catch( InterruptedException x ) {
                 Thread.currentThread().interrupt();
@@ -162,6 +168,9 @@ public class SessionExecutor<T extends SessionState>
                 throw new JMSRuntimeException( x );
             }
         }
+
+        private final int _factoryId = _factoryCounter.incrementAndGet();
+        private final AtomicInteger _threadCounter = new AtomicInteger( 0 );
     }
 
     private static final class BlockingOfferQueue
@@ -188,4 +197,6 @@ public class SessionExecutor<T extends SessionState>
     private final ExecutorService _execService;
     private final JMSConnector _connector;
     private final SessionStateFactory<T> _factory;
+
+    private static AtomicInteger _factoryCounter = new AtomicInteger( 0 );
 }
