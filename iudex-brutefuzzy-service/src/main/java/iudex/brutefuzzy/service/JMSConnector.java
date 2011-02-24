@@ -142,7 +142,7 @@ public class JMSConnector
         throws InterruptedException
     {
         while( _running && ( _connection == null ) ) {
-            wait();
+            wait( 1000 );
         }
 
         if( _connection == null ) {
@@ -187,7 +187,7 @@ public class JMSConnector
         long sleep = _minConnectPoll;
         long slept = 0;
 
-        while( _running && _connection == null ) {
+        while( _running && ( _connection == null ) ) {
             Connection connection = null;
             try {
                 connection = _context.createConnection();
@@ -201,6 +201,7 @@ public class JMSConnector
                 _connection = connection;
                 connection = null;
                 _connection.setExceptionListener( this );
+                notifyAll();
             }
             catch( JMSException x ) {
                 if( slept < _maxConnectDelay ) {
@@ -248,8 +249,7 @@ public class JMSConnector
 
     private Connection _connection = null;
 
-    private List<ConnectListener> _listeners =
-        new ArrayList<ConnectListener>();
+    private List<ConnectListener> _listeners = new ArrayList<ConnectListener>();
 
     private Thread _thread = null;
 }
