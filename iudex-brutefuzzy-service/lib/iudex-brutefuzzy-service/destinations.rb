@@ -58,7 +58,6 @@ module Iudex::BruteFuzzy::Service
           'x-bindings' => [ { :exchange => 'iudex-brutefuzzy-response' } ],
           'x-declare'  => {
             'auto-delete' => true,
-            :exclusive    => true,
             :arguments    => {
               'qpid.max_size'    => 200_000,
               'qpid.policy_type' => :ring,
