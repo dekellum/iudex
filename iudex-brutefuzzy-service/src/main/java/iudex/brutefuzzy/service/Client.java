@@ -14,13 +14,12 @@
  * permissions and limitations under the License.
  */
 
-package iudex.brutefuzzy.client;
+package iudex.brutefuzzy.service;
 
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
-import iudex.brutefuzzy.service.JMSConnector;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +36,12 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rjack.jms.JMSConnector;
 import rjack.jms.JMSContext;
+import rjack.jms.SessionExecutor;
+import rjack.jms.SessionState;
+import rjack.jms.SessionStateFactory;
+import rjack.jms.SessionTask;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

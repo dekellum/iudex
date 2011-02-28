@@ -64,8 +64,8 @@ BANNER
     options
   end
 
-  import 'iudex.brutefuzzy.client.Client'
-  import 'iudex.brutefuzzy.service.JMSConnector'
+  import 'iudex.brutefuzzy.service.Client'
+  import 'rjack.jms.JMSConnector'
 
   BruteFuzzyUtil = Java::iudex.simhash.brutefuzzy.BruteFuzzy
 
@@ -95,7 +95,7 @@ BANNER
   end
 
   def self.run
-    @log = SLF4J[ 'iudex.brutefuzzy.client.Client' ]
+    @log = SLF4J[ 'iudex.brutefuzzy.service.Client' ]
 
     options = parse_options
     @cnt = 0

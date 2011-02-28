@@ -28,7 +28,7 @@ module Iudex::BruteFuzzy::Service
 
     include RJack::QpidClient
 
-    import 'iudex.brutefuzzy.service.JMSConnector'
+    import 'rjack.jms.JMSConnector'
 
     def initialize
       Hooker.apply( [ :iudex, :brutefuzzy_agent ], self )

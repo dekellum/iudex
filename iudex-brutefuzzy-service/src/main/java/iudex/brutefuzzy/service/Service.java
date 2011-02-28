@@ -38,6 +38,7 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rjack.jms.ConnectListener;
 import rjack.jms.JMSContext;
 
 import com.google.protobuf.InvalidProtocolBufferException;
