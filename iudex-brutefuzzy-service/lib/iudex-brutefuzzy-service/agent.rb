@@ -28,23 +28,34 @@ module Iudex::BruteFuzzy::Service
 
     include RJack::QpidClient
 
+    import 'rjack.jms.JMSConnector'
+
     def initialize
-      Hooker.apply( [:iudex,:brutefuzzy_agent], self )
+      Hooker.apply( [ :iudex, :brutefuzzy_agent ], self )
     end
 
     def run
 
-      service = Hooker.with( :iudex ) do |h|
+      service = connector = nil
+
+      Hooker.with( :iudex ) do |h|
         ctx = QpidJMSContext.new
         Destinations.apply( ctx )
         h.apply( :jms_context, ctx )
 
-        h.apply( :brutefuzzy_service, Service.new( create_fuzzy_set, ctx ) )
+        connector = JMSConnector.new( ctx )
+        connector.max_connect_delay = java.lang.Integer::MAX_VALUE
+        connector.do_close_connections = false
+        h.apply( :jms_connector, connector )
+
+        service = Service.new( create_fuzzy_set )
+        h.apply( :brutefuzzy_service, service )
       end
 
       Hooker.log_not_applied # All hooks should be used by now
 
-      sleep #forever
+      connector.add_connect_listener( service )
+      connector.connect_loop
     end
 
     def create_fuzzy_set

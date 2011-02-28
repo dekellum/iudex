@@ -29,6 +29,9 @@ require 'iudex-rome'
 require 'iudex-html'
 require 'iudex-html/factory_helper'
 
+require 'iudex-simhash'
+require 'iudex-simhash/factory_helper'
+
 require 'iudex-worker'
 require 'iudex-worker/fetch_helper'
 require 'iudex-worker/prioritizer'
@@ -45,6 +48,7 @@ module Iudex
 
       include Iudex::DA::Filters::FactoryHelper
       include Iudex::HTML::Filters::FactoryHelper
+      include Iudex::SimHash::Filters::FactoryHelper
       include FetchHelper
 
       attr_accessor :http_client
@@ -147,7 +151,9 @@ module Iudex
       end
 
       def page_receiver
-        [ page_updater ]
+        [ html_clean_filters( :source ),
+          simhash_generator,
+          page_updater ].flatten
       end
 
       def barc_writer
@@ -182,7 +188,7 @@ module Iudex
           :ref_pub_date, :pub_date,
           :priority, :last_visit, :next_visit_after,
           :status, :etag, :reason, :referer, :referent,
-          :cache_file, :cache_file_offset ]
+          :cache_file, :cache_file_offset, :simhash ]
       end
 
       def last_visit_setter

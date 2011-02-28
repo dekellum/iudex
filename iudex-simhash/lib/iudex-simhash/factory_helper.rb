@@ -28,7 +28,7 @@ module Iudex
                                    'config', 'stopwords.en' )
 
         def simhash_stopwords( wfile = DEFAULT_WORDS )
-          words = open( wfile ) { |fin| fin.readlines }
+          words = File.open( wfile ) { |fin| fin.readlines }
           words.map! { |w| w.strip }
           words.reject! { |w| w =~ /^#/ }
 

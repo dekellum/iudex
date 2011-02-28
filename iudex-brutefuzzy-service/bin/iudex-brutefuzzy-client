@@ -52,7 +52,7 @@ BANNER
         options[ :add_random_keys ] = n
       end
       opts.on( "-v", "--version", "Display version and exit" ) do |file|
-        puts "iudex-brutefuzzy-client: #{ BruteFuzzy::Service::VERSION }"
+        puts "iudex-brutefuzzy-client: #{ Iudex::BruteFuzzy::Service::VERSION }"
         exit 1
       end
       opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
@@ -64,7 +64,9 @@ BANNER
     options
   end
 
-  import 'iudex.brutefuzzy.client.Client'
+  import 'iudex.brutefuzzy.service.Client'
+  import 'rjack.jms.JMSConnector'
+
   BruteFuzzyUtil = Java::iudex.simhash.brutefuzzy.BruteFuzzy
 
   def self.random_keys( n )
@@ -93,7 +95,7 @@ BANNER
   end
 
   def self.run
-    @log = SLF4J[ 'iudex.brutefuzzy.client.Client' ]
+    @log = SLF4J[ 'iudex.brutefuzzy.service.Client' ]
 
     options = parse_options
     @cnt = 0
@@ -117,18 +119,22 @@ BANNER
       ctx = QpidClient::QpidJMSContext.new
       Destinations.apply( ctx )
       h.apply( :jms_context, ctx )
-      @client = h.apply( :brutefuzzy_client, Client.new( ctx ) )
-      @client.open
-      ctx.close
+
+      @connector = h.apply( :jms_connector, JMSConnector.new( ctx ) )
+      @connector.do_close_connections = false
+      @connector.start
+
+      @client = h.apply( :brutefuzzy_client, Client.new( @connector ) )
+
     end
 
     yield
   ensure
     if @client
-      sleep 1.5
       @client.close
       @client = nil
     end
+    @connector.stop if @connector
   end
 
   def self.check_batch( keys )
