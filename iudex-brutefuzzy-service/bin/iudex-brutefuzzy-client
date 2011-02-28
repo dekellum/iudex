@@ -121,6 +121,7 @@ BANNER
       h.apply( :jms_context, ctx )
 
       @connector = h.apply( :jms_connector, JMSConnector.new( ctx ) )
+      @connector.do_close_connections = false
       @connector.start
 
       @client = h.apply( :brutefuzzy_client, Client.new( @connector ) )

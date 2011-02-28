@@ -50,7 +50,7 @@ public class Client implements SessionStateFactory<Client.State>
     public Client( JMSConnector connector )
     {
         _executor = new SessionExecutor<State>( connector, this,
-                                                1000, 2, 80 * 1000 );
+                                                10000, 1, 80 * 1000 );
     }
 
     public void check( long simhash, boolean doAdd )
@@ -172,7 +172,7 @@ public class Client implements SessionStateFactory<Client.State>
         }
 
         private final MessageProducer _producer;
-        private final Semaphore _semaphore = new Semaphore( 5000 );
+        private final Semaphore _semaphore = new Semaphore( 10000 );
     }
 
     private final SessionExecutor<State> _executor;
