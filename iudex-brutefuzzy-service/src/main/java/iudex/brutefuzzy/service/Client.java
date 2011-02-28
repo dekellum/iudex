@@ -49,7 +49,8 @@ public class Client implements SessionStateFactory<Client.State>
 {
     public Client( JMSConnector connector )
     {
-        _executor = new SessionExecutor<State>( connector, this );
+        _executor = new SessionExecutor<State>( connector, this,
+                                                1000, 2, 80 * 1000 );
     }
 
     public void check( long simhash, boolean doAdd )
