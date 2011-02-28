@@ -45,6 +45,7 @@ module Iudex::BruteFuzzy::Service
 
         connector = JMSConnector.new( ctx )
         connector.max_connect_delay = java.lang.Integer::MAX_VALUE
+        connector.do_close_connections = false
         h.apply( :jms_connector, connector )
 
         service = Service.new( create_fuzzy_set )
