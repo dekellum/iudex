@@ -34,32 +34,37 @@ module Iudex::BruteFuzzy::Service
       Hooker.apply( [ :iudex, :brutefuzzy_agent ], self )
     end
 
+    def fuzzy_set
+      FuzzyTree64.new( 500_000, 3, 16 )
+    end
+
+    def jms_context
+      ctx = QpidJMSContext.new
+      Destinations.apply( ctx )
+      ctx
+    end
+
+    def jms_connector( ctx )
+      connector = JMSConnector.new( ctx )
+      connector.max_connect_delay = java.lang.Integer::MAX_VALUE
+      connector.do_close_connections = false
+      connector
+    end
+
     def run
+      ctx = jms_context
+      Hooker.apply( [ :jms, :context ], ctx )
 
-      service = connector = nil
+      connector = jms_connector( ctx )
+      Hooker.apply( [ :jms, :connector ], connector )
 
-      Hooker.with( :iudex ) do |h|
-        ctx = QpidJMSContext.new
-        Destinations.apply( ctx )
-        h.apply( :jms_context, ctx )
-
-        connector = JMSConnector.new( ctx )
-        connector.max_connect_delay = java.lang.Integer::MAX_VALUE
-        connector.do_close_connections = false
-        h.apply( :jms_connector, connector )
-
-        service = Service.new( create_fuzzy_set )
-        h.apply( :brutefuzzy_service, service )
-      end
+      service = Service.new( fuzzy_set )
+      Hooker.apply( [ :iudex, :brutefuzzy_service ], service )
 
       Hooker.log_not_applied # All hooks should be used by now
 
       connector.add_connect_listener( service )
       connector.connect_loop
-    end
-
-    def create_fuzzy_set
-      FuzzyTree64.new( 500_000, 3, 16 )
     end
 
   end
