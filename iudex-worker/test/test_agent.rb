@@ -31,13 +31,22 @@ class TestAgent < MiniTest::Unit::TestCase
 
   def teardown
     Logback[ 'iudex.worker.FilterChainFactory' ].level = nil
+    Hooker.send( :clear )
   end
 
-  def test_agent_run
+  def test_agent_default
+    assert_agent
+  end
 
+  def test_agent_with_sample_config
     # Test out the sample config
     Hooker.load_file( File.join( File.dirname( __FILE__ ),
                                  '..', 'config', 'config.rb' ) )
+
+    assert_agent
+  end
+
+  def assert_agent
 
     # Stub VisitExecutor.start to allow agent.run to return early.
     Hooker.add( [ :iudex, :visit_executor ] ) do |vexec|
