@@ -24,11 +24,23 @@ require 'iudex-brutefuzzy-service'
 class TestAgent < MiniTest::Unit::TestCase
   include Iudex::BruteFuzzy::Service
 
-  def test_agent_run
+  def teardown
+    Hooker.send( :clear )
+  end
+
+  def test_agent_default
+    assert_agent
+  end
+
+  def test_agent_with_sample_config
 
     # Test out the sample config
     Hooker.load_file( File.join( File.dirname( __FILE__ ),
                                  '..', 'config', 'config.rb' ) )
+    assert_agent
+  end
+
+  def assert_agent
 
     agent = Agent.new
 
