@@ -12,5 +12,6 @@ lib/iudex-worker/fetch_helper.rb
 lib/iudex-worker/filter_chain_factory.rb
 lib/iudex-worker/prioritizer.rb
 test/setup.rb
+test/test_agent.rb
 test/test_filter_chain_factory.rb
 test/test_prioritizer.rb

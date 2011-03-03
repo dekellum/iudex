@@ -79,7 +79,11 @@ public class VisitExecutor implements Closeable, Runnable
 
     public void join() throws InterruptedException
     {
-        _executor.join();
+        Thread executor = null;
+        synchronized( this ) {
+            executor = _executor;
+        }
+        if( executor != null ) executor.join();
     }
 
     public void shutdown() throws InterruptedException

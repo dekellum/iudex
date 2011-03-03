@@ -36,7 +36,7 @@ module Iudex
       include Gravitext::HTMap
 
       def initialize
-        Hooker.apply( [:iudex,:worker], self )
+        Hooker.apply( [ :iudex, :worker ], self )
       end
 
       def poll_keys
