@@ -12,4 +12,5 @@ lib/iudex-brutefuzzy-service.rb
 lib/iudex-brutefuzzy-service/agent.rb
 lib/iudex-brutefuzzy-service/destinations.rb
 test/setup.rb
+test/test_agent.rb
 test/test_qpid_context.rb
