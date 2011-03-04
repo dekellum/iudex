@@ -45,8 +45,6 @@ module IudexBinScript
     Hooker.register_config( opts )
   end.parse!
 
-  agent = Worker::Agent.new
-
-  agent.run
+  Worker::Agent.new.run
 
 end
