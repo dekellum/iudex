@@ -43,7 +43,6 @@ module IudexInitScript
     Hooker.load_file( './config.rb' )
   end
 
-  agent = BruteFuzzy::Service::Agent.new
-  agent.run
+  BruteFuzzy::Service::Agent.new.run
 
 end

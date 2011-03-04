@@ -41,7 +41,6 @@ module IudexInitScript
     Hooker.load_file( './config.rb' )
   end
 
-  agent = Worker::Agent.new
-  agent.run
+  Worker::Agent.new.run
 
 end
