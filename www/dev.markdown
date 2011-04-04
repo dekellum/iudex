@@ -104,7 +104,7 @@ beyond those shown.
 
 ## Versioning
 
-Iūdex will continue to comply with [Semantic Versioning] (SemVer),
+Iūdex will continue to comply with [Semantic Versioning][],
 with the following narrowing constraints:
 
 * The first "release" and current development is for 1.0.0. Per SemVer

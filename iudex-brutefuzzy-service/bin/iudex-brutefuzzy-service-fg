@@ -39,13 +39,12 @@ module IudexBinScript
       puts "iudex-brutefuzzy-service: #{ BruteFuzzy::Service::VERSION }"
       exit 1
     end
-    opts.on( "-V", "--verbose", "Enable verbose DEBUG logging" ) do |file|
+    opts.on( "-d", "--debug", "Enable verbose DEBUG logging" ) do |file|
       Logback[ 'iudex' ].level = Logback::DEBUG
     end
     Hooker.register_config( opts )
   end.parse!
 
-  agent = BruteFuzzy::Service::Agent.new
-  agent.run
+  BruteFuzzy::Service::Agent.new.run
 
 end
