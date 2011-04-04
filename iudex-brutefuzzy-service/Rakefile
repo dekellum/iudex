@@ -13,9 +13,8 @@ t = RJack::TarPit.new( 'iudex-brutefuzzy-service',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps   += [ [ 'rjack-slf4j',               '~> 1.6.1' ],
+  h.extra_deps   += [ [ 'iudex-core',                '~> 1.0.0' ],
                       [ 'rjack-logback',             '~> 1.0'   ],
-                      [ 'iudex-core',                '~> 1.0.0' ],
                       [ 'iudex-simhash',             '~> 1.0.0' ],
                       [ 'iudex-brutefuzzy-protobuf', '~> 1.0.0' ],
                       [ 'rjack-jms',                 '~> 1.1.0' ],
