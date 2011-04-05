@@ -4,7 +4,9 @@
 
 == Description
 
-rjack-rome implementation of ContentParser
+Iudex is a general purpose web crawler and feed processor in
+ruby/java. The iudex-rome gems is an adaption of rjack-rome for feed
+parsing in Iudex.
 
 == License
 

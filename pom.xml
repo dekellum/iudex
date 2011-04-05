@@ -29,6 +29,17 @@
     </repository>
   </repositories>
 
+  <distributionManagement>
+    <repository>
+      <id>gravitext-release</id>
+      <name>Gravitext Repo</name>
+      <url>file:///home/david/src/oss/releases</url>
+      <layout>default</layout>
+      <uniqueVersion>false</uniqueVersion>
+    </repository>
+    <downloadUrl>http://gravitext.com/repo/releases</downloadUrl>
+  </distributionManagement>
+
   <dependencyManagement>
     <dependencies>
 
@@ -79,6 +90,17 @@
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
