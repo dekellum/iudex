@@ -3,8 +3,6 @@ title: Development Guide
 layout: sub
 ---
 
-# Development Guide
-
 * toc here
 {:toc}
 
@@ -60,7 +58,7 @@ end
 * Liberal space around operators and internal to parens and braces.
 * Favor parenthesis for most method calls and less ambiguity.
 * Use Unix-style line endings.
-* Indent when as deep as case.
+* Indent `when` as deep as `case`.
 * Use RDoc and its conventions for API documentation. Don't put an
   empty line between the comment block and the def.
 * Use empty lines to break up a long method into logical paragraphs.
@@ -106,7 +104,7 @@ beyond those shown.
 
 ## Versioning
 
-Iūdex will continue to comply with [Semantic Versioning] (SemVer),
+Iūdex will continue to comply with [Semantic Versioning][],
 with the following narrowing constraints:
 
 * The first "release" and current development is for 1.0.0. Per SemVer

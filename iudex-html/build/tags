@@ -1,0 +1,130 @@
+# HTML Tags
+#
+# Copyright (c) 2010-2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#
+# Sources
+#  http://www.w3.org/TR/xhtml11/
+#  http://www.w3.org/TR/html4/
+#  http://www.w3schools.com/tags/default.asp
+#  http://xhtml.com/
+#
+# Codes:
+# E :: Empty Tag
+# S :: In Strict HTML 4.01/XHTML 1.0
+# T :: In Transitional HTML 4.01/XHTML 1.0
+# F :: In frameset annex
+# D :: Deprecated
+# I :: Inline elements (Note <br/> is not labeled inline.)
+# M :: Metadata elements (content not visible text), i.e. head
+# B :: Banned/blacklisted elements from which text should not be extracted.
+
+a            ,  S T F   I    , anchor
+abbr         ,  S T F   I    , abbreviation
+acronym      ,  S T F   I    , acronym
+address      ,  S T F        , contact information for the author or owner
+applet       ,    T F D      , embedded applet
+area         ,E S T F        , area inside an image-map
+b            ,  S T F   I    , bold text
+base         ,E S T F     M  , default address or a default target for all links on a page
+basefont     ,E   T F D I M  , default font; color; or size for the text in a page
+bdo          ,  S T F   I    , the text direction
+big          ,  S T F   I    , big text
+blockquote   ,  S T F        , long quotation
+body         ,  S T F        , the document's body
+br           ,E S T F        , single line break
+button       ,  S T F   I   B, push button
+caption      ,  S T F        , table caption
+center       ,    T F D      , centered text
+cite         ,  S T F   I    , citation
+code         ,  S T F   I    , computer code text
+col          ,E S T F        , attribute values for one or more columns in a table
+colgroup     ,  S T F        , group of columns in a table for formatting
+dd           ,  S T F        , description of a term in a definition list
+del          ,  S T F   I    , deleted text
+dfn          ,  S T F   I    , definition term
+dir          ,    T F D      , directory list
+div          ,  S T F        , section in a document
+dl           ,  S T F        , definition list
+dt           ,  S T F        , term (an item) in a definition list
+em           ,  S T F   I    , emphasized text
+fieldset     ,  S T F       B, border around elements in a form
+font         ,    T F D I    , font; color; or size for text
+form         ,  S T F        , form for user input
+frame        ,E     F       B, window (a frame) in a frameset
+frameset     ,      F       B, set of frames
+h1           ,  S T F        , heading level 1
+h2           ,  S T F        , heading level 2
+h3           ,  S T F        , heading level 3
+h4           ,  S T F        , heading level 4
+h5           ,  S T F        , heading level 5
+h6           ,  S T F        , heading level 6
+head         ,  S T F     M  , information about the document
+hr           ,E S T F        , horizontal line
+html         ,  S T F        , document
+i            ,  S T F   I    , italic text
+iframe       ,    T F        , nline frame
+img          ,E S T F   I    , image
+input        ,E S T F   I   B, input control
+ins          ,  S T F   I    , inserted text
+isindex      ,    T F D      , searchable index related to a document
+kbd          ,  S T F   I    , keyboard text
+label        ,  S T F   I   B, label for an input element
+legend       ,  S T F       B, caption for a fieldset element
+li           ,  S T F        , list item
+link         ,E S T F     M  , the relationship between a document and an external resource
+map          ,  S T F   I    , image-map
+menu         ,    T F D      , menu list
+meta         ,E S T F     M  , metadata
+noframes     ,    T F       B, alternate content where frames not supported
+noscript     ,  S T F       B, alternate content script not supported
+object       ,  S T F   I   B, embedded object
+ol           ,  S T F        , ordered list
+optgroup     ,  S T F       B, group of related options in a select list
+option       ,  S T F       B, option in a select list
+p            ,  S T F        , paragraph
+param        ,E S T F        , parameter for an object
+pre          ,  S T F        , preformatted text
+q            ,  S T F   I    , short quotation
+rb           ,               , ruby base text
+rbc          ,               , ruby base container (complex)
+rp           ,               , ruby simple text container
+rt           ,               , ruby annotation text
+rtc          ,               , ruby text container (complex)
+ruby         ,          I    , ruby pronunciation aid
+s            ,    T F D I    , strikethrough text
+samp         ,  S T F   I    , sample computer code
+script       ,  S T F   I   B, client-side script
+select       ,  S T F   I   B, select list (drop-down list)
+small        ,  S T F   I    , small text
+span         ,  S T F   I    , section in a document
+strike       ,    T F D I    , strikethrough text
+strong       ,  S T F   I    , strong text
+style        ,  S T F       B, style information for a document
+sub          ,  S T F   I    , subscripted text
+sup          ,  S T F   I    , superscripted text
+table        ,  S T F        , table
+tbody        ,  S T F        , Groups the body content in a table
+td           ,  S T F        , cell in a table
+textarea     ,  S T F   I   B, multi-line text input control
+tfoot        ,  S T F        , Groups the footer content in a table
+th           ,  S T F        , header cell in a table
+thead        ,  S T F        , Groups the header content in a table
+title        ,  S T F     M  , the title of a document
+tr           ,  S T F        , row in a table
+tt           ,  S T F   I    , teletype text
+u            ,    T F D I    , underlined text
+ul           ,  S T F        , unordered list
+var          ,  S T F   I    , variable part of a text
+xmp          ,        D      , preformatted text

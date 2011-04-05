@@ -13,17 +13,16 @@ t = RJack::TarPit.new( 'iudex-core',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'iudex-filter',   '~> 1.0.0'  ],
+  h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1'  ],
+                    [ 'hooker',         '~> 1.0.0'  ],
+                    [ 'gravitext-util', '~> 1.5.0'  ],
+                    [ 'iudex-filter',   '~> 1.0.0'  ],
                     [ 'iudex-http',     '~> 1.0.0'  ],
-                    [ 'iudex-barc',     '~> 1.0.0'  ],
-                    [ 'gravitext-util', '~> 1.4.0'  ],
-                    [ 'rjack-slf4j',    '~> 1.5.11'  ] ]
+                    [ 'iudex-barc',     '~> 1.0.0'  ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',      '~> 1.5.0'  ],
-                        [ 'rjack-logback', '>= 0.9.18' ] ]
-
-  h.rubyforge_name = "iudex"
+  h.extra_dev_deps += [ [ 'minitest',      '>= 1.7.1', '< 2.1' ],
+                        [ 'rjack-logback', '~> 1.0' ] ]
 end
 
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"
@@ -41,5 +40,22 @@ end
 task :gem  => [ :check_pom_version, :check_history_version                      ]
 task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
 task :push => [                                             :check_history_date ]
+
+file 'src/main/java/iudex/core/TLDSets.java' => FileList.new( "build/*" ) do
+  require 'build/tld_set_generator'
+  puts "Generating TLDSets.java"
+  TLDSetGenerator.new.run
+end
+
+file 'target/.tarpit' => [ 'src/main/java/iudex/core/TLDSets.java' ]
+
+task :clean do
+  rm_f 'src/main/java/iudex/core/TLDSets.java'
+end
+
+task :refresh_tld_dat do
+  sh( "curl http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1" +
+      " -o build/effective_tld_name.dat" )
+end
 
 t.define_tasks

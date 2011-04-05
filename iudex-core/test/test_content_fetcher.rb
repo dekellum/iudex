@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -69,7 +69,7 @@ module TestHTTPMocks
   class TestReceiver < FilterBase
     def initialize( &block )
       @block = block
-      @log = SLF4J[ self.class ]
+      @log = RJack::SLF4J[ self.class ]
     end
 
     def filter( out )
@@ -112,7 +112,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 200, out.status )
       assert_equal( WEAK_ETAG, out.etag )
-      assert( out.content )
+      assert( out.source )
     end
   end
 
@@ -125,7 +125,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 304, out.status )
       assert_nil( out.etag )
-      assert_nil( out.content )
+      assert_nil( out.source )
     end
   end
 

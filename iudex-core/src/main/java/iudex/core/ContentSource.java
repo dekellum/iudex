@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,10 @@ import com.gravitext.util.Streams;
 
 public class ContentSource
 {
+    public ContentSource( CharSequence seq )
+    {
+        _source = seq;
+    }
 
     public ContentSource( ByteBuffer buffer )
     {
@@ -56,6 +60,10 @@ public class ContentSource
         _defaultEncoding = encoding;
     }
 
+    /**
+     * Default encoding if set (i.e. HTTP Content-Type; charset hint) or null
+     * when the source is already characters.
+     */
     public Charset defaultEncoding()
     {
         return _defaultEncoding;

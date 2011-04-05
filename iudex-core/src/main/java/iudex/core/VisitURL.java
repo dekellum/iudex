@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ public final class VisitURL
         // Lower case the host
         String host = uri.getHost();
         //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
-        if( host != null ) host = host.toLowerCase();
+        if( host != null ) host = Domains.normalize( host );
 
         // Drop superfluous port assignments
         int port = uri.getPort();

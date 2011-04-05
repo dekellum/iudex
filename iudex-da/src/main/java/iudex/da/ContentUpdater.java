@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,6 @@ public class ContentUpdater
                            Transformer transformer )
     {
         super( source, mapper );
-        if( ! mapper.fields().contains( ContentMapper.UHASH ) ) {
-            throw new IllegalArgumentException(
-               "ContentUpdater needs mapper with UHASH included." );
-        }
         _transformer = transformer;
     }
 

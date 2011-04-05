@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -40,6 +40,16 @@ class TestPrioritizer < MiniTest::Unit::TestCase
 
     assert( p.filter( m ) )
     assert_equal_fuzzy( 3.2, m.priority )
+    assert_equal( m.visit_start, m.next_visit_after )
+  end
+
+  def test_visiting_now
+    m = new_map
+    p = Prioritizer.new( "test", :visiting_now => true )
+
+    assert( p.filter( m ) )
+    assert_equal_fuzzy( m.visit_start.time/1000.0 + p.min_next,
+                        m.next_visit_after.time/1000.0 )
   end
 
   def test_oldest

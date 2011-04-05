@@ -1,0 +1,104 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#.hashdot.vm.options += -Xmx1g
+# For 64b add: -XX:+UseCompressedOops
+
+#--
+# Copyright (c) 2010-2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+require 'rjack-logback'
+
+require 'iudex-simhash'
+require 'iudex-simhash/sim_hash_gen_perf_test_factory'
+
+require 'optparse'
+
+require 'gravitext-util'
+require 'gravitext-util/perftest'
+
+module PerfTest
+  include Iudex::SimHash::BruteFuzzy
+  import 'iudex.simhash.brutefuzzy.FuzzySetPerfTest'
+
+  MD = FuzzySetPerfTest::Mode
+
+  def self.run( args = ARGV )
+
+    options = {}
+    oparser = OptionParser.new do |opts|
+      opts.banner = <<USAGE
+Usage: iudex-simhash-perftest (fuzzy|gen) [options] <length> <threshold-bits>
+USAGE
+      opts.on( "-t", "--threads N", Integer, "Test with thread count" ) do |n|
+        options[ :threads ] = n
+      end
+      opts.on( "--tree-bits=N", Integer,
+               "Test TREE only, with segments from specified minimum bits" ) do |n|
+        options[ :tree_bits ] = n
+      end
+      opts.on( "--capacity=N", Integer,
+               "Set initial capacity to N (default: length)" ) do |n|
+        options[ :capacity ] = n
+      end
+
+    end
+
+    oparser.parse!
+
+    tests = case( ARGV.shift )
+            when 'fuzzy'
+              fuzzy_tests( options )
+            when 'gen'
+              gen_test
+            else
+              puts oparser
+              exit 1
+            end
+
+    harness = Gravitext::PerfTest::Harness.new( tests )
+
+    harness.thread_count = options[ :threads ] if options[ :threads ]
+    harness.execute
+  end
+
+  def self.fuzzy_tests( options )
+    length = ARGV.shift.to_i || 1000
+    threshold = ARGV.shift.to_i || 3
+
+    min_bits = options[ :tree_bits ] || 0
+    segbits = [ 0, 4, 8, 16 ].select do |b|
+      ( b == 0 || ( ( 64 / b ) > threshold ) ) && ( b >= min_bits )
+    end
+
+    segbits.map do |bits|
+      mode = ( bits == 0 ) ? MD::LIST : MD::TREE
+      pt = FuzzySetPerfTest.new( mode, length, threshold )
+      pt.max_bits = bits if bits > 0
+      pt.initial_capacity = options[ :capacity ] if options[ :capacity ]
+      pt
+    end
+  end
+
+  def self.gen_test
+    [ SimHashGenPerfTestFactory.new.perf_test ]
+  end
+
+end
+
+PerfTest.run

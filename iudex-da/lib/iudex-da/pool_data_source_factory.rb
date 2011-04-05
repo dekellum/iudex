@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -36,7 +36,8 @@ module Iudex::DA
     attr_accessor :data_source
 
     def initialize( in_props = {} )
-      @props = CONFIG.merge( in_props )
+      @props = Hooker.merge( [ :iudex, :connect_props ],
+                             CONFIG.merge( in_props ) )
 
       # Tweeks specific for Java datasource/pool
       @props[ :user ] ||= @props[ :username ]

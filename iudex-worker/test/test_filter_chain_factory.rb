@@ -2,7 +2,7 @@
 #.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -32,31 +32,24 @@ require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
-  include Iudex::Core
-  include Iudex::DA
-  include Iudex::HTTPClient3
-  include Iudex::Worker
+  include Iudex
   include Gravitext::HTMap
 
   def test_filter
-    fcf = Iudex::Worker::FilterChainFactory.new( "test" )
+    fcf = Worker::FilterChainFactory.new( "test" )
 
-    mgr = Config.do_http_client_3
+    mgr = HTTPClient3.create_manager
     mgr.start
-    fcf.http_client = HTTPClient3.new( mgr.client )
+    fcf.http_client = HTTPClient3::HTTPClient3.new( mgr.client )
 
-    dsf = PoolDataSourceFactory.new
+    dsf = DA::PoolDataSourceFactory.new
     fcf.data_source = dsf.create
-
-    def fcf.more_feed_update_fields
-      super + [ ContentKeys::TITLE ]
-    end
 
     fcf.filter do |chain|
       # Run twice (assume new the first time, updates the second).
       2.times do
         content = UniMap.new
-        content.url = VisitURL.normalize( "http://gravitext.com/atom.xml" )
+        content.url = Core::VisitURL.normalize( "http://gravitext.com/atom.xml" )
         content.type = "FEED"
         content.priority = 1.0
         assert( chain.filter( content ) )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,11 @@ public class VisitURLTest
     public void testNormalize() throws SyntaxException
     {
         String[][] sameURLs = new String[][] {
-            { "http://h.c/foo", "http://h.c/foo" },
-            { "http://h.c/foo", "http://h.c/foo?" },
+            { "http://h.c/foo",
+               "http://h.c/foo",
+               "http://h.c./foo",
+               "http://h.c/foo?" },
+
             { "http://h.c/", "http://h.c" },
 
             { "http://h.c/foo", " \thttp://h.c/foo\n\r\t" },

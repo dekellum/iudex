@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -15,6 +15,7 @@
 #++
 
 require 'iudex-filter'
+require 'iudex-filter/key_helper'
 require 'iudex-filter/by_filter_logger'
 
 module Iudex
@@ -24,13 +25,15 @@ module Iudex
       class FilterChainFactory
         attr_reader :description
 
+        include KeyHelper
+
         def initialize( description = "default" )
           @description = description
 
           @log = RJack::SLF4J[ [ RJack::SLF4J.to_log_name( self.class ),
                                  description ].join('.') ]
 
-          @summery_period = nil
+          @summary_period = nil
           @by_filter_period = nil
 
           @index = nil

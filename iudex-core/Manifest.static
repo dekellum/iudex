@@ -5,6 +5,9 @@ Rakefile
 pom.xml
 bin/iudex-test-config
 bin/iudex-url-norm
+build/TLDSets.java.erb
+build/effective_tld_name.dat
+build/tld_set_generator.rb
 config/config.rb
 lib/iudex-core/base.rb
 lib/iudex-core.rb

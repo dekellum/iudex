@@ -1,0 +1,35 @@
+# Common 3-4 character english words to be dropped.
+# Note that 1-2 character words are already dropped by the Tokenizer.
+all
+and
+are
+been
+but
+can
+did
+does
+for
+from
+get
+had
+have
+isn
+its
+not
+one
+our
+out
+said
+say
+that
+the
+they
+this
+was
+were
+what
+when
+will
+with
+you
+your

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet href="/css/rss20.xsl" type="text/xsl"?>
+<rss version="2.0"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Channel Title</title>
+    <link>http://iudex.gravitext.com/test/rss.xml</link>
+    <description>Channel Description</description>
+    <language>en-us</language>
+    <ttl>30</ttl>
+    <atom:link rel="self" href="http://iudex.gravitext.com/test/rss.xml" type="application/rss+xml"/>
+    <item>
+      <title>Item Title</title>
+      <link>http://iudex.gravitext.com/test/item/1.html?click_track=a79bna7</link>
+      <guid isPermaLink="false">>http://iudex.gravitext.com/test/item/1.html</guid>
+      <pubDate>Sat, 06 Nov 2010 20:20:00 EDT</pubDate>
+      <description><![CDATA[Item Description with <i>HTML</i>]]></description>
+      <dc:creator>David Kellum</dc:creator>
+    </item>
+  </channel>
+</rss>

@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -20,13 +20,17 @@ require 'iudex-filter'
 require 'iudex-barc'
 
 require 'iudex-core/base'
+
 require 'iudex-core/config'
+
+require 'java'
 
 module Iudex
   module Core
     require "#{LIB_DIR}/iudex-core-#{VERSION}.jar"
 
     import 'iudex.core.ContentKeys'
+    import 'iudex.core.ContentSource'
     import 'iudex.core.VisitExecutor'
     import 'iudex.core.VisitURL'
 
@@ -36,21 +40,10 @@ module Iudex
       import 'iudex.core.filters.DateChangeFilter'
       import 'iudex.core.filters.DefaultFilter'
       import 'iudex.core.filters.FutureDateFilter'
+      import 'iudex.core.filters.RLDomainFilter'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.UHashMDCSetter'
     end
 
-    module Config
-      @visit_exec_proc = nil
-
-      def self.setup_visit_executor( &block )
-        @visit_exec_proc = block
-      end
-
-      def self.do_visit_executor( vx )
-        @visit_exec_proc.call( vx ) if @visit_exec_proc
-        vx
-      end
-    end
   end
 end

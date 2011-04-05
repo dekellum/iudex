@@ -1,6 +1,6 @@
 digraph "iudex-gems" {
   rankdir=LR
-  size="6.5,4";
+  size="7.5,5";
   bgcolor="transparent";
   node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
          fontname="Arial",  margin="0.30,0.1" ];
@@ -16,11 +16,22 @@ digraph "iudex-gems" {
   "iudex-core"   -> "iudex-http"
   "iudex-core"     -> "iudex-barc"
 
+  "iudex-html";
+  "iudex-simhash";
+
+  "iudex-simhash" -> "iudex-html";
+  "iudex-simhash" -> "iudex-filter";
+  "iudex-simhash" -> "iudex-core";
+#  "iudex-core"    -> "iudex-simhash";
+
+  "iudex-html" -> "iudex-filter";
+  "iudex-html" -> "iudex-core";
+
   "iudex-rome"   -> "iudex-core"
 
-  "iudex-sitemap" [ style="rounded,dashed" ];
-  "iudex-sitemap" [ target=_parent, URL="../sitemap.html" ];
-  "iudex-sitemap" -> "iudex-core"
+#  "iudex-sitemap" [ style="rounded,dashed" ];
+#  "iudex-sitemap" [ target=_parent, URL="../sitemap.html" ];
+#  "iudex-sitemap" -> "iudex-core"
 
 #  "iudex-barc"   -> "gravitext-util"
   "iudex-barc"   -> "iudex-http"
@@ -32,20 +43,22 @@ digraph "iudex-gems" {
     "iudex-http"
     "iudex-httpclient-3" -> "iudex-http"
 
-    "iudex-httpclient-4" [ style="rounded,dashed" ];
-    "iudex-httpclient-4" -> "iudex-http"
+#    "iudex-httpclient-4" [ style="rounded,dashed" ];
+#    "iudex-httpclient-4" -> "iudex-http"
   }
 
-  "iudex-worker" [ style="filled,rounded,dashed" ];
+  "iudex-worker";
   "iudex-worker" -> "iudex-da"
   "iudex-worker" -> "iudex-rome"
   "iudex-worker" -> "iudex-core"
   "iudex-worker" -> "iudex-httpclient-3"
   "iudex-worker" -> "iudex-barc"
+  "iudex-worker" -> "iudex-html"
+  "iudex-worker" -> "iudex-simhash"
 
-  "iudex-publisher" [ style="rounded,dashed" ];
-  "iudex-publisher" -> "iudex-da"
-  "iudex-publisher" -> "iudex-barc"
+#  "iudex-publisher" [ style="rounded,dashed" ];
+#  "iudex-publisher" -> "iudex-da"
+#  "iudex-publisher" -> "iudex-barc"
 
 #  "iudex-filter" -> "rjack-slf4j"
 #  "iudex-filter" -> "rjack-logback"

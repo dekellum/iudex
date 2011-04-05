@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -18,29 +18,13 @@ require 'iudex-da'
 require 'iudex-da/key_helper'
 require 'iudex-da/pool_data_source_factory'
 
-module Iudex::Core
-
-  module Config
-    @importer_proc = nil
-
-    def self.setup_importer( &block )
-      @importer_proc = block
-    end
-
-    def self.do_importer( importer )
-      @importer_proc.call( importer ) if @importer_proc
-    end
-  end
-
-end
-
 module Iudex::DA
 
   class Importer
     include Iudex::Core
     include Gravitext::HTMap
 
-    include KeyHelper
+    include Iudex::Filter::KeyHelper
 
     import 'iudex.da.BaseTransformer'
     import 'iudex.da.ContentUpdater'
@@ -49,7 +33,7 @@ module Iudex::DA
       @dsf = PoolDataSourceFactory.new
       UniMap.define_accessors
 
-      Config.do_importer( self )
+      Hooker.apply( [ :iudex, :importer ], self )
     end
 
     def import_files( files = ARGV )

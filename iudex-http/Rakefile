@@ -13,14 +13,12 @@ t = RJack::TarPit.new( 'iudex-http',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'gravitext-util', '~> 1.4.0'  ],
-                    [ 'rjack-slf4j',    '~> 1.5.11'  ] ]
+  h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1' ],
+                    [ 'gravitext-util', '~> 1.5.0' ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',      '~> 1.5.0'  ],
-                        [ 'rjack-logback', '>= 0.9.18' ] ]
-
-  h.rubyforge_name = "iudex"
+  h.extra_dev_deps += [ [ 'minitest',      '>= 1.7.1', '< 2.1' ],
+                        [ 'rjack-logback', '~> 1.0' ] ]
 end
 
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"

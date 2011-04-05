@@ -8,5 +8,9 @@ lib/iudex-filter.rb
 lib/iudex-filter/by_filter_logger.rb
 lib/iudex-filter/filter_base.rb
 lib/iudex-filter/filter_chain_factory.rb
+lib/iudex-filter/key_helper.rb
+lib/iudex-filter/proc_filter.rb
 test/setup.rb
+test/test_filter_base.rb
 test/test_filter_chain_factory.rb
+test/test_proc_filter.rb

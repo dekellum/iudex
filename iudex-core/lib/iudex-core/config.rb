@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -16,46 +16,36 @@
 
 require 'rjack-slf4j'
 require 'optparse'
+require 'hooker'
+
+Hooker.log_with { |m| RJack::SLF4J[ 'iudex' ].info( m.rstrip ) }
 
 module Iudex
 
-  # Yield Iudex::Core::Config module to block
-  def self.configure
-    yield Iudex::Core::Config
+  # Apply configuration from block
+  def self.configure( &block )
+    Hooker.with( :iudex, &block )
   end
 
   module Core
 
-    # Extensible module defining top level configuration blocks.
+    # <b>DEPRECATED:</b> Extensible module defining top level
+    # configuration blocks.
     module Config
 
-      @log = RJack::SLF4J[ self ]
-
-      # Parse options using an OptionParser, defining (-c)onfig
-      # option, and yielding to block for further option handling.
+      # <b>DEPRECATED:</b> Parse options using an OptionParser,
+      # defining (-c)onfig option, and yielding to block for further
+      # option handling.
       def self.parse_options( args = ARGV, &block )
+        warn( "DEPRECATED parse_options called from #{caller.first.to_s}\n" +
+              "Use Hooker.register_config and OptionParser.new instead." )
         parser = OptionParser.new do |opts|
-          opts.on( "-c", "--config FILE", "Load configuration file") do |file|
-            load_config( file )
-          end
+          Hooker.register_config( opts )
           block.call( opts ) if block
         end
         parser.parse!
       end
 
-      # Load a configuration file (with info log message)
-      def self.load_config( file )
-        @log.info "Loading config #{file}."
-        load file
-      end
-
-      # Ignore undefined configuration blocks (with a debug log message).
-      def self.method_missing( method, *arguments, &block )
-        ccall = caller[0]
-        @log.debug do
-          "Method %s from %s not defined, ignored" % [ method, ccall ]
-        end
-      end
     end
   end
 end

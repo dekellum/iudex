@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -26,6 +26,7 @@ module Iudex
       attr_accessor :min_next
       attr_accessor :min_next_unmodified
       attr_accessor :factors
+      attr_accessor :visiting_now
 
       WWW_BEGINS = Time.utc( 1991, "aug", 6, 20,0,0 ) # WWW begins
       MINUTE     = 60.0
@@ -38,11 +39,12 @@ module Iudex
         @impedance           = 2.0
         @min_next_unmodified =  5 * MINUTE
         @min_next            = 10 * MINUTE
+        @visiting_now        = false
 
         @factors = [ [ 30.0, :ref_change_rate ],
                      [ -1.0, :log_pub_age ] ]
 
-        @log = SLF4J[ self.class ]
+        @log = RJack::SLF4J[ self.class ]
 
         opts.each { |k,v| send( k.to_s + '=', v ) }
         yield self if block_given?
@@ -80,7 +82,7 @@ module Iudex
         priority = ( ( ( priority || 0.0 ) * @impedance + new_priority ) /
                      ( @impedance + 1 ) )
 
-        if map.last_visit
+        if map.last_visit || visiting_now
           delta = ( map.status == 304 ) ? @min_next_unmodified : @min_next
         else
           delta = 0.0

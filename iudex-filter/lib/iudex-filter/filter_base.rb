@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -14,31 +14,33 @@
 # permissions and limitations under the License.
 #++
 
-module Iudex
-  module Filter
+require 'iudex-filter'
 
-    class FilterBase
-      include Filter
-      include Described
-      include Named
+module Iudex::Filter
 
-      def describe
-        []
-      end
+  # Default implementation of Filter, Described, and Named interfaces
+  class FilterBase
+    include Filter
+    include Described
+    include Named
 
-      # Implements Named.name using abbreviated/lower case module
-      # names plus class name, in dot notation.
-      def name
-        n = self.class.name
-        n = n.gsub( /::/, '.' )
-        n = n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
-        n
-      end
-
-      def filter( map )
-        true
-      end
+    # Returns empty list
+    def describe
+      []
     end
 
+    # Returns abbreviated/lower case module names plus class name, in
+    # dot notation.
+    def name
+      n = self.class.name
+      n.gsub!( /::/, '.' )
+      n.gsub( /(\w)\w+\./ ) { |m| $1.downcase + '.' }
+    end
+
+    # Returns true
+    def filter( map )
+      true
+    end
   end
+
 end

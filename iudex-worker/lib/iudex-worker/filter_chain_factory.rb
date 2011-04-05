@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -26,6 +26,12 @@ require 'iudex-da/factory_helper'
 
 require 'iudex-rome'
 
+require 'iudex-html'
+require 'iudex-html/factory_helper'
+
+require 'iudex-simhash'
+require 'iudex-simhash/factory_helper'
+
 require 'iudex-worker'
 require 'iudex-worker/fetch_helper'
 require 'iudex-worker/prioritizer'
@@ -41,6 +47,8 @@ module Iudex
       include Iudex::ROME
 
       include Iudex::DA::Filters::FactoryHelper
+      include Iudex::HTML::Filters::FactoryHelper
+      include Iudex::SimHash::Filters::FactoryHelper
       include FetchHelper
 
       attr_accessor :http_client
@@ -113,25 +121,39 @@ module Iudex
                            :min_next => 0.0 ) ].flatten
       end
 
+      # Note: *_post is run possibly twice, once for both base content
+      # map and referer map.
       def feed_post
         [ UHashMDCSetter.new,
           ref_common_cleanup,
           Prioritizer.new( "feed-post",
-                           :constant => 30 ),
+                           :constant => 30,
+                           :visiting_now => true ),
           last_visit_setter ].flatten
       end
 
       def ref_common_cleanup
-        [ TextCtrlWSFilter.new( :title.to_k ),
-          FutureDateFilter.new( :pub_date.to_k ) ]
+        [ ref_html_filters,
+          TextCtrlWSFilter.new( :title.to_k ),
+          FutureDateFilter.new( :pub_date.to_k ) ].flatten
+      end
+
+      def ref_html_filters
+        [ html_clean_filters( :title ),
+          html_clean_filters( :summary ),
+          html_clean_filters( :content ),
+          html_write_filter( :summary ),
+          html_write_filter( :content ) ].flatten
       end
 
       def feed_update_keys
-        page_update_keys # the same
+        page_update_keys + [ :title, :summary, :content ]
       end
 
       def page_receiver
-        [ page_updater ]
+        [ html_clean_filters( :source ),
+          simhash_generator,
+          page_updater ].flatten
       end
 
       def barc_writer
@@ -149,11 +171,15 @@ module Iudex
         create_update_filter( keys( page_update_keys ), :page_post )
       end
 
+      # Note: *_post is run possibly twice, once for both base content
+      # map and referer map.
       def page_post
-        [ barc_writer,
+        [ UHashMDCSetter.new,
+          barc_writer, # Not run in 302 referer case, since no SOURCE.
           Prioritizer.new( "page-post",
                            :constant => 0,
-                           :min_next => ( 30 * 60.0 ) ),
+                           :min_next => ( 30 * 60.0 ),
+                           :visiting_now => true ),
           last_visit_setter ]
       end
 
@@ -162,7 +188,7 @@ module Iudex
           :ref_pub_date, :pub_date,
           :priority, :last_visit, :next_visit_after,
           :status, :etag, :reason, :referer, :referent,
-          :cache_file, :cache_file_offset ]
+          :cache_file, :cache_file_offset, :simhash ]
       end
 
       def last_visit_setter

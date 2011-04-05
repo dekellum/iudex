@@ -12,11 +12,33 @@
     <module>iudex-filter</module>
     <module>iudex-http</module>
     <module>iudex-barc</module>
+    <module>iudex-simhash</module>
     <module>iudex-core</module>
     <module>iudex-rome</module>
     <module>iudex-httpclient-3</module>
     <module>iudex-da</module>
+    <module>iudex-html</module>
+    <module>iudex-brutefuzzy-protobuf</module>
+    <module>iudex-brutefuzzy-service</module>
   </modules>
+
+  <repositories>
+    <repository>
+      <id>gravitext</id>
+      <url>http://gravitext.com/repo/releases</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>gravitext-release</id>
+      <name>Gravitext Repo</name>
+      <url>file:///home/david/src/oss/releases</url>
+      <layout>default</layout>
+      <uniqueVersion>false</uniqueVersion>
+    </repository>
+    <downloadUrl>http://gravitext.com/repo/releases</downloadUrl>
+  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -24,14 +46,14 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.5.10</version>
+        <version>[1.6.1,1.7)</version>
         <scope>compile</scope>
       </dependency>
 
       <dependency>
         <groupId>com.gravitext</groupId>
         <artifactId>gravitext-util</artifactId>
-        <version>[1.4,1.5)</version>
+        <version>[1.5,1.6)</version>
         <scope>compile</scope>
       </dependency>
 
@@ -45,7 +67,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>0.9.18</version>
+        <version>[0.9.24,0.9.28)</version>
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
@@ -68,6 +90,17 @@
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>

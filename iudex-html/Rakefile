@@ -1,0 +1,53 @@
+# -*- ruby -*-
+
+$LOAD_PATH << './lib'
+require 'iudex-html/base'
+
+require 'rubygems'
+gem     'rjack-tarpit', '~> 1.2'
+require 'rjack-tarpit'
+
+t = RJack::TarPit.new( 'iudex-html',
+                       Iudex::HTML::VERSION,
+                       :no_assembly, :java_platform )
+
+t.specify do |h|
+  h.developer( "David Kellum", "dek-oss@gravitext.com" )
+  h.extra_deps += [ [ 'iudex-core',        '~> 1.0.0'  ],
+                    [ 'rjack-nekohtml',    '~> 1.9.14' ],
+                    [ 'gravitext-xmlprod', '~> 1.4.0'  ] ]
+
+  h.testlib = :minitest
+  h.extra_dev_deps += [ [ 'minitest',      '>= 1.7.1', '< 2.1' ],
+                        [ 'rjack-logback', '~> 1.0' ] ]
+end
+
+file 'Manifest.txt' => [ 'pom.xml' ]
+
+task :check_pom_version do
+  t.test_line_match( 'pom.xml', /<version>/, /#{t.version}/ )
+end
+task :check_history_version do
+  t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
+end
+task :check_history_date do
+  t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
+end
+
+task :gem  => [ :check_pom_version, :check_history_version                      ]
+task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
+task :push => [                                             :check_history_date ]
+
+file 'target/.tarpit' => [ 'src/main/java/iudex/html/HTML.java' ]
+
+file 'src/main/java/iudex/html/HTML.java' => FileList.new( "build/*" ) do
+  require 'build/java_generate'
+  puts "Generating HTML.java"
+  JavaGenerator.new.run
+end
+
+task :clean do
+  rm_f 'src/main/java/iudex/html/HTML.java'
+end
+
+t.define_tasks

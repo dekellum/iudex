@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package iudex.barc;
 
+import static com.gravitext.util.Charsets.*;
 import iudex.http.Header;
 
 import java.io.Closeable;
@@ -34,7 +35,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.gravitext.util.ResizableCharBuffer;
-import static com.gravitext.util.Charsets.*;
 
 /**
  * Basic ARChive File Reader/Writer. Supports record types, up to three
@@ -408,7 +408,7 @@ public final class BARCFile implements Closeable
             while( hbuff.remaining() > 0 ) {
                 int rlen = _in.read( hbuff.array(), hbuff.position(),
                                      hbuff.remaining() );
-                if( rlen < headerLength ) {
+                if( rlen < 1 ) {
                     throw new IOException( "Incomplete header block." );
                 }
                 hbuff.position( hbuff.position() + rlen );

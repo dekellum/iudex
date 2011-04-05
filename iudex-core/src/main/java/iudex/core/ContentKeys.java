@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,14 @@ import com.gravitext.htmap.UniMap;
 
 public class ContentKeys
 {
-    protected static <T> Key<T> create( String name, Class<T> valueType )
-    {
-        return UniMap.KEY_SPACE.create( name, valueType );
-    }
-
-    protected static <T> Key<List<T>> createListKey( String name )
-    {
-        return UniMap.KEY_SPACE.createListKey( name );
-    }
-
     public static final Key<VisitURL> URL =
         create( "url", VisitURL.class );
+
+    /**
+     * Registration level domain extracted from URL's host.
+     */
+    public static final Key<String> RL_DOMAIN =
+        create( "rl_domain", String.class );
 
     public static final Key<String> TYPE =
         create( "type", String.class );
@@ -58,6 +54,18 @@ public class ContentKeys
     public static final Key<CharSequence> TITLE =
         create( "title", CharSequence.class );
 
+    public static final Key<CharSequence> EXTRACT =
+        create( "extract", CharSequence.class );
+
+    public static final Key<CharSequence> SUMMARY =
+        create( "summary", CharSequence.class );
+
+    public static final Key<CharSequence> CONTENT =
+        create( "content", CharSequence.class );
+
+    public static final Key<ContentSource> SOURCE =
+        create( "source", ContentSource.class );
+
     public static final Key<Date> REF_PUB_DATE =
         create( "ref_pub_date", Date.class );
 
@@ -79,9 +87,6 @@ public class ContentKeys
 
     public static final Key<Date> NEXT_VISIT_AFTER =
         create( "next_visit_after", Date.class );
-
-    public static final Key<ContentSource> CONTENT =
-        create( "content", ContentSource.class );
 
     /**
      * Start of processing. Inherited from REFERER on REFERENCES. Used as
@@ -122,4 +127,14 @@ public class ContentKeys
 
     public static final Key<Long> CACHE_FILE_OFFSET =
         create( "cache_file_offset", Long.class );
+
+    protected static <T> Key<T> create( String name, Class<T> valueType )
+    {
+        return UniMap.KEY_SPACE.create( name, valueType );
+    }
+
+    protected static <T> Key<List<T>> createListKey( String name )
+    {
+        return UniMap.KEY_SPACE.createListKey( name );
+    }
 }

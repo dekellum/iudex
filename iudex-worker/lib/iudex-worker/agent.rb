@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -23,55 +23,64 @@ require 'iudex-httpclient-3'
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
 
+require 'hooker'
+
 module Iudex
   module Worker
 
     class Agent
       include Iudex::DA
-      include Iudex::DA::KeyHelper
+      include Iudex::Filter::KeyHelper
       include Iudex::Core
-      include Iudex::HTTPClient3
       include Iudex::Worker
       include Gravitext::HTMap
 
       def initialize
-        Config.do_agent( self )
+        Hooker.apply( [ :iudex, :worker ], self )
       end
 
       def poll_keys
         [ :url, :type, :priority, :next_visit_after, :last_visit, :etag ]
       end
 
-      def run
-        dsf = PoolDataSourceFactory.new
-        data_source = dsf.create
-
-        cmapper = ContentMapper.new( keys( poll_keys ) )
-
-        wpoller = WorkPoller.new( data_source, cmapper )
-        Config.do_work_poller( wpoller )
-
-        mgr = Config.do_http_client_3
-        mgr.start
-
-        fcf = FilterChainFactory.new( 'agent' )
-        fcf.http_client = Iudex::HTTPClient3::HTTPClient3.new( mgr.client )
-        fcf.data_source = data_source
-
-        Config.do_filter_factory( fcf )
-
-        fcf.filter do |chain|
-          vexec = VisitExecutor.new( chain, wpoller )
-          Config.do_visit_executor( vexec )
-          vexec.start
-          vexec.join    #Run until interrupted
-        end # fcf closes
-
-        mgr.shutdown
-        dsf.close
-
+      # Note this can/is used to override factory in derived classes.
+      def filter_chain_factory
+        FilterChainFactory.new( 'agent' )
       end
 
+      def run
+        Hooker.with( :iudex ) do
+          dsf = PoolDataSourceFactory.new
+          data_source = dsf.create
+
+          cmapper = ContentMapper.new( keys( poll_keys ) )
+          wpoller = WorkPoller.new( data_source, cmapper )
+          Hooker.apply( :work_poller, wpoller )
+
+          mgr = HTTPClient3.create_manager
+          mgr.start
+          http_client = HTTPClient3::HTTPClient3.new( mgr.client )
+
+          fcf = filter_chain_factory
+          fcf.http_client = http_client
+          fcf.data_source = data_source
+
+          Hooker.apply( :filter_factory, fcf )
+
+          fcf.filter do |chain|
+            vexec = VisitExecutor.new( chain, wpoller )
+            Hooker.apply( :visit_executor, vexec )
+
+            Hooker.log_not_applied # All hooks should be used by now
+
+            vexec.start
+            vexec.join    #Run until interrupted
+          end # fcf closes
+
+          mgr.shutdown
+          dsf.close
+        end
+      end
     end
 
   end

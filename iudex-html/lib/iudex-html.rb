@@ -1,0 +1,56 @@
+#--
+# Copyright (c) 2010-2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+require 'iudex-core'
+require 'gravitext-xmlprod'
+require 'rjack-nekohtml'
+
+require 'iudex-html/base.rb'
+
+require 'java'
+
+module Iudex
+  module HTML
+    require "iudex-html/iudex-html-#{VERSION}.jar"
+
+    import 'iudex.html.HTMLKeys'
+
+    module Filters
+      import 'iudex.html.filters.ExtractFilter'
+      import 'iudex.html.filters.HTMLParseFilter'
+      import 'iudex.html.filters.HTMLTreeFilter'
+      import 'iudex.html.filters.HTMLWriteFilter'
+      import 'iudex.html.filters.TitleExtractor'
+    end
+
+    module Tree
+      import 'iudex.html.tree.HTMLTreeKeys'
+      import 'iudex.html.tree.TreeFilterChain'
+
+      module Filters
+        import 'iudex.html.tree.filters.AttributeCleaner'
+        import 'iudex.html.tree.filters.CSSDisplayFilter'
+        import 'iudex.html.tree.filters.CharactersNormalizer'
+        import 'iudex.html.tree.filters.EmptyInlineRemover'
+        import 'iudex.html.tree.filters.MetaSkipFilter'
+        import 'iudex.html.tree.filters.WordCounter'
+        import 'iudex.html.tree.filters.WordyCounter'
+        import 'iudex.html.tree.filters.XmpToPreConverter'
+      end
+    end
+
+  end
+end

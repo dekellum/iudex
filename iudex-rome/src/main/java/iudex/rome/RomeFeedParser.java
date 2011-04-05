@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package iudex.rome;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
+import com.gravitext.util.CharSequences;
+import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
@@ -54,7 +53,7 @@ public class RomeFeedParser implements Filter
     @Override
     public boolean filter( UniMap content ) throws FilterException
     {
-        ContentSource src = content.get( CONTENT );
+        ContentSource src = content.get( SOURCE );
         if( src != null ) {
             try {
                 Reader reader = contentReader( src );
@@ -114,7 +113,20 @@ public class RomeFeedParser implements Filter
 
         ref.set( TYPE, TYPE_PAGE );
 
-        //FIXME: se.getDescription() or se.getContents()?
+        SyndContent description = entry.getDescription();
+        if( description != null ) {
+            ref.set( SUMMARY, description.getValue() );
+        }
+
+        List contents = entry.getContents();
+        if( ( contents != null ) && ( contents.size() > 0 ) ) {
+            SyndContent first = (SyndContent) contents.get( 0 );
+            ref.set( CONTENT, first.getValue() );
+            if( contents.size() > 1 ) {
+                _log.info( "Found {} contents (only using first)",
+                           contents.size() );
+            }
+        }
 
         return ref;
     }
@@ -149,19 +161,7 @@ public class RomeFeedParser implements Filter
             //FIXME: Or pass raw content-type?
         }
         else if( content.characters() != null ) {
-            CharSequence source = content.characters();
-            if( source instanceof CharBuffer ) {
-                CharBuffer inBuff = (CharBuffer) source;
-                if( inBuff.hasArray() ) {
-                    reader = new CharArrayReader(
-                        inBuff.array(),
-                        inBuff.arrayOffset() + inBuff.position(),
-                        inBuff.remaining() );
-                }
-            }
-            if( reader == null ) {
-                reader = new StringReader( source.toString() );
-            }
+            reader = CharSequences.reader( content.characters() );
         }
         else {
             throw new IllegalArgumentException

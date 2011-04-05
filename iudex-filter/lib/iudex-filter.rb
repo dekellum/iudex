@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -14,9 +14,12 @@
 # permissions and limitations under the License.
 #++
 
-require 'gravitext-util'
 require 'rjack-slf4j'
+require 'gravitext-util'
+
 require 'iudex-filter/base'
+
+require 'java'
 
 module Iudex
   module Filter
@@ -35,8 +38,10 @@ module Iudex
       import 'iudex.filter.core.FilterIndex'
       import 'iudex.filter.core.ListenerChain'
       import 'iudex.filter.core.LogListener'
+      import 'iudex.filter.core.MDCSetter'
       import 'iudex.filter.core.MDCUnsetter'
       import 'iudex.filter.core.Selector'
+      import 'iudex.filter.core.Setter'
       import 'iudex.filter.core.SummaryReporter'
       import 'iudex.filter.core.Switch'
     end
@@ -44,3 +49,4 @@ module Iudex
 end
 
 require 'iudex-filter/filter_base'
+require 'iudex-filter/proc_filter'

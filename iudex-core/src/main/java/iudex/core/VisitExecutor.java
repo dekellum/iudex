@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -79,7 +79,11 @@ public class VisitExecutor implements Closeable, Runnable
 
     public void join() throws InterruptedException
     {
-        _executor.join();
+        Thread executor = null;
+        synchronized( this ) {
+            executor = _executor;
+        }
+        if( executor != null ) executor.join();
     }
 
     public void shutdown() throws InterruptedException

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2010 David Kellum
+ * Copyright (c) 2008-2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,74 @@ import org.junit.Test;
 public class CharactersTest
 {
     @Test
-    public void testClean()
+    public void testCleanTrim()
     {
-        assertColl( "",  "" );
-        assertColl( "",  "\u0000" ); //NUL
-        assertColl( "",  "\uFFFE" ); //BAD BOM
-        assertColl( "",  "\t \r\n" );
-        assertColl( "",  "\u00A0\u2007\u202f" );
+        assertCleanTrim( "", "" );
+        assertCleanTrim( "", "\u0000" ); //NUL
+        assertCleanTrim( "", "\uFFFE" ); //BAD BOM
+        assertCleanTrim( "", "\t \r\n" );
+        assertCleanTrim( "", "\u00A0\u2007\u202f" );
 
-        assertColl( "x",  "x"   );
-        assertColl( "x", " x  " );
-        assertColl( "x", " x"   );
-        assertColl( "x",  "x "  );
+        assertCleanTrim( "x",  "x"   );
+        assertCleanTrim( "x", " x  " );
+        assertCleanTrim( "x", " x"   );
+        assertCleanTrim( "x",  "x "  );
 
-        assertColl( "aa b c", "aa b c" );
-        assertColl( "aa b c", "aa \t b c" );
-        assertColl( "aa b c", "\t aa \t b c" );
+        assertCleanTrim( "aa b c", "aa b c "      );
+        assertCleanTrim( "aa b c", "aa \t b c"    );
+        assertCleanTrim( "aa b c", "\t aa \t b c" );
     }
 
-    private void assertColl( String to, String from )
+    @Test
+    public void testClean()
+    {
+        assertClean( "",  ""  );
+        assertClean( ".", " " );
+
+        assertClean( "x",   "x"    );
+        assertClean( ".x.", " x  " );
+        assertClean( ".x",  " x"   );
+        assertClean( "x.",  "x "   );
+
+        assertClean( "aa.b.c.", "aa b c "      );
+        assertClean( "aa.b.c",  "aa \t b c"    );
+        assertClean( ".aa.b.c", "\t aa \t b c" );
+    }
+
+    @Test
+    public void testCount()
+    {
+        assertCount( 0, ""  );
+        assertCount( 0, " " );
+
+        assertCount( 1, "x"    );
+        assertCount( 1, " x"   );
+        assertCount( 1, " x  " );
+
+        assertCount( 1, "xyz" );
+
+        assertCount( 2, "xyz b" );
+        assertCount( 2, "x-z b" );
+        assertCount( 2, "--z b" );
+        assertCount( 2, "x-- b" );
+        assertCount( 2, "-- x-- b -" );
+        assertCount( 2, "- x-- b --" );
+    }
+
+    private void assertCleanTrim( String to, String from )
     {
         assertEquals( to, Characters.cleanCtrlWS( from ).toString() );
     }
+
+    private void assertClean( String to, String from )
+    {
+        CharSequence clean = Characters.replaceCtrlWS( from, ".", false );
+        assertEquals( to, clean.toString() );
+    }
+
+    private void assertCount( int count, String from )
+    {
+        assertEquals( count, Characters.wordCount( from ) );
+    }
+
 }

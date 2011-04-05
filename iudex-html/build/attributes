@@ -1,0 +1,82 @@
+# HTML Attributes
+#
+# Copyright (c) 2010-2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#
+# Format:
+#  (CSV like) columns: name, tags, description
+#  Tags marked with asterisk (*): attribute is for style purposes only.
+#
+# Sources
+#  http://www.w3.org/TR/xhtml11/
+#  http://www.w3.org/TR/html4/
+#  http://www.w3schools.com/tags/ref_standardattributes.asp
+#  http://xhtml.com
+
+CORE :: ALL except: base head html meta param script style title
+class       ,*CORE
+id          ,*CORE
+style       ,*CORE
+title       ,CORE, extra title
+
+LANG :: ALL except: base br frame frameset hr iframe param
+dir         ,LANG, Text direction; ltr or rtl
+lang        ,LANG, language_code; also xml:lang
+
+# Meta tag attributes
+http-equiv  ,meta, HTTP Header name
+content     ,meta, text
+scheme      ,meta, format URI
+
+# Anchor and link attributes
+charset     ,a link, char_encoding of link
+coords      ,*a, coordinates; i.e. image map
+hreflang    ,link, language_code of referent
+href        ,a base link, URL
+media       ,link
+name        ,a, section_name anchor
+rel         ,a link
+rev         ,a link
+shape       ,*a
+target      ,*a *base *link
+type        ,link
+
+# Image and some frame attributes
+src         ,frame img
+alt         ,img
+height      ,img        *tr *th *td *iframe *object
+width       ,img *table *tr *th *td *iframe *object
+
+# Table specific attributes
+abbr        ,tr th
+align       ,table tr td th iframe object
+axis        ,tr th
+bgcolor     ,*table *tr *td *th
+border      ,*table
+cellpadding ,*table
+cellspacing ,*table
+char        ,tr td th
+charoff     ,tr td th
+colspan     ,tr td th
+frame       ,*table
+headers     ,tr td
+nowrap      ,*tr *td *th
+rowspan     ,tr td th
+rules       ,*table
+scope       ,tr td th
+summary     ,table
+valign      ,*tr *td
+
+# Purposefully omitted (will be dropped on parse)
+# -- The event attributes on*, onmouse*, onkey*

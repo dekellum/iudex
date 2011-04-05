@@ -27,27 +27,9 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!--
-    <dependency>
-      <groupId>com.gravitext</groupId>
-      <artifactId>gravitext-util</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>iudex</groupId>
-      <artifactId>iudex-filter</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-    -->
-
-    <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-http</artifactId>
-      <version>1.0.0</version>
+      <version>[1.0,1.1)</version>
     </dependency>
 
     <dependency>
@@ -62,16 +44,6 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -79,6 +51,10 @@
       <plugin>
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

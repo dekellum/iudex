@@ -14,21 +14,16 @@ t = RJack::TarPit.new( 'iudex-da',
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
-  h.extra_deps += [ [ 'activerecord',          '~> 2.3.8'  ],
-                    [ 'jdbc-postgres',         '~> 8.4.701'],
-                    [ 'activerecord-jdbcpostgresql-adapter', '~> 0.9.7' ],
-                    [ 'rjack-slf4j',           '~> 1.5.11'  ],
+  h.extra_deps += [ [ 'iudex-core',            '~> 1.0.0'  ],
+                    [ 'activerecord',          '~> 2.3.10' ],
+                    [ 'jdbc-postgres',         '>= 8.4.702',  '< 9.1' ],
+                    [ 'activerecord-jdbcpostgresql-adapter', '~> 1.1.0' ],
                     [ 'rjack-commons-dbcp',    '~> 1.4.0'  ],
-                    [ 'rjack-commons-dbutils', '~> 1.3.0'  ],
-                    [ 'gravitext-util',        '~> 1.4.0'  ],
-                    [ 'iudex-filter',          '~> 1.0.0'  ],
-                    [ 'iudex-core',            '~> 1.0.0'  ] ]
+                    [ 'rjack-commons-dbutils', '~> 1.3.0'  ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',          '~> 1.5.0'  ],
-                        [ 'rjack-logback',     '>= 0.9.18' ] ]
-
-  h.rubyforge_name = "iudex"
+  h.extra_dev_deps += [ [ 'minitest',          '>= 1.7.1', '< 2.1' ],
+                        [ 'rjack-logback',     '~> 1.0' ] ]
 end
 
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"
@@ -46,5 +41,9 @@ end
 task :gem  => [ :check_pom_version, :check_history_version                      ]
 task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
 task :push => [                                             :check_history_date ]
+
+# Disable verbose warnings, which are a bit much with ActiveRecord
+# 2.3.x at least.
+Hoe::RUBY_FLAGS.sub!( /\-w(\s|$)/, '-W1\1' )
 
 t.define_tasks

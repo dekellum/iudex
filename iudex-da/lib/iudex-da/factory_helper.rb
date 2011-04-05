@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2008-2010 David Kellum
+# Copyright (c) 2008-2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You may
@@ -24,7 +24,7 @@ module Iudex
 
       # Mixin FilterChainFactory helper methods
       module FactoryHelper
-        include KeyHelper
+        include Iudex::Filter::KeyHelper
 
         # Lazy initialize DataSource
         def data_source

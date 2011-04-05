@@ -5,14 +5,18 @@ Rakefile
 pom.xml
 bin/iudex-da-generate-test-data
 bin/iudex-da-import
+bin/iudex-da-simhash-dump
 bin/iudex-migrate
 config/config.rb
 db/0010_base_urls.rb
 db/0020_add_feed_metadata.rb
+db/0021_more_feed_text.rb
 db/0030_add_priority.rb
 db/0040_add_visit_after.rb
 db/0050_add_cache_location.rb
 db/0060_url_indexes.rb
+db/0070_add_created_at.rb
+db/0080_add_simhash.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/ar.rb
@@ -22,6 +26,7 @@ lib/iudex-da/importer.rb
 lib/iudex-da/key_helper.rb
 lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
+test/test_migrate.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
 lib/iudex-da/iudex-da-1.0.0.jar

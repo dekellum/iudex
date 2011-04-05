@@ -1,0 +1,112 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (c) 2008-2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+
+require 'rjack-logback'
+RJack::Logback.config_console
+
+require 'iudex-da/pool_data_source_factory'
+require 'optparse'
+
+class Iudex::DA::SimHashDumper
+  import 'org.apache.commons.dbutils.ResultSetHandler'
+  import 'org.apache.commons.dbutils.QueryRunner'
+
+  include RJack
+
+  def initialize
+    @log = SLF4J[ self.class ]
+  end
+
+  def parse_options
+    Hooker.log_with { |m| @log.info( m.rstrip ) }
+
+    # Apply all config before including ar
+    parser = OptionParser.new do |opts|
+      opts.banner = <<END
+Usage: iudex-da-simhash-dump [options] <output-file>
+END
+      opts.on( "-s", "--set name=value", String,
+               "Set connect prop (ex: database=iudex)" ) do |nv|
+        name,value = nv.split('=').map { |t| t.strip }
+        Hooker.add( [ :iudex, :connect_props ] ) do
+          { name.to_sym => value }
+        end
+      end
+      opts.on( "-d", "--debug" ) do
+        Logback[ 'iudex.da' ].level = Logback::DEBUG
+      end
+      opts.on( "-v", "--version", "Display version and exit" ) do |file|
+        puts "iudex-da: #{Iudex::DA::VERSION}"
+        exit 1
+      end
+      Hooker.register_config( opts )
+    end
+    parser.parse!
+  end
+
+  def run
+    parse_options
+
+    unless ARGV.empty?
+      @factory = Iudex::DA::PoolDataSourceFactory.new
+      @data_source = @factory.create
+      dump
+    end
+  end
+
+  class UniWriter
+    include ResultSetHandler
+    def initialize( log, fout )
+      @fout = fout
+      @log = log
+    end
+    def handle( rset )
+      cnt = 0
+      while rset.next
+        @fout.puts rset.get_string( 1 )
+        cnt += 1
+        @log.info( "Wrote #{cnt} simhashes." ) if ( cnt % 100000 ) == 0
+      end
+      @log.info( "Wrote #{cnt} simhashes total." )
+    end
+  end
+
+  def dump( file = ARGV.first )
+
+    File.open( file, 'w' ) do |fout|
+      qrun = QueryRunner.new( @data_source )
+      hdlr = UniWriter.new( @log, fout )
+
+      qrun.query( <<-"SQL", hdlr )
+        SELECT lpad( to_hex( simhash ), 16, '0' ) AS sh
+        FROM urls
+        WHERE simhash IS NOT NULL AND status IN (200, 304)
+        ORDER BY last_visit ASC;
+      SQL
+
+      #FIXME: WHERE pass (accepted state) instead of status?
+    end
+  end
+
+end
+
+Iudex::DA::SimHashDumper.new.run
