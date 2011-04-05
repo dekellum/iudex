@@ -64,6 +64,10 @@
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 
