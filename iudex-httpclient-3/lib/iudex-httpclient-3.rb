@@ -16,9 +16,11 @@
 
 require 'iudex-http'
 require 'rjack-httpclient-3'
+require 'hooker'
 
 require 'iudex-httpclient-3/base'
-require 'hooker'
+
+require 'java'
 
 module Iudex
 

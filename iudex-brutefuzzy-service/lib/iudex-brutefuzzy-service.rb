@@ -14,12 +14,13 @@
 # permissions and limitations under the License.
 #++
 
-require 'iudex-brutefuzzy-service/base.rb'
-
-require 'rjack-qpid-client'
 require 'iudex-core'
 require 'iudex-simhash'
 require 'iudex-brutefuzzy-protobuf'
+
+require 'rjack-qpid-client'
+
+require 'iudex-brutefuzzy-service/base.rb'
 
 require 'java'
 

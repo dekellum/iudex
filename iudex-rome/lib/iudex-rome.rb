@@ -14,12 +14,12 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-core'
 require 'rjack-rome'
 
-require 'iudex-filter'
-require 'iudex-core'
-
 require 'iudex-rome/base'
+
+require 'java'
 
 module Iudex
   module ROME

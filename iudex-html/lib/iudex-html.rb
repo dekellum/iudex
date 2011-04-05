@@ -14,13 +14,13 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-core'
+require 'gravitext-xmlprod'
+require 'rjack-nekohtml'
+
 require 'iudex-html/base.rb'
 
 require 'java'
-require 'gravitext-xmlprod'
-require 'rjack-nekohtml'
-require 'iudex-filter'
-require 'iudex-core'
 
 module Iudex
   module HTML
