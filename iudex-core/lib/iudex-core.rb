@@ -20,7 +20,10 @@ require 'iudex-filter'
 require 'iudex-barc'
 
 require 'iudex-core/base'
+
 require 'iudex-core/config'
+
+require 'java'
 
 module Iudex
   module Core

@@ -27,16 +27,6 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.gravitext</groupId>
-      <artifactId>gravitext-util</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-core</artifactId>
       <version>[1.0,1.1)</version>
@@ -46,16 +36,6 @@
       <groupId>rome</groupId>
       <artifactId>rome</artifactId>
       <version>1.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
     </dependency>
 
   </dependencies>

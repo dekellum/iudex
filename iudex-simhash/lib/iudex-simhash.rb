@@ -14,13 +14,11 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-html'
+
 require 'iudex-simhash/base.rb'
 
 require 'java'
-
-require 'gravitext-util'
-require 'iudex-filter'
-require 'iudex-html'
 
 module Iudex
   module SimHash

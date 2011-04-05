@@ -21,6 +21,8 @@ require 'iudex-http'
 
 require 'iudex-barc/base'
 
+require 'java'
+
 module Iudex
   module BARC
     require "#{LIB_DIR}/iudex-barc-#{VERSION}.jar"

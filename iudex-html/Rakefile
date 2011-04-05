@@ -13,14 +13,13 @@ t = RJack::TarPit.new( 'iudex-html',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'rjack-nekohtml',    '~> 1.9.14' ],
-                    [ 'gravitext-util',    '~> 1.5.0'  ],
-                    [ 'gravitext-xmlprod', '~> 1.4.0'  ],
-                    [ 'iudex-filter',      '~> 1.0.0'  ],
-                    [ 'iudex-core',        '~> 1.0.0'  ] ]
+  h.extra_deps += [ [ 'iudex-core',        '~> 1.0.0'  ],
+                    [ 'rjack-nekohtml',    '~> 1.9.14' ],
+                    [ 'gravitext-xmlprod', '~> 1.4.0'  ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',      '>= 1.7.1', '< 2.1' ] ]
+  h.extra_dev_deps += [ [ 'minitest',      '>= 1.7.1', '< 2.1' ],
+                        [ 'rjack-logback', '~> 1.0' ] ]
 end
 
 file 'Manifest.txt' => [ 'pom.xml' ]

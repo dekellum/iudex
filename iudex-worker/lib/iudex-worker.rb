@@ -14,5 +14,7 @@
 # permissions and limitations under the License.
 #++
 
+require 'iudex-core'
+
 require 'iudex-worker/base'
 require 'iudex-worker/agent'

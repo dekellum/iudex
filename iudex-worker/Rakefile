@@ -12,20 +12,16 @@ t = RJack::TarPit.new( 'iudex-worker', Iudex::Worker::VERSION, :java_platform )
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
-  h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1' ],
+  h.extra_deps += [ [ 'iudex-core',     '~> 1.0.0' ],
                     [ 'rjack-logback',  '~> 1.0'   ],
-                    [ 'gravitext-util', '~> 1.5.0' ],
-                    [ 'iudex-filter',   '~> 1.0.0' ],
-                    [ 'iudex-core',     '~> 1.0.0' ],
                     [ 'iudex-da',       '~> 1.0.0' ],
                     [ 'iudex-rome',     '~> 1.0.0' ],
                     [ 'iudex-html',     '~> 1.0.0' ],
+                    [ 'iudex-simhash',  '~> 1.0.0' ],
                     [ 'iudex-httpclient-3', '~> 1.0.0' ] ]
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'minitest',   '>= 1.7.1', '< 2.1' ] ]
-
-  h.rubyforge_name = "iudex"
 end
 
 task :chk_hist_vers do

@@ -14,9 +14,12 @@
 # permissions and limitations under the License.
 #++
 
-require 'gravitext-util'
 require 'rjack-slf4j'
+require 'gravitext-util'
+
 require 'iudex-filter/base'
+
+require 'java'
 
 module Iudex
   module Filter
