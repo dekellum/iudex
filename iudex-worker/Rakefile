@@ -22,8 +22,6 @@ t.specify do |h|
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'minitest',   '>= 1.7.1', '< 2.1' ] ]
-
-  h.rubyforge_name = "iudex"
 end
 
 task :chk_hist_vers do
