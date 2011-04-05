@@ -5,7 +5,7 @@
 == Description
 
 Iudex is a general purpose web crawler and feed processor in
-ruby/java. The iudex-worker provides a worker deamon for feed/page
+ruby/java. The iudex-worker gem provides a worker deamon for feed/page
 processing.
 
 == License
