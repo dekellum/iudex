@@ -1,0 +1,253 @@
+/*
+ * Copyright (c) 2011 David Kellum
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package iudex.asynchttpclient;
+
+import iudex.http.HTTPClient;
+import iudex.http.HTTPSession;
+import iudex.http.Header;
+import iudex.http.Headers;
+import iudex.http.ResponseHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import com.gravitext.util.ResizableByteBuffer;
+import com.gravitext.util.Streams;
+import com.ning.http.client.AsyncHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
+import com.ning.http.client.FluentCaseInsensitiveStringsMap;
+import com.ning.http.client.HttpResponseBodyPart;
+import com.ning.http.client.HttpResponseHeaders;
+import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.Request;
+
+public class AsyncHTTPClient implements HTTPClient
+{
+
+    public AsyncHTTPClient( AsyncHttpClient client )
+    {
+        _client = client;
+    }
+
+    @Override
+    public HTTPSession createSession()
+    {
+        return new Session();
+    }
+
+    @Override
+    public void request( HTTPSession session, ResponseHandler handler )
+    {
+        ((Session) session).execute( handler );
+    }
+
+    private class Session
+        extends HTTPSession
+        implements AsyncHandler<Session>
+    {
+        public void addRequestHeader( Header header )
+        {
+            _requestedHeaders.add( header );
+        }
+
+        public List<Header> requestHeaders()
+        {
+            if( _request != null ) {
+
+                FluentCaseInsensitiveStringsMap inHeaders = _request.getHeaders();
+
+                List<Header> outHeaders =
+                    new ArrayList<Header>( inHeaders.size() + 1 );
+
+                outHeaders.add( new Header( "Request-Line",
+                                            reconstructRequestLine() ) );
+
+                copyHeaders( inHeaders, outHeaders );
+
+                return outHeaders;
+            }
+            return _requestedHeaders;
+        }
+
+        public int responseCode()
+        {
+            return _responseCode;
+        }
+
+        public String statusText()
+        {
+            return _statusText;
+        }
+
+        public List<Header> responseHeaders()
+        {
+            if( _responseHeaders != null ) {
+                return _responseHeaders;
+            }
+
+            return Collections.emptyList();
+        }
+
+        public InputStream responseStream() throws IOException
+        {
+            return Streams.inputStream( _body.flipAsByteBuffer() );
+        }
+
+        public void abort() throws IOException
+        {
+            //FIXME: NoOp for now?
+        }
+
+        public void close() throws IOException
+        {
+            super.close(); //FIXME: NoOp for now?
+        }
+
+        void execute( ResponseHandler handler )
+        {
+            _handler = handler;
+
+            BoundRequestBuilder rb = null;
+
+            if( method() == Method.GET ) {
+                rb = _client.prepareGet( url() );
+            }
+            else if( method() == Method.HEAD ) {
+                rb = _client.prepareHead( url() );
+            }
+
+            for( Header h : _requestedHeaders ) {
+                rb.addHeader(  h.name().toString(), h.value().toString() );
+            }
+
+            _request = rb.build();
+
+            try {
+                _client.executeRequest( _request, this );
+            }
+            catch( IOException e ) {
+                onThrowable( e );
+            }
+        }
+
+        @Override
+        public void onThrowable( Throwable t )
+        {
+            if( t instanceof Exception ) {
+                _handler.handleException( this, (Exception) t );
+            }
+            else throw (Error) t;
+        }
+
+        @Override
+        public STATE onStatusReceived( HttpResponseStatus status )
+        {
+            _responseCode = status.getStatusCode();
+            _statusText = status.getStatusText();
+
+            return STATE.CONTINUE;
+        }
+
+        @Override
+        public STATE onHeadersReceived( HttpResponseHeaders headers )
+        {
+
+            FluentCaseInsensitiveStringsMap hmap = headers.getHeaders();
+
+            _responseHeaders = new ArrayList<Header>( hmap.size() + 1 );
+
+            _responseHeaders.add( new Header( "Status-Line",
+                String.valueOf( _responseCode ) + " " + _statusText ) );
+            //FIXME: Incomplete: create full status
+
+            copyHeaders( hmap, _responseHeaders );
+
+            int length = Headers.contentLength( _responseHeaders );
+            if( length < 1 ) length = 2048;
+            _body = new ResizableByteBuffer( length );
+
+            return STATE.CONTINUE;
+        }
+
+        @Override
+        public STATE onBodyPartReceived( HttpResponseBodyPart part )
+        {
+            _body.put( part.getBodyPartBytes() );
+
+            return STATE.CONTINUE;
+        }
+
+        @Override
+        public Session onCompleted()
+        {
+            if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
+                _handler.handleSuccess( this );
+            }
+            else {
+                _handler.handleError( this, _responseCode );
+            }
+
+            return this;
+        }
+
+        private CharSequence reconstructRequestLine()
+        {
+            StringBuilder reqLine = new StringBuilder( 128 );
+
+            reqLine.append( _request.getMethod() );
+            reqLine.append( ' ' );
+            reqLine.append( _request.getUrl() );
+
+            //FIXME: Not correct
+            //reqLine.append( '?' );
+            //_request.getQueryParams();
+
+            return reqLine;
+        }
+
+        private List<Header>
+        copyHeaders( FluentCaseInsensitiveStringsMap inHeaders,
+                     List<Header> outHeaders )
+        {
+            for( Map.Entry<String, List<String>> h : inHeaders.entrySet()  ) {
+                for( String v : h.getValue() ) {
+                    outHeaders.add( new Header( h.getKey(), v ) );
+                }
+            }
+            return outHeaders;
+        }
+
+        private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
+
+        private Request _request = null;
+
+        private ResponseHandler _handler = null;
+
+        private int _responseCode = 0;
+        private String _statusText = null;
+
+        private ResizableByteBuffer _body = null;
+
+        private ArrayList<Header> _responseHeaders;
+    }
+
+    private final AsyncHttpClient _client;
+}

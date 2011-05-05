@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-async-httpclient/base.rb
+lib/iudex-async-httpclient.rb
+test/setup.rb
+test/test_httpclient.rb
