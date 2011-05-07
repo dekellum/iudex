@@ -26,6 +26,7 @@ import iudex.filter.AsyncFilterContainer;
 import iudex.filter.FilterContainer;
 import iudex.http.BaseResponseHandler;
 import iudex.http.ContentType;
+import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
@@ -35,12 +36,9 @@ import iudex.util.Charsets;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +58,9 @@ public class ContentFetcher implements AsyncFilterContainer
      * Set the set of accepted mime types.
      * Types should be normalized: trimmed, lower case, i.e. "text/html" ).
      */
-    public void setAcceptedContentTypes( Collection<String> types )
+    public void setAcceptedContentTypes( ContentTypeSet types )
     {
-        _acceptedContentTypes = new HashSet<String>( types );
+        _acceptedContentTypes = types;
     }
 
     public void setRequestHeaders( List<Header> headers )
@@ -70,7 +68,7 @@ public class ContentFetcher implements AsyncFilterContainer
         _fixedRequestHeaders = headers;
     }
 
-    public Set<String> acceptedContentTypes()
+    public ContentTypeSet acceptedContentTypes()
     {
         return _acceptedContentTypes;
     }
@@ -144,7 +142,7 @@ public class ContentFetcher implements AsyncFilterContainer
 
             ContentType ctype = Headers.contentType( session.responseHeaders());
 
-            if( !testContentType( ctype ) ) {
+            if( ! _acceptedContentTypes.contains( ctype ) ) {
                 safeAbort( session );
                 handleError( session, -20 );
                 return;
@@ -257,37 +255,6 @@ public class ContentFetcher implements AsyncFilterContainer
             }
         }
 
-        private boolean testContentType( ContentType ctype )
-        {
-            boolean match = false;
-
-            if( _acceptedContentTypes != null ) {
-                if ( ctype != null ) {
-                    String mtype = ctype.type();
-
-                    if ( mtype != null ) {
-
-                        int i = mtype.lastIndexOf( '/' );
-                        if( i > 0 ) {
-                            String wcard = mtype.subSequence( 0, i ) + "/*";
-                            match = _acceptedContentTypes.contains( wcard );
-                        }
-
-                        if( !match ) {
-                            match = _acceptedContentTypes.contains( mtype );
-                        }
-                    }
-                }
-                else {
-                    match = _acceptedContentTypes.contains( "*/*" );
-                }
-            }
-            else {
-                match = true;
-            }
-
-            return match;
-        }
         private void setHTTPValues( HTTPSession session )
         {
             _content.set( REQUEST_HEADERS, session.requestHeaders() );
@@ -302,7 +269,7 @@ public class ContentFetcher implements AsyncFilterContainer
     private final HTTPClient _client;
     private final FilterContainer _receiver;
     private List<Header> _fixedRequestHeaders = Collections.emptyList();
-    private Set<String> _acceptedContentTypes = null;
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
     private Charset _defaultEncoding = Charsets.defaultCharset();
 
     private final Logger _log = LoggerFactory.getLogger( ContentFetcher.class );
