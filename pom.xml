@@ -21,6 +21,7 @@
     <module>iudex-core</module>
     <module>iudex-rome</module>
     <module>iudex-httpclient-3</module>
+    <module>iudex-async-httpclient</module>
     <module>iudex-da</module>
     <module>iudex-html</module>
     <module>iudex-brutefuzzy-protobuf</module>
