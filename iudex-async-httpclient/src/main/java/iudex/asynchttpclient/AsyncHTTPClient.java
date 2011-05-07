@@ -20,6 +20,7 @@ import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
 import iudex.http.ResponseHandler;
+import iudex.http.ContentTypeSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gravitext.util.ResizableByteBuffer;
 import com.gravitext.util.Streams;
@@ -37,6 +41,7 @@ import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.HttpResponseBodyPart;
 import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Request;
 
 public class AsyncHTTPClient implements HTTPClient
@@ -111,9 +116,14 @@ public class AsyncHTTPClient implements HTTPClient
             return Streams.inputStream( _body.flipAsByteBuffer() );
         }
 
-        public void abort() throws IOException
+        public void abort()
         {
-            //FIXME: NoOp for now?
+            if( _state != STATE.ABORT ) {
+                if( _future != null ) {
+                    _future.abort( new AbortedException() );
+                }
+                _state = STATE.ABORT;
+            }
         }
 
         public void close() throws IOException
@@ -133,6 +143,10 @@ public class AsyncHTTPClient implements HTTPClient
             else if( method() == Method.HEAD ) {
                 rb = _client.prepareHead( url() );
             }
+            else {
+                throw new UnsupportedOperationException(
+                    "Unsupported Method." + method() );
+            }
 
             for( Header h : _requestedHeaders ) {
                 rb.addHeader(  h.name().toString(), h.value().toString() );
@@ -141,7 +155,7 @@ public class AsyncHTTPClient implements HTTPClient
             _request = rb.build();
 
             try {
-                _client.executeRequest( _request, this );
+                _future = _client.executeRequest( _request, this );
             }
             catch( IOException e ) {
                 onThrowable( e );
@@ -152,9 +166,17 @@ public class AsyncHTTPClient implements HTTPClient
         public void onThrowable( Throwable t )
         {
             if( t instanceof Exception ) {
-                _handler.handleException( this, (Exception) t );
+                // Ignore AbortedException
+                if( !( t instanceof AbortedException ) ) {
+                    _handler.handleException( this, (Exception) t );
+                }
             }
-            else throw (Error) t;
+            else {
+                // Re-throw will get debug logged/swallowed, so log error and
+                // exit!
+                _log.error( "Session.onThrowable: ", t );
+                System.exit( 12 );
+            }
         }
 
         @Override
@@ -163,7 +185,7 @@ public class AsyncHTTPClient implements HTTPClient
             _responseCode = status.getStatusCode();
             _statusText = status.getStatusText();
 
-            return STATE.CONTINUE;
+            return _state;
         }
 
         @Override
@@ -181,10 +203,16 @@ public class AsyncHTTPClient implements HTTPClient
             copyHeaders( hmap, _responseHeaders );
 
             int length = Headers.contentLength( _responseHeaders );
-            if( length < 1 ) length = 2048;
-            _body = new ResizableByteBuffer( length );
 
-            return STATE.CONTINUE;
+            if( length > _maxContentLength ) {
+                abort();
+            }
+            else {
+                _body = new ResizableByteBuffer(
+                    ( length >= 0 ) ? length : 16 * 1024 );
+            }
+
+            return _state;
         }
 
         @Override
@@ -192,7 +220,7 @@ public class AsyncHTTPClient implements HTTPClient
         {
             _body.put( part.getBodyPartBytes() );
 
-            return STATE.CONTINUE;
+            return _state;
         }
 
         @Override
@@ -247,7 +275,19 @@ public class AsyncHTTPClient implements HTTPClient
         private ResizableByteBuffer _body = null;
 
         private ArrayList<Header> _responseHeaders;
+
+        private volatile STATE _state = STATE.CONTINUE;
+
+        private ListenableFuture<Session> _future;
+    }
+
+    private class AbortedException extends Exception
+    {
     }
 
     private final AsyncHttpClient _client;
+
+    private final int _maxContentLength = 2 * 1024 * 1024;
+
+    private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
