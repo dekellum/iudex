@@ -15,12 +15,13 @@
  */
 package iudex.asynchttpclient;
 
+import iudex.http.ContentType;
+import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
 import iudex.http.ResponseHandler;
-import iudex.http.ContentTypeSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,10 +45,9 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Request;
 
-public class AsyncHTTPClient implements HTTPClient
+public class Client implements HTTPClient
 {
-
-    public AsyncHTTPClient( AsyncHttpClient client )
+    public Client( AsyncHttpClient client )
     {
         _client = client;
     }
@@ -62,6 +62,22 @@ public class AsyncHTTPClient implements HTTPClient
     public void request( HTTPSession session, ResponseHandler handler )
     {
         ((Session) session).execute( handler );
+    }
+
+    /**
+     * Set the set of accepted Content Type patterns.
+     */
+    public void setAcceptedContentTypes( ContentTypeSet types )
+    {
+        _acceptedContentTypes = types;
+    }
+
+    /**
+     * Set maximum length of response body accepted.
+     */
+    public void setMaxContentLength( int length )
+    {
+        _maxContentLength = length;
     }
 
     private class Session
@@ -202,14 +218,25 @@ public class AsyncHTTPClient implements HTTPClient
 
             copyHeaders( hmap, _responseHeaders );
 
-            int length = Headers.contentLength( _responseHeaders );
+            ContentType ctype = Headers.contentType( _responseHeaders );
 
-            if( length > _maxContentLength ) {
+            if( ! _acceptedContentTypes.contains( ctype ) ) {
+                _responseCode = -20; //FIXME: Constants in iudex.http?
                 abort();
             }
-            else {
-                _body = new ResizableByteBuffer(
-                    ( length >= 0 ) ? length : 16 * 1024 );
+
+            if( _state == STATE.CONTINUE ) {
+
+                int length = Headers.contentLength( _responseHeaders );
+
+                if( length > _maxContentLength ) {
+                    _responseCode = -10;
+                    abort();
+                }
+                else {
+                    _body = new ResizableByteBuffer(
+                        ( length >= 0 ) ? length : 16 * 1024 );
+                }
             }
 
             return _state;
@@ -218,7 +245,15 @@ public class AsyncHTTPClient implements HTTPClient
         @Override
         public STATE onBodyPartReceived( HttpResponseBodyPart part )
         {
-            _body.put( part.getBodyPartBytes() );
+            byte[] buffer = part.getBodyPartBytes();
+
+            if( ( _body.position() + buffer.length ) > _maxContentLength ) {
+                _responseCode = -11;
+                abort();
+            }
+            else {
+                _body.put( buffer );
+            }
 
             return _state;
         }
@@ -287,7 +322,8 @@ public class AsyncHTTPClient implements HTTPClient
 
     private final AsyncHttpClient _client;
 
-    private final int _maxContentLength = 2 * 1024 * 1024;
+    private int _maxContentLength = 2 * 1024 * 1024;
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }

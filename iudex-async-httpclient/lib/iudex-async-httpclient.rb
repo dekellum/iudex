@@ -27,7 +27,7 @@ module Iudex
   module AsyncHTTPClient
     require "#{LIB_DIR}/iudex-async-httpclient-#{VERSION}.jar"
 
-    import 'iudex.asynchttpclient.AsyncHTTPClient'
+    import 'iudex.asynchttpclient.Client'
 
     def self.create_client_config
 
