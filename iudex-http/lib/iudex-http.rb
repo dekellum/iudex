@@ -25,6 +25,7 @@ module Iudex
   module HTTP
     require "#{LIB_DIR}/iudex-http-#{VERSION}.jar"
 
+    import "iudex.http.BaseResponseHandler"
     import "iudex.http.ContentType"
     import "iudex.http.ContentTypeSet"
     import "iudex.http.HTTPClient"
@@ -32,5 +33,7 @@ module Iudex
     import "iudex.http.HTTPSession"
     import "iudex.http.Header"
     import "iudex.http.Headers"
+    import "iudex.http.ResponseHandler"
+
   end
 end
