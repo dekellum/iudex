@@ -16,8 +16,9 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.gravitext</groupId>
-      <artifactId>gravitext-util</artifactId>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-core</artifactId>
+      <version>[1.0,1.1)</version>
     </dependency>
 
     <dependency>
@@ -27,26 +28,9 @@
     </dependency>
 
     <dependency>
-      <groupId>iudex</groupId>
-      <artifactId>iudex-core</artifactId>
-      <version>[1.0,1.1)</version>
-    </dependency>
-
-    <dependency>
-      <groupId>iudex</groupId>
-      <artifactId>iudex-filter</artifactId>
-      <version>[1.0,1.1)</version>
-    </dependency>
-
-    <dependency>
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
       <version>1.9.14</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
     </dependency>
 
   </dependencies>
@@ -56,6 +40,10 @@
       <plugin>
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

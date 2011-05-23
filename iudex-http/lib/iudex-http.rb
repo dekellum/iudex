@@ -19,6 +19,8 @@ require 'gravitext-util'
 
 require 'iudex-http/base'
 
+require 'java'
+
 module Iudex
   module HTTP
     require "#{LIB_DIR}/iudex-http-#{VERSION}.jar"

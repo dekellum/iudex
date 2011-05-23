@@ -11,8 +11,6 @@ t = RJack::TarPit.new( 'iudex', Iudex::VERSION, :java_platform )
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-
-  h.rubyforge_name = "iudex"
 end
 
 task :chk_hist_vers do

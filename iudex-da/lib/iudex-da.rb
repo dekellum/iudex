@@ -14,14 +14,15 @@
 # permissions and limitations under the License.
 #++
 
-require 'rjack-slf4j'
+require 'iudex-core'
+
 require 'rjack-commons-dbcp'
 require 'rjack-commons-dbutils'
 
-require 'iudex-core'
-
 require 'iudex-da/base'
 require 'iudex-da/config'
+
+require 'java'
 
 module Iudex
   module DA

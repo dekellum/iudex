@@ -16,17 +16,6 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.gravitext</groupId>
-      <artifactId>gravitext-util</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>iudex</groupId>
-      <artifactId>iudex-filter</artifactId>
-      <version>[1.0,1.1)</version>
-    </dependency>
-
-    <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-html</artifactId>
       <version>[1.0,1.1)</version>
@@ -44,6 +33,10 @@
       <plugin>
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

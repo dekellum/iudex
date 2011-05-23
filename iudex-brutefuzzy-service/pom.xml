@@ -16,14 +16,9 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>rjack</groupId>
-      <artifactId>rjack-jms</artifactId>
-      <version>[1.1,1.2)</version>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-core</artifactId>
+      <version>[1.0,1.1)</version>
     </dependency>
 
     <dependency>
@@ -38,6 +33,12 @@
       <version>[1.0,1.1)</version>
     </dependency>
 
+    <dependency>
+      <groupId>rjack</groupId>
+      <artifactId>rjack-jms</artifactId>
+      <version>[1.1,1.2)</version>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -45,6 +46,10 @@
       <plugin>
         <!-- Parent settings -->
         <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

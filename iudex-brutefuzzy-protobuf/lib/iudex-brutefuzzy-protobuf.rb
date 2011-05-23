@@ -14,9 +14,11 @@
 # permissions and limitations under the License.
 #++
 
+require 'rjack-protobuf'
+
 require 'iudex-brutefuzzy-protobuf/base.rb'
 
-require 'rjack-protobuf'
+require 'java'
 
 module Iudex
   module BruteFuzzy
