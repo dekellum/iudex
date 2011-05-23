@@ -60,7 +60,7 @@ module IudexBinScript
         opts.banner = ( "Usage: iudex-barc [options] {show} BARCFile...\n" +
                         "Options:\n" )
 
-        opts.on( "-v", "--version", "Display version and exit" ) do |file|
+        opts.on( "-v", "--version", "Display version and exit" ) do
           puts "iudex-barc: #{BARC::VERSION}"
           exit 1
         end

@@ -34,7 +34,7 @@ module IudexBinScript
 
   OptionParser.new do |opts|
     opts.banner = "Usage: iudex-url-norm [options] [UrlsFile]..."
-    opts.on( "-v", "--version", "Display version" ) do |file|
+    opts.on( "-v", "--version", "Display version" ) do
       puts "iudex-core: #{Core::VERSION}"
       exit 1
     end
