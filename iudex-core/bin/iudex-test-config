@@ -34,7 +34,7 @@ module IudexBinScript
   Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
   OptionParser.new do |opts|
-    opts.on( "-v", "--version", "Display version" ) do |file|
+    opts.on( "-v", "--version", "Display version" ) do
       puts "iudex-core: #{ Core::VERSION }"
     end
     Hooker.register_config( opts )

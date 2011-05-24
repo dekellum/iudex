@@ -35,11 +35,11 @@ module IudexBinScript
   Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
 
   OptionParser.new do |opts|
-    opts.on( "-v", "--version", "Display version" ) do |file|
+    opts.on( "-v", "--version", "Display version" ) do
       puts "iudex-worker: #{ Worker::VERSION }"
       exit 1
     end
-    opts.on( "-d", "--debug", "Enable verbose DEBUG logging" ) do |file|
+    opts.on( "-d", "--debug", "Enable verbose DEBUG logging" ) do
       Logback[ 'iudex' ].level = Logback::DEBUG
     end
     Hooker.register_config( opts )
