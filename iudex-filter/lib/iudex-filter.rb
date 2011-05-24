@@ -42,6 +42,7 @@ module Iudex
       import 'iudex.filter.core.MDCUnsetter'
       import 'iudex.filter.core.Selector'
       import 'iudex.filter.core.Setter'
+      import 'iudex.filter.core.SubListFilter'
       import 'iudex.filter.core.SummaryReporter'
       import 'iudex.filter.core.Switch'
     end
