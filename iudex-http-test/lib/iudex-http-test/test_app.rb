@@ -36,7 +36,7 @@ module Iudex::HTTP::Test
     end
 
     before '/redirects/multi/*' do
-      sleep 1
+      sleep 0.001
     end
 
     get '/redirects/multi/:depth' do
