@@ -19,15 +19,25 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
+require 'iudex-http-test/helper'
+
 require 'iudex-async-httpclient'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
+  include Iudex::HTTP::Test
+  include Helper
+  CustomUnit.register
 
   import "iudex.http.BaseResponseHandler"
 
   class TestHandler < BaseResponseHandler
+    include MiniTest::Assertions
     def handleSuccess( session )
+      puts "Response code: #{session.response_code}"
+    end
+    def handleError( session, code )
+      assert_equal( code, session.response_code )
       puts "Response code: #{session.response_code}"
     end
   end
@@ -42,7 +52,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       session = client.create_session
 
       session.method = HTTP::HTTPSession::Method::GET
-      session.url = "http://gravitext.com/"
+      session.url = "http://localhost:#{server.port}/"
 
       client.request( session, TestHandler.new )
 
