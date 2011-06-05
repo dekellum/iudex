@@ -36,7 +36,9 @@ module Iudex
               :maximum_connections_total => 100,
               :maximum_connections_per_host => 2,
               :request_timeout_in_ms => 5_000,
-              :max_request_retry => 2 }
+              :max_request_retry => 2,
+              :follow_redirects => true,
+              :maximum_number_of_redirects => 6 }
 
       cfg = cfg.merge( opts )
 
