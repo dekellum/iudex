@@ -29,8 +29,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex::HTTP::Test
   include Helper
 
-  import "iudex.http.BaseResponseHandler"
-  import 'com.ning.http.client.MaxRedirectException'
+  import "com.ning.http.client.MaxRedirectException"
 
   CustomUnit.register
 
@@ -39,9 +38,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_default_config
-    config = AsyncHTTPClient.create_client_config
-    aclient = RJack::AsyncHTTPClient::AsyncHttpClient.new( config )
-    aclient.close
+    client = AsyncHTTPClient.create_client
+    client.close
     pass
   end
 
@@ -76,18 +74,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def with_new_client( opts = {} )
-    client = new_client( opts )
+    client = AsyncHTTPClient.create_client( opts )
     begin
       yield client
     ensure
       client.close
     end
-  end
-
-  def new_client( opts = {} )
-    cfg = AsyncHTTPClient.create_client_config( opts )
-    aclient = RJack::AsyncHTTPClient::AsyncHttpClient.new( cfg )
-    AsyncHTTPClient::Client.new( aclient )
   end
 
   class TestHandler < BaseResponseHandler

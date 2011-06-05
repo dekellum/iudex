@@ -29,6 +29,12 @@ module Iudex
 
     import 'iudex.asynchttpclient.Client'
 
+    include RJack::AsyncHTTPClient
+
+    def self.create_client( opts = {} )
+      Client.new( AsyncHttpClient.new( create_client_config( opts ) ) )
+    end
+
     def self.create_client_config( opts = {} )
 
       cfg = { :connection_timeout_in_ms => 3_000,
@@ -44,7 +50,7 @@ module Iudex
 
       cfg = Hooker.merge( [ :iudex, :async_httpclient ], cfg )
 
-      RJack::AsyncHTTPClient::build_client_config( cfg )
+      RJack::AsyncHTTPClient.build_client_config( cfg )
     end
 
   end
