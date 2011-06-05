@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
 import com.gravitext.util.Streams;
 import com.ning.http.client.AsyncHandler;
@@ -45,7 +47,7 @@ import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Request;
 
-public class Client implements HTTPClient
+public class Client implements HTTPClient, Closeable
 {
     public Client( AsyncHttpClient client )
     {
@@ -78,6 +80,12 @@ public class Client implements HTTPClient
     public void setMaxContentLength( int length )
     {
         _maxContentLength = length;
+    }
+
+    @Override
+    public void close()
+    {
+        _client.close();
     }
 
     private class Session
@@ -271,6 +279,18 @@ public class Client implements HTTPClient
             }
 
             return this;
+        }
+
+        @SuppressWarnings("unused")
+        public void waitForCompletion()
+            throws InterruptedException
+        {
+            try {
+                _future.get();
+            }
+            catch( ExecutionException x ) {
+                //FIXME: Should be safe to ignore (already passed to handler)
+            }
         }
 
         private CharSequence reconstructRequestLine()
