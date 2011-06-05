@@ -201,6 +201,8 @@ public class Client implements HTTPClient
             _responseCode = status.getStatusCode();
             _statusText = status.getStatusText();
 
+            setUrl( status.getUrl().toString() );
+
             return _state;
         }
 
