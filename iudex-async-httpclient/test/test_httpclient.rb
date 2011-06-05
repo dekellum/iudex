@@ -43,6 +43,17 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     pass
   end
 
+  def test_unfollowed_301_redirect
+    with_new_client( :follow_redirects => false ) do |client|
+
+      with_session_handler( client, "/301" ) do |s,x|
+        assert_equal( 301, s.response_code )
+        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
+        assert_match( %r{/index$}, lh.value )
+      end
+    end
+  end
+
   def test_redirect
     with_new_client( :follow_redirects => true,
                      :maximum_number_of_redirects => 7 ) do |client|
