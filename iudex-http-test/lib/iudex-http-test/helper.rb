@@ -28,6 +28,9 @@ module Iudex::HTTP::Test
       Helper.stop
     end
 
+    def self.register
+      MiniTest::Unit.runner = CustomUnit.new
+    end
   end
 
   module Helper
@@ -50,7 +53,5 @@ module Iudex::HTTP::Test
       @server = nil
     end
   end
-
-  MiniTest::Unit.runner = CustomUnit.new
 
 end

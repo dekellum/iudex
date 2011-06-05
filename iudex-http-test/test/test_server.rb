@@ -32,7 +32,9 @@ require 'iudex-http-test/helper'
 require 'net/http'
 
 class TestServer < MiniTest::Unit::TestCase
-  include Iudex::HTTP::Test::Helper
+  include Iudex::HTTP::Test
+  include Helper
+  CustomUnit.register
 
   def test_port
     assert server.port > 0
