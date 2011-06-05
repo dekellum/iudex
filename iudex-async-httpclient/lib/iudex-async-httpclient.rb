@@ -29,7 +29,7 @@ module Iudex
 
     import 'iudex.asynchttpclient.Client'
 
-    def self.create_client_config
+    def self.create_client_config( opts = {} )
 
       cfg = { :connection_timeout_in_ms => 3_000,
               :idle_connection_timeout_in_ms => 6_000,
@@ -37,6 +37,8 @@ module Iudex
               :maximum_connections_per_host => 2,
               :request_timeout_in_ms => 5_000,
               :max_request_retry => 2 }
+
+      cfg = cfg.merge( opts )
 
       cfg = Hooker.merge( [ :iudex, :async_httpclient ], cfg )
 
