@@ -17,6 +17,7 @@
 require 'rack'
 require 'sinatra/base'
 require 'markaby'
+require 'cgi'
 
 require 'iudex-http-test/base'
 
@@ -27,6 +28,11 @@ module Iudex::HTTP::Test
     PUBLIC = File.expand_path( File.join(
                File.dirname( __FILE__ ), '..', '..', 'public' ) )
 
+    before '*' do
+      s = params[:sleep].to_f
+      sleep s if s > 0.0
+    end
+
     get '/' do
       redirect to( '/index' )
     end
@@ -35,15 +41,12 @@ module Iudex::HTTP::Test
       redirect( to( '/index' ), 301 ) #"redirect body"
     end
 
-    before '/redirects/multi/*' do
-      sleep 0.001
-    end
-
     get '/redirects/multi/:depth' do
       depth = params[:depth].to_i
       status = params[:code].to_i || 302
       if depth > 1
-        redirect( to( "/redirects/multi/#{depth - 1}" ), status )
+        redirect( to( "/redirects/multi/#{depth - 1}#{common params}" ),
+                  status )
       else
         "You finally made it"
       end
@@ -52,9 +55,9 @@ module Iudex::HTTP::Test
     get '/index' do
       markaby do
         html do
-          head { title "Sinatra With Markaby" }
+          head { title "Test Index Page" }
           body do
-            h1 "Markaby Is Fun!"
+            h1 "Iudex HTTP Test Service"
             a( :href => url( '/foobar' ) ) { "foobar" }
           end
         end
@@ -69,6 +72,15 @@ module Iudex::HTTP::Test
     get '/env' do
       request.inspect
     end
+
+    def common( params )
+      ps = [ :sleep ].
+        map { |k| ( v = params[k] ) && [ k, v ] }.
+        compact.
+        map { |k,v| [ k, CGI.escape( v.to_s ) ].join( '=' ) }
+      '?' + ps.join( '&' ) unless ps.empty?
+    end
+
   end
 
 end
