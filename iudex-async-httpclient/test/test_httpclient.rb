@@ -62,10 +62,38 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def test_bad_host
+  import 'java.util.concurrent.ThreadPoolExecutor'
+  import 'java.util.concurrent.ArrayBlockingQueue'
+  import 'java.util.concurrent.TimeUnit'
+
+  def test_custom_executor
+
+    executor = ThreadPoolExecutor.new( 1, 10,
+                                       10, TimeUnit::SECONDS,
+                                       ArrayBlockingQueue.new( 20 ) )
+
+    with_new_client( :executor_service => executor ) do |client|
+
+      with_session_handler( client, "/index" ) do |s,x|
+        assert_equal( 200, s.response_code )
+      end
+    end
+  end
+
+  def test_unknown_host
+    skip( "Takes too long to complete, ~25s" )
     with_new_client do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
+        assert_instance_of( ConnectException, x )
+      end
+    end
+  end
+
+  def test_local_connection_refused
+    with_new_client do |client|
+      with_session_handler( client,
+                            "http://localhost:54929/" ) do |s,x|
         assert_instance_of( ConnectException, x )
       end
     end

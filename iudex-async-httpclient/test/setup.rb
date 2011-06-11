@@ -21,11 +21,20 @@ $LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
 
 require 'rubygems'
 require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
-RJack::Logback.root.level = RJack::Logback::DEBUG if ARGV.include?( '-v' )
-
 require 'minitest/unit'
 require 'minitest/autorun'
+
+module TestSetup
+  include RJack
+  Logback.config_console( :stderr => true )
+
+  unless ( ARGV & %w[ -v --verbose ] ).empty?
+    Logback.root.level = Logback::DEBUG
+  else
+    sl = [ "com.ning.http.client.providers.netty.NettyAsyncHttpProvider" ]
+    sl.each { |l| Logback[ l ].level = Logback::WARN }
+  end
+end
 
 # Make test output logging compatible: no partial lines.
 #class TestOut
