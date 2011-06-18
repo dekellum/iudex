@@ -23,6 +23,8 @@ require 'iudex-http-test/helper'
 
 require 'iudex-async-httpclient'
 
+# RJack::Logback[ 'org.eclipse.jetty' ].level = :debug
+
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
   include Iudex::HTTP
@@ -160,14 +162,38 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     assert_instance_of( TimeoutException, ex )
   end
 
-  def with_session_handler( client, uri, &block )
+  def test_concurrent_requests
+    skip( "max_connections_per_host not honored + 500 error?" )
+    with_new_client( :maximum_connections_per_host  => 1 ) do |client|
+
+      resps = []
+      sessions = (1..10).map do |i|
+        puts "sending: #{i}"
+        with_session_handler( client, "/index?sleep=2&i=#{i}", false ) do |s,x|
+          resps << [ s.response_code, s.status_text, x ]
+        end
+      end
+
+      sessions.each do |s|
+        s.wait_for_completion
+        puts "completed"
+      end
+
+      assert_equal( [ 200, "OK", nil ] * 10, resps.flatten )
+    end
+  end
+
+  def with_session_handler( client, uri, wait = true, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
     handler = TestHandler.new( &block )
     client.request( session, handler )
-    session.wait_for_completion
-    assert handler.called?
+    if wait
+      session.wait_for_completion
+      assert handler.called?
+    end
+    session
   end
 
   def with_new_client( opts = {} )
