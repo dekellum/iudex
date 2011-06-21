@@ -47,3 +47,5 @@ module Iudex
 
   end
 end
+
+require 'iudex-core/mojibake'
