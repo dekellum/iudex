@@ -17,22 +17,16 @@
 require 'iudex-core'
 require 'java'
 
-module Iudex::Core::Filters
-  import 'iudex.core.filters.MojiBakeFilter'
+module Iudex::Core
 
-  # Re-open iudex.core.filters.MojiBakeFilter to add config file
-  # based initialization.
-  class MojiBakeFilter
-
+  module MojiBake
     DEFAULT_CONFIG = File.join( File.dirname( __FILE__ ),
                                 '..', '..', 'config', 'mojibake' )
 
-    # Alt constructor taking a configuration file in `mojibake -t`
-    # format.
-    def initialize( key, config_file = DEFAULT_CONFIG )
+    def self.load_config( file = DEFAULT_CONFIG )
       regex = nil
       mojis = []
-      File.open( config_file ) do |fin|
+      File.open( file ) do |fin|
         fin.each do |line|
           case line
           when %r{^/([^/]+)/$}
@@ -47,15 +41,33 @@ module Iudex::Core::Filters
       mojis.each do | moji, rpl |
         mh.put( jstring( moji ), jstring( rpl ) )
       end
-      super( key, regex, mh )
+      [ regex, mh ]
     end
 
     private
 
-    def jstring( cps )
+    def self.jstring( cps )
       cs = cps.map { |cp| cp.hex }.to_java( :char )
       Java::java.lang.String.new( cs )
     end
 
   end
+
+  module Filters
+    import 'iudex.core.filters.MojiBakeFilter'
+
+    # Re-open iudex.core.filters.MojiBakeFilter to add config file
+    # based initialization.
+    class MojiBakeFilter
+
+      # Alt constructor taking a configuration file in `mojibake -t`
+      # format.
+      def initialize( key, config_file = MojiBake::DEFAULT_CONFIG )
+        super( key, *MojiBake.load_config( config_file ) )
+      end
+
+    end
+
+  end
+
 end

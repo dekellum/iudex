@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 David Kellum
+* Copyright (c) 2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -17,17 +17,15 @@
 package iudex.core.filters;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 import iudex.filter.Described;
 import iudex.filter.Filter;
+import iudex.util.MojiBakeMapper;
 
 public class MojiBakeFilter
     implements Filter, Described
@@ -37,8 +35,7 @@ public class MojiBakeFilter
                            Map<String,String> mojis )
     {
         _field = field;
-        _mojiPattern = Pattern.compile( regex );
-        _mojis = new HashMap<String,String>( mojis );
+        _mapper = new MojiBakeMapper( regex, mojis );
     }
 
     @Override
@@ -52,34 +49,12 @@ public class MojiBakeFilter
     {
         CharSequence in = content.get( _field );
         if( in != null ) {
-            content.set( _field, recover( in ) );
+            content.set( _field, _mapper.recover( in ) );
         }
 
         return true;
     }
-    private CharSequence recover( CharSequence in )
-    {
-        Matcher m = _mojiPattern.matcher( in );
-        StringBuilder out = new StringBuilder( in.length() );
-        int last = 0;
-        while( m.find() ) {
-            out.append( in, last, m.start() );
-            String moji = in.subSequence( m.start(), m.end() ).toString();
-            out.append( _mojis.get( moji ) );
-            last = m.end();
-        }
-        out.append( in, last, in.length() );
-
-        if( out.length() < in.length() ) {
-            return recover( out );
-        }
-        else {
-            return out;
-        }
-    }
 
     private final Key<CharSequence> _field;
-
-    private final Pattern _mojiPattern;
-    private final HashMap<String, String> _mojis;
+    private final MojiBakeMapper _mapper;
 }
