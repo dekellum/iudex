@@ -26,6 +26,7 @@ import iudex.core.ContentSource;
 import iudex.html.HTML;
 import iudex.html.HTMLTag;
 import iudex.http.ContentType;
+import iudex.util.Charsets;
 
 import org.cyberneko.html.parsers.SAXParser;
 import org.xml.sax.SAXException;
@@ -35,7 +36,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.gravitext.util.CharSequences;
-import com.gravitext.util.Charsets;
 import com.gravitext.util.ResizableCharBuffer;
 import com.gravitext.xml.producer.Attribute;
 import com.gravitext.xml.tree.AttributeValue;
@@ -214,6 +214,8 @@ public class NekoHTMLParser
         {
             ContentType ctype = ContentType.parse( type );
             Charset newCharset = Charsets.lookup( ctype.charset() );
+            if( newCharset != null ) newCharset = Charsets.expand( newCharset );
+
             if( ( newCharset != null ) && ( _inputEncoding != null ) &&
                 ! _inputEncoding.equals( newCharset ) ) {
                 throw new WrongEncoding( newCharset );
