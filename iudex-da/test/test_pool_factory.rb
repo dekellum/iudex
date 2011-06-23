@@ -50,7 +50,7 @@ class TestPoolFactory < MiniTest::Unit::TestCase
   end
 
   def test_query
-    assert( ! @data_source.nil? )
+    refute( @data_source.nil? )
     qrun = QueryRunner.new( @data_source )
     qrun.query( "SELECT url FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', 'notthere' );",
                 TestHandler.new )
