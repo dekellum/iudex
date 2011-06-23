@@ -28,9 +28,10 @@ module Iudex
                                    'config', 'stopwords.en' )
 
         def simhash_stopwords( wfile = DEFAULT_WORDS )
-          words = File.open( wfile ) { |fin| fin.readlines }
-          words.map! { |w| w.strip }
-          words.reject! { |w| w =~ /^#/ }
+          words =
+            File.open( wfile ) { |fin| fin.readlines }.
+            map { |w| w.strip }.
+            reject { |w| w =~ /^#/ }
 
           Gen::StopWordSet.new( words )
         end
