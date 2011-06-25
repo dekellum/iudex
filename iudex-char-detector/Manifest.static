@@ -1,0 +1,9 @@
+History.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+pom.xml
+lib/iudex-char-detector/base.rb
+lib/iudex-char-detector.rb
+test/setup.rb
+test/test_char_detector.rb
