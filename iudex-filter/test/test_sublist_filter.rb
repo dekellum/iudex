@@ -72,9 +72,10 @@ class TestSubListFilter < MiniTest::Unit::TestCase
       f = sublist_filter( [ fltr { |s| s.sval = :mod } ] )
       f.filter( map )
 
-      assert_equal( pre.to_a.length, map.slist.to_a.length )
+      assert_equal( Array( pre ).length,
+                    Array( map.slist ).length )
 
-      map.slist.to_a.each do |s|
+      Array( map.slist ).each do |s|
         assert_equal( :mod, s.sval )
       end
     end
