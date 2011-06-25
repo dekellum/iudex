@@ -74,7 +74,17 @@ public class ContentSource
         return _source;
     }
 
-    private Object _source;
-    private Charset _defaultEncoding = null;
+    public void setEncodingConfidence( float confidence )
+    {
+        _encodingConfidence = confidence;
+    }
 
+    public float encodingConfidence()
+    {
+        return _encodingConfidence;
+    }
+
+    private Object  _source;
+    private Charset _defaultEncoding = null;
+    private float   _encodingConfidence = 0.0F;
 }
