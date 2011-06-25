@@ -93,7 +93,7 @@ module HTMLTestHelper
 
   def content( html, charset = "UTF-8" )
     map = UniMap.new
-    map.source = HTMLUtils::source( html.to_java_bytes, "UTF-8" )
+    map.source = HTMLUtils::source( html.to_java_bytes, charset )
     map
   end
 
