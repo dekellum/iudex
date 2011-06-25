@@ -3,8 +3,13 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-char-detect
 lib/iudex-char-detector/base.rb
 lib/iudex-char-detector.rb
+test/sample.html.ascii
+test/sample.html.iso
+test/sample.html.utf16
+test/sample.html.utf8
 test/setup.rb
 test/test_char_detector.rb
 lib/iudex-char-detector/iudex-char-detector-1.0.0.jar

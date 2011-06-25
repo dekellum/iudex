@@ -30,11 +30,12 @@ class TestCharDetector < MiniTest::Unit::TestCase
 
   import 'java.nio.ByteBuffer'
   import 'java.nio.charset.Charset'
+  JString = Java::java.lang.String
 
   SHORT_HTML = <<HTML
 <html>
  <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Un documento electronica (titulo en ASCII)</title>
  </head>
  <body>
   <p>¿De donde eres tú?</p>
@@ -42,14 +43,50 @@ class TestCharDetector < MiniTest::Unit::TestCase
 </html>
 HTML
 
+  def test_find_nothing
+    df = CharDetectFilter.new
+    df.max_detect_length = 3
+
+    [ "", "a", "ascii" ].each do |ib|
+      assert_nil( df.find_detect_buffer( wrap( ib ) ), ib )
+    end
+  end
+
+  def test_find_something
+    df = CharDetectFilter.new
+    df.max_detect_length = 3
+
+    trials = [ %w[ á     á   ],
+               %w[ é.    é.  ],
+               %w[ ..ü   ..ü ],
+               %w[ ..ü0  ..ü ],
+               %w[ 0..í  ..í ],
+               %w[ 0..ó0 ..ó ] ]
+
+    trials.each do |ib,ob|
+      out = df.find_detect_buffer( wrap( encode_as( ib, "ISO-8859-1" ) ) )
+      assert( out, ob )
+      assert_equal( ob, JString.new( out, "ISO-8859-1" ).to_s, ob )
+    end
+
+  end
+
+  def test_ascii
+    map = detect_from( "", "UTF-8" )
+    assert_encoding( map.source, "UTF-8", 0.0 )
+
+    map = detect_from( "ascii", "UTF-8" )
+    assert_encoding( map.source, "UTF-8", 0.0 )
+  end
+
   def test_html_utf8_as_default
     map = detect_from( SHORT_HTML, "UTF-8" )
-    assert_encoding( map.source, "UTF-8", 0.70 )
+    assert_encoding( map.source, "UTF-8", 0.80 )
   end
 
   def test_html_utf8_wrong_default
     map = detect_from( SHORT_HTML, "UTF-8", "ISO-8859-1" )
-    assert_encoding( map.source, "UTF-8", 0.70 )
+    assert_encoding( map.source, "UTF-8", 0.80 )
   end
 
   def test_html_iso_as_default
@@ -84,7 +121,9 @@ HTML
 
   def detect_from( bytes, enc, claimed_enc = nil )
     map = content( encode_as( bytes, enc ), claimed_enc || enc )
-    assert( CharDetectFilter.new.filter( map ) )
+    df = CharDetectFilter.new
+    df.max_detect_length = SHORT_HTML.length - 20
+    assert( df.filter( map ) )
     map
   end
 
@@ -98,16 +137,20 @@ HTML
       bytes
     else
       bytes = bytes.to_java_bytes if bytes.respond_to?( :to_java_bytes )
-      Java::java.lang.String.new( bytes, "UTF-8" ).bytes( encoding )
+      JString.new( bytes, "UTF-8" ).bytes( encoding )
     end
   end
 
-  def content( html, charset = "UTF-8" )
+  def content( bytes, charset = "UTF-8" )
     map = UniMap.new
-    html = html.to_java_bytes if html.respond_to?( :to_java_bytes )
-    map.source = ContentSource.new( ByteBuffer::wrap( html ) )
+    map.source = ContentSource.new( wrap( bytes ) )
     map.source.default_encoding = Charset::lookup( charset )
     map
+  end
+
+  def wrap( bytes )
+    bytes = bytes.to_java_bytes if bytes.respond_to?( :to_java_bytes )
+    ByteBuffer::wrap( bytes )
   end
 
 end
