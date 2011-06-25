@@ -32,20 +32,20 @@ class TestParseFilter < MiniTest::Unit::TestCase
   end
 
   def test_marked
-    assert( ! marked?( "" ) )
-    assert( ! marked?( "simple" ) )
-    assert( ! marked?( "<simple" ) )
-    assert( ! marked?( "x < y" ) )
-    assert( ! marked?( "AT&T" ) )
-    assert( ! marked?( "AT & T;" ) )
+    refute( marked?( "" ) )
+    refute( marked?( "simple" ) )
+    refute( marked?( "<simple" ) )
+    refute( marked?( "x < y" ) )
+    refute( marked?( "AT&T" ) )
+    refute( marked?( "AT & T;" ) )
 
-    assert(   marked?( "<a>" ) )
-    assert(   marked?( "Words &copy; 2010" ) )
-    assert(   marked?( "&#xf43e;" ) )
-    assert(   marked?( "&#2028;" ) )
-    assert(   marked?( "<![CDATA[simple]]>" ) )
-    assert(   marked?( "<![CDATA[simple" ) )
-    assert(   marked?( "<!-- comment -->" ) )
+    assert( marked?( "<a>" ) )
+    assert( marked?( "Words &copy; 2010" ) )
+    assert( marked?( "&#xf43e;" ) )
+    assert( marked?( "&#2028;" ) )
+    assert( marked?( "<![CDATA[simple]]>" ) )
+    assert( marked?( "<![CDATA[simple" ) )
+    assert( marked?( "<!-- comment -->" ) )
   end
 
   def marked?( text )

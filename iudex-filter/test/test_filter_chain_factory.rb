@@ -1,3 +1,4 @@
+
 #!/usr/bin/env jruby
 #.hashdot.profile += jruby-shortlived
 
@@ -67,7 +68,7 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
     end
 
     2.times do |r|
-      assert( ! fcf.open? )
+      refute( fcf.open? )
 
       fcf.filter do |chain|
         1000.times do |t|
@@ -78,7 +79,7 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
         end
       end
 
-      assert( ! fcf.open? )
+      refute( fcf.open? )
     end
 
   end
