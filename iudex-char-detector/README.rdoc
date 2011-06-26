@@ -5,7 +5,8 @@
 == Description
 
 Iudex is a general purpose web crawler and feed processor in
-ruby/java. The iudex-char-detector profides charset detection support.
+ruby/java. The iudex-char-detector gem provides charset detection
+support.
 
 == License
 
