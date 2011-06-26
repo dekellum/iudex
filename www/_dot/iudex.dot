@@ -8,7 +8,7 @@ digraph "iudex-gems" {
 #  "iudex-filter" -> "gravitext-util"
 #  "iudex-da"     -> "gravitext-util"
   "iudex-da"     [ target=_parent, URL="../da.html" ];
-  "iudex-da"     -> "iudex-filter"
+#  "iudex-da"     -> "iudex-filter"
   "iudex-da"     -> "iudex-core"
 
 #  "iudex-core"   -> "gravitext-util"
@@ -16,15 +16,19 @@ digraph "iudex-gems" {
   "iudex-core"   -> "iudex-http"
   "iudex-core"     -> "iudex-barc"
 
+  "iudex-char-detector"
+  "iudex-char-detector" -> "iudex-core"
+#  "iudex-char-detector" -> "iudex-filter"
+
   "iudex-html";
   "iudex-simhash";
 
   "iudex-simhash" -> "iudex-html";
-  "iudex-simhash" -> "iudex-filter";
+#  "iudex-simhash" -> "iudex-filter";
   "iudex-simhash" -> "iudex-core";
 #  "iudex-core"    -> "iudex-simhash";
 
-  "iudex-html" -> "iudex-filter";
+#  "iudex-html" -> "iudex-filter";
   "iudex-html" -> "iudex-core";
 
   "iudex-rome"   -> "iudex-core"
@@ -49,8 +53,9 @@ digraph "iudex-gems" {
 
   "iudex-worker";
   "iudex-worker" -> "iudex-da"
+  "iudex-worker" -> "iudex-char-detector"
   "iudex-worker" -> "iudex-rome"
-  "iudex-worker" -> "iudex-core"
+#  "iudex-worker" -> "iudex-core"
   "iudex-worker" -> "iudex-httpclient-3"
   "iudex-worker" -> "iudex-barc"
   "iudex-worker" -> "iudex-html"
