@@ -24,6 +24,9 @@ $LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
 require 'rubygems'
 require 'rjack-logback'
 RJack::Logback.config_console( :stderr => true )
+if ARGV.include?( '--verbose' ) || ARGV.include?( '-v' )
+  RJack::Logback.root.level = RJack::Logback::DEBUG
+end
 
 require 'minitest/unit'
 require 'minitest/autorun'

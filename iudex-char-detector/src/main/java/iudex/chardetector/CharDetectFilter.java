@@ -18,6 +18,11 @@ package iudex.chardetector;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Charsets;
@@ -59,21 +64,34 @@ public class CharDetectFilter implements Filter
                         detector.setDeclaredEncoding( defaultEncoding.name() );
                     }
 
-                    CharsetMatch match = detector.detect();
+                    CharsetMatch matches[] = detector.detectAll();
 
-                    if( match != null ) {
-                        Charset cs = Charsets.lookup( match.getName() );
-                        if( cs != null ) {
-                            source.setDefaultEncoding( cs );
-                            source.setEncodingConfidence( match.getConfidence()
-                                                          / 100.0F );
-                        }
-                    }
+                    Map<Charset, Float> mmap = mapMatches( matches );
+
+                    source.setDefaultEncoding( mmap );
                 }
             }
         }
 
         return true;
+    }
+
+    private Map<Charset, Float> mapMatches( CharsetMatch[] matches )
+    {
+        Map<Charset,Float> mmap = new LinkedHashMap<Charset,Float>();
+        for( CharsetMatch m : matches ) {
+            Charset cs = Charsets.lookup( m.getName() );
+            if( cs != null ) {
+                if( ! mmap.containsKey( cs ) ) {
+                    mmap.put( cs, m.getConfidence() / 100.0F );
+                }
+            }
+        }
+        for( Map.Entry<Charset, Float> e : mmap.entrySet() ) {
+            _log.debug("match: {} ({})", e.getKey(), e.getValue());
+        }
+
+        return mmap;
     }
 
     /**
@@ -119,4 +137,6 @@ public class CharDetectFilter implements Filter
     }
 
     private int _maxDetectLength = 8 * 1024;
+
+    private final Logger _log = LoggerFactory.getLogger( getClass() );
 }

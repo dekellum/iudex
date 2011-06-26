@@ -9,6 +9,7 @@ lib/iudex-char-detector.rb
 test/sample.html.ascii
 test/sample.html.iso
 test/sample.html.utf16
+test/sample.html.utf16le
 test/sample.html.utf8
 test/setup.rb
 test/test_char_detector.rb

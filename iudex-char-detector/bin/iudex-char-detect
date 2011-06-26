@@ -53,6 +53,9 @@ class ChartDetectUtil
         puts "iudex-char-detector: #{CharDetector::VERSION}"
         exit 1
       end
+      opts.on( "-d", "--debug" ) do
+        Logback[ 'iudex' ].level = Logback::DEBUG
+      end
       opts.on_tail( "-e", "--encoding ENCODING", String,
                     "Set default encoding (#{@default_encode})" ) do |enc|
         @default_encode = enc
@@ -66,7 +69,7 @@ class ChartDetectUtil
       end
     end
 
-    args = p.parse( args )
+    p.parse!( args )
 
     if args.empty?
       detect( $stdin )
@@ -79,7 +82,11 @@ class ChartDetectUtil
             res.unshift( fname )
             puts "%-#{ max_name }s : %-12s (%5.4f)" % res
           else
-            puts "%s (%.4g)" % res
+            puts "%-12s (%.4f)" % res
+            puts "====================="
+            res[2].each do |enc,conf|
+              puts "%-12s (%.4f)" % [ enc, conf ]
+            end
           end
         end
       end
@@ -91,14 +98,16 @@ class ChartDetectUtil
     map = UniMap.new
     bytes = ByteBuffer::wrap( fin.read.to_java_bytes )
     map.source = ContentSource.new( bytes )
-    map.source.default_encoding = Charset::lookup( @default_encode )
+    map.source.set_default_encoding( Charset::lookup( @default_encode ) )
 
     df = CharDetectFilter.new
     #FIXME: Option? df.max_detect_length =
     df.filter( map )
     s = map.source
 
-    [ s.default_encoding.name, s.encoding_confidence ]
+    [ s.default_encoding.name,
+      s.encoding_confidence,
+      s.encoding_confidences ]
   end
 
 end

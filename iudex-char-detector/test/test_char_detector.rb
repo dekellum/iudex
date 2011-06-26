@@ -144,7 +144,7 @@ HTML
   def content( bytes, charset = "UTF-8" )
     map = UniMap.new
     map.source = ContentSource.new( wrap( bytes ) )
-    map.source.default_encoding = Charset::lookup( charset )
+    map.source.set_default_encoding( Charset::lookup( charset ) )
     map
   end
 
