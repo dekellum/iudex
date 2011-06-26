@@ -30,6 +30,7 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
+import iudex.util.Charsets;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -45,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
-import com.gravitext.util.Charsets;
 import com.gravitext.util.ResizableByteBuffer;
 
 public class ContentFetcher implements AsyncFilterContainer
@@ -187,16 +187,16 @@ public class ContentFetcher implements AsyncFilterContainer
                     new ContentSource( buffer.flipAsByteBuffer() );
 
                 // Set default encoding
-                Charset encoding = null;
+                cs.setDefaultEncoding( _defaultEncoding );
+
+                // Set better default if charset in Content-Type
                 if( ctype != null ) {
                     String eName = ctype.charset();
                     if( eName != null ) {
-                        encoding = Charsets.lookup( eName );
+                        Charset enc = Charsets.lookup( eName );
+                        if( enc != null ) cs.setDefaultEncoding( enc, 0.10F );
                     }
                 }
-                if( encoding == null ) encoding = _defaultEncoding;
-
-                cs.setDefaultEncoding( encoding );
 
                 _content.set( SOURCE, cs );
             }
@@ -303,7 +303,7 @@ public class ContentFetcher implements AsyncFilterContainer
     private final FilterContainer _receiver;
     private List<Header> _fixedRequestHeaders = Collections.emptyList();
     private Set<String> _acceptedContentTypes = null;
-    private Charset _defaultEncoding = Charset.forName( "ISO-8859-1" );
+    private Charset _defaultEncoding = Charsets.defaultCharset();
 
     private final Logger _log = LoggerFactory.getLogger( ContentFetcher.class );
 }

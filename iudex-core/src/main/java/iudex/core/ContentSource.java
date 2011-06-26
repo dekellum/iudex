@@ -18,6 +18,8 @@ package iudex.core;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.gravitext.util.Streams;
 
@@ -55,9 +57,37 @@ public class ContentSource
                  (CharSequence) _source : null );
     }
 
-    public void setDefaultEncoding( Charset encoding )
+    public boolean setDefaultEncoding( Charset encoding )
     {
-        _defaultEncoding = encoding;
+        return setDefaultEncoding( encoding, 0.0F );
+    }
+
+    public boolean setDefaultEncoding( Charset encoding, float newConfidence )
+    {
+        Float oldConfObj = _encodings.get( encoding );
+        float oldConf = ( oldConfObj != null ) ? oldConfObj : 0.0F;
+        float conf = oldConf + newConfidence;
+        _encodings.put( encoding, conf );
+
+        if( ( conf > _encodingConfidence ) ||
+            ( _encodingConfidence == 0.0F ) ) {
+            _defaultEncoding = encoding;
+            _encodingConfidence = conf;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setDefaultEncoding( Map<Charset,Float> confidences )
+    {
+        boolean changed = false;
+
+        for( Map.Entry<Charset, Float> e : confidences.entrySet() ) {
+            boolean c = setDefaultEncoding( e.getKey(), e.getValue() );
+            changed = changed || c;
+        }
+
+        return changed;
     }
 
     /**
@@ -74,7 +104,19 @@ public class ContentSource
         return _source;
     }
 
-    private Object _source;
-    private Charset _defaultEncoding = null;
+    public float encodingConfidence()
+    {
+        return _encodingConfidence;
+    }
 
+    public Map<Charset,Float> encodingConfidences()
+    {
+        return _encodings;
+    }
+
+    private Object  _source;
+    private Charset _defaultEncoding = null;
+    private float   _encodingConfidence = 0.0F;
+
+    private Map<Charset,Float> _encodings = new LinkedHashMap<Charset,Float>();
 }

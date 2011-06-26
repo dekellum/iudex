@@ -1,0 +1,115 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+
+#--
+# Copyright (c) 2011 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+require 'optparse'
+
+class ChartDetectUtil
+
+  require 'rjack-logback'
+  include RJack
+
+  Logback.config_console( :level => Logback::INFO, :stderr => true )
+
+  require 'iudex-char-detector'
+  include Iudex
+
+  include Gravitext::HTMap
+  UniMap.define_accessors
+
+  include Iudex::Core
+  include Iudex::CharDetector
+
+  import 'java.nio.ByteBuffer'
+  import 'java.nio.charset.Charset'
+
+  def initialize
+    @default_encode = "windows-1252"
+  end
+
+  def run( args = ARGV )
+
+    p = OptionParser.new do |opts|
+      opts.banner = "Usage: iudex-char-detect [options] [TestFile]"
+      opts.on( "-v", "--version", "Display version" ) do
+        puts "iudex-char-detector: #{CharDetector::VERSION}"
+        exit 1
+      end
+      opts.on( "-d", "--debug" ) do
+        Logback[ 'iudex' ].level = Logback::DEBUG
+      end
+      opts.on_tail( "-e", "--encoding ENCODING", String,
+                    "Set default encoding (#{@default_encode})" ) do |enc|
+        @default_encode = enc
+      end
+      opts.on_tail( "-h", "--help", "Show help and exit" ) do
+        puts opts
+        puts
+        puts( "Detect charset of File and report encoding, confidence " +
+              "(independent of HTML features)" )
+        exit 1
+      end
+    end
+
+    p.parse!( args )
+
+    if args.empty?
+      detect( $stdin )
+    else
+      max_name = args.map { |fn| fn.length }.max
+      args.each do |fname|
+        open( fname, "r" ) do |fin|
+          res = detect( fin )
+          if ARGV.length > 1
+            res.unshift( fname )
+            puts "%-#{ max_name }s : %-12s (%5.4f)" % res
+          else
+            puts "%-12s (%.4f)" % res
+            puts "====================="
+            res[2].each do |enc,conf|
+              puts "%-12s (%.4f)" % [ enc, conf ]
+            end
+          end
+        end
+      end
+    end
+
+  end
+
+  def detect( fin )
+    map = UniMap.new
+    bytes = ByteBuffer::wrap( fin.read.to_java_bytes )
+    map.source = ContentSource.new( bytes )
+    map.source.set_default_encoding( Charset::lookup( @default_encode ) )
+
+    df = CharDetectFilter.new
+    #FIXME: Option? df.max_detect_length =
+    df.filter( map )
+    s = map.source
+
+    [ s.default_encoding.name,
+      s.encoding_confidence,
+      s.encoding_confidences ]
+  end
+
+end
+
+ChartDetectUtil.new.run
