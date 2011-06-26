@@ -187,17 +187,16 @@ public class ContentFetcher implements AsyncFilterContainer
                     new ContentSource( buffer.flipAsByteBuffer() );
 
                 // Set default encoding
-                Charset encoding = null;
+                cs.setDefaultEncoding( _defaultEncoding );
+
+                // Set better default if charset in Content-Type
                 if( ctype != null ) {
                     String eName = ctype.charset();
                     if( eName != null ) {
-                        encoding = Charsets.lookup( eName );
+                        Charset enc = Charsets.lookup( eName );
+                        if( enc != null ) cs.setDefaultEncoding( enc, 0.10F );
                     }
                 }
-                if( encoding == null ) encoding = _defaultEncoding;
-                encoding = Charsets.expand( encoding );
-
-                cs.setDefaultEncoding( encoding );
 
                 _content.set( SOURCE, cs );
             }
