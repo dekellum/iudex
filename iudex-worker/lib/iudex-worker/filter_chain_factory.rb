@@ -26,6 +26,8 @@ require 'iudex-da/factory_helper'
 
 require 'iudex-rome'
 
+require 'iudex-char-detector'
+
 require 'iudex-html'
 require 'iudex-html/factory_helper'
 
@@ -45,6 +47,7 @@ module Iudex
       include Iudex::Core
       include Iudex::Core::Filters
       include Iudex::ROME
+      include Iudex::CharDetector
 
       include Iudex::DA::Filters::FactoryHelper
       include Iudex::HTML::Filters::FactoryHelper
@@ -151,7 +154,8 @@ module Iudex
       end
 
       def page_receiver
-        [ html_clean_filters( :source ),
+        [ CharDetectFilter.new,
+          html_clean_filters( :source ),
           simhash_generator,
           page_updater ].flatten
       end
