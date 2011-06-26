@@ -65,19 +65,33 @@ public class NekoHTMLParser
     {
         Element root = null;
         try {
-            root = parse( content, content.defaultEncoding() );
+            root = parseInner( expand( content ) );
         }
         catch( WrongEncoding wenc ) {
-            root = parse( content, wenc.newEncoding() );
+            root = parseInner( content );
         }
         return root;
+    }
+
+    private ContentSource expand( ContentSource content )
+    {
+        Charset curEnc = content.defaultEncoding();
+        if( curEnc != null ) {
+            Charset newEnc = Charsets.expand( curEnc );
+            if( ! newEnc.equals( curEnc ) ) {
+                content.setDefaultEncoding( newEnc,
+                                            content.encodingConfidence() +
+                                            0.01F );
+            }
+        }
+        return content;
     }
 
     /**
      * @param encoding assumed encoding for comparison, or null to
      * disable checks.
      */
-    final Element parse( ContentSource content, Charset encoding )
+    final Element parseInner( ContentSource content )
         throws SAXException, IOException
     {
         SAXParser parser = new SAXParser();
@@ -96,6 +110,7 @@ public class NekoHTMLParser
         "http://cyberneko.org/html/features/balance-tags/document-fragment",
                                    true );
             }
+            Charset encoding = content.defaultEncoding();
 
             if( encoding != null ) {
                 parser.setProperty(
@@ -115,7 +130,7 @@ public class NekoHTMLParser
             throw new RuntimeException( e );
         }
 
-        HTMLHandler handler = new HTMLHandler( encoding );
+        HTMLHandler handler = new HTMLHandler( content );
 
         parser.setContentHandler( handler );
 
@@ -155,9 +170,9 @@ public class NekoHTMLParser
          * Given assumed encoding or null to disable check for meta-tag
          * encoding.
          */
-        public HTMLHandler( Charset encoding )
+        public HTMLHandler( ContentSource content )
         {
-            _inputEncoding = encoding;
+            _content = content;
         }
 
         /**
@@ -213,12 +228,15 @@ public class NekoHTMLParser
         private void throwOnCharsetChange( String type )
         {
             ContentType ctype = ContentType.parse( type );
-            Charset newCharset = Charsets.lookup( ctype.charset() );
-            if( newCharset != null ) newCharset = Charsets.expand( newCharset );
+            Charset newEnc = Charsets.lookup( ctype.charset() );
+            if( newEnc != null ) {
+                newEnc = Charsets.expand( newEnc );
 
-            if( ( newCharset != null ) && ( _inputEncoding != null ) &&
-                ! _inputEncoding.equals( newCharset ) ) {
-                throw new WrongEncoding( newCharset );
+                if( ( _content.defaultEncoding() != null ) &&
+                    ! _content.defaultEncoding().equals( newEnc ) &&
+                    ( _content.setDefaultEncoding( newEnc, 0.20F ) ) ) {
+                    throw new WrongEncoding( newEnc );
+                }
             }
         }
 
@@ -281,7 +299,7 @@ public class NekoHTMLParser
             element.setAttributes( atts );
         }
 
-        private final Charset _inputEncoding;
+        private final ContentSource _content;
         private final Element _root = new Element( HTML.DIV );
         private Element _current = _root;
         private ResizableCharBuffer _buffer = null;
