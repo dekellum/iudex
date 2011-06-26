@@ -46,9 +46,24 @@ module Iudex
         import 'iudex.html.tree.filters.CharactersNormalizer'
         import 'iudex.html.tree.filters.EmptyInlineRemover'
         import 'iudex.html.tree.filters.MetaSkipFilter'
+        import 'iudex.html.tree.filters.MojiBakeCleaner'
         import 'iudex.html.tree.filters.WordCounter'
         import 'iudex.html.tree.filters.WordyCounter'
         import 'iudex.html.tree.filters.XmpToPreConverter'
+
+        # Re-open iudex.html.tree.filter.MojiBakeCleaner to add config file
+        # based initialization.
+        class MojiBakeCleaner
+          include Iudex::Core
+
+          # Alt constructor taking a configuration file in `mojibake
+          # -t` format.
+          def initialize( config_file = :default )
+            args = Array( config_file ) - [ :default ]
+            super( *MojiBake.load_config( *args ) )
+          end
+        end
+
       end
     end
 

@@ -9,10 +9,13 @@ build/TLDSets.java.erb
 build/effective_tld_name.dat
 build/tld_set_generator.rb
 config/config.rb
+config/mojibake
 lib/iudex-core/base.rb
 lib/iudex-core.rb
 lib/iudex-core/config.rb
+lib/iudex-core/mojibake.rb
 test/setup.rb
 test/test_content_fetcher.rb
 test/test_content_source.rb
 test/test_log_writer.rb
+test/test_mojibake.rb

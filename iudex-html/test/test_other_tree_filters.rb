@@ -1,4 +1,5 @@
 #!/usr/bin/env jruby
+# -*- coding: utf-8 -*-
 #.hashdot.profile += jruby-shortlived
 
 #--
@@ -112,6 +113,13 @@ HTML
              :out => "<div><pre> &lt;i>keep&lt;/i> </pre></div>" }
 
     assert_transform( html, XmpToPreConverter.new )
+  end
+
+  def test_mojibake_cleaner
+    html = { :in  => "<div><p>ascii</p> Â° </div>",
+             :out => "<div><p>ascii</p> ~° </div>" }
+
+    assert_transform( html, MojiBakeCleaner.new )
   end
 
   def cut_atts( html, *atts )

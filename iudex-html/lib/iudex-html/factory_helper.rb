@@ -59,6 +59,7 @@ module Iudex
           [ XmpToPreConverter.new,    # Before CharactersNormalizer
             CSSDisplayFilter.new,     # Before AttributeCleaner
             AttributeCleaner.new,
+            MojiBakeCleaner.new,
             CharactersNormalizer.new,
             EmptyInlineRemover.new,   # Depth
             WordCounter.new,          # Depth; only for count deps?
