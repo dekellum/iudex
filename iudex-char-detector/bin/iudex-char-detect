@@ -72,22 +72,16 @@ class ChartDetectUtil
     p.parse!( args )
 
     if args.empty?
-      detect( $stdin )
+      show_detail( detect( $stdin ) )
     else
       max_name = args.map { |fn| fn.length }.max
       args.each do |fname|
-        open( fname, "r" ) do |fin|
-          res = detect( fin )
-          if ARGV.length > 1
-            res.unshift( fname )
-            puts "%-#{ max_name }s : %-12s (%5.4f)" % res
-          else
-            puts "%-12s (%.4f)" % res
-            puts "====================="
-            res[2].each do |enc,conf|
-              puts "%-12s (%.4f)" % [ enc, conf ]
-            end
-          end
+        res = open( fname, "r" ) { |fin| detect( fin ) }
+        if ARGV.length > 1
+          res.unshift( fname )
+          puts "%-#{ max_name }s : %-12s (%5.4f)" % res
+        else
+          show_detail( res )
         end
       end
     end
@@ -108,6 +102,14 @@ class ChartDetectUtil
     [ s.default_encoding.name,
       s.encoding_confidence,
       s.encoding_confidences ]
+  end
+
+  def show_detail( res )
+    puts "%-12s (%.4f)" % res
+    puts "====================="
+    res[2].each do |enc,conf|
+      puts "%-12s (%.4f)" % [ enc, conf ]
+    end
   end
 
 end
