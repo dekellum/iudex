@@ -14,7 +14,7 @@ t = RJack::TarPit.new( 'iudex-async-httpclient',
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
-  h.extra_deps += [ [ 'iudex-http',             '~> 1.0.0' ],
+  h.extra_deps += [ [ 'iudex-http',             '~> 1.1.0' ],
                     [ 'rjack-async-httpclient', '~> 1.6.3' ],
                     [ 'hooker',                 '~> 1.0.0' ] ]
 
