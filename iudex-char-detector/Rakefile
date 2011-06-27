@@ -13,7 +13,7 @@ t = RJack::TarPit.new( 'iudex-char-detector',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'iudex-core',        '~> 1.0.0'  ],
+  h.extra_deps += [ [ 'iudex-core',        '~> 1.1.0'  ],
                     [ 'rjack-icu',         '~> 4.8.0' ] ]
 
   h.testlib = :minitest

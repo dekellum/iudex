@@ -16,9 +16,9 @@ t.specify do |h|
   h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1'  ],
                     [ 'hooker',         '~> 1.0.0'  ],
                     [ 'gravitext-util', '~> 1.5.0'  ],
-                    [ 'iudex-filter',   '~> 1.0.0'  ],
-                    [ 'iudex-http',     '~> 1.0.0'  ],
-                    [ 'iudex-barc',     '~> 1.0.0'  ] ]
+                    [ 'iudex-filter',   '~> 1.1.0'  ],
+                    [ 'iudex-http',     '~> 1.1.0'  ],
+                    [ 'iudex-barc',     '~> 1.1.0'  ] ]
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'minitest',      '~> 2.2.0' ],

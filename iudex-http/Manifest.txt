@@ -7,4 +7,4 @@ lib/iudex-http/base.rb
 lib/iudex-http.rb
 test/setup.rb
 test/test_http.rb
-lib/iudex-http/iudex-http-1.0.0.jar
+lib/iudex-http/iudex-http-1.1.0.jar
