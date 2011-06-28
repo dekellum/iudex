@@ -17,6 +17,8 @@
 require 'iudex-http-test/server'
 
 require 'minitest/unit'
+require 'net/http'
+require 'ostruct'
 
 module Iudex::HTTP::Test
 
@@ -35,22 +37,43 @@ module Iudex::HTTP::Test
 
   module Helper
 
+    PORT = 19292
+
     def server
       Helper.server
     end
 
     def self.server
-      @server ||= begin
-                    server = Server.new
-                    server.start
-                    server
-                  end
+      @server ||=
+        begin
+          if running_standalone?
+            OpenStruct.new( :port => PORT )
+          else
+            server = Server.new
+            server.port = PORT
+            server.start
+            server
+          end
+        end
+    end
+
+    def self.running_standalone?
+      res = Net::HTTP.start( 'localhost', PORT ) do |http|
+        http.open_timeout = 0.5
+        http.read_timeout = 1.0
+        http.get( '/index' )
+      end
+      ( res.code.to_i == 200 )
+    rescue Timeout::Error, Errno::ECONNREFUSED
+      false
     end
 
     def self.stop
-      $stderr.puts
-      @server.stop if @server
-      @server = nil
+      if @server
+        $stderr.puts
+        @server.stop
+        @server = nil
+      end
     end
   end
 

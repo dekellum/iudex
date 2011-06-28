@@ -22,12 +22,14 @@ require 'mizuno'
 module Iudex::HTTP::Test
 
   class Server
-    attr_reader :port
+    attr_accessor :port
 
     def initialize
       @handler = Mizuno::HttpServer
-      #FIXME: Do the jetty setup ourselves?
+      # FIXME: Do the jetty setup ourselves?
 
+      # FIXME: Have to use a fixed port, even for testing as can't get
+      # arbitrary port back out of Mizuno.
       @port = 19292
     end
 
