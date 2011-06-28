@@ -23,8 +23,6 @@ require 'iudex-http-test/helper'
 
 require 'iudex-async-httpclient'
 
-# RJack::Logback[ 'org.eclipse.jetty' ].level = :debug
-
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
   include Iudex::HTTP
@@ -162,24 +160,37 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     assert_instance_of( TimeoutException, ex )
   end
 
-  def test_concurrent_requests
-    skip( "max_connections_per_host not honored + 500 error?" )
-    with_new_client( :maximum_connections_per_host  => 1 ) do |client|
+  def test_maximum_connections_total
+    skip( "IOException: Too many connections; expected slow down" )
+    with_new_client( :maximum_connections_total => 1 ) do |client|
 
       resps = []
       sessions = (1..10).map do |i|
-        puts "sending: #{i}"
         with_session_handler( client, "/index?sleep=2&i=#{i}", false ) do |s,x|
           resps << [ s.response_code, s.status_text, x ]
         end
       end
 
-      sessions.each do |s|
-        s.wait_for_completion
-        puts "completed"
+      sessions.each { |s| s.wait_for_completion }
+
+      assert_equal( [ [ 200, "OK", nil ] ] * 10, resps )
+    end
+  end
+
+  def test_maximum_connections_per_host
+    skip( "max_connections_per_host not honored (+ in-proc 500 error?)" )
+    with_new_client( :maximum_connections_per_host => 1 ) do |client|
+
+      resps = []
+      sessions = (1..10).map do |i|
+        with_session_handler( client, "/index?sleep=2&i=#{i}", false ) do |s,x|
+          resps << [ s.response_code, s.status_text, x ]
+        end
       end
 
-      assert_equal( [ 200, "OK", nil ] * 10, resps.flatten )
+      sessions.each { |s| s.wait_for_completion }
+
+      assert_equal( [ [ 200, "OK", nil ] ] * 10, resps )
     end
   end
 
