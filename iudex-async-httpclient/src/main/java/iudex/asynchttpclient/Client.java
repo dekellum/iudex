@@ -286,7 +286,7 @@ public class Client implements HTTPClient, Closeable
             throws InterruptedException
         {
             try {
-                _future.get();
+                if( _future != null ) _future.get();
             }
             catch( ExecutionException x ) {
                 //FIXME: Should be safe to ignore (already passed to handler)
