@@ -43,7 +43,7 @@ module Iudex::HTTP::Test
 
     get '/redirects/multi/:depth' do
       depth = params[:depth].to_i
-      status = params[:code].to_i || 302
+      status = ( params[:code] || 302 ).to_i
       if depth > 1
         redirect( to( "/redirects/multi/#{depth - 1}#{common params}" ),
                   status )
