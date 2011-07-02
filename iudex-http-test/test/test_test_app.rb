@@ -47,6 +47,21 @@ class TestTestApp < MiniTest::Unit::TestCase
     assert_equal( 301, last_response.status )
   end
 
+  def test_redirects
+    get '/redirects/multi/2'
+    assert_equal( 302, last_response.status )
+  end
+
+  def test_redirects_code
+    get '/redirects/multi/2?code=301'
+    assert_equal( 301, last_response.status )
+  end
+
+  def test_redirects_complete
+    get '/redirects/multi/1'
+    assert_equal( 200, last_response.status )
+  end
+
   def test_index
     get '/index'
     assert_equal( 200, last_response.status )
