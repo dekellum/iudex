@@ -161,36 +161,38 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_maximum_connections_total
-    skip( "IOException: Too many connections; expected slow down" )
+    skip( "IOException: Too many connections; expected blocking" )
     with_new_client( :maximum_connections_total => 1 ) do |client|
 
       resps = []
-      sessions = (1..10).map do |i|
-        with_session_handler( client, "/index?sleep=2&i=#{i}", false ) do |s,x|
-          resps << [ s.response_code, s.status_text, x ]
+      sessions = (1..7).map do |i|
+        with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
+                              false ) do |s,x|
+          resps << [ s.response_code, x ]
         end
       end
 
       sessions.each { |s| s.wait_for_completion }
 
-      assert_equal( [ [ 200, "OK", nil ] ] * 10, resps )
+      assert_equal( [ [ 200, nil ] ] * 7, resps )
     end
   end
 
   def test_maximum_connections_per_host
-    skip( "max_connections_per_host not honored (+ in-proc 500 error?)" )
+    skip( "max_connections_per_host not honored?" )
     with_new_client( :maximum_connections_per_host => 1 ) do |client|
 
       resps = []
-      sessions = (1..10).map do |i|
-        with_session_handler( client, "/index?sleep=2&i=#{i}", false ) do |s,x|
-          resps << [ s.response_code, s.status_text, x ]
+      sessions = (1..7).map do |i|
+        with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
+                              false ) do |s,x|
+          resps << [ s.response_code, x ]
         end
       end
 
       sessions.each { |s| s.wait_for_completion }
 
-      assert_equal( [ [ 200, "OK", nil ] ] * 10, resps )
+      assert_equal( [ [ 200, nil ] ] * 7, resps )
     end
   end
 
