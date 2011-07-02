@@ -62,6 +62,23 @@ class TestTestApp < MiniTest::Unit::TestCase
     assert_equal( 200, last_response.status )
   end
 
+  def test_concurrency_counter
+    get '/index?con=1'
+    assert_equal( 200, last_response.status )
+
+    get '/concount?con=1'
+    assert_equal( 200, last_response.status )
+    assert_equal( 1, last_response.body.to_i )
+
+    get '/concount?con=1'
+    assert_equal( 200, last_response.status )
+    assert_equal( 1, last_response.body.to_i )
+
+    get '/concount'
+    assert_equal( 200, last_response.status )
+    assert_equal( 0, last_response.body.to_i )
+  end
+
   def test_index
     get '/index'
     assert_equal( 200, last_response.status )
