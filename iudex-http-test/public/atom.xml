@@ -1,0 +1,1230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>void * blog</title>
+ <link href="http://gravitext.com/atom.xml" rel="self"/>
+ <link href="http://gravitext.com/"/>
+ <updated>2011-02-26T13:59:09-08:00</updated>
+ <id>http://gravitext.com/</id>
+ <author>
+   <name>David Kellum</name>
+   <email>dek-blog@gravitext.com</email>
+ </author>
+
+ <entry>
+   <title>Iyyov</title>
+   <link href="http://gravitext.com/2010/03/13/Iyyov.html"/>
+   <updated>2010-03-13T00:00:00-08:00</updated>
+   <id>id:/2010/03/13/Iyyov</id>
+   <content type="html">&lt;p&gt;Toward the goal of fully self-contained java/ruby service gems and ruby &lt;a href='/2008/11/09/scripted-server-setup.html'&gt;scripted setup&lt;/a&gt;, some issues have lingered. With the recent releases of &lt;a href='http://hashdot.sourceforge.net/'&gt;Hashdot&lt;/a&gt; 1.4 and the new &lt;a href='http://github.com/dekellum/iyyov#readme'&gt;Iyyov&lt;/a&gt; monitor, a complete solution is now available. Here is what it looks like:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Package and deploy your service as a versioned rubygem.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Include a version-specific service init script written in ruby and annotated will all necessary JVM/jruby settings (i.e -server -Xmx2g, etc.)&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;&lt;a href='http://hashdot.sourceforge.net/'&gt;Hashdot&lt;/a&gt; will reliably bootstrap your service as a fully UNIX compliant fork&amp;#8217;d, setsid, and IO redirected daemon with an instance exclusive PID file and recognizable process name.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;&lt;a href='http://github.com/dekellum/iyyov#readme'&gt;Iyyov&lt;/a&gt; will start your service on system boot, keep it running, and automatically restart on config changes or gem upgrades.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;No external bash scripts, user environment settings, or other cruft required.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id='packaging_your_service_gem'&gt;Packaging your Service Gem&lt;/h2&gt;
+
+&lt;p&gt;MRI rubygem authors would expect to place a daemon startup script in the gem&amp;#8217;s bin directory. On install, rubygems will create a wrapper script for the original that arranges for gem initializing, makes the script available to the user PATH, and provides a convenient version selection mechanism. This is a great mechanism for short lived command-line interaction with gems, but has one very troubling shortcoming for a JRuby service writer:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;There is no obvious mechanism to reliably control JVM or jruby settings on a daemon or version specific basis and package these settings within a gem.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Jruby defaults to the -client JVM, 500Mb of heap, and no specific GC tunings. This is reasonable default behavior, but most any production-grade service will want and need a mechanism to override these defaults.&lt;/p&gt;
+
+&lt;p&gt;To achieve this we need to package a non-wrapped executable script. Here is a sample from &lt;a href='http://github.com/dekellum/hashdot-test-daemon'&gt;hashdot-test-daemon&lt;/a&gt;:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='c1'&gt;#!/usr/bin/env jruby&lt;/span&gt;
+&lt;span class='c1'&gt;#-*- ruby -*-&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.profile         += daemon&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.pid_file         = ./hashdot-test-daemon.pid&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.io_redirect.file = ./hashdot-test-daemon.log&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.vm.options += -Xmx64m&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.vm.options += -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rubygems&amp;#39;&lt;/span&gt;
+&lt;span class='n'&gt;gem&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;hashdot-test-daemon&amp;quot;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;= 1.1.0&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rjack-logback&amp;#39;&lt;/span&gt;
+&lt;span class='no'&gt;RJack&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;config_console&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='ss'&gt;:full&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='kp'&gt;true&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='ss'&gt;:thread&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='kp'&gt;true&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;hashdot-test-daemon&amp;#39;&lt;/span&gt;
+&lt;span class='no'&gt;Hashdot&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Daemon&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Runner&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;run&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;Note that if a system level &lt;a href='http://hashdot.sourceforge.net/'&gt;Hashdot&lt;/a&gt; dependency gives you concern, you could achieve an approximately similar and perhaps sufficient result with a more elaborate shell script and/or other daemonizing options less complete for JRuby.&lt;/p&gt;
+
+&lt;p&gt;In any case, we want to be able to launch the correct service version by referencing the full path to the script in the local gem installation. For example if the gems are installed to /opt/jruby/gems, then the following should launch the 1.1.0 version of service in the background with any 1.1.0 specific settings:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;/opt/jruby/gems/gems/hashdot-test-daemon-1.1.0-java/init/hashdot-test-daemon
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;h2 id='service_runtime_layout'&gt;Service runtime layout&lt;/h2&gt;
+
+&lt;p&gt;Given java&amp;#8217;s native threads its unlikely that it will be necessary to run a large number of separate daemon instances. However there is still plenty of reasons to want to run different services on the same host or different configurations or versions of the same service. Toward this end I use a separate directory for each service, and relative path references to instance specific configuration, log, and PID files, i.e:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;/opt/var/hashdot-test-deamon-1
+├── hashdot-test-daemon.log
+├── hashdot-test-daemon.log.1.gz
+├── hashdot-test-daemon.pid
+└── config.rb
+/opt/var/service-test-daemon-2
+└── ...
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;A fully expanded shell based launch of the service might look like:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='nb'&gt;cd&lt;/span&gt; /opt/var/hashdot-test-deamon-1 &lt;span class='o'&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class='se'&gt;\&lt;/span&gt;
+   &lt;span class='nb'&gt;exec&lt;/span&gt; /opt/jruby/gems/gems/hashdot-test-daemon-1.1.0-java/init/hashdot-test-daemon -c config.rb
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;And in fact, one approach to boot-time startup or restart would be to encode something like this in an init.d script, inittab, upstart, or crontab. The last three can achieve automatic restart, provided that the service supports reliable instance-specific mutual exclusion (via PID file, etc.) Hashdot supports this reliably.&lt;/p&gt;
+
+&lt;h2 id='iyyov'&gt;Iyyov&lt;/h2&gt;
+
+&lt;p&gt;Once I arrived at the above solution for system layout and packaging service startup details in the gem, I went looking for a process monitor solution that would handle restarts and I could customize to keep the setup simple. I first looked at &lt;a href='http://mmonit.com/monit/'&gt;Monit&lt;/a&gt;, and while I was able to get it to work with these daemons in basic form, configuration was &amp;#8220;involved&amp;#8221;, and customization impractical.&lt;/p&gt;
+
+&lt;p&gt;Next I tried &lt;a href='http://god.rubyforge.org/'&gt;God&lt;/a&gt;. While God&amp;#8217;s integration with kernel events makes it all powerful, and its ruby based configuration is awesome, it is also a bit of a liability to install. Furthermore, God doesn&amp;#8217;t run on JRuby, due to a combination of heavy native non-FFI extension, and reliance on low level ruby API&amp;#8217;s not yet completely supported. In short, I found &lt;a href='http://god.rubyforge.org/'&gt;God&lt;/a&gt; to be a bit &lt;em&gt;more&lt;/em&gt; than I needed. So instead I began work on and created &lt;a href='http://github.com/dekellum/iyyov#readme'&gt;Iyyov&lt;/a&gt;&amp;#8217;s configuration in &lt;a href='http://god.rubyforge.org/'&gt;God&lt;/a&gt;&amp;#8217;s image. See the &lt;a href='http://github.com/dekellum/iyyov#readme'&gt;Iyyov&lt;/a&gt; README for a more detailed feature set and examples. The hashdot-test-daemon in the above example can be configured and launched like so:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='no'&gt;Iyyov&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;context&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;define_daemon&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+    &lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;name&lt;/span&gt;     &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;hashdot-test-daemon&amp;quot;&lt;/span&gt;
+    &lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;version&lt;/span&gt;  &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;~&amp;gt; 1.0&amp;quot;&lt;/span&gt;
+    &lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;log_rotate&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;Which highlights several Iyyov features:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;By default, Iyyov uses the rubygems API to find the highest matching gem version and init script with the same name. Thus in the common case, configuration is absolutely DRY.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Built in log rotation/compression that meshes well with Hashdot&amp;#8217;s IO redirection and SIGHUP log reopening support. The end result is a complete logging solution that also redirects the often neglected JVM level output in the event of a JVM crash, uncaught exception, or &amp;#8216;kill -QUIT&amp;#8217; arranged stack dump. The external Linux logrotate utility could also be used here.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Iyyov is also a practical cron replacement supporting fixed or periodic time scheduling of supporting tasks. For example:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='no'&gt;Iyyov&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;context&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+
+  &lt;span class='c1'&gt;# Backup service state at 1am local time each weekday&lt;/span&gt;
+  &lt;span class='c1'&gt;# Run :async, in a &amp;quot;background&amp;quot; thread, since this might take a while.&lt;/span&gt;
+  &lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;schedule_at&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='ss'&gt;:name&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;backup&amp;quot;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='ss'&gt;:mode&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='ss'&gt;:async&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt;
+                 &lt;span class='ss'&gt;:fixed_times&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;1:00&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='ss'&gt;:fixed_days&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='p'&gt;(&lt;/span&gt;&lt;span class='mi'&gt;1&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;.&lt;/span&gt;&lt;span class='mi'&gt;5&lt;/span&gt;&lt;span class='p'&gt;)&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+    &lt;span class='nb'&gt;system&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;rsync ...&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;As a final example, since the configuration is fully scriptable ruby, we might select which service to run by hostname in a single maintained configuration file:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='no'&gt;Iyyov&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;context&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+
+  &lt;span class='k'&gt;case&lt;/span&gt; &lt;span class='sb'&gt;`hostname -s`&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;strip&lt;/span&gt;
+
+  &lt;span class='k'&gt;when&lt;/span&gt;&lt;span class='sr'&gt; /^server-[012]$/&lt;/span&gt;
+    &lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;define_daemon&lt;/span&gt; &lt;span class='p'&gt;{&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt; &lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;name&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;widget-factory&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;}&lt;/span&gt;
+
+  &lt;span class='k'&gt;when&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;server-3&amp;#39;&lt;/span&gt;
+    &lt;span class='n'&gt;c&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;define_daemon&lt;/span&gt; &lt;span class='p'&gt;{&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt; &lt;span class='n'&gt;d&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;name&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;assembly-line&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;}&lt;/span&gt;
+
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;h2 id='gem_maintenance'&gt;Gem maintenance&lt;/h2&gt;
+
+&lt;p&gt;Because the above described per-gem init script isn&amp;#8217;t wrapped by rubygems, the corresponding gem version should be hard coded within to guarantee the resolution of this and other gem dependencies. This presents a maintenance problem which can be solved through various means. My solution is the &lt;a href='http://rjack.rubyforge.org/tarpit'&gt;Tarpit&lt;/a&gt; 1.2 test_line_match feature that may be installed in the gem project&amp;#8217;s Rakefile, i.e:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:check_init_version&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;test_line_match&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;init/hashdot-test-daemon&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt;&lt;span class='sr' /&gt;
+&lt;span class='sr'&gt;                     /^gem.+hashdot-test-daemon/&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='o'&gt;/=&lt;/span&gt; &lt;span class='c1'&gt;#{t.version}/ )&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;A simple error message is generated when attempting to build the gem without this version being set properly. My recent gems use this feature extensively and I think its less net maintenance then the other option I considered: generating such files with ERB templates.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates via Gemcutter</title>
+   <link href="http://gravitext.com/2009/12/19/rjack-updates-via-gemcutter.html"/>
+   <updated>2009-12-19T00:00:00-08:00</updated>
+   <id>id:/2009/12/19/rjack-updates-via-gemcutter</id>
+   <content type="html">&lt;p&gt;Another batch of &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; updates has been accumulating, but was blocked behind figuring out what has changed with &lt;a href='http://gems.rubyforge.org/'&gt;Gemcutter&lt;/a&gt; and gem publishing to the canonical repo. Gemcutter appears to be good forward progress in modernizing gem distribution. While the &lt;a href='http://update.gemcutter.org/'&gt;blog&lt;/a&gt; posts and FAQ provide clues, it would help more if there was some canonical status page (not a twitter timeline) that provides a clear summary of the current state of accounts, publishing routes, and gem repo behavior. Somewhere I thought I read that mirroring of the old rubyforge project gem file hosting has stopped, and a look at &lt;a href='http://rubyforge.org'&gt;rubyforge.org&lt;/a&gt; shows the last published gem recorded there was on 2009-12-10. So without risking an old style rubyforge release (Hoe&amp;#8217;s :release task) with unknown results, I decided it was time to start using &amp;#8220;gem push&amp;#8221;.&lt;/p&gt;
+
+&lt;p&gt;The previous introduction of &lt;a href='http://rjack.rubyforge.org/tarpit/History_rdoc.html'&gt;rjack-tarpit&lt;/a&gt; made the changes for rjack much simpler. I first released a new rjack-tarpit-1.1.0 which provides new &amp;#8220;push&amp;#8221; and &amp;#8220;install&amp;#8221; tasks as shown below:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='c1'&gt;# Define gem push and install tasks&lt;/span&gt;
+&lt;span class='k'&gt;def&lt;/span&gt; &lt;span class='nf'&gt;define_gem_tasks&lt;/span&gt;
+  &lt;span class='n'&gt;desc&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;gem push (gemcutter)&amp;quot;&lt;/span&gt;
+  &lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:push&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='ss'&gt;:gem&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+    &lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rubygems&amp;#39;&lt;/span&gt;
+    &lt;span class='n'&gt;cm&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;Gem&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;CommandManager&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='n'&gt;instance&lt;/span&gt;
+    &lt;span class='n'&gt;cm&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;run&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;push&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;-V&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;pkg/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='nb'&gt;name&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;version&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;.gem&amp;quot;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+
+  &lt;span class='n'&gt;desc&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;gem install (default install dir)&amp;quot;&lt;/span&gt;
+  &lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:install&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='ss'&gt;:gem&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+    &lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rubygems&amp;#39;&lt;/span&gt;
+    &lt;span class='n'&gt;cm&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;Gem&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;CommandManager&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='n'&gt;instance&lt;/span&gt;
+    &lt;span class='n'&gt;cm&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;run&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;install&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;--no-ri&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;-V&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;pkg/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='nb'&gt;name&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;version&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;.gem&amp;quot;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;(I hope CommandManager::run is a &amp;#8220;supported&amp;#8221; approach to running gem commands in process. This has a speed advantage under jruby by avoiding a separate interpreter start-up.)&lt;/p&gt;
+
+&lt;p&gt;Using the new gemcutter based :push task I was able to release all of these accumulated updates:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/slf4j/History_rdoc.html'&gt;rjack-slf4j-1-5.10.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/logback/History_rdoc.html'&gt;rjack-logback-0.9.18.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/httpclient-4/History_rdoc.html'&gt;rjack-httpclient-4-4.0.1.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty/History_rdoc.html'&gt;rjack-jetty-6.1.22.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty-jsp/History_rdoc.html'&gt;rjack-jetty-jsp-6.1.22.2.1.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/commons-dbutils/History_rdoc.html'&gt;rjack-commons-dbutils-1.3.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/commons-pool/History_rdoc.html'&gt;rjack-commons-pool-1.5.4.0&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This eliminates one Hoe dependency, and with tarpit encapsulating these concerns, this change feels like a step in the direction of removing the Hoe dependency (and the quirky Manifest handling) all together. I like my implementation better than the recently released &lt;a href='http://seattlerb.rubyforge.org/hoe/Hoe/Gemcutter.html#M000012'&gt;Hoe 2.4 Gemcutter plugin&lt;/a&gt;.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Jekyll</title>
+   <link href="http://gravitext.com/2009/11/04/jekyll.html"/>
+   <updated>2009-11-04T00:00:00-08:00</updated>
+   <id>id:/2009/11/04/jekyll</id>
+   <content type="html">&lt;p&gt;A new post for a newly revamped &lt;a href='/#vblog'&gt;void * blog&lt;/a&gt; and a new personal home page constructed with &lt;a href='http://github.com/mojombo/jekyll'&gt;Jekyll&lt;/a&gt;, a ruby based static site generator. In relation to my needs, Jekyll offers:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;A back-to-basics approach of static site generation from &amp;#8220;source&amp;#8221; as HTML templates, CSS, and markdown, all easily maintained by me in git and emacs.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Supports blog-style dated posts with excerpts and template driven atom feed generation.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Usable as a simple but complete and powerful CMS, not just blog posts. I want this for both maintaining a home page for myself, but also for developing technical site docs (usage, design, reference, etc.) for various projects.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Supports inline code sample syntax highlighting, something that was lacking in the previous blog.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For now, the generated site remains on my home server and is served via Nginx. But I could easily push it elsewhere, for example, S3; as it requires no dynamic server component.&lt;/p&gt;
+
+&lt;p&gt;A missing feature vs. my previous blog is comment support, which has traditionally required a dynamic server, means of storage, spam detection, and many other complications. But java script embeddable comment &lt;a href='http://www.knowliz.com/2009/06/disqus-intensedebate-js-kit-analysis.html'&gt;services&lt;/a&gt; like DISQUS are now winning conversions even from mainstream blog platforms based on superior features and identity integration. Its on my list to integrate one of these. Its both amusing and convenient to have Web 2.0 handling the last mile, and allowing me to get back to basics with a &lt;em&gt;Web 0.1&lt;/em&gt; static site generator.&lt;/p&gt;
+
+&lt;p&gt;I&amp;#8217;ll end the post with an example, the liquid template used to produce this blog&amp;#8217;s atom feed:&lt;/p&gt;
+&lt;!-- ZWSP U+200B added bellow to avoid interpreting nested liquid tags --&gt;&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='xml'&gt;&lt;span class='cp'&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;utf-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class='nt'&gt;&amp;lt;feed&lt;/span&gt; &lt;span class='na'&gt;xmlns=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;http://www.w3.org/2005/Atom&amp;quot;&lt;/span&gt;&lt;span class='nt'&gt;&amp;gt;&lt;/span&gt;
+
+ &lt;span class='nt'&gt;&amp;lt;title&amp;gt;&lt;/span&gt;void * blog&lt;span class='nt'&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;link&lt;/span&gt; &lt;span class='na'&gt;href=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;http://gravitext.com/atom.xml&amp;quot;&lt;/span&gt; &lt;span class='na'&gt;rel=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;self&amp;quot;&lt;/span&gt;&lt;span class='nt'&gt;/&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;link&lt;/span&gt; &lt;span class='na'&gt;href=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;http://gravitext.com/&amp;quot;&lt;/span&gt;&lt;span class='nt'&gt;/&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;updated&amp;gt;&lt;/span&gt;{​{ site.time | date_to_xmlschema }}&lt;span class='nt'&gt;&amp;lt;/updated&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;id&amp;gt;&lt;/span&gt;http://gravitext.com/&lt;span class='nt'&gt;&amp;lt;/id&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;author&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;name&amp;gt;&lt;/span&gt;David Kellum&lt;span class='nt'&gt;&amp;lt;/name&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;email&amp;gt;&lt;/span&gt;dek-blog@gravitext.com&lt;span class='nt'&gt;&amp;lt;/email&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;/author&amp;gt;&lt;/span&gt;
+
+ {​% for post in site.posts %}
+ &lt;span class='nt'&gt;&amp;lt;entry&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;title&amp;gt;&lt;/span&gt;{​{ post.title }}&lt;span class='nt'&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;link&lt;/span&gt; &lt;span class='na'&gt;href=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;http://gravitext.com{​{ post.url }}&amp;quot;&lt;/span&gt;&lt;span class='nt'&gt;/&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;updated&amp;gt;&lt;/span&gt;{​{ post.date | date_to_xmlschema }}&lt;span class='nt'&gt;&amp;lt;/updated&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;id&amp;gt;&lt;/span&gt;id:{​{ post.id }}&lt;span class='nt'&gt;&amp;lt;/id&amp;gt;&lt;/span&gt;
+   &lt;span class='nt'&gt;&amp;lt;content&lt;/span&gt; &lt;span class='na'&gt;type=&lt;/span&gt;&lt;span class='s'&gt;&amp;quot;html&amp;quot;&lt;/span&gt;&lt;span class='nt'&gt;&amp;gt;&lt;/span&gt;{​{ post.content | xml_escape }}&lt;span class='nt'&gt;&amp;lt;/content&amp;gt;&lt;/span&gt;
+ &lt;span class='nt'&gt;&amp;lt;/entry&amp;gt;&lt;/span&gt;
+ {​% endfor %}
+
+&lt;span class='nt'&gt;&amp;lt;/feed&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates</title>
+   <link href="http://gravitext.com/2009/10/24/rjack-updates.html"/>
+   <updated>2009-10-24T00:00:00-07:00</updated>
+   <id>id:/2009/10/24/rjack-updates</id>
+   <content type="html">&lt;p&gt;This week&amp;#8217;s addition to the growing set of rjack gems is &lt;a href='http://rjack.rubyforge.org/rome/'&gt;rjack-rome-1.0.0&lt;/a&gt; based on the ROME RSS/Atom feed reader/generator.&lt;/p&gt;
+
+&lt;p&gt;A new SVG intra-gem dependency diagram, built using the Graphviz Dot tool, was also added to the rjack project home page. The gems are linked to the RDoc:&lt;/p&gt;
+&lt;div style='text-align: center;'&gt;
+  &lt;object data='http://rjack.rubyforge.org/rjack.svg' type='image/svg+xml' height='267' width='711'&gt;
+    &lt;img src='http://rjack.rubyforge.org/rjack.png' height='267' width='711' /&gt;
+  &lt;/object&gt;
+&lt;/div&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates</title>
+   <link href="http://gravitext.com/2009/10/18/rjack-updates.html"/>
+   <updated>2009-10-18T00:00:00-07:00</updated>
+   <id>id:/2009/10/18/rjack-updates</id>
+   <content type="html">&lt;p&gt;The &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project home page has been further improved. New and updated gems are detailed below.&lt;/p&gt;
+
+&lt;h2 id='new'&gt;New&lt;/h2&gt;
+
+&lt;p&gt;The following new gems have been released after consultations with the upstream project owners:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jdom/'&gt;rjack-jdom-1.1.0.0&lt;/a&gt; (JDOM XML processor)&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jets3t/'&gt;rjack-jets3t-0.7.1.0&lt;/a&gt; (Amazon S3/CloudFront client)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The rjack-jets3t gem in particular is demonstrating returns on the gem based dependency management approach of rjack. This new gems depends on rjack-httpclient-3, rjack-commons-codec, and rjack-slf4j.&lt;/p&gt;
+
+&lt;p&gt;With these additions, rjack is up to 31 third-party jars packaged in 13 gems. With the recently released rjack-tarpit making it much easier to setup and maintain these gems, I am much more inclined to push all Java third-party jars into rjack gems rather than packing them directly in the consuming projects. This makes the consuming projects easier to maintain and distribute, and avoids version conflicts.&lt;/p&gt;
+
+&lt;p&gt;Next up for inclusion is an rjack-rome packaging of the ROME feed parser (which will also dependent on rjack-jdom.)&lt;/p&gt;
+
+&lt;h2 id='updated'&gt;Updated&lt;/h2&gt;
+
+&lt;p&gt;Additional gem updates since the last RJack post include:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/tarpit/History_rdoc.html'&gt;rjack-tarpit-1.0.1&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty/History_rdoc.html'&gt;rjack-jetty-6.1.21.0&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty-jsp/History_rdoc.html'&gt;rjack-jetty-6.1.21.2.1.0&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+ </entry>
+
+ <entry>
+   <title>TarPit</title>
+   <link href="http://gravitext.com/2009/10/11/tarpit.html"/>
+   <updated>2009-10-11T00:00:00-07:00</updated>
+   <id>id:/2009/10/11/tarpit</id>
+   <content type="html">&lt;p&gt;Admission: I was a bit rash to have declared &lt;a href='/2008/12/07/maven-must-die.html'&gt;Jihad on Maven&lt;/a&gt; back in December. (Is it ever wise to write &amp;#8220;Jihad&amp;#8221; on your blog?) Now 10 months later I&amp;#8217;m still using Maven to build java and manage cross-java dependencies at build time. In the interest of peace and reconciliation let me say that Maven has really been performing amiably in its now reduced responsibility of invoking javac with a proper classpath, and packaging jars from the results. While this stalemate still seems less than ideal, I think I might continue to be able to get along with Maven, provided I don&amp;#8217;t need to write any &amp;#8220;plugins&amp;#8221; for it, or wrestle with it for any less well trodden tasks.&lt;/p&gt;
+
+&lt;p&gt;Besides the war mongering, the original post does manage to outline the goals and associated set of issues around building gems for JRuby with java jars included. I&amp;#8217;ve had good success with this strategy for releasing componentized systems to both dedicated colo and Amazon EC2 production environments in the last year. Enough so that investing some more time in build automation has become warranted. This comes in the form of a new Rake helper gem called &lt;a href='http://rjack.rubyforge.org/tarpit'&gt;TarPit&lt;/a&gt;, released as part of the &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project. What was a very wet and copied around jars-in-gem rakefile recipe, can now be expressed in a short and declarative style. For example, the rjack-logback &lt;a href='http://github.com/dekellum/rjack/blob/master/logback/Rakefile'&gt;Rakefile&lt;/a&gt;:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rjack-tarpit&amp;#39;&lt;/span&gt;
+
+&lt;span class='n'&gt;t&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;RJack&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;TarPit&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rjack-logback&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='no'&gt;RJack&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;VERSION&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+
+&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;specify&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;h&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='n'&gt;h&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;developer&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;David Kellum&amp;quot;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;dek-oss@gravitext.com&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='n'&gt;h&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;extra_deps&lt;/span&gt; &lt;span class='o'&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rjack-slf4j&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;~&amp;gt; 1.5.8&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt;
+  &lt;span class='n'&gt;h&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;rubyforge_name&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;rjack&amp;quot;&lt;/span&gt;
+  &lt;span class='n'&gt;h&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;remote_rdoc_dir&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;logback&amp;quot;&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;jars&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='sx'&gt;%w{ core classic access }&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;map&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;n&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='s2'&gt;&amp;quot;logback-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;n&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt; &lt;span class='no'&gt;RJack&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;LOGBACK_VERSION&lt;/span&gt; &lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;.jar&amp;quot;&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='n'&gt;file&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;Manifest.txt&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;lib/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;name&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;/base.rb&amp;quot;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt;
+
+&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;assembly_version&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;1&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='mi'&gt;0&lt;/span&gt;
+
+&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;define_tasks&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;h2 id='how_it_all_works'&gt;How it all works&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The t.specify() call wraps Hoe.spec() (&lt;a href='http://seattlerb.rubyforge.org/hoe/'&gt;Hoe&lt;/a&gt; 2.x) where |h| is the hoe object. All of the normal Hoe.spec options are still available, but TarPit importantly gains control of when in the Rake setup process Hoe.spec() is actually called (hint: last in define_tasks, once any needed Manifest.txt update has already been performed.)&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;There are some strategy options on the initial TarPit.new call, including: :jars_from_assembly (where only Maven knows the versioned jars to be included) and :no_assembly (when you are only including an internal jar built from source). In the :jars_from_assembly case, given that Hoe still insists on a Manifest.txt complete on disk at start of Rake setup, you still need to manually run &amp;#8220;jrake manifest&amp;#8221; as needed. If instead you can specify the jars, for example, as above from a ruby version number, then Manifest.txt will be built as needed and before any dependent hoe tasks.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;In either case TarPit will setup Rake to run &amp;#8220;mvn package&amp;#8221; as a dependency whenever any java source files (src/**), pom.xml, or assembly.xml have been updated. The Maven produced jars, including &amp;#8220;assembled&amp;#8221; external jars are symlinked from the normal Maven target location to your lib/gemname/ directory.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Expanded</title>
+   <link href="http://gravitext.com/2009/10/10/rjack-expanded.html"/>
+   <updated>2009-10-10T00:00:00-07:00</updated>
+   <id>id:/2009/10/10/rjack-expanded</id>
+   <content type="html">&lt;p&gt;The &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project has expanded its mission in providing common open-source java components as gems for use with JRuby.&lt;/p&gt;
+
+&lt;h2 id='name_changes'&gt;Name Changes&lt;/h2&gt;
+
+&lt;p&gt;When I started RJack with the slf4j and logback gems, I figured I was pretty safe in using these names verbatim, since the gems were a very minimal and direct packaging of the same named upstream projects. Same with the jetty inclusion. Over time however I found potential inclusions colliding with existing ruby gems, for example: hc-httpclient was so named because httpclient, not surprisingly, was not available. With the later additions a certain &lt;em&gt;rjack style&lt;/em&gt; also started to jell:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;SLF4J is the logging interface: every included rjack gem will use it to resolve java logging dependencies where found, including via legacy interfaces like commons logging, etc.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;RJack will strive to expose every aspect of component setup, which might be referred to as &amp;#8220;configuration&amp;#8221; in the upstream java project, as easy to use and extend ruby classes, instead of less flexible XML, YAML, or the like.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;When appropriate and useful, RJack gems will include ruby adapters to make these components more amendable to direct use from ruby code.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Given these stylistic choices, and in order to better consolidate the effort and prepare for further expansion, I&amp;#8217;ve decided at this point to release new versions of the existing gems under a &amp;#8220;rjack-&amp;#8221; gem prefix name and ::RJack ruby module. The following table shows old and new names and the current release version. New rjack-gems are also shown.&lt;/p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Old Name&lt;/th&gt;&lt;th&gt;New Name&lt;/th&gt;&lt;th&gt;Updated Version&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;slf4j&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/slf4j/History_rdoc.html'&gt;rjack-slf4j&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;1.5.8.1&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;logback&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/logback/History_rdoc.html'&gt;rjack-logback&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;0.9.17.1&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;hc-httpclient&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/httpclient-3/History_rdoc.html'&gt;rjack-httpclient-3&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;3.1.3&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;-&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/httpclient-4/History_rdoc.html'&gt;rjack-httpclient-4&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;4.0.0&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;jetty&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/jetty/History_rdoc.html'&gt;rjack-jetty&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;6.1.20.1&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;jetty-jsp&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/jetty-jsp/History_rdoc.html'&gt;rjack-jetty-jsp&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;6.1.20.2.1.1&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;-&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/commons-codec/History_rdoc.html'&gt;rjack-commons-codec&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;1.4.0&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;-&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/commons-dbcp/History_rdoc.html'&gt;rjack-commons-dbcp&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;1.2.2.0&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;-&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/commons-dbutils/History_rdoc.html'&gt;rjack-commons-dbutils&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;1.2.0&lt;/td&gt;
+&lt;/tr&gt;&lt;tr&gt;&lt;td style='text-align: center;'&gt;-&lt;/td&gt;&lt;td style='text-align: center;'&gt;&lt;a href='http://rjack.rubyforge.org/commons-pool/History_rdoc.html'&gt;rjack-commons-pool&lt;/a&gt;&lt;/td&gt;&lt;td style='text-align: center;'&gt;1.5.3.0&lt;/td&gt;
+&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;The rjack-httpclient-[3,4] gems were a special consideration. I maintain continuity between the two versions, and the ruby setup interfaces are compatible, but require&amp;#8217;ing both versions in the same process is permissible (like the associated Java code). This supports incremental transition to 4.x, a reality given lack of backward compatibility in the java interface and lack of significant pressure to migrate from 3.x.&lt;/p&gt;
+
+&lt;p&gt;In my other projects that use these gems, I&amp;#8217;ve found converting to the new names a pretty easy grep and replace operation. Since they are also some cross dependencies between these gems, I recommend transition en masse. The gems with the old names will remain in the RubyForge gem repo, and significant bug fixes can be back ported if needed.&lt;/p&gt;
+
+&lt;h2 id='new_features'&gt;New Features&lt;/h2&gt;
+
+&lt;p&gt;Finally, there are some other new features included:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The SLF4J gem now has better support for both ruby and java exceptions logged from ruby, and in mapping Ruby Module::Class names into java/SLF4J Logger dot notation.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Mapped Diagnostic Content&lt;/em&gt; support in SLF4J and Logback&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;A new reusable jar-in-gem build tool, &lt;a href='http://rjack.rubyforge.org/tarpit/'&gt;rjack-tarpit&lt;/a&gt; the subject of a future post.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Insidious Whitespace</title>
+   <link href="http://gravitext.com/2009/06/28/insidious-whitespace.html"/>
+   <updated>2009-06-28T00:00:00-07:00</updated>
+   <id>id:/2009/06/28/insidious-whitespace</id>
+   <content type="html">&lt;p&gt;Over the past few months I&amp;#8217;ve converted just about every active project of mine from Subversion to Git. This now includes the Evri development projects, as well as my open source projects, and even home linux server code (i.e. the ruby script that runs this blog.)&lt;/p&gt;
+
+&lt;h2 id='background'&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;I was originally drawn to git based on its merits in supporting free forking of open source projects. Publishing several of my personal open source projects to github has cemented my appreciation. That said, as has been discussed broadly, the learning curve of git is quite steep. With this kind of power must come some complexity. Its relatively simple to push your sole project contributions to a github repo, but the first time I offered commits and a pull request off a fork of &lt;a href='http://github.com/dekellum/activerecord-jdbc-adapter/'&gt;activerecord-jdbc-adapter&lt;/a&gt; I was a bit embarrassed to find that I really didn&amp;#8217;t yet know what I was doing. That was a good lesson for me, perhaps learned the only practical way, and since then I&amp;#8217;ve put a little extra git education time into just about every project. Milestones crossed:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;I&amp;#8217;m no longer terrified by the unknown that was &amp;#8220;git rebase&amp;#8221;&lt;/li&gt;
+
+&lt;li&gt;I&amp;#8217;m only mildly leery of &amp;#8220;git svn.&amp;#8221;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Yes I will make my history look the way it should: nice independent linear patches, forward-only merges when possible, etc. And I think this is slowly starting to pay dividends in my development process. I&amp;#8217;ve re-enabled some development tactics that I had previously decided, over the years of using SVN, CVS, and those before it, just weren&amp;#8217;t worth the trouble. And I&amp;#8217;ve learned some new tactics.&lt;/p&gt;
+
+&lt;p&gt;My mode of operation with Subversion had been to avoid branches and merging at all costs:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Don&amp;#8217;t check that in until I tag the next release!&lt;/li&gt;
+
+&lt;li&gt;Lets split this code base up so we can work better in parallel!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;While there remains merit in the last approach (appropriate modular decomposition), it shouldn&amp;#8217;t be driven by limitations of a tool, and besides I never figured out exactly where to put those &amp;#8220;trunk&amp;#8221; directories.&lt;/p&gt;
+
+&lt;h2 id='making_the_tools_work'&gt;Making the tools work&lt;/h2&gt;
+
+&lt;p&gt;What parts of my development tool set need to change with git?&lt;/p&gt;
+
+&lt;p&gt;Maven might have been an issue (isn&amp;#8217;t it always), but my recent conversion to java/ruby gems packaging has the convenient side effect of liberating me from the maven release plugin (though I&amp;#8217;m told there is workable maven/git integration). I use rake for that now, and a simple &amp;#8220;rake tag&amp;#8221; task covers my git interaction.&lt;/p&gt;
+
+&lt;p&gt;I&amp;#8217;m still inclined to use Eclipse, while its not ideal, as a java code editor, primarily for the refactoring support that java seems to need, as a junit test launcher, and occasional debugger. The egit plugin for eclipse works well for basic operations, but the command line is still my main interface to git.&lt;/p&gt;
+
+&lt;p&gt;But with merging in play, I really want my commits to be recognizable as clean atomic patch sets. An important aspect of this is not cluttering up those patches with arbitrary white noise in the form of randomly changing whitespace. With emacs, there is whitespace-mode and surrounding commands. Problem solved for all files accept java, but Eclipse is just not that sophisticated as a text editor.&lt;/p&gt;
+
+&lt;h2 id='cleanws_script'&gt;cleanws script&lt;/h2&gt;
+
+&lt;p&gt;So I worked up a new tool. Its a simple text file whitespace filter, but I&amp;#8217;ve also added some nice git integration and color coding to make it reasonably convenient. Ruby BTW is quite nice for this kind of task. Before doing a &amp;#8220;git add&amp;#8221;, I run &amp;#8220;cleanws -g&amp;#8221; to ensure good canonical whitespace in new/updated files. See the following example:&lt;/p&gt;
+&lt;div class='image'&gt;
+  &lt;img src='/images/cleanws_sample_3.png' height='352' width='555' /&gt;
+&lt;/div&gt;
+&lt;p&gt;The second call fixes the file and (-w)rites it to disk. Any detected evil tab characters are left in place to be manually resolved.&lt;/p&gt;
+
+&lt;p&gt;Here is the &lt;a href='/share/cleanws'&gt;full script&lt;/a&gt;. Perhaps it will find its way into a gem and github it there is interest or if I continue to expand on it. Enjoy, and please keep it clean out there.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Hashdot 1.3 Released</title>
+   <link href="http://gravitext.com/2009/03/09/hashdot-1.3.html"/>
+   <updated>2009-03-09T00:00:00-07:00</updated>
+   <id>id:/2009/03/09/hashdot-1.3</id>
+   <content type="html">&lt;p&gt;Hashdot 1.3 has been released on SourceForge.&lt;/p&gt;
+
+&lt;h2 id='13_200939'&gt;1.3 (2009-3-9)&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Added hashdot.user.home property to current real user home directory.&lt;/li&gt;
+
+&lt;li&gt;Added hashdot.header.comment property in support of languages not using &amp;#8217;#&amp;#8217; as a line comment. The groovy.hdp and rhino.hdp profiles now set this property to &amp;#8220;//&amp;#8221;. Associated examples demonstrate alternative header formats.&lt;/li&gt;
+
+&lt;li&gt;Added hashdot.script.dir. This and hashdot.script properties are now always absolute paths. Clarified use of java.class.path.&lt;/li&gt;
+
+&lt;li&gt;Added clojure (clj) profile and example. [Phil Hagelberg]&lt;/li&gt;
+
+&lt;li&gt;Refined examples, jruby is only default INSTALL_SYMLINK.&lt;/li&gt;
+&lt;/ul&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Hashdot 1.2 Released</title>
+   <link href="http://gravitext.com/2008/12/22/hashdot-1.2-released.html"/>
+   <updated>2008-12-22T00:00:00-08:00</updated>
+   <id>id:/2008/12/22/hashdot-1.2-released</id>
+   <content type="html">&lt;p&gt;Hashdot 1.2 has been released on SourceForge. Special thanks to Matt Sanford for contributing the initial Mac OS X port and helping me through some additional OS X idiosyncrasies. Details in the change log below:&lt;/p&gt;
+
+&lt;h2 id='12_20081222'&gt;1.2 (2008-12-22)&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Added HUP signal handler to reopen STDOUT/STDERR when both daemonize and io_redirect are used&lt;/li&gt;
+
+&lt;li&gt;Added support for hashdot.chdir&lt;/li&gt;
+
+&lt;li&gt;Ported to Mac OS X. See default.hdp for differences in profile configuration. Note on Mac, the final test/test_cmdline.rb currently fails due to lack of a suitable equivalent to the Linux prctl() for process rename. However, this is not strictly required for useful operation.&lt;/li&gt;
+
+&lt;li&gt;Simplified default.hdp and shortlived.hdp using new hashdot.vm.lib delayed expansion property.&lt;/li&gt;
+
+&lt;li&gt;Added explicit int casts to avoid x64 warnings&lt;/li&gt;
+
+&lt;li&gt;Improved INSTALL notes.&lt;/li&gt;
+&lt;/ul&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Maven Must Die</title>
+   <link href="http://gravitext.com/2008/12/07/maven-must-die.html"/>
+   <updated>2008-12-07T00:00:00-08:00</updated>
+   <id>id:/2008/12/07/maven-must-die</id>
+   <content type="html">&lt;p&gt;The RubyGems packaging system has several advantages for java-hosted components. It goes places that Maven won&amp;#8217;t go, like all the way into production and managing non-trivial executables from the command line or inittab. In my &lt;a href='/2008/11/06/rjack-updates.html'&gt;first post on rjack&lt;/a&gt; I make some further case for this approach and describe some considerations in packaging ruby/java components as gems. In this post I&amp;#8217;ll describe some of the complexities with building such gems, and workarounds to common problems.&lt;/p&gt;
+
+&lt;h2 id='gems'&gt;Gems with jars&lt;/h2&gt;
+
+&lt;p&gt;The rjack project is best understood with an install of jruby, optimally hashdot, and for example, the jetty gem:&lt;/p&gt;
+&lt;pre&gt;
+% jgem install jetty
+% jetty-service
+&lt;/pre&gt;
+&lt;p&gt;This will afford the opportunity to look at how the gem is built, as the full source including the build mechanism is included. The top two levels of the gem directory structure are shown below:&lt;/p&gt;
+&lt;pre&gt;
+/opt/jruby/gems/gems/jetty-6.1.14.1/
+|-- History.txt
+|-- Manifest.txt
+|-- README.txt
+|-- Rakefile
+|-- assembly.xml
+|-- bin/
+|   `-- jetty-service*
+|-- lib/
+|   |-- jetty/
+|   `-- jetty.rb
+|-- pom.xml
+|-- src/
+|   `-- main/
+|-- test/
+|   `-- test_jetty.rb
+`-- webapps/
+    |-- test/
+    `-- test.war
+&lt;/pre&gt;
+&lt;p&gt;Note the presence of both a Rakefile, and the Maven pom.xml and assembly.xml. Other projects that produce gems including jars manage the jar files as if they were source, but this becomes a maintenance liability in any of the following scenarios:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Included jar(s) are undergoing frequent updates and the gem should be kept current.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Included jar(s) have additional jar dependencies themselves undergoing updates, and these jars must also be included.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;The gem includes original java source code that must be built, packaged as a jar and included in with the gem.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;External components, perhaps themselves packaged as gems, have dependencies on the packaged java. Thus the internally built java must also be published for resolving external java dependencies.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id='hoe_rake_maven_the_unholy_union'&gt;Hoe, Rake, Maven: The unholy union&lt;/h2&gt;
+
+&lt;p&gt;The jetty gem Rakefile (see below) attempts the rather perilous integration of Maven into Rake, with &lt;a href='http://seattlerb.rubyforge.org/hoe/'&gt;Hoe&lt;/a&gt; for gem building and rubyforge publishing support. Here you will find subtle and not-so-subtle workarounds for a variety of issues encountered, including:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;In standard gem build tradition, the gem version is actually obtained by loading ruby source. This has the advantage of the version being specified in one (fewer) place. However, there is an unfortunate incompatibility with JRuby and Rake both currently defining Object::import (JRUBY-3171). There is a simple workaround: Include an alternative ruby include that just defines version constants without any java imports. In this case its lib/jetty/base.rb, which defines VERSION and JETTY_VERSION in the Jetty module.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Hoe requires a Manifest.txt file on disk a priori, apparently to protect us from making mistakes in what is included in the gem. The problem with this is that jar names to be included may frequently change, and only maven knows the full dependency details. The workaround is to generate the Manifest.txt file with a :manifest task, but this task must be run and completed in its own process before any Hoe tasks utilize it as part of task definition. In practice we need to remember to update the manifest when jar&amp;#8217;s change, less than ideal.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;In the jetty gem, the full list of JARS (l28) are mapped from the jetty/base.rb included VERSIONs. In other gems the assembly brings in arbitrary dependencies of mixed versions, it becomes necessary to Dir.glob( &amp;#8220;..assembly/*.jar&amp;#8221; ) for these and the :manifest task acquires a &amp;#8220;mvn package&amp;#8221; task dependency.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;We know to build the assembly via &amp;#8220;mvn package&amp;#8221; if it doesn&amp;#8217;t yet exist, or if the pom.xml or assembly.xml is newer. The assembly is made a dependency of the :gem and :test tasks (l84). However, for gems packing java source, the dependencies are extended to all java source files as well.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;Hoe wants to use a graphics tool called &amp;#8220;dot&amp;#8221; for rdoc generation. I don&amp;#8217;t. Disabled via a crufty ENV[&amp;#8216;NOTDOT&amp;#8217;] setter.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;These might appear to constitute a rant, but I&amp;#8217;m well aware of the fact that all of this software is free. I&amp;#8217;m just fishing for a better solution in a relatively new problem space.&lt;/p&gt;
+
+&lt;h2 id='gemjar_dependencies'&gt;Gem/jar dependencies&lt;/h2&gt;
+
+&lt;p&gt;For a more complicated example, consider a dependency graph between two gems both containing java source:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src='/images/gem_jar_deps.png' alt='gem jar dependencies' /&gt;&lt;/p&gt;
+
+&lt;p&gt;There is no dependency loops and everything works surprisingly well once gem and maven releases have been made to the respective repositories. However its complicated, manual, and error prone when implementing new versions of both gems in parallel, and needing to share changes with other developers. We must abandon Maven&amp;#8217;s &lt;code&gt;mvn release:prepare&lt;/code&gt; functionality for tagging a release version and incrementing to the next snapshot. Instead the following steps are typical:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;For gem-a, &lt;code&gt;jrake clean&lt;/code&gt; to remove older jar versions&lt;/li&gt;
+
+&lt;li&gt;Update versions numbers in the pom.xml, lib/gem-a/base.rb, and a new version to History.txt&lt;/li&gt;
+
+&lt;li&gt;&lt;code&gt;jrake manifest&lt;/code&gt; to update Manifest.text with new jars.&lt;/li&gt;
+
+&lt;li&gt;&lt;code&gt;jrake test gem&lt;/code&gt; to build, test and package the gem.&lt;/li&gt;
+
+&lt;li&gt;&lt;code&gt;mvn install&lt;/code&gt; to make a.jar available for gem-b java build.&lt;/li&gt;
+
+&lt;li&gt;&lt;code&gt;jgem install pkg/gem-a-VERSION.gem&lt;/code&gt; to make gem-a available for gem-b&lt;/li&gt;
+
+&lt;li&gt;For gem-b, repeat steps 1-4, etc.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Also consider that much of the above will need to be repeated if gem-a undergoes changes that gem-b is dependent on. One saving feature is that from a Maven perspective, gem-a and gem-b still look like &amp;#8220;normal&amp;#8221; java jar projects, if gem-a and gem-b java changes can be made in parallel with typical maven means, including use of parent pom declaring gem-a and gem-b as modules. But in general, its clear that a better integrated tool, offering full build automation for gems with jars is needed. An evaluation of alternatives will be saved for a subsequent post.&lt;/p&gt;
+
+&lt;h2 id='rakefile_for_jetty_gem'&gt;Rakefile for jetty gem&lt;/h2&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rubygems&amp;#39;&lt;/span&gt;
+
+&lt;span class='no'&gt;ENV&lt;/span&gt;&lt;span class='o'&gt;[&lt;/span&gt;&lt;span class='s1'&gt;&amp;#39;NODOT&amp;#39;&lt;/span&gt;&lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;no thank you&amp;quot;&lt;/span&gt;
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;hoe&amp;#39;&lt;/span&gt;
+
+&lt;span class='vg'&gt;$LOAD_PATH&lt;/span&gt; &lt;span class='o'&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;./lib&amp;#39;&lt;/span&gt;
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;jetty/base&amp;#39;&lt;/span&gt;
+
+&lt;span class='no'&gt;JARS&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='sx'&gt;%w{ jetty jetty-util jetty-rewrite-handler }&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;map&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;n&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;n&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt; &lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;JETTY_VERSION&lt;/span&gt; &lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;.jar&amp;quot;&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='no'&gt;JARS&lt;/span&gt; &lt;span class='o'&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;servlet-api-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt; &lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;SERVLET_API_VERSION&lt;/span&gt; &lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt; &lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;JETTY_VERSION&lt;/span&gt; &lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;.jar&amp;quot;&lt;/span&gt;
+&lt;span class='no'&gt;JARS&lt;/span&gt; &lt;span class='o'&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;gravitext-testservlets-1.0.jar&amp;#39;&lt;/span&gt;
+&lt;span class='no'&gt;JAR_FILES&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;JARS&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;map&lt;/span&gt; &lt;span class='p'&gt;{&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;jar&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;lib/jetty/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;jar&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;}&lt;/span&gt;
+
+&lt;span class='n'&gt;desc&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;Update the Manifest with actual jars&amp;quot;&lt;/span&gt;
+&lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:manifest&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;out&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;File&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;Manifest.txt&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;w&amp;#39;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;begin&lt;/span&gt;
+    &lt;span class='n'&gt;out&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;write&lt;/span&gt; &lt;span class='o'&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class='no'&gt;END&lt;/span&gt;
+&lt;span class='sh'&gt;History.txt&lt;/span&gt;
+&lt;span class='sh'&gt;Manifest.txt&lt;/span&gt;
+&lt;span class='sh'&gt;README.txt&lt;/span&gt;
+&lt;span class='sh'&gt;Rakefile&lt;/span&gt;
+&lt;span class='sh'&gt;pom.xml&lt;/span&gt;
+&lt;span class='sh'&gt;assembly.xml&lt;/span&gt;
+&lt;span class='sh'&gt;bin/jetty-service&lt;/span&gt;
+&lt;span class='sh'&gt;lib/jetty.rb&lt;/span&gt;
+&lt;span class='sh'&gt;lib/jetty/base.rb&lt;/span&gt;
+&lt;span class='sh'&gt;lib/jetty/rewrite.rb&lt;/span&gt;
+&lt;span class='sh'&gt;lib/jetty/test-servlets.rb&lt;/span&gt;
+&lt;span class='sh'&gt;src/main/java/com/gravitext/testservlets/PerfTestServlet.java&lt;/span&gt;
+&lt;span class='sh'&gt;src/main/java/com/gravitext/testservlets/SnoopServlet.java&lt;/span&gt;
+&lt;span class='sh'&gt;test/test_jetty.rb&lt;/span&gt;
+&lt;span class='sh'&gt;test/test.txt&lt;/span&gt;
+&lt;span class='sh'&gt;webapps/test.war&lt;/span&gt;
+&lt;span class='sh'&gt;webapps/test/WEB-INF/web.xml&lt;/span&gt;
+&lt;span class='sh'&gt;webapps/test/index.html&lt;/span&gt;
+&lt;span class='no'&gt;END&lt;/span&gt;
+    &lt;span class='n'&gt;out&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;puts&lt;/span&gt; &lt;span class='no'&gt;JAR_FILES&lt;/span&gt;
+  &lt;span class='k'&gt;ensure&lt;/span&gt;
+    &lt;span class='n'&gt;out&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;close&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='no'&gt;ASSEMBLY&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;target/gravitext-testservlets-1.0-bin.dir&amp;quot;&lt;/span&gt;
+
+&lt;span class='n'&gt;file&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;webapps/test.war&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;webapps/test/index.html&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt;
+                             &lt;span class='s1'&gt;&amp;#39;webapps/test/WEB-INF/web.xml&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;sh&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;jar cvf webapps/test.war &amp;#39;&lt;/span&gt; &lt;span class='o'&gt;+&lt;/span&gt;
+      &lt;span class='s1'&gt;&amp;#39;-C webapps/test index.html -C webapps/test WEB-INF/web.xml&amp;#39;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='n'&gt;file&lt;/span&gt; &lt;span class='no'&gt;ASSEMBLY&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;pom.xml&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;assembly.xml&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;sh&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;mvn package&amp;#39;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='no'&gt;JARS&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;each&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;jar&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='n'&gt;file&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;lib/jetty/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;jar&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='no'&gt;ASSEMBLY&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+    &lt;span class='n'&gt;cp_r&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='no'&gt;File&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;join&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='no'&gt;ASSEMBLY&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='n'&gt;jar&lt;/span&gt; &lt;span class='p'&gt;),&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;lib/jetty&amp;#39;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='ss'&gt;:gem&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='ss'&gt;:test&lt;/span&gt; &lt;span class='o'&gt;].&lt;/span&gt;&lt;span class='n'&gt;each&lt;/span&gt; &lt;span class='p'&gt;{&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='n'&gt;t&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt; &lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='n'&gt;t&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='no'&gt;JAR_FILES&lt;/span&gt; &lt;span class='o'&gt;+&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;webapps/test.war&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='p'&gt;}&lt;/span&gt;
+
+&lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:mvn_clean&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;rm_f&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='no'&gt;JAR_FILES&lt;/span&gt; &lt;span class='o'&gt;+&lt;/span&gt; &lt;span class='o'&gt;[&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;webapps/test.war&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;]&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='n'&gt;sh&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;mvn clean&amp;#39;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:clean&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='ss'&gt;:mvn_clean&lt;/span&gt;
+
+&lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:tag&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='n'&gt;tag&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;jetty-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;VERSION&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;
+  &lt;span class='n'&gt;svn_base&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;svn://localhost/subversion.repo/src/gems&amp;#39;&lt;/span&gt;
+  &lt;span class='n'&gt;tag_url&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;svn_base&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;/tags/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;tag&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;
+
+  &lt;span class='n'&gt;dname&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;File&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;dirname&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='bp'&gt;__FILE__&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='n'&gt;dname&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;.&amp;#39;&lt;/span&gt; &lt;span class='k'&gt;if&lt;/span&gt; &lt;span class='no'&gt;Dir&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;getwd&lt;/span&gt; &lt;span class='o'&gt;==&lt;/span&gt; &lt;span class='n'&gt;dname&lt;/span&gt;
+  &lt;span class='n'&gt;stat&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='sb'&gt;`svn status &lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;dname&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='sb'&gt;`&lt;/span&gt;
+  &lt;span class='n'&gt;stat&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;strip!&lt;/span&gt; &lt;span class='k'&gt;if&lt;/span&gt; &lt;span class='n'&gt;stat&lt;/span&gt;
+  &lt;span class='k'&gt;if&lt;/span&gt; &lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='n'&gt;stat&lt;/span&gt; &lt;span class='o'&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class='n'&gt;stat&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;length&lt;/span&gt; &lt;span class='o'&gt;&amp;gt;&lt;/span&gt; &lt;span class='mi'&gt;0&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+    &lt;span class='vg'&gt;$stderr&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;puts&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;Resolve the following before tagging (svn status):&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+    &lt;span class='vg'&gt;$stderr&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;puts&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='n'&gt;stat&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;else&lt;/span&gt;
+    &lt;span class='n'&gt;sh&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;svn cp -m &amp;#39;tag [&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;tag&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;]&amp;#39; &lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;dname&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt; &lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;tag_url&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='k'&gt;end&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='n'&gt;hoe&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;Hoe&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;jetty&amp;quot;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;VERSION&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;developer&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;David Kellum&amp;quot;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;dek-ruby@gravitext.com&amp;quot;&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;rubyforge_name&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;rjack&amp;quot;&lt;/span&gt;
+  &lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;rdoc_pattern&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='sr'&gt;/^(lib.*\.(rb|txt))|[^\/]*\.txt$/&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates</title>
+   <link href="http://gravitext.com/2008/12/06/rjack-updates.html"/>
+   <updated>2008-12-06T00:00:00-08:00</updated>
+   <id>id:/2008/12/06/rjack-updates</id>
+   <content type="html">&lt;p&gt;The &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project home page has been beautified.&lt;/p&gt;
+
+&lt;p&gt;The gem updates include:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;jetty and jetty-jsp 6.1.14&lt;/li&gt;
+
+&lt;li&gt;slf4j 1.5.6&lt;/li&gt;
+
+&lt;li&gt;logback 0.9.13&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Also, as part of this update I tested compatibility with newly released JRuby 1.1.6-RC1. Assuming the RC status is meaningfully applied and temporary, all should be in good for the 1.1.6 general release.&lt;/p&gt;
+
+&lt;p&gt;The void * blog is now running these gems.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Scripted Server Setup</title>
+   <link href="http://gravitext.com/2008/11/09/scripted-server-setup.html"/>
+   <updated>2008-11-09T00:00:00-08:00</updated>
+   <id>id:/2008/11/09/scripted-server-setup</id>
+   <content type="html">&lt;p&gt;I&amp;#8217;ve made several posts on Hashdot and the RJack gems, but have yet to post on the &lt;em&gt;why?&lt;/em&gt; or &lt;em&gt;what?&lt;/em&gt; of it. This post should fill that gap by way of a non-trivial example.&lt;/p&gt;
+
+&lt;p&gt;At &lt;a href='http://www.evri.com/'&gt;Evri&lt;/a&gt; I&amp;#8217;m responsible for content acquisition and text extraction. We&amp;#8217;re parsing volumes of news and general web content, and separating the &lt;em&gt;kernels&lt;/em&gt; of semantically rich text from the &lt;em&gt;chaff&lt;/em&gt; i.e. site navigational boxes, advertisements, etc. Normally this content is processed &amp;#8220;offline&amp;#8221;, but I had reason recently to package it as a HTTP-XML service for transforming web content in real time. As the content processing system already existed as a mixture of java (for the heavy lifting) and ruby, I went looking for a solution for service construction that would be simple, flexible enough to reuse the existing processing code and setup, and well performing.&lt;/p&gt;
+
+&lt;p&gt;As the XML production (output) code was already in java, and because I wanted the performance advantages of the JVM&amp;#8217;s native threads, I decided to write two java servlets: one to simply test obtaining the web content by URL as a proxy (using thread-safe and connection pooling commons-httpclient), and the second extending the first to actually transform the content HTML into an internal XML representation. So now I have two servlets that need to be setup in an HTTP server, I want them to share a common HTTPClient setup, and the transforming servlet also needs a reference to a custom setup content processor. How was I going to wire all this together?&lt;/p&gt;
+
+&lt;h2 id='standards_frameworks_and_xml_configuration'&gt;Standards, Frameworks, and XML configuration&lt;/h2&gt;
+
+&lt;p&gt;Classical java would have me create a Web Application Archive (WAR) which contains the compiled Servlets plus a web.xml Deployment Descripter providing the mapping of servlets to URIs. Since the container will be constructing the servlets, access to the HTTPClient and processor must be arranged by non-direct means, presumably through a ServletContext which allows Object-type attributes. Back in the day. with earlier Servlet specs, this would have been done with some form of initialization servlet. Now its possible to register a context listener which does the same. I could write all the java classes and XML myself, or depend on something like the Spring Framework&amp;#8217;s &lt;a href='http://static.springframework.org/spring/docs/2.5.x/reference/beans.html#context-create'&gt;ContextLoaderListener&lt;/a&gt;. In either case it will be a challenge to keep the ruby based content processor setup without resorting to an additionally complex integration, with java setting up a jruby interpreter (via BSF or otherwise). Note also that none of this complexity helps to address such matters as how to get this all installed in a production environment, how the service will be started, monitored, etc. The two servlets are themselves pretty simple. How might we shed some of the surrounding baggage?&lt;/p&gt;
+
+&lt;h2 id='uninversion_of_control'&gt;Un-Inversion of Control&lt;/h2&gt;
+
+&lt;p&gt;Enter the beautifully designed &lt;a href='http://www.mortbay.org/jetty/'&gt;Jetty Web Server&lt;/a&gt; which offers full compliance with all of the committee Servlet/JSP standards, but also offers direct programmatic setup under the guise of &lt;a href='http://docs.codehaus.org/display/JETTY/Embedding+Jetty'&gt;embedding&lt;/a&gt;. It was quick work to prototype the same embedded HTTP server setup in jruby. I later took up authoring a generic jetty gem packaging and setup façade as a side project.&lt;/p&gt;
+
+&lt;p&gt;As I&amp;#8217;ve setup a lot of classic java web applications in the past, reviewing the script for this post gave me an eery feeling that somehow there must be a few more XML configuration files or bash scripts somewhere that were needed to make this all work. That&amp;#8217;s not the case here. Lets quickly review the prerequisites:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Java JDK or JRE&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='/2008/10/27/jruby-setup-with-hashdot.html'&gt;Hashdot installed&lt;/a&gt; with JRuby in /opt.&lt;/li&gt;
+
+&lt;li&gt;RJack &lt;a href='http://rjack.rubyforge.org/logback/'&gt;logback&lt;/a&gt; and &lt;a href='http://rjack.rubyforge.org/jetty/'&gt;jetty&lt;/a&gt; gems: &lt;pre&gt;
+  % jgem install logback jetty
+&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;A commons-httpclient gem which has not yet been published.&lt;/li&gt;
+
+&lt;li&gt;The Evri proprietary content_processor and proxy_transformer ruby Modules which, sorry to say, I won&amp;#8217;t be sharing.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;(Note: I&amp;#8217;ve also changed a few of the setup details of these to avoid giving too many details.)&lt;/p&gt;
+
+&lt;h2 id='dependency_injection'&gt;Dependency Injection&lt;/h2&gt;
+
+&lt;p&gt;Fancy terminology aye? The HTTP Client and content processor are simply created as local variables &lt;code&gt;http&lt;/code&gt; (l28) and &lt;code&gt;processor&lt;/code&gt; (l33) in the script, and passed directly on construction of the ProxyServlet and TransformServlet (l46-7). Isn&amp;#8217;t that refreshingly direct? The &lt;code&gt;Jetty::ServerFactory&lt;/code&gt; provided in the jetty gem is used to &lt;code&gt;create&lt;/code&gt; a the complete HTTP server, with a healthy dose of sensible defaults. The &lt;code&gt;set_context_servlets&lt;/code&gt; call (l35) uses a ruby hash for mapping paths of the root &lt;code&gt;'/'&lt;/code&gt; context to these servlets. There is no Web Application, because there is no need for one. (However the jetty gem supports full webapps as well when needed.)&lt;/p&gt;
+
+&lt;h2 id='lifecycle_events'&gt;Lifecycle Events&lt;/h2&gt;
+
+&lt;p&gt;More fancy terminology. We have some shutdown work we&amp;#8217;d like to do after the server port is closed. Once Jetty is started via &lt;code&gt;server.start&lt;/code&gt; (l51), the &lt;code&gt;server.join&lt;/code&gt; call (l52) will block until the server exits, for example via SIGTERM. We then have an opportunity to cleanup, for example, gracefully closing the HTTP client and any kept-alive connections (l55). Other example might include writing out some final reporting information.&lt;/p&gt;
+
+&lt;h2 id='code_or_configuration'&gt;Code or Configuration?&lt;/h2&gt;
+
+&lt;p&gt;The original Jetty &lt;a href='http://docs.codehaus.org/display/JETTY/Embedding+Jetty'&gt;embedding&lt;/a&gt; examples are written in Java and thus need to be compiled. Any settings such as the HTTP port number are thus &lt;em&gt;hard coded&lt;/em&gt; in the jetty examples. The distinction is a good bit less clear in the case of this ruby script. The script itself is almost entirely in a declarative style, save perhaps for the final server start, join and cleanup (l51-55). It also uses some local variables, but this isn&amp;#8217;t unlike named object references in Jetty or Spring XML configuration. It would certainly be easy enough to break a final set of configuration elements out into a separate XML configuration file (or YAML, or even java proprieties), but what is the gain? Is it not easy enough to change any necessary settings in this script directly? Is there not a clear advantage to having all aspects of the service setup in a single unified file, rather than spread out into multiple XML configuration files and the typically required bash wrapper script?&lt;/p&gt;
+
+&lt;h2 id='where_is_the_ruby_at_runtime'&gt;Where is the Ruby at Runtime?&lt;/h2&gt;
+
+&lt;p&gt;While ruby is used for setup, wiring, dependency injection, or whatever you&amp;#8217;d like to call it, ruby is interestingly absent as an explicit reference in any of the Java code, where there is not a a single JRuby or BSF dependency reference. Furthermore, the &lt;code&gt;ProxyServlet&lt;/code&gt; never utilizes a single line of ruby code in its runtime execution. We&amp;#8217;ve effectively made good use of ruby to setup this servlet but take on absolutely zero ruby performance penalties during runtime.&lt;/p&gt;
+
+&lt;p&gt;The content processor by comparison, as used by the &lt;code&gt;TransformServlet&lt;/code&gt; uses a pipeline or chain-of-responsibility pattern with some links in the chain implemented in ruby. The ruby links are non-performance intensive processing logic steps, and don&amp;#8217;t measurably detract from the performance. Note that if they did become a performance bottleneck, they could be rewritten in pure-java without needing to modify or recompile the &lt;code&gt;TransformServlet&lt;/code&gt;. Thus by putting ruby in control of service boot-strapping, ruby can easily be injected into the service and mixed with java components where advantageous and without any complexities incurred on the java side. Some additional example code for this kind of ruby injection can be found in the &lt;a href='http://rjack.rubyforge.org/jetty/RJack/Jetty/ServerFactory.html'&gt;Jetty::ServerFactory&lt;/a&gt; rdoc, where for example, I demonstrate implementing a Servlet in ruby and passing it to Jetty.&lt;/p&gt;
+
+&lt;h2 id='logging_daemonizing_and_other_oft_ignored_subtleties'&gt;Logging, Daemonizing, and other oft ignored Subtleties&lt;/h2&gt;
+
+&lt;p&gt;The Hashdot launcher and hashdot properties are used to arrange for the service to daemonize, redirect STDOUT/STDERR to a log file, and set a Java heap size. This will make it simple to add the service to inittab or other UNIX process monitor. The logback gem is loaded (l10,14) which loads the slf4j gem as a dependency. Jetty in turn detects the presence of SLF4J and will use it for logging. SLF4J via Logback output to STDOUT at INFO level is arranged pragmatically (l22-5), thus avoiding a separate logback.xml. Below is an example of log output using jetty-service script provided with the jetty gem itself (and with the logback gem available).&lt;/p&gt;
+&lt;pre&gt;
+1    INFO  org.mortbay.log - Logging to Logger[org.mortbay.log] via org.mortbay.log.Slf4jLog
+58   INFO  org.mortbay.log - jetty-6.1.12
+280  INFO  org.mortbay.log - NO JSP Support for /, did not find org.apache.jasper.servlet.JspServlet
+388  INFO  org.mortbay.log - Started SelectChannelConnector@0.0.0.0:38225
+388  INFO  jetty-service - Listening on port: 38225
+&lt;/pre&gt;
+&lt;p&gt;Its important to redirect STDOUT and STDERR because any fatal errors like uncaught runtime exceptions or java crash dumps will end up here. Its also convenient when debugging a problem to be able to &lt;code&gt;pkill -HUP proxy-transform-service&lt;/code&gt; and get all of the thread stack dumps into the log. Finally, its quite common for an application which brings in many open-source components to have cases where these components write to STDOUT or STDERR under &lt;em&gt;unusual&lt;/em&gt; circumstances. An approach that redirects STDOUT/STDERR to &lt;code&gt;/dev/null&lt;/code&gt; or an obscure alternative log file will commonly result in this information being lost. Thus I find a certain old school elegance in coalescing all the logging output to STDOUT, using Hashdot to redirect this to a file at the system (not just java) level, and using an external tool like logrotate to provide log rotation.&lt;/p&gt;
+
+&lt;h2 id='proxytransformservice_script'&gt;proxy-transform-service script&lt;/h2&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='c1'&gt;#!/opt/bin/jruby&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.profile += daemon&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.vm.options += -Xmx256m&lt;/span&gt;
+&lt;span class='c1'&gt;#. hashdot.io_redirect.file = /var/log/proxy-transformer.log&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;rubygems&amp;#39;&lt;/span&gt;
+
+&lt;span class='n'&gt;gem&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;logback&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;~&amp;gt; 0.9&amp;#39;&lt;/span&gt;
+&lt;span class='n'&gt;gem&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;jetty&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;~&amp;gt; 6.1&amp;#39;&lt;/span&gt;
+&lt;span class='n'&gt;gem&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;commons-httpclient&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;~&amp;gt; 3.1&amp;#39;&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;logback&amp;#39;&lt;/span&gt;
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;jetty&amp;#39;&lt;/span&gt;
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;commons-httpclient&amp;#39;&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;content_processor&amp;#39;&lt;/span&gt;
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;proxy_transformer&amp;#39;&lt;/span&gt;
+
+&lt;span class='c1'&gt;# Logback&lt;/span&gt;
+&lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;configure&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
+  &lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;root&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;add_appender&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;ConsoleAppender&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;
+  &lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;root&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;level&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;Logback&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;INFO&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='c1'&gt;# HTTP Client&lt;/span&gt;
+&lt;span class='n'&gt;http&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;CommonsHttpClient&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;Facade&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;
+&lt;span class='n'&gt;http&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;max_total_connections&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;100&lt;/span&gt;
+&lt;span class='n'&gt;http&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;connection_timeout&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;1500&lt;/span&gt; &lt;span class='c1'&gt;#ms&lt;/span&gt;
+
+&lt;span class='c1'&gt;# Content Processor&lt;/span&gt;
+&lt;span class='n'&gt;processor&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;ContentProcessor&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt; &lt;span class='o'&gt;|&lt;/span&gt;&lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;|&lt;/span&gt;
+  &lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;centroid_weight&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;0&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='mi'&gt;3&lt;/span&gt;
+  &lt;span class='nb'&gt;p&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;filter_threads&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;1&lt;/span&gt;
+&lt;span class='k'&gt;end&lt;/span&gt;
+
+&lt;span class='c1'&gt;# HTTP Server&lt;/span&gt;
+&lt;span class='n'&gt;factory&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;ServerFactory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;
+&lt;span class='n'&gt;factory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;max_threads&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;50&lt;/span&gt;
+&lt;span class='n'&gt;factory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;port&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;8080&lt;/span&gt;
+&lt;span class='n'&gt;factory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;max_idle_time_ms&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='mi'&gt;10000&lt;/span&gt;
+
+&lt;span class='kp'&gt;include&lt;/span&gt; &lt;span class='no'&gt;ProxyTransformer&lt;/span&gt;
+&lt;span class='n'&gt;factory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;set_context_servlets&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt;
+  &lt;span class='p'&gt;{&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;/proxy&amp;#39;&lt;/span&gt;     &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='no'&gt;ProxyServlet&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='n'&gt;http&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;client&lt;/span&gt; &lt;span class='p'&gt;),&lt;/span&gt;
+    &lt;span class='s1'&gt;&amp;#39;/transform&amp;#39;&lt;/span&gt; &lt;span class='o'&gt;=&amp;gt;&lt;/span&gt; &lt;span class='no'&gt;TransformServlet&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='n'&gt;http&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;client&lt;/span&gt;&lt;span class='p'&gt;,&lt;/span&gt; &lt;span class='n'&gt;processor&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt; &lt;span class='p'&gt;}&lt;/span&gt;
+
+&lt;span class='n'&gt;server&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='n'&gt;factory&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;create&lt;/span&gt;
+
+&lt;span class='n'&gt;server&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;start&lt;/span&gt;
+&lt;span class='n'&gt;server&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;join&lt;/span&gt;
+
+&lt;span class='c1'&gt;# Shutdown, cleanup&lt;/span&gt;
+&lt;span class='n'&gt;http&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;shutdown&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates</title>
+   <link href="http://gravitext.com/2008/11/09/rjack-updates.html"/>
+   <updated>2008-11-09T00:00:00-08:00</updated>
+   <id>id:/2008/11/09/rjack-updates</id>
+   <content type="html">&lt;p&gt;Two gem updates released to the &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project on RubyForge:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty/'&gt;jetty&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;a href='http://rjack.rubyforge.org/jetty-jsp/'&gt;jetty-jsp&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;based on the latest &lt;a href='http://www.mortbay.org/jetty/'&gt;Jetty Web Server&lt;/a&gt; 6.1.12.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Hashdot 1.3 Dev</title>
+   <link href="http://gravitext.com/2008/11/07/hashdot-1.2-dev.html"/>
+   <updated>2008-11-07T00:00:00-08:00</updated>
+   <id>id:/2008/11/07/hashdot-1.2-dev</id>
+   <content type="html">&lt;p&gt;A quick status update on Hashdot:&lt;/p&gt;
+
+&lt;p&gt;To better facilitate merging changes with a colleague who is investigating the Mac OS X port, I&amp;#8217;ve enabled the SVN repository for Hashdot on SourceForge, imported the 1.1 source, and then committed a set of changes for Hashdot 1.2 I had previously made locally. The changes are listed below as a preview for interested parties:&lt;/p&gt;
+&lt;pre&gt;
+* Added change_log starting with version 1.2
+
+svn merge -r 464:HEAD
+
+* Added HUP signal handler to reopen STDOUT/STDERR for logrotate
+  compatibility.
+* Fixed hashbang.
+* Added explicit int casts to avoid x64 warnings
+* VERSION -&gt; 1.2
+* Added support for hashdot.chdir, incl. test and doc.
+&lt;/pre&gt;</content>
+ </entry>
+
+ <entry>
+   <title>RJack Updates</title>
+   <link href="http://gravitext.com/2008/11/06/rjack-updates.html"/>
+   <updated>2008-11-06T00:00:00-08:00</updated>
+   <id>id:/2008/11/06/rjack-updates</id>
+   <content type="html">&lt;p&gt;On Monday, I managed to complete the release of two new gems and two gem updates, all part of the &lt;a href='http://rjack.rubyforge.org/'&gt;RJack&lt;/a&gt; project hosted on RubyForge. As this is my first post on RJack, here is a an introduction without quoting the linked project summary, and some details on jar in gem packaging.&lt;/p&gt;
+
+&lt;p&gt;RJack provides gem packaging of various broadly used Java components for use with JRuby. Included in this release set are upstream updates to the &lt;a href='http://rjack.rubyforge.org/slf4j/'&gt;slf4j&lt;/a&gt; and &lt;a href='http://rjack.rubyforge.org/logback/'&gt;logback&lt;/a&gt; logging system, and the new gems &lt;a href='http://rjack.rubyforge.org/jetty/'&gt;jetty&lt;/a&gt; and &lt;a href='http://rjack.rubyforge.org/jetty-jsp/'&gt;jetty-jsp&lt;/a&gt;, which package the Jetty Web Server. A guiding design principal is that each of these gems may be used simply and solely to deliver java package dependencies to a consuming ruby/java application. However, three of the four gems in the current set also provide either façades for setup or adapters for direct use from ruby code. For these inclusions, care is given to avoid incurring any additional external dependencies.&lt;/p&gt;
+
+&lt;h2 id='why_gems'&gt;Why gems?&lt;/h2&gt;
+
+&lt;p&gt;The &lt;a href='http://www.rubygems.org/'&gt;RubyGems&lt;/a&gt; package management system offers several advantages for working with server application components in both development and production environments, including a straight forward command line interface, multiple remote and local gem repositories, versioned dependency management, support for multiple versions of the same component, and support for installing command-line accessable executables. While in common use for pure and C-extended ruby components, JRuby provides an opportunity to similarly utilize gems for java-extended ruby or even near-pure java components. The nearest alternative from the java comunity would be Maven and its derivatives, but these are far more appropriate for handling java dependencies at compile time than for production deployment.&lt;/p&gt;
+
+&lt;p&gt;Once the logical decision to deploy gems is made, the first order of business is determining how to divide the various components and their java jar dependencies into gems for maximum benefit including reuse, reliability, and ease/safety of upgrade with independent release cycles. Java components are ultimately loaded by searching through an order list of jars or directories, the &amp;#8220;classpath&amp;#8221;. If multiple versions of the same java package are found on the classpath, the first instance wins. Problems arise if two utilized components include incompatible versions of the same package. It is therefore advantageous to break common java dependencies out into individual gems and utilize the version management offered by the rubygems system.&lt;/p&gt;
+
+&lt;p&gt;As a prime example, the SLF4J system is predicated on the application developer selecting a final logging destination by installing the appropriate logging adapter in the classpath. If however various gems with some java dependencies each in turn include their own versions of these or other logging system jars, then this logging output flexibility is lost. As SLF4J is now the best available logging interface for Java, I&amp;#8217;ve released an independent slf4j gem, for reuse and in the hope of encouraging other java gem packagers to use the slf4j gem to resolve any java logging dependencies, in lieu of embedding alternative logging components in their gems.&lt;/p&gt;
+
+&lt;h2 id='gems_package_projects'&gt;Gems package projects&lt;/h2&gt;
+
+&lt;p&gt;Since Maven manages dependencies at the jar level, a one-to-one mapping would suggest a gem per jar. While some discussion has taken place on automating direct jar to gem packing, a significant offering has yet to be published. I&amp;#8217;m also not convinced this is the right mapping. Consider that in ruby, the &lt;code&gt;require&lt;/code&gt; method is included in normal program flow, and its common to use multiple &lt;code&gt;require&lt;/code&gt; calls to selectively bring in different parts of a single gem. JRuby extends &lt;code&gt;require&lt;/code&gt; to support adding a named jar file to the classpath of its custom class loader. Its therefore quite reasonable for gems to map directly to a java project which provides more than one jar. A clear example of this is the RJack slf4j gem. See the &lt;a href='http://rjack.rubyforge.org/slf4j/RJack/SLF4J.html'&gt;SLF4J module&lt;/a&gt; documentation for &lt;code&gt;require&lt;/code&gt; mappings to eight additional input/output adapter jars beyond the &lt;code&gt;slf4j-api-version.jar&lt;/code&gt; loaded with the base &lt;code&gt;require &amp;#39;slf4j&amp;#39;&lt;/code&gt;. There will be other cases where a single jar is best packaged as a gem, but its clearly not necessary to do so when a project releases multiple jar&amp;#8217;s in version lock-step.&lt;/p&gt;
+
+&lt;p&gt;A counter argument for finer grain gems is the case where, as with the jetty-jsp gem, large jars are included and some of these are commonly not needed. The jetty gem contains the core server components and servlet-api (4 gems) at 0.7M where as the jetty-jsp gem adds JSP support (4 more gems) for an additional 5.2M. There are also cases where external project jar dependencies are added to a gem. The argument for this would be that it is unlikely that a particular dependency will be used in another context. Of course this could be a mistake, but its one that can be fixed later with a patch release, breaking the dependency out into its own gem.&lt;/p&gt;
+
+&lt;h2 id='other_considerations'&gt;Other considerations&lt;/h2&gt;
+
+&lt;p&gt;Finally its worth noting that these gems defer to the upstream java project version numbers, adding a single gem package release number to the end of the upstream version. This puts emphasis on version compatibility in upstream project upgrades and will encourage timing any significant ruby layer changes with upstream major releases.&lt;/p&gt;
+
+&lt;p&gt;Along similar lines, each of these gems is released under identical license terms to the upstream project, thereby simplifying license considerations for consuming applications.&lt;/p&gt;</content>
+ </entry>
+
+ <entry>
+   <title>JRuby setup with Hashdot</title>
+   <link href="http://gravitext.com/2008/10/27/jruby-setup-with-hashdot.html"/>
+   <updated>2008-10-27T00:00:00-07:00</updated>
+   <id>id:/2008/10/27/jruby-setup-with-hashdot</id>
+   <content type="html">&lt;p&gt;In &lt;a href='/2008/10/22/introducing-hashdot.html'&gt;Introducing Hashdot&lt;/a&gt; I laid out various problems with using the standard &amp;#8216;java&amp;#8217; launcher and the &amp;#8216;jruby&amp;#8217; wrapper bash script provided with the JRuby distribution. In this post, I&amp;#8217;m going to describe in detail an alternative installation layout and setup of JRuby using Hashdot to best advantage. Some goals for this setup:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Any and all invocations of &amp;#8216;jruby&amp;#8217; should be launched via hashdot to take advantage of central configuration, better process report, and hashdot script headers where appropriate.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;No user environment dependencies. We want JRuby to function properly for any user on the system, without requiring each user to maintain environment variables, etc. in their own profile.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;A separate gem repository for JRuby, independent of the versioned JRuby distribution. This will enable JRuby upgrades without needing to rebuild or copy to a new gem repository.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;MRI-ruby and JRuby need to coexist. This means &amp;#8216;ruby&amp;#8217; launches MRI and &amp;#8216;jruby&amp;#8217; launches JRuby. Such utilities as &amp;#8216;ri&amp;#8217;, &amp;#8216;gem&amp;#8217;, and &amp;#8216;rake&amp;#8217; should invoke MRI ruby, while we also want convenient access to the same via JRuby as &amp;#8216;jri&amp;#8217;, &amp;#8216;jgem&amp;#8217;, &amp;#8216;jrake&amp;#8217;, etc.&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li&gt;
+&lt;p&gt;The current latest &amp;#8216;jruby&amp;#8217; interpreter, &amp;#8216;jgem&amp;#8217;, &amp;#8216;jri&amp;#8217;, &amp;#8216;jrake&amp;#8217; and any bin scripts installed in the jruby gem repository should be available on a system standard PATH.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id='layout_in_opt'&gt;Layout in /opt&lt;/h2&gt;
+
+&lt;p&gt;The &amp;#8216;/opt&amp;#8217; directory appears most appropriate for this kind of system wide but custom setup. Alternatively &amp;#8216;/usr/local&amp;#8217; could be used. The following structure is recommended and will be described in detail below.&lt;/p&gt;
+&lt;pre&gt;
+/opt
+|-- bin
+|   |-- hashdot
+|   |-- jgem
+|   |-- jirb -&gt; ../dist/jruby/bin/jirb
+|   |-- jrake -&gt; ../jruby/gems/bin/rake
+|   |-- jri -&gt; ../dist/jruby/bin/ri
+|   |-- jruby -&gt; hashdot
+|   `-- jruby-shortlived -&gt; hashdot
+|-- dist
+|   |-- jdk_sun_1.6.0_05_x32
+|   |-- jdk_sun_1.6.0_07_x32
+|   |-- jruby -&gt; jruby-1.1.4
+|   |-- jruby-1.1.3
+|   `-- jruby-1.1.4
+|-- hashdot
+|   `-- profiles
+`-- jruby
+    `-- gems
+&lt;/pre&gt;
+&lt;h2 id='create_the_opt_skeleton'&gt;Create the /opt skeleton&lt;/h2&gt;
+
+&lt;p&gt;As root:&lt;/p&gt;
+&lt;pre&gt;
+% mkdir /opt /opt/bin /opt/dist /opt/jruby
+&lt;/pre&gt;
+&lt;h2 id='configure_make_install_hashdot'&gt;Configure, make, install Hashdot&lt;/h2&gt;
+
+&lt;p&gt;Configuring hashdot currently involves editing the Makefile including with the source distribution. Set the following Makefile variables:&lt;/p&gt;
+&lt;pre&gt;
+INSTALL_BIN=/opt/bin
+PROFILE_DIR=/opt/hashdot/profiles
+&lt;/pre&gt;
+&lt;p&gt;Hashdot may then be built or rebuilt via &amp;#8216;make clean all&amp;#8217;. You might want to then customize the various profiles before running &amp;#8216;make install&amp;#8217; as root. You can also customize them in /opt/hashdot/profiles after install.&lt;/p&gt;
+
+&lt;h2 id='install_distributions'&gt;Install distributions&lt;/h2&gt;
+
+&lt;p&gt;As root, unpack the Java JDK (or JRE) and JRuby under /opt/dist. Note I prefer to use a more descriptive name including the full java version number. Since we also reference some jruby distro provided bin scripts, symlink the latest jruby-1.1.4 to jruby. As shown, its possible for multiple versions of java/jruby to coexist for testing purposes.&lt;/p&gt;
+
+&lt;h2 id='create_optjrubygems_repository'&gt;Create /opt/jruby/gems repository&lt;/h2&gt;
+
+&lt;p&gt;To create a starting gems repository, as root:&lt;/p&gt;
+&lt;pre&gt;
+% cp -a /opt/dist/jruby-1.1.4/lib/ruby/gems /opt/dist/jruby/gems
+&lt;/pre&gt;
+&lt;p&gt;To make sure this repository is used for all jruby invocations, GEM_HOME and GEM_PATH environment variables are set via Hashdot in the jruby.hdp profile (see below.) This has an important advantage over setting in a user profile: The MRI ruby gem home/path will not be effected and can be kept separate.&lt;/p&gt;
+
+&lt;h2 id='create_optbin_symlinks'&gt;Create /opt/bin symlinks&lt;/h2&gt;
+
+&lt;p&gt;The above list directory tree for /opt/bin should be self explanatory. We create &amp;#8216;jirb&amp;#8217; and &amp;#8216;jri&amp;#8217; symlinks to dist/jruby/bin in order to make these easy to use. Note however that &amp;#8216;jruby -S ri&amp;#8217; will also still work for these. Similarly we create jrake as a symlink to gems/bin/rake, since in a development environment we will likely want MRI and jruby versions both available. Finally, we choose to customize &amp;#8216;jgem&amp;#8217; by copying and changing the hashbang to:&lt;/p&gt;
+&lt;pre&gt;
+#!/opt/bin/jruby-shortlived
+&lt;/pre&gt;
+&lt;p&gt;Which gives a bit of a performance advantage in common usage. Note that with the given hashdot profiles, the server vm is default, which is almost always the best choice for any long lived application.&lt;/p&gt;
+
+&lt;h2 id='system_path'&gt;System PATH&lt;/h2&gt;
+
+&lt;p&gt;Adjusting the standard system PATH is Linux (or UNIX) distribution dependent and might involve modifying /etc/profile or an equivalent. In any case, /opt/bin should be found early in the path (since we only include &amp;#8216;j*&amp;#8217; commands here), and /opt/jruby/gems/bin should be added late in the path to get additional jruby gem bin scripts available, but without overriding any MRI ruby gem equivalents. For example:&lt;/p&gt;
+&lt;pre&gt;
+/opt/bin:/usr/local/bin:/bin:/usr/sbin:/usr/bin:/opt/jruby/gems/bin
+&lt;/pre&gt;
+&lt;p&gt;In the case where you need both the MRI and jruby gem bin script versions to coexist in the PATH, create a &amp;#8216;j*&amp;#8217; symlink in /opt/bin for the jruby version.&lt;/p&gt;
+
+&lt;h2 id='hashdot_profiles'&gt;Hashdot profiles&lt;/h2&gt;
+
+&lt;p&gt;The customized profiles I use on my 32bit development environment are given below.&lt;/p&gt;
+
+&lt;p&gt;default.hdp:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;# HashDot default launch profile&lt;/span&gt;
+&lt;span class='c'&gt;# This profile is always read before any other profiles or hashdot&lt;/span&gt;
+&lt;span class='c'&gt;# properties&lt;/span&gt;
+
+&lt;span class='c'&gt;## Setup the default JVM&lt;/span&gt;
+
+&lt;span class='c'&gt;# JVM install directory&lt;/span&gt;
+hashdot.vm.home &lt;span class='o'&gt;=&lt;/span&gt; /opt/dist/jdk_sun_1.6.0_07_x32
+
+&lt;span class='c'&gt;# Use &amp;quot;amd64&amp;quot; instead of i386 for linux 64bit platforms&lt;/span&gt;
+hashdot.vm.arch     &lt;span class='o'&gt;=&lt;/span&gt; i386
+
+&lt;span class='c'&gt;# Use server by default (see alternative in shortlived.hdp)&lt;/span&gt;
+hashdot.vm.mode     &lt;span class='o'&gt;=&lt;/span&gt; server
+
+hashdot.vm.libbase  &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.home&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;/jre/lib/&lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.arch&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+
+&lt;span class='c'&gt;# Setup libpath to find libjvm.so and dependencies.&lt;/span&gt;
+hashdot.vm.libpath  &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.libbase&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+hashdot.vm.libpath +&lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.libbase&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;/&lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.mode&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+
+&lt;span class='c'&gt;# TZ often needed for Java&lt;/span&gt;
+hashdot.env.TZ &lt;span class='o'&gt;=&lt;/span&gt; America/Los_Angeles
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;jruby.hdp:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;# HashDot launch profile for JRuby (http://jruby.codehaus.org/)&lt;/span&gt;
+
+jruby.home    &lt;span class='o'&gt;=&lt;/span&gt; /opt/dist/jruby-1.1.4
+jruby.lib     &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;jruby&lt;/span&gt;&lt;span class='p'&gt;.home&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;/lib
+jruby.script  &lt;span class='o'&gt;=&lt;/span&gt; jruby
+jruby.shell   &lt;span class='o'&gt;=&lt;/span&gt; /bin/sh
+
+&lt;span class='c'&gt;# Identical defaults to jruby launcher&lt;/span&gt;
+&lt;span class='c'&gt;# These can still be overridden by the individual scripts&lt;/span&gt;
+hashdot.vm.options +&lt;span class='o'&gt;=&lt;/span&gt; -Xmx500m -Xss1024k
+
+&lt;span class='c'&gt;# Only jruby.jar is required for typical usage (scripts can require&lt;/span&gt;
+&lt;span class='c'&gt;# bsf.jar or JIP profiler if desired).&lt;/span&gt;
+hashdot.vm.options +&lt;span class='o'&gt;=&lt;/span&gt; -Xbootclasspath/a:&lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;jruby&lt;/span&gt;&lt;span class='p'&gt;.lib&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;/jruby.jar
+
+hashdot.main &lt;span class='o'&gt;=&lt;/span&gt; org.jruby.Main
+
+&lt;span class='c'&gt;# Arguments following these flags are _not_ a script to scan for&lt;/span&gt;
+&lt;span class='c'&gt;# hashdot headers.&lt;/span&gt;
+hashdot.parse_flags.value_args &lt;span class='o'&gt;=&lt;/span&gt; -F -I -r
+
+&lt;span class='c'&gt;# Give up looking for a script header with any of these&lt;/span&gt;
+hashdot.parse_flags.terminal &lt;span class='o'&gt;=&lt;/span&gt; -C -e -S
+
+&lt;span class='c'&gt;# GEM PATH/HOME&lt;/span&gt;
+hashdot.env.GEM_HOME &lt;span class='o'&gt;=&lt;/span&gt; /opt/jruby/gems
+hashdot.env.GEM_PATH &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.env.GEM_HOME&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;shortlived.hdp:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;# HashDot profile for short lived processes.&lt;/span&gt;
+&lt;span class='c'&gt;# Overrides default.hdp to use the client VM.&lt;/span&gt;
+
+&lt;span class='c'&gt;# Note: for current amd64 java distros, this entire profile should be&lt;/span&gt;
+&lt;span class='c'&gt;# commented out to disable it, since these only include a server VM&lt;/span&gt;
+
+hashdot.vm.mode     &lt;span class='o'&gt;=&lt;/span&gt; client
+
+hashdot.vm.libpath  &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.libbase&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+hashdot.vm.libpath +&lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.libbase&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;/&lt;span class='k'&gt;${&lt;/span&gt;&lt;span class='nv'&gt;hashdot&lt;/span&gt;&lt;span class='p'&gt;.vm.mode&lt;/span&gt;&lt;span class='k'&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;jruby-shortlived.hdp:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;# HashDot profile for shortlived jruby scripts.&lt;/span&gt;
+
+&lt;span class='c'&gt;# Extends shortlived (client VM) and (jruby) profiles with further&lt;/span&gt;
+&lt;span class='c'&gt;# startup time tweaks.&lt;/span&gt;
+hashdot.profile &lt;span class='o'&gt;=&lt;/span&gt; shortlived jruby
+
+&lt;span class='c'&gt;# JMX setup slows startup and wont be used&lt;/span&gt;
+jruby.management.enabled&lt;span class='o'&gt;=&lt;/span&gt;&lt;span class='nb'&gt;false&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content>
+ </entry>
+
+ <entry>
+   <title>Introducing Hashdot</title>
+   <link href="http://gravitext.com/2008/10/22/introducing-hashdot.html"/>
+   <updated>2008-10-22T00:00:00-07:00</updated>
+   <id>id:/2008/10/22/introducing-hashdot</id>
+   <content type="html">&lt;p&gt;From the summary of &lt;a href='http://hashdot.sourceforge.net/'&gt;Hashdot&lt;/a&gt; as published on SourceForge:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Hashdot elevates Java-platform script interpreters to first class status on Unix-like operating systems. It provides a script aware replacement to the stock &amp;#8216;java&amp;#8217; launcher, and thus avoids numerous issues in using the &amp;#8216;java&amp;#8217; launcher to bootstrap a script interpreter. All relevant interpreter and JVM options (i.e: Java heap size) may be specified directly in a script header and/or via system profiles, without resorting to environment variables, command line arguments, and the additional wrapper shell scripts needed to maintain them.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;There are some interesting aspects to this work. Firstly, Hashdot really needed to be written in C for tight UNIX integration (fork(), dlopen(), prctl(), setsid(), etc.) Though I had developed in C and C++ for many years, it&amp;#8217;s been a while, and I was surprised at how cumbersome I now found it.&lt;/p&gt;
+
+&lt;p&gt;Its a bit of of an odd predicament to be forced to write C, essentially as &lt;em&gt;glue code&lt;/em&gt; between UNIX, java, and a Java-platform script interpreter. When I took on my first large scale java project in the late 90&amp;#8217;s (Java 1.1, Netscape Search federation and UI) I reserved the right to do any heavy lifting that was required in C++. Surprisingly, it didn&amp;#8217;t come to that then, and only rarely has in the last 10 years. I &lt;em&gt;have&lt;/em&gt; spent some time optimizing inner loops in a style of java that looks all too close to C. So here I am writing actual C again, but as glue code rather than for performance reasons, and simply to gain some modest comforts while writing ruby and java for the JVM!&lt;/p&gt;
+
+&lt;p&gt;Its doubly odd to be writing C glue code in order to make decidedly incremental and cosmetic improvements to a UNIX, Java, and JRuby stack. What if however, the aggregate total of current stack integration warts, annoyances, and complexities might otherwise retard broad acceptance of that stack by any of the UNIX, Java, or Ruby camps? Maybe then it would be worth diving in.&lt;/p&gt;
+
+&lt;h2 id='the_stock_java_launcher'&gt;The Stock &amp;#8216;java&amp;#8217; Launcher&lt;/h2&gt;
+
+&lt;p&gt;Understanding the &lt;em&gt;why&lt;/em&gt; of Hashdot must begin with a problem statement, and the problems begin with the stock &amp;#8216;java&amp;#8217; launcher command line:&lt;/p&gt;
+&lt;pre&gt;
+% java -h
+Usage: java [-options] class [args...]
+           (to execute a class)
+   or  java [-options] -jar jarfile [args...]
+           (to execute a jar file)
+
+where options include:
+    -client       to select the &quot;client&quot; VM
+    -server       to select the &quot;server&quot; VM
+    -cp &amp;lt;class search path of directories and zip/jar files&gt;
+    -classpath &amp;lt;class search path of directories and zip/jar files&gt;
+                  A : separated list of directories, JAR archives,
+                  and ZIP archives to search for class files.
+    -D&amp;lt;name&gt;=&amp;lt;value&gt;
+                  set a system property
+    ...
+&lt;/pre&gt;
+&lt;p&gt;Like many before and after, the Java programming language started life as a toy. It must have seemed reasonable at that point, for a user starting a java program via a class&amp;#8217;s Main method to effectively link its dependencies by passing -cp on the command line. Anyone using Java in any sort of performance intensive application would know that also setting an appropriate maximum heap size (-Xmx) and, for long lived services, using the -server VM is essentual. All told the following example &amp;#8220;command line&amp;#8221; is typical for a full production java service:&lt;/p&gt;
+&lt;pre&gt;
+java -server -Xss512k -Xms32m -Xmx256m -XX:NewSize=16m -Xnoclassgc
+-Dsun.net.inetaddr.ttl=30 -Dsun.net.inetaddr.negative.ttl=0
+-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+-Djava.util.logging.config.file=/home/david/run/\
+  apache-tomcat-5.5.20/conf/logging.properties
+-Djava.endorsed.dirs=/home/david/run/apache-tomcat-5.5.20/common/endorsed
+-classpath :/home/david/run/apache-tomcat-5.5.20/bin/bootstrap.jar\
+  :/home/david/run/apache-tomcat-5.5.20/bin/commons-logging-api.jar
+-Dcatalina.base=/home/david/run/apache-tomcat-5.5.20
+-Dcatalina.home=/home/david/run/apache-tomcat-5.5.20
+-Djava.io.tmpdir=/home/david/run/apache-tomcat-5.5.20/temp
+org.apache.catalina.startup.Bootstrap start
+&lt;/pre&gt;
+&lt;p&gt;Since its rather impractical to type this on the command line, the obvious solution is to write a shell script wrapper that exec&amp;#8217;s it. Ironically, by not offering a better facility for process boot strapping, and in the name of portability, Sun pushed developers into writing highly non-portable shell scripts. For a developer starting his career in Java, this was an awkward introduction to (ba)sh scripts. For a complete server such as Tomcat used in the above example, I count 1276 lines of shell script (sh + bat) and a maintenance job in its own right.&lt;/p&gt;
+
+&lt;h2 id='enter_jruby'&gt;Enter JRuby&lt;/h2&gt;
+
+&lt;p&gt;Scripting languages like ruby, perl, or python have all done a much better job than java in supporting cross-platform portability while also not hamstringing OS, file system, or console operablility. This was but one aspect that drew me to jruby. Would it not be possible to deploy entire, potentially complex, java-based services as easily installed gems and directly executable ruby scripts, rather than the typical amalgam of tarballs, XML config files, and wrapper bash scripts?&lt;/p&gt;
+
+&lt;p&gt;I believe the answer is a resounding &amp;#8220;yes!&amp;#8221; and that it will be well worth the effort, but there is some work to do to really get there. Lets consider the following very simple theoretical service implemented in java with a jruby based launch script:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='ruby'&gt;&lt;span class='c1'&gt;#!/opt/dist/jruby-1.1.4/bin/jruby&lt;/span&gt;
+
+&lt;span class='nb'&gt;require&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;myservice.jar&amp;#39;&lt;/span&gt;
+&lt;span class='n'&gt;import&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;com.foobar.MyService&amp;#39;&lt;/span&gt;
+
+&lt;span class='n'&gt;service&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;MyService&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;new&lt;/span&gt;
+&lt;span class='n'&gt;service&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;run&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;Note the use of a UNIX-standard &amp;#8216;#!&amp;#8217; &lt;em&gt;hashbang&lt;/em&gt; (or &lt;em&gt;shebang&lt;/em&gt;) to reference the interpreter for the script. The UNIX shell or system exec calls will detect the hashbang and invoke the named interpreter executable, passing the script file as an argument. While this works fine with any native script interpreter (ruby, perl, python, bash, etc.) &lt;em&gt;it won&amp;#8217;t work out of the box with jruby or any other java-platform script interpreters not resorting to native code.&lt;/em&gt; The reason is that the referenced &amp;#8216;jruby&amp;#8217; launcher is itself a bash script which needs to exec a java command line with the required details. On Linux at least, multiple scripts/intpreters can not be chained in this way. The work around presented for jruby is:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;#!/usr/bin/env jruby&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;&amp;#8230;which then requires something like:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='nv'&gt;PATH&lt;/span&gt;&lt;span class='o'&gt;=&lt;/span&gt;/opt/dist/jruby-1.1.4/bin:&lt;span class='nv'&gt;$PATH&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;&amp;#8230;to be set in a user or system global profile. Besides raising some traditional security concerns, the use of the env workaround has notable side effects. First, it introduces a PATH dependency that must be managed external to the script. Next consider wanting to set various jruby intpreter and java options made available as command line flags to jruby, for example enabling full compilation and the java max heap size:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;#!/usr/bin/env jruby -X+C -J-Xmx256m&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;But &lt;em&gt;this also doesn&amp;#8217;t work&lt;/em&gt;, at least on current versions of Linux. When used as a hashbang, the &lt;code&gt;jruby -X+C -J-Xmx256m&lt;/code&gt; is interpreted as the single parameter, and (fortunately) isn&amp;#8217;t found in the path. Similarly the jruby script launcher supports JRUBY_OPTS as an alternative means to set these options:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;#!/usr/bin/env JRUBY_OPTS=&amp;#39;-X+C -J-Xmx256m&amp;#39; jruby&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;But again, on current versions of Linux, &lt;em&gt;this approach fails even more spectacularly: it causes an infinite loop! Brilliant!&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;You could tune all of the java and jruby option flags by directly modifying the jruby launcher script in the jruby distribution, but then you are stuck with one set of settings per host and jruby install. Poor at best. The only practical option (short of native code) is to write a wrapper script to launch any ruby script we want to set options for:&lt;/p&gt;
+&lt;div class='highlight'&gt;&lt;pre&gt;&lt;code class='bash'&gt;&lt;span class='c'&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class='c'&gt;# Hard code myservice.rb location or have additional fun determining&lt;/span&gt;
+&lt;span class='c'&gt;# relative location via $0&lt;/span&gt;
+&lt;span class='nb'&gt;exec&lt;/span&gt; /opt/dist/jruby-1.1.4/bin/jruby -X+C -J-Xmx256m -J-server &lt;span class='se'&gt;\&lt;/span&gt;
+     /home/david/run/myservice.rb
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;Isn&amp;#8217;t this fun? We are now back where we started with the java launcher: needing to write wrapper scripts around any significant production application. Besides being a nuisance and hiding important details in a seperate wrapper script file, this approach is particularly at odds with the bin script support offered by RubyGems. Without a native launcher like Hashdot, does this lack of exec integration not deminish jruby by comparison, not with java, but with MRI (native) ruby?&lt;/p&gt;
+
+&lt;p&gt;In my next post on Hashdot, I&amp;#8217;ll demonstrate how Hashdot solves these and other historic blemishes and limitations of java and java-platform script interpreters like JRuby.&lt;/p&gt;</content>
+ </entry>
+
+</feed>
