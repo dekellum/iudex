@@ -31,7 +31,7 @@ module Iudex::HTTP::Test
     end
 
     def sync( &block )
-      @lock.synchronize &block
+      @lock.synchronize( &block )
     end
 
     def enter
