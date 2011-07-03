@@ -107,7 +107,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     #FIXME: Looks like request_timeout is used as this timeout as well.
     with_new_client( :connection_timeout_in_ms => 100,
-                     :request_timeout_in_ms    => 500 ) do |client|
+                     :request_timeout_in_ms    => 200 ) do |client|
       with_session_handler( client,
                             "http://localhost:19293/" ) do |s,x|
         assert_instance_of( TimeoutException, x )
@@ -126,13 +126,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_timeout
-    ex = nil
     with_new_client( :request_timeout_in_ms => 400 ) do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
-        ex = x
+        assert_instance_of( TimeoutException, x )
       end
     end
-    assert_instance_of( TimeoutException, ex )
     sleep 0.70 # FIXME: Account for test server delay. Should be
                # joined instead.
   end
@@ -168,14 +166,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_timeout
     skip( "Unreliable timeout with redirects, timing dependent" )
-    ex = nil
     with_new_client( :request_timeout_in_ms => 500 ) do |client|
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
-        ex = x
+        assert_instance_of( TimeoutException, x )
       end
       sleep 0.80
     end
-    assert_instance_of( TimeoutException, ex )
   end
 
   def test_bad_server_response
