@@ -266,6 +266,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def with_new_client( opts = {} )
+    opts = { :max_request_retry => 0 }.merge( opts )
+
     client = AsyncHTTPClient.create_client( opts )
     begin
       yield client
