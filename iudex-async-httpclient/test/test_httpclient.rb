@@ -184,7 +184,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     #FIXME: IllegalArgumentException on bad HTTP response line?
     with_new_client do |client|
-      s = with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
         assert_instance_of( Java::java.lang.IllegalArgumentException, x )
       end
     end
@@ -205,7 +205,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client( :connection_timeout_in_ms => 100,
                      :request_timeout_in_ms    => 100 ) do |client|
-      s = with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
         assert_instance_of( IOException, x )
       end
     end
@@ -261,6 +261,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     if wait
       session.wait_for_completion
       assert handler.called?
+      session.close
     end
     session
   end
