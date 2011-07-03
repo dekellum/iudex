@@ -6,4 +6,5 @@ pom.xml
 lib/iudex-http/base.rb
 lib/iudex-http.rb
 test/setup.rb
+test/test_content_type_set.rb
 test/test_http.rb

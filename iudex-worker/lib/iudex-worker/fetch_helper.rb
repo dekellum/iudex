@@ -27,7 +27,9 @@ module Iudex
         cf = ContentFetcher.new( http_client, create_chain( receiver_sym ) )
 
         alist = accept_list( accept_types )
-        cf.accepted_content_types = alist unless alist.include?( '*/*' )
+        unless alist.include?( '*/*' )
+          cf.accepted_content_types = ContentTypeSet.new( alist )
+        end
 
         headers = [ [ 'User-Agent', http_user_agent ],
                     [ 'Accept',     accept_header( accept_types ) ] ]
