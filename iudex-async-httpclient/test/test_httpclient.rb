@@ -20,8 +20,10 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-http-test/helper'
+require 'iudex-http-test/broken_server'
 
 require 'iudex-async-httpclient'
+require 'thread'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -32,6 +34,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'com.ning.http.client.MaxRedirectException'
   import 'java.util.concurrent.TimeoutException'
   import 'java.net.ConnectException'
+  import 'java.io.IOException'
 
   CustomUnit.register
 
@@ -81,7 +84,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unknown_host
-    skip( "Takes too long to complete, ~25s" )
     with_new_client do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
@@ -97,6 +99,22 @@ class TestHTTPClient < MiniTest::Unit::TestCase
         assert_instance_of( ConnectException, x )
       end
     end
+  end
+
+  def test_connection_timeout
+    bs = BrokenServer.new
+    bs.start
+
+    #FIXME: Looks like request_timeout is used as this timeout as well.
+    with_new_client( :connection_timeout_in_ms => 100,
+                     :request_timeout_in_ms    => 500 ) do |client|
+      with_session_handler( client,
+                            "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( TimeoutException, x )
+      end
+    end
+  ensure
+    bs.stop
   end
 
   def test_404
@@ -158,6 +176,48 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       sleep 0.80
     end
     assert_instance_of( TimeoutException, ex )
+  end
+
+  def test_bad_server_response
+    bs = BrokenServer.new
+    bs.start
+
+    sthread = Thread.new do
+      bs.accept { |sock| sock.write "FU Stinky\r\n" }
+    end
+
+    #FIXME: IllegalArgumentException on bad HTTP response line?
+    with_new_client do |client|
+      s = with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( Java::java.lang.IllegalArgumentException, x )
+      end
+    end
+
+    sthread.join
+
+  ensure
+    bs.stop
+  end
+
+  def test_empty_server_response
+    bs = BrokenServer.new
+    bs.start
+
+    sthread = Thread.new do
+      bs.accept { |sock| sock.close }
+    end
+
+    with_new_client( :connection_timeout_in_ms => 100,
+                     :request_timeout_in_ms    => 100 ) do |client|
+      s = with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( IOException, x )
+      end
+    end
+
+    sthread.join
+
+  ensure
+    bs.stop
   end
 
   def test_maximum_connections_total
