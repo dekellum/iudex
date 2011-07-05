@@ -324,3 +324,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
 end
+
+if ARGV.delete( '--loop' )
+  loop do
+    failed = MiniTest::Unit.new.run( ARGV )
+    exit!( 1 ) if failed > 0
+  end
+end
