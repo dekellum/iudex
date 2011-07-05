@@ -1,5 +1,4 @@
 #!/usr/bin/env jruby
-#.hashdot.profile += jruby-shortlived
 
 #--
 # Copyright (c) 2011 David Kellum
@@ -53,6 +52,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_200
+    #Note: "atom fails on jruby 1.5.6, client, 32bit JVMs"
     with_new_client do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
