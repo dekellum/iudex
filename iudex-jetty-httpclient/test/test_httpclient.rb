@@ -305,10 +305,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   class TestHandler < BaseResponseHandler
-
+    include RJack
     def initialize( &block )
       @block = block
-      @failure = nil
+      @failures = []
+      @log = SLF4J[ self.class ]
     end
 
     def handleSuccess( session )
@@ -322,7 +323,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
 
     def called?
-      raise @failure if @failure
+      ff = @failures.shift
+      @failures.each do |f|
+        @log.error( "Additional failure: ", f )
+      end
+      raise ff if ff
       @block.nil?
     end
 
@@ -331,12 +336,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       if b
         b.call( s, x )
       else
-        @failure = x if x
+        @failures << x if x
       end
     rescue NativeException => x
-      @failure = x.cause
+      @failures << x.cause
     rescue Exception => x
-      @failure = x
+      @failures << x
     end
 
   end
