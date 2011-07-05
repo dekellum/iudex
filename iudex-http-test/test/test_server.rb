@@ -36,6 +36,18 @@ class TestServer < MiniTest::Unit::TestCase
   include Helper
   CustomUnit.register
 
+  def test_byte_array_new
+    # Mizuno uses this.
+    # Seeing NPE on:
+    # jruby 1.5.6 (ruby 1.8.7 patchlevel 249) (2010-12-03 9cf97c3)
+    #             (OpenJDK Client VM 1.6.0_20) [i386-java]
+    #             (Java HotSpot(TM) Client VM 1.6.0_26) [i386-java]
+    #             (Java HotSpot(TM) Client VM 1.7.0) [i386-java]
+    # But not jruby 1.6.2, or either with Server VM
+    Java::byte[4096].new
+    pass
+  end
+
   def test_port
     assert server.port > 0
   end
