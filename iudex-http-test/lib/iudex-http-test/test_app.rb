@@ -15,6 +15,8 @@
 #++
 
 require 'rack'
+require 'rack/mime' #FIXME: Otherwise rack can fail on threaded autoload
+
 require 'sinatra/base'
 require 'markaby'
 require 'cgi'
