@@ -42,6 +42,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   CustomUnit.register
 
   def setup
+    @rlock = Mutex.new
     server # make sure jetty starts, for cosmetic log output
   end
 
@@ -90,7 +91,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unknown_host
-    with_new_client( :timeout => 2_000 ) do |client|
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
+                     :so_timeout      => 10_000,
+                     :idle_timeout    => 10_000 ) do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
         assert_includes( [ UnresolvedAddressException,
@@ -164,7 +168,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :max_redirects => 18 ) do |client|
       #FIXME: One redirect off somewhere? 19 fails.
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
-        assert_equal( 302, s.response_code )
+        assert_equal( 302, s.response_code, x )
       end
     end
   end
@@ -187,7 +191,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       bs.accept { |sock| sock.write "FU Stinky\r\n" }
     end
 
-    #FIXME: IllegalArgumentException on bad HTTP response line?
+    #FIXME: IllegalStateException on bad HTTP response line?
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
         assert_instance_of( IllegalStateException, x )
@@ -220,15 +224,43 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs.stop
   end
 
-  def test_maximum_connections_total
-    skip( "IOException: Too many connections; expected blocking" )
-    with_new_client( :maximum_connections_total => 1 ) do |client|
+  def test_concurrent
+    with_new_client( :timeout         => 18_000,
+                     :connect_timeout => 15_000,
+                     :so_timeout      => 12_000,
+                     :idle_timeout    => 12_000,
+                     :max_connections_per_address => 4 ) do |client|
+
+      resps = []
+      sessions = (1..19).map do |i|
+        with_session_handler( client, "/index?sleep=0.05&i=#{i}",
+                              false ) do |s,x|
+          sync do
+            resps << [ s.response_code, x ]
+          end
+        end
+      end
+
+      sessions.each { |s| s.wait_for_completion }
+
+      assert_equal( [ [ 200, nil ] ] * 19, resps )
+    end
+  end
+
+  def test_maximum_connections_per_address
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
+                     :so_timeout      => 10_000,
+                     :idle_timeout    => 10_000,
+                     :max_connections_per_address => 2 ) do |client|
 
       resps = []
       sessions = (1..7).map do |i|
-        with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
+        with_session_handler( client, "/index?sleep=0.1&con=2&i=#{i}",
                               false ) do |s,x|
-          resps << [ s.response_code, x ]
+          sync do
+            resps << [ s.response_code, x ]
+          end
         end
       end
 
@@ -238,22 +270,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def test_maximum_connections_per_host
-    skip( "max_connections_per_host not honored?" )
-    with_new_client( :maximum_connections_per_host => 1 ) do |client|
-
-      resps = []
-      sessions = (1..7).map do |i|
-        with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
-                              false ) do |s,x|
-          resps << [ s.response_code, x ]
-        end
-      end
-
-      sessions.each { |s| s.wait_for_completion }
-
-      assert_equal( [ [ 200, nil ] ] * 7, resps )
-    end
+  def sync( &block )
+    @rlock.synchronize( &block )
   end
 
   def with_session_handler( client, uri, wait = true, &block )
@@ -264,18 +282,18 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     client.request( session, handler )
     if wait
       session.wait_for_completion
-      assert( handler.called?, "Handler should have been called!" )
       session.close
+      assert( handler.called?, "Handler should have been called!" )
     end
     session
   end
 
   def with_new_client( opts = {} )
-    opts = { :max_retries => 0,
-             :timeout => 500,
-             :so_timeout => 400,
-             :connect_timeout => 300,
-             :idle_timeout => 200,
+    opts = { :max_retries      => 0,
+             :timeout          => 500,
+             :so_timeout       => 400,
+             :connect_timeout  => 300,
+             :idle_timeout     => 200,
              :connect_blocking => false }.merge( opts )
 
     client = JettyHTTPClient.create_client( opts )
