@@ -56,12 +56,14 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        output_bomb( s ) unless s.response_code == 200
+        assert_equal( 200, s.response_code, "see bomb.out" )
         assert_match( /Test Index Page/, s.response_stream.to_io.read )
       end
 
       with_session_handler( client, "/atom.xml" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        output_bomb( s ) unless s.response_code == 200
+        assert_equal( 200, s.response_code, "see bomb.out" )
         cl = s.response_headers.find { |h| "Content-Length" == h.name.to_s }
         assert_operator( cl.value.to_s.to_i, :>, 10_000 )
       end
@@ -237,6 +239,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                               false ) do |s,x|
           sync do
             resps << [ s.response_code, x ]
+            output_bomb( s ) if s.response_code != 200
           end
         end
       end
@@ -272,6 +275,18 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def sync( &block )
     @rlock.synchronize( &block )
+  end
+
+  def output_bomb( s )
+    File.open( "bomb.out", "w" ) do |fout|
+      st = s && s.response_stream
+      if st
+        fout.puts st.to_io.read
+      else
+        fout.puts st.to_s
+      end
+    end
+    "See bomb.out"
   end
 
   def with_session_handler( client, uri, wait = true, &block )
