@@ -26,6 +26,25 @@ require 'iudex-http-test/base'
 
 module Iudex::HTTP::Test
 
+  # Sets up rack.logger to write to rack.errors stream
+  class SLogger
+    include RJack
+    def initialize( app, level = :info )
+      @app = app
+      @logger = SLF4J[ self.class ]
+      @level = level
+
+      def @logger.<<( msg )
+        send( @level, msg )
+      end
+    end
+
+    def call(env)
+      env['rack.logger'] = @logger
+      @app.call(env)
+    end
+  end
+
   class ConcurrentCounter
     def initialize
       @lock = Mutex.new
@@ -51,8 +70,14 @@ module Iudex::HTTP::Test
 
   class TestApp < Sinatra::Base
 
-    PUBLIC = File.expand_path( File.join(
-               File.dirname( __FILE__ ), '..', '..', 'public' ) )
+    PUBLIC = File.expand_path( File.join( File.dirname( __FILE__ ),
+                                          '..', '..', 'public' ) )
+
+    set :environment,     :production
+    set :show_exceptions, false
+    set :raise_errors,    true
+    set :dump_errors,     false
+    use SLogger
 
     @@counter = ConcurrentCounter.new
 
@@ -110,6 +135,10 @@ module Iudex::HTTP::Test
 
     get '/env' do
       request.inspect
+    end
+
+    get '/error' do
+      raise "Raising this ERROR for you"
     end
 
     get '/concount' do

@@ -82,12 +82,13 @@ class TestTestApp < MiniTest::Unit::TestCase
   def test_index
     get '/index'
     assert_equal( 200, last_response.status )
-    assert_match( last_response.content_type, %r{^text/html(;.*)?} )
+    assert_match( %r{^text/html(;.*)?}, last_response.content_type )
   end
 
   def test_atom
     get '/atom.xml'
     assert_equal( 200, last_response.status )
+    assert_match( %r{^application/atom\+xml(;.*)?}, last_response.content_type )
   end
 
 end
