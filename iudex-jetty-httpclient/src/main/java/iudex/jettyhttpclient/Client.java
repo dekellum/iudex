@@ -86,7 +86,8 @@ public class Client implements HTTPClient, Closeable
             _client.stop();
         }
         catch( Exception e ) {
-            throw new RuntimeException( e ); //FIXME
+            _log.warn( "On close: {}", e.toString() );
+            _log.debug( "On close:", e );
         }
     }
 
@@ -256,7 +257,7 @@ public class Client implements HTTPClient, Closeable
             }
 
             @Override
-            public void onException( Throwable t )
+            public void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
                     // Ignore AbortedException
@@ -266,9 +267,17 @@ public class Client implements HTTPClient, Closeable
                     //FIXME: Aborted useful here?
                 }
                 else {
-                    //FIXME: Other appoach?
-                    _log.error( "Session.onThrowable: ", t );
-                    System.exit( 12 );
+                    _log.error( "Session onException (Throwable): ", t );
+                    Thread.currentThread().interrupt();
+                    Session.this.abort();
+
+                    if( t instanceof Error) {
+                        throw (Error) t;
+                    }
+                    else {
+                        // Weird shit outside Exception or Error branches.
+                        throw new RuntimeException( t );
+                    }
                 }
             }
 
