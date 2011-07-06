@@ -146,6 +146,21 @@ module Iudex::HTTP::Test
       @@counter.count.to_s
     end
 
+    class GiantGenerator
+      FILLER = <<-END
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      END
+
+      def each
+        loop { yield FILLER }
+      end
+    end
+
+    get '/giant' do
+      [ 200, { 'Content-Type' => 'text/plain' }, GiantGenerator.new ]
+    end
+
     def common( params )
       ps = [ :sleep, :con ].
         map { |k| ( v = params[k] ) && [ k, v ] }.
