@@ -15,10 +15,12 @@
  */
 package iudex.jettyhttpclient;
 
+import iudex.http.ContentType;
 import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
+import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
@@ -91,8 +93,7 @@ public class Client implements HTTPClient, Closeable
         }
     }
 
-    private class Session
-        extends HTTPSession
+    private class Session extends HTTPSession
     {
         public Session()
         {
@@ -151,12 +152,13 @@ public class Client implements HTTPClient, Closeable
 
         public void abort()
         {
+            _exchange.onResponseComplete();
             _exchange.cancel();
         }
 
         public void close()
         {
-            //No-op?
+            //No-op
         }
 
         void execute( ResponseHandler handler )
@@ -201,6 +203,7 @@ public class Client implements HTTPClient, Closeable
 
         private class Exchange extends HttpExchange
         {
+
             @Override
             protected void onRequestComplete()
             {
@@ -223,13 +226,39 @@ public class Client implements HTTPClient, Closeable
             }
 
             @Override
+            protected void onResponseHeaderComplete()
+            {
+                //check Content-Type
+                ContentType ctype = Headers.contentType( _responseHeaders );
+
+                if( ! _acceptedContentTypes.contains( ctype ) ) {
+                    _responseCode = -20; //FIXME: Constants in iudex.http?
+                    abort();
+                }
+                else {
+                    int length = Headers.contentLength( _responseHeaders );
+                    if( length > _maxContentLength ) {
+                        _responseCode = -10;
+                        abort();
+                    }
+                    else {
+                        _body = new ResizableByteBuffer(
+                            ( length >= 0 ) ? length : 16 * 1024 );
+                    }
+                }
+            }
+
+            @Override
             protected void onResponseContent( Buffer content )
             {
-                //FIXME: setup after checking Content-Length
-                if( _body == null ) {
-                    _body = new ResizableByteBuffer( 8000 );
+                ByteBuffer chunk = wrap( content );
+                if( _body.position() + chunk.remaining() > _maxContentLength ) {
+                    _responseCode = -11;
+                    abort();
                 }
-                _body.put( wrap( content ) );
+                else {
+                    _body.put( chunk );
+                }
             }
 
             @Override
@@ -252,7 +281,6 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onExpire()
             {
-                super.onExpire(); //FIXME: logs
                 onException( new TimeoutException( "expired" ) );
             }
 
@@ -260,15 +288,11 @@ public class Client implements HTTPClient, Closeable
             public void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
-                    // Ignore AbortedException
-                    if( !( t instanceof AbortedException ) ) {
-                        _handler.handleException( Session.this, (Exception) t );
-                    }
-                    //FIXME: Aborted useful here?
+                    _handler.handleException( Session.this, (Exception) t );
                 }
                 else {
                     _log.error( "Session onException (Throwable): ", t );
-                    Thread.currentThread().interrupt();
+                    _responseCode = -66;
                     Session.this.abort();
 
                     if( t instanceof Error) {
@@ -300,22 +324,14 @@ public class Client implements HTTPClient, Closeable
         }
 
         private final Exchange _exchange;
+        private ResponseHandler _handler = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
-        private ResponseHandler _handler = null;
-
         private int _responseCode = 0;
         private String _statusText = null;
-
-        private ResizableByteBuffer _body = null;
-
         private ArrayList<Header> _responseHeaders = new ArrayList<Header>( 8 );
-    }
-
-    //FIXME: use?
-    private class AbortedException extends Exception
-    {
+        private ResizableByteBuffer _body = null;
     }
 
     private final HttpClient _client;
