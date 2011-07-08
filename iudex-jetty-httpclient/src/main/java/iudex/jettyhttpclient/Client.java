@@ -117,7 +117,7 @@ public class Client implements HTTPClient, Closeable
 
                 final int end = fields.size();
                 for( int i = 0; i < end; ++i ) {
-                    Field field = fields.getField( 0 );
+                    Field field = fields.getField( i );
                     hs.add( new Header( field.getName(), field.getValue() ) );
                 }
                 return hs;
@@ -145,13 +145,26 @@ public class Client implements HTTPClient, Closeable
             return Collections.emptyList();
         }
 
+        @SuppressWarnings("unused")
+        public ByteBuffer responseBody()
+        {
+            if ( _body != null ) {
+                _body.flipAsByteBuffer();
+            }
+            return null;
+        }
+
         public InputStream responseStream()
         {
-            return Streams.inputStream( _body.flipAsByteBuffer() );
+            if ( _body != null ) {
+                return Streams.inputStream( _body.flipAsByteBuffer() );
+            }
+            return null;
         }
 
         public void abort()
         {
+            _body = null;
             _exchange.onResponseComplete();
             _exchange.cancel();
         }
@@ -288,11 +301,12 @@ public class Client implements HTTPClient, Closeable
             public void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
+                    _responseCode = -1;
                     _handler.handleException( Session.this, (Exception) t );
                 }
                 else {
                     _log.error( "Session onException (Throwable): ", t );
-                    _responseCode = -66;
+                    _responseCode = -2;
                     Session.this.abort();
 
                     if( t instanceof Error) {

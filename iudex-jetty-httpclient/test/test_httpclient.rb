@@ -119,7 +119,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs.start
 
     #FIXME: Looks like request_timeout is used as this timeout as well.
-    with_new_client do |client|
+    with_new_client( :short => true ) do |client|
       with_session_handler( client,
                             "http://localhost:19293/" ) do |s,x|
         assert_instance_of( TimeoutException, x )
@@ -138,7 +138,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_timeout
-    with_new_client do |client|
+    with_new_client( :short => true ) do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
@@ -177,7 +177,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_timeout
     skip( "Unreliable timeout with redirects, timing dependent" )
-    with_new_client do |client|
+    with_new_client( :short => true ) do |client|
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
@@ -274,9 +274,9 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_abort_when_too_large
-    with_new_client( :timeout    => 5000,
-                     :so_timeout => 6000 ) do |client|
+    with_new_client do |client|
       with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
         assert_equal( -11, s.response_code )
       end
     end
@@ -286,6 +286,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       client.max_content_length = 1
       with_session_handler( client, "/atom.xml" ) do |s,x|
+        assert_nil( x )
         assert_equal( -10, s.response_code )
       end
     end
@@ -295,6 +296,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
       with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
         assert_equal( -20, s.response_code )
       end
     end
@@ -331,14 +333,23 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def with_new_client( opts = {} )
-    opts = { :max_retries      => 0,
-             :timeout          => 500,
-             :so_timeout       => 400,
-             :connect_timeout  => 300,
-             :idle_timeout     => 200,
-             :connect_blocking => false }.merge( opts )
+    o = if opts.delete( :short )
+          { :timeout          => 400,
+            :so_timeout       => 200,
+            :connect_timeout  => 200,
+            :idle_timeout     => 200 }
+        else
+          { :timeout          => 5000,
+            :so_timeout       => 4000,
+            :connect_timeout  => 3000,
+            :idle_timeout     => 2000 }
+        end
 
-    client = JettyHTTPClient.create_client( opts )
+    o = o.merge( { :max_retries      => 0,
+                   :connect_blocking => false } )
+    o = o.merge( opts )
+
+    client = JettyHTTPClient.create_client( o )
     begin
       yield client
     ensure
