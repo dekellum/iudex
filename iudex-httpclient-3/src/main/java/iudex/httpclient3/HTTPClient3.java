@@ -15,10 +15,12 @@
  */
 package iudex.httpclient3;
 
+import iudex.http.ContentType;
 import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
+import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
@@ -161,6 +163,13 @@ public class HTTPClient3 implements HTTPClient
 
                 // Record possibly redirected URL.
                 setUrl( _httpMethod.getURI().toString() );
+
+                ContentType ctype = Headers.contentType( _responseHeaders );
+                if( ! _acceptedContentTypes.contains( ctype ) ) {
+                    _responseCode = -20;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                }
 
                 if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
                     handler.handleSuccess( this );
