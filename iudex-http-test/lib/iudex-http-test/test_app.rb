@@ -21,6 +21,7 @@ require 'sinatra/base'
 require 'markaby'
 require 'cgi'
 require 'thread'
+require 'rjack-slf4j'
 
 require 'iudex-http-test/base'
 

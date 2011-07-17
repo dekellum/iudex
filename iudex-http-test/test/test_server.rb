@@ -17,16 +17,7 @@
 # permissions and limitations under the License.
 #++
 
-ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
-$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
-
-require 'rubygems'
-
-require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
-
-require 'minitest/unit'
-require 'minitest/autorun'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-http-test/helper'
 require 'net/http'
