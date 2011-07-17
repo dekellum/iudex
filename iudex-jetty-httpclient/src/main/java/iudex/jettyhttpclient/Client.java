@@ -25,6 +25,8 @@ import iudex.http.ResponseHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.Address;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpFields;
@@ -108,22 +111,8 @@ public class Client implements HTTPClient, Closeable
 
         public List<Header> requestHeaders()
         {
-            if( _exchange.isDone() ) {
-                HttpFields fields = _exchange.getRequestFields();
-
-                List<Header> hs = new ArrayList<Header>( fields.size() + 1 );
-                hs.add( new Header( "Request-Line",
-                                     reconstructRequestLine() ) );
-
-                final int end = fields.size();
-                for( int i = 0; i < end; ++i ) {
-                    Field field = fields.getField( i );
-                    hs.add( new Header( field.getName(), field.getValue() ) );
-                }
-                return hs;
-            }
-
-            return _requestedHeaders;
+            return _exchange.requestHeaders();
+            //FIXME: Give requestedHeaders before execute?
         }
 
         public int responseCode()
@@ -199,21 +188,6 @@ public class Client implements HTTPClient, Closeable
             if( _exchange != null ) _exchange.waitForDone();
         }
 
-        private CharSequence reconstructRequestLine()
-        {
-            StringBuilder reqLine = new StringBuilder( 128 );
-
-            reqLine.append( method().name() );
-            reqLine.append( ' ' );
-            reqLine.append( url() );
-
-            //FIXME: Not correct
-            //reqLine.append( '?' );
-            //_request.getQueryParams();
-
-            return reqLine;
-        }
-
         private class Exchange extends HttpExchange
         {
 
@@ -229,6 +203,14 @@ public class Client implements HTTPClient, Closeable
             {
                 _responseCode = status;
                 _statusText = decode( reason ).toString();
+
+                try {
+                    Session.this.setUrl( lastURL() );
+                }
+                catch( URISyntaxException e ) {
+                    onException( e );
+                    //FIXME: Abort?
+                }
             }
 
             @Override
@@ -298,7 +280,7 @@ public class Client implements HTTPClient, Closeable
             }
 
             @Override
-            public void onException( Throwable t ) throws Error
+            protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
                     _responseCode = -1;
@@ -317,6 +299,46 @@ public class Client implements HTTPClient, Closeable
                         throw new RuntimeException( t );
                     }
                 }
+            }
+
+            List<Header> requestHeaders()
+            {
+                HttpFields fields = getRequestFields();
+
+                List<Header> hs = new ArrayList<Header>( fields.size() + 1 );
+                hs.add( new Header("Request-Line", reconstructRequestLine()) );
+
+                final int end = fields.size();
+                for( int i = 0; i < end; ++i ) {
+                    Field field = fields.getField( i );
+                    hs.add( new Header( field.getName(), field.getValue() ) );
+                }
+                return hs;
+            }
+
+            private CharSequence reconstructRequestLine()
+            {
+                StringBuilder req = new StringBuilder( 128 );
+
+                return req.append( getMethod() ).
+                           append( ' ' ).
+                           append( getURI() );
+            }
+
+            private String lastURL() throws URISyntaxException
+            {
+                Address adr = getAddress();
+                URI uri = new URI( decode( getScheme() ).toString(),
+                                   null,
+                                   adr.getHost(),
+                                   adr.getPort(),
+                                   null,
+                                   null,
+                                   null );
+
+                uri = uri.resolve( getURI() );
+
+                return uri.toString();
             }
 
             private CharBuffer decode( Buffer b )
