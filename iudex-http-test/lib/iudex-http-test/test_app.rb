@@ -147,6 +147,11 @@ module Iudex::HTTP::Test
       @@counter.count.to_s
     end
 
+    get '/echo/header/:name' do
+      content_type 'text/plain'
+      env[ 'HTTP_' + params[ :name ].gsub( /-/, '_' ).upcase ].to_s
+    end
+
     class GiantGenerator
       FILLER = <<-END
         Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do

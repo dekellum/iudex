@@ -85,4 +85,9 @@ class TestTestApp < MiniTest::Unit::TestCase
     assert_match( %r{^application/atom\+xml(;.*)?}, last_response.content_type )
   end
 
+  def test_echo_header
+    get( '/echo/header/Accept', {}, { 'HTTP_ACCEPT' => 'text/plain' } )
+    assert_equal( 'text/plain', last_response.body )
+  end
+
 end
