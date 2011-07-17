@@ -264,6 +264,35 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs.stop
   end
 
+  def test_abort_when_too_large
+    with_new_client do |client|
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -11, s.response_code )
+      end
+    end
+  end
+
+  def test_abort_when_too_large_length
+    with_new_client do |client|
+      client.max_content_length = 1
+      with_session_handler( client, "/atom.xml" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -10, s.response_code )
+      end
+    end
+  end
+
+  def test_abort_when_wrong_type
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -20, s.response_code )
+      end
+    end
+  end
+
   def with_session_handler( client, uri, headers = {}, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/

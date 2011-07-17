@@ -15,6 +15,7 @@
  */
 package iudex.httpclient3;
 
+import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
@@ -38,6 +39,22 @@ public class HTTPClient3 implements HTTPClient
     public HTTPClient3( HttpClient client )
     {
         _client = client;
+    }
+
+    /**
+     * Set the set of accepted Content Type patterns.
+     */
+    public void setAcceptedContentTypes( ContentTypeSet types )
+    {
+        _acceptedContentTypes = types;
+    }
+
+    /**
+     * Set maximum length of response body accepted.
+     */
+    public void setMaxContentLength( int length )
+    {
+        _maxContentLength = length;
     }
 
     @Override
@@ -193,4 +210,6 @@ public class HTTPClient3 implements HTTPClient
     }
 
     private HttpClient _client;
+    private int _maxContentLength = 2 * 1024 * 1024;
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 }
