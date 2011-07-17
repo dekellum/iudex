@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.RedirectException;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
@@ -97,7 +98,7 @@ public class HTTPClient3 implements HTTPClient
 
         public int responseCode()
         {
-            return ( _httpMethod == null ) ? 0 : _httpMethod.getStatusCode();
+            return _responseCode;
         }
 
         public String statusText()
@@ -107,24 +108,7 @@ public class HTTPClient3 implements HTTPClient
 
         public List<Header> responseHeaders()
         {
-            if( _httpMethod != null ) {
-                org.apache.commons.httpclient.Header[] inHeaders =
-                    _httpMethod.getResponseHeaders();
-
-                List<Header> outHeaders =
-                    new ArrayList<Header>( inHeaders.length + 1 );
-
-                StatusLine statusLine = _httpMethod.getStatusLine();
-                if( statusLine != null ) {
-                    outHeaders.add( new Header( "Status-Line", statusLine ) );
-                }
-
-                copyHeaders( inHeaders, outHeaders );
-                return outHeaders;
-                //FIXME: Adapter? Lazy Cache?            }
-            }
-
-            return Collections.emptyList();
+            return _responseHeaders;
         }
 
         public InputStream responseStream() throws IOException
@@ -165,16 +149,24 @@ public class HTTPClient3 implements HTTPClient
                                                   h.value().toString() );
                 }
 
-                int code = _client.executeMethod( _httpMethod );
+                try {
+                    _responseCode = _client.executeMethod( _httpMethod );
+                }
+                catch( RedirectException e ) {
+                    // Just get the 3xx status code and continue as normal.
+                    _responseCode = _httpMethod.getStatusCode();
+                }
+
+                copyResponseHeaders();
 
                 // Record possibly redirected URL.
                 setUrl( _httpMethod.getURI().toString() );
 
-                if( ( code >= 200 ) && ( code < 300 ) ) {
+                if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
                     handler.handleSuccess( this );
                 }
                 else {
-                    handler.handleError( this, code );
+                    handler.handleError( this, _responseCode );
                 }
             }
             catch( IOException e ) {
@@ -195,6 +187,23 @@ public class HTTPClient3 implements HTTPClient
             return reqLine;
         }
 
+        private void copyResponseHeaders()
+        {
+            org.apache.commons.httpclient.Header[] inHeaders =
+                _httpMethod.getResponseHeaders();
+
+            List<Header> outHeaders =
+                new ArrayList<Header>( inHeaders.length + 1 );
+
+            StatusLine statusLine = _httpMethod.getStatusLine();
+            if( statusLine != null ) {
+                outHeaders.add( new Header( "Status-Line", statusLine ) );
+            }
+
+            copyHeaders( inHeaders, outHeaders );
+            _responseHeaders = outHeaders;
+        }
+
         private List<Header>
         copyHeaders( org.apache.commons.httpclient.Header[] inHeaders,
                      List<Header> outHeaders )
@@ -206,6 +215,9 @@ public class HTTPClient3 implements HTTPClient
         }
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _responseHeaders = Collections.emptyList();
+        private int _responseCode = 0;
+
         private HttpMethod _httpMethod = null;
     }
 
