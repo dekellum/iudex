@@ -305,7 +305,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     handler = TestHandler.new( &block )
     client.request( session, handler )
 
-    assert handler.called?
+    assert( handler.called?, "Handler should have been called!" )
     session.close
     session
   end
@@ -336,14 +336,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       @failure = nil
     end
 
-    def handleSuccess( session )
-      forward( session )
-    end
-    def handleError( session, code )
-      forward( session )
-    end
-    def handleException( session, exception )
-      forward( session, exception )
+    def sessionCompleted( session )
+      forward( session, session.error )
     end
 
     def called?
@@ -356,7 +350,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       if b
         b.call( s, x )
       else
-        @failure = x if x
+        flunk "Handler called twice!"
       end
     rescue NativeException => x
       @failure = x.cause

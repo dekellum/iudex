@@ -38,7 +38,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
 
 import com.gravitext.util.ResizableByteBuffer;
-import com.gravitext.util.Streams;
 
 public class HTTPClient3 implements HTTPClient
 {
@@ -76,7 +75,7 @@ public class HTTPClient3 implements HTTPClient
         ((Session) session).execute( handler );
     }
 
-    private class Session extends HTTPSession
+    private final class Session extends HTTPSession
     {
         public void addRequestHeader( Header header )
         {
@@ -118,35 +117,24 @@ public class HTTPClient3 implements HTTPClient
             return _responseHeaders;
         }
 
-        @SuppressWarnings("unused")
         public ByteBuffer responseBody()
         {
             if ( _body != null ) {
-                _body.flipAsByteBuffer();
+                return _body.flipAsByteBuffer();
             }
             return null;
         }
 
-        public InputStream responseStream() throws IOException
-        {
-            if ( _body != null ) {
-                return Streams.inputStream( _body.flipAsByteBuffer() );
-            }
-            return null;
-        }
-
-        public void abort() throws IOException
+        public void abort()
         {
             if( _httpMethod != null ) {
                 _httpMethod.abort();
             }
-            close(); //FIXME: Good idea to also close?
+            close();
         }
 
-        public void close() throws IOException
+        public void close()
         {
-            super.close(); //FIXME: Or abstract?
-
             if( _httpMethod != null ) {
                 _httpMethod.releaseConnection();
                 _httpMethod = null;
@@ -185,7 +173,6 @@ public class HTTPClient3 implements HTTPClient
                 if( ! _acceptedContentTypes.contains( ctype ) ) {
                     _statusCode = NOT_ACCEPTED;
                     abort();
-                    handler.handleError( this, _statusCode );
                     return;
                 }
 
@@ -193,7 +180,6 @@ public class HTTPClient3 implements HTTPClient
                 if( length > _maxContentLength ) {
                     _statusCode = TOO_LARGE_LENGTH;
                     abort();
-                    handler.handleError( this, _statusCode );
                     return;
                 }
 
@@ -203,19 +189,15 @@ public class HTTPClient3 implements HTTPClient
                     _statusCode = TOO_LARGE;
                     _body = null;
                     abort();
-                    handler.handleError( this, _statusCode );
                     return;
                 }
 
-                if( ( _statusCode >= 200 ) && ( _statusCode < 300 ) ) {
-                    handler.handleSuccess( this );
-                }
-                else {
-                    handler.handleError( this, _statusCode );
-                }
             }
             catch( IOException e ) {
-                handler.handleException( this, e );
+                setError( e );
+            }
+            finally {
+                handler.sessionCompleted( this );
             }
         }
 
