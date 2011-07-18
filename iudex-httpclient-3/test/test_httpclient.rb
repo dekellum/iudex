@@ -81,6 +81,27 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_headers
+    req,rsp = nil
+    with_new_client do |client|
+      with_session_handler( client,
+                            "/echo/header/Accept?noop=3",
+                            { 'Accept' => 'text/plain;moo' } ) do |s,x|
+        assert_equal( 200, s.response_code )
+        assert_equal( 'GET /echo/header/Accept?noop=3',
+                      find_header( s.request_headers, "Request-Line" ) )
+        assert_equal( 'text/plain;moo',
+                      find_header( s.request_headers, 'Accept' ) )
+        assert_equal( 'localhost:19292',
+                      find_header( s.request_headers, 'Host' ) )
+
+        assert_match( /^text\/plain/,
+                      find_header( s.response_headers, 'Content-Type' ) )
+        assert_match( /^text\/plain;moo$/, s.response_stream.to_io.read )
+      end
+    end
+  end
+
   def test_unknown_host
     with_new_client do |client|
       with_session_handler( client,
@@ -132,6 +153,27 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect
+    with_new_client do |client|
+      with_session_handler( client, "/" ) do |s,x|
+        assert_equal( 200, s.response_code )
+        assert_equal( 'http://localhost:19292/index', s.url )
+      end
+    end
+  end
+
+  def test_redirect_with_query_string
+    with_new_client do |client|
+      with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
+        assert_equal( 200, s.response_code )
+        assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
+                      s.url )
+        assert_equal( 'GET /redirects/multi/1?sleep=0',
+                      find_header( s.request_headers, "Request-Line" ) )
+      end
+    end
+  end
+
+  def test_multi_redirect
     settings = lambda do |mgr|
       mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 7 )
     end
@@ -151,9 +193,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client( settings ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
+        assert_nil( x )
         assert_equal( 301, s.response_code )
-        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
-        assert_match( %r{/index$}, lh.value )
+        assert_match( %r{/index$},
+                      find_header( s.response_headers, "Location" ) )
       end
     end
   end
@@ -222,12 +265,46 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs.stop
   end
 
-  def with_session_handler( client, uri, &block )
+  def test_abort_when_too_large
+    with_new_client do |client|
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -11, s.response_code )
+      end
+    end
+  end
+
+  def test_abort_when_too_large_length
+    with_new_client do |client|
+      client.max_content_length = 1
+      with_session_handler( client, "/atom.xml" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -10, s.response_code )
+      end
+    end
+  end
+
+  def test_abort_when_wrong_type
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( -20, s.response_code )
+      end
+    end
+  end
+
+  def with_session_handler( client, uri, headers = {}, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
+    headers.each do |k,v|
+      session.add_request_header( Java::iudex.http.Header.new( k, v ) )
+    end
+
     handler = TestHandler.new( &block )
     client.request( session, handler )
+
     assert handler.called?
     session.close
     session
@@ -287,5 +364,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       @failure = x
     end
 
+  end
+
+  def find_header( headers, name )
+    cl = headers.find { |h| h.name.to_s == name }
+    cl && cl.value.to_s
   end
 end

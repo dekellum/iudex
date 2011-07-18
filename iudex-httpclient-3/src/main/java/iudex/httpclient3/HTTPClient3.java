@@ -15,22 +15,30 @@
  */
 package iudex.httpclient3;
 
+import iudex.http.ContentType;
+import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
+import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.RedirectException;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
+
+import com.gravitext.util.ResizableByteBuffer;
+import com.gravitext.util.Streams;
 
 public class HTTPClient3 implements HTTPClient
 {
@@ -38,6 +46,22 @@ public class HTTPClient3 implements HTTPClient
     public HTTPClient3( HttpClient client )
     {
         _client = client;
+    }
+
+    /**
+     * Set the set of accepted Content Type patterns.
+     */
+    public void setAcceptedContentTypes( ContentTypeSet types )
+    {
+        _acceptedContentTypes = types;
+    }
+
+    /**
+     * Set maximum length of response body accepted.
+     */
+    public void setMaxContentLength( int length )
+    {
+        _maxContentLength = length;
     }
 
     @Override
@@ -80,7 +104,7 @@ public class HTTPClient3 implements HTTPClient
 
         public int responseCode()
         {
-            return ( _httpMethod == null ) ? 0 : _httpMethod.getStatusCode();
+            return _responseCode;
         }
 
         public String statusText()
@@ -90,29 +114,24 @@ public class HTTPClient3 implements HTTPClient
 
         public List<Header> responseHeaders()
         {
-            if( _httpMethod != null ) {
-                org.apache.commons.httpclient.Header[] inHeaders =
-                    _httpMethod.getResponseHeaders();
+            return _responseHeaders;
+        }
 
-                List<Header> outHeaders =
-                    new ArrayList<Header>( inHeaders.length + 1 );
-
-                StatusLine statusLine = _httpMethod.getStatusLine();
-                if( statusLine != null ) {
-                    outHeaders.add( new Header( "Status-Line", statusLine ) );
-                }
-
-                copyHeaders( inHeaders, outHeaders );
-                return outHeaders;
-                //FIXME: Adapter? Lazy Cache?            }
+        @SuppressWarnings("unused")
+        public ByteBuffer responseBody()
+        {
+            if ( _body != null ) {
+                _body.flipAsByteBuffer();
             }
-
-            return Collections.emptyList();
+            return null;
         }
 
         public InputStream responseStream() throws IOException
         {
-            return _httpMethod.getResponseBodyAsStream();
+            if ( _body != null ) {
+                return Streams.inputStream( _body.flipAsByteBuffer() );
+            }
+            return null;
         }
 
         public void abort() throws IOException
@@ -148,21 +167,65 @@ public class HTTPClient3 implements HTTPClient
                                                   h.value().toString() );
                 }
 
-                int code = _client.executeMethod( _httpMethod );
+                try {
+                    _responseCode = _client.executeMethod( _httpMethod );
+                }
+                catch( RedirectException e ) {
+                    // Just get the 3xx status code and continue as normal.
+                    _responseCode = _httpMethod.getStatusCode();
+                }
+
+                copyResponseHeaders();
 
                 // Record possibly redirected URL.
                 setUrl( _httpMethod.getURI().toString() );
 
-                if( ( code >= 200 ) && ( code < 300 ) ) {
+                ContentType ctype = Headers.contentType( _responseHeaders );
+                if( ! _acceptedContentTypes.contains( ctype ) ) {
+                    _responseCode = -20;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                    return;
+                }
+
+                int length = Headers.contentLength( _responseHeaders );
+                if( length > _maxContentLength ) {
+                    _responseCode = -10;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                    return;
+                }
+
+                readBody( length );
+
+                if( _body.position() > _maxContentLength ) {
+                    _responseCode = -11;
+                    _body = null;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                    return;
+                }
+
+                if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
                     handler.handleSuccess( this );
                 }
                 else {
-                    handler.handleError( this, code );
+                    handler.handleError( this, _responseCode );
                 }
             }
             catch( IOException e ) {
                 handler.handleException( this, e );
             }
+        }
+
+        private void readBody( int length ) throws IOException
+        {
+            InputStream stream = _httpMethod.getResponseBodyAsStream();
+
+            _body = new ResizableByteBuffer( ( length >= 0 ) ?
+                                               length : 16 * 1024 );
+
+            _body.putFromStream( stream, _maxContentLength + 1, 8 * 1024 );
         }
 
         private CharSequence reconstructRequestLine()
@@ -178,6 +241,23 @@ public class HTTPClient3 implements HTTPClient
             return reqLine;
         }
 
+        private void copyResponseHeaders()
+        {
+            org.apache.commons.httpclient.Header[] inHeaders =
+                _httpMethod.getResponseHeaders();
+
+            List<Header> outHeaders =
+                new ArrayList<Header>( inHeaders.length + 1 );
+
+            StatusLine statusLine = _httpMethod.getStatusLine();
+            if( statusLine != null ) {
+                outHeaders.add( new Header( "Status-Line", statusLine ) );
+            }
+
+            copyHeaders( inHeaders, outHeaders );
+            _responseHeaders = outHeaders;
+        }
+
         private List<Header>
         copyHeaders( org.apache.commons.httpclient.Header[] inHeaders,
                      List<Header> outHeaders )
@@ -189,8 +269,14 @@ public class HTTPClient3 implements HTTPClient
         }
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _responseHeaders = Collections.emptyList();
+        private int _responseCode = 0;
+        private ResizableByteBuffer _body = null;
+
         private HttpMethod _httpMethod = null;
     }
 
     private HttpClient _client;
+    private int _maxContentLength = 2 * 1024 * 1024;
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 }
