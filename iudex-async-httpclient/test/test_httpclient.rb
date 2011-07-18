@@ -52,12 +52,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_match( /Test Index Page/, s.response_stream.to_io.read )
       end
 
       with_session_handler( client, "/atom.xml" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         cl = s.response_headers.find { |h| "Content-Length" == h.name.to_s }
         assert_operator( cl.value.to_i, :>, 10_000 )
       end
@@ -78,7 +78,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :executor_service => executor ) do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
       end
     end
   end
@@ -120,7 +120,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_404
     with_new_client do |client|
       with_session_handler( client, "/not-found" ) do |s,x|
-        assert_equal( 404, s.response_code )
+        assert_equal( 404, s.status_code )
       end
     end
   end
@@ -139,7 +139,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => true,
                      :maximum_number_of_redirects => 7 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_nil x
       end
     end
@@ -148,7 +148,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_unfollowed_301_redirect
     with_new_client( :follow_redirects => false ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
-        assert_equal( 301, s.response_code )
+        assert_equal( 301, s.status_code )
         lh = s.response_headers.find { |h| "Location" == h.name.to_s }
         assert_match( %r{/index$}, lh.value )
       end
@@ -224,7 +224,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       sessions = (1..7).map do |i|
         with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
                               false ) do |s,x|
-          resps << [ s.response_code, x ]
+          resps << [ s.status_code, x ]
         end
       end
 
@@ -242,7 +242,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       sessions = (1..7).map do |i|
         with_session_handler( client, "/index?sleep=2&con=1&i=#{i}",
                               false ) do |s,x|
-          resps << [ s.response_code, x ]
+          resps << [ s.status_code, x ]
         end
       end
 
@@ -284,14 +284,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       @failure = nil
     end
 
-    def handleSuccess( session )
-      forward( session )
-    end
-    def handleError( session, code )
-      forward( session )
-    end
-    def handleException( session, exception )
-      forward( session, exception )
+    def sessionCompleted( session )
+      forward( session, session.error )
     end
 
     def called?
@@ -304,7 +298,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       if b
         b.call( s, x )
       else
-        @failure = x if x
+        flunk "Handler called twice!"
       end
     rescue NativeException => x
       @failure = x.cause

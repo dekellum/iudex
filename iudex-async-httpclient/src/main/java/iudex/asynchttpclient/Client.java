@@ -24,7 +24,7 @@ import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
-import com.gravitext.util.Streams;
+
 import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
@@ -116,9 +116,10 @@ public class Client implements HTTPClient, Closeable
             return _requestedHeaders;
         }
 
-        public int responseCode()
+        @Override
+        public int statusCode()
         {
-            return _responseCode;
+            return _statusCode;
         }
 
         public String statusText()
@@ -135,9 +136,12 @@ public class Client implements HTTPClient, Closeable
             return Collections.emptyList();
         }
 
-        public InputStream responseStream() throws IOException
+        public ByteBuffer responseBody()
         {
-            return Streams.inputStream( _body.flipAsByteBuffer() );
+            if ( _body != null ) {
+                return _body.flipAsByteBuffer();
+            }
+            return null;
         }
 
         public void abort()
@@ -150,9 +154,9 @@ public class Client implements HTTPClient, Closeable
             }
         }
 
-        public void close() throws IOException
+        public void close()
         {
-            super.close(); //FIXME: NoOp for now?
+            //No-op
         }
 
         void execute( ResponseHandler handler )
@@ -189,24 +193,31 @@ public class Client implements HTTPClient, Closeable
         @Override
         public void onThrowable( Throwable t )
         {
-            if( t instanceof Exception ) {
-                // Ignore AbortedException
-                if( !( t instanceof AbortedException ) ) {
-                    _handler.handleException( this, (Exception) t );
+            try {
+                if( t instanceof Exception ) {
+                    // Ignore AbortedException
+                    if( !( t instanceof AbortedException ) ) {
+                        setError( (Exception) t );
+                        //FIXME: Complete on Aborted?
+                    }
+                }
+                else {
+                    // Re-throw will get debug logged/swallowed, so log
+                    // error and exit!
+                    _log.error( "Session.onThrowable: ", t );
+                    System.exit( 12 );
                 }
             }
-            else {
-                // Re-throw will get debug logged/swallowed, so log error and
-                // exit!
-                _log.error( "Session.onThrowable: ", t );
-                System.exit( 12 );
+            finally {
+                // If we don't exit.
+                complete();
             }
         }
 
         @Override
         public STATE onStatusReceived( HttpResponseStatus status )
         {
-            _responseCode = status.getStatusCode();
+            _statusCode = status.getStatusCode();
             _statusText = status.getStatusText();
 
             setUrl( status.getUrl().toString() );
@@ -223,7 +234,7 @@ public class Client implements HTTPClient, Closeable
             _responseHeaders = new ArrayList<Header>( hmap.size() + 1 );
 
             _responseHeaders.add( new Header( "Status-Line",
-                String.valueOf( _responseCode ) + " " + _statusText ) );
+                String.valueOf( _statusCode ) + " " + _statusText ) );
             //FIXME: Incomplete: create full status
 
             copyHeaders( hmap, _responseHeaders );
@@ -231,7 +242,7 @@ public class Client implements HTTPClient, Closeable
             ContentType ctype = Headers.contentType( _responseHeaders );
 
             if( ! _acceptedContentTypes.contains( ctype ) ) {
-                _responseCode = -20; //FIXME: Constants in iudex.http?
+                _statusCode = NOT_ACCEPTED;
                 abort();
             }
 
@@ -240,7 +251,7 @@ public class Client implements HTTPClient, Closeable
                 int length = Headers.contentLength( _responseHeaders );
 
                 if( length > _maxContentLength ) {
-                    _responseCode = -10;
+                    _statusCode = TOO_LARGE_LENGTH;
                     abort();
                 }
                 else {
@@ -258,7 +269,7 @@ public class Client implements HTTPClient, Closeable
             byte[] buffer = part.getBodyPartBytes();
 
             if( ( _body.position() + buffer.length ) > _maxContentLength ) {
-                _responseCode = -11;
+                _statusCode = TOO_LARGE;
                 abort();
             }
             else {
@@ -271,14 +282,20 @@ public class Client implements HTTPClient, Closeable
         @Override
         public Session onCompleted()
         {
-            if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
-                _handler.handleSuccess( this );
-            }
-            else {
-                _handler.handleError( this, _responseCode );
-            }
-
+            complete();
             return this;
+        }
+
+        private void complete()
+        {
+            ResponseHandler handler = _handler;
+            if( handler == null ) {
+                throw new IllegalStateException(
+                   "Handler already completed!" );
+            }
+            _handler = null;
+
+            handler.sessionCompleted( this );
         }
 
         @SuppressWarnings("unused")
@@ -326,7 +343,7 @@ public class Client implements HTTPClient, Closeable
 
         private ResponseHandler _handler = null;
 
-        private int _responseCode = 0;
+        private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
 
         private ResizableByteBuffer _body = null;
