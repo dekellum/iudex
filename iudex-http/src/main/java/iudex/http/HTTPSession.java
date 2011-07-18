@@ -27,6 +27,38 @@ public abstract class HTTPSession implements Closeable
         HEAD
     }
 
+    /**
+     * Psuedo-HTTP status code: as yet unknown.
+     */
+    public static final int STATUS_UNKNOWN   =   0;
+
+    /**
+     * Psuedo-HTTP status code: ERROR delivered as exception
+     */
+    public static final int ERROR            =  -1;
+
+    /**
+     * Psuedo-HTTP status code: Critical (i.e. Throwable non-Exception)
+     * delivered as exception or re-thrown.
+     */
+    public static final int ERROR_CRITICAL   =  -2;
+
+    /**
+     * Psuedo-HTTP status code: Response body too large by Content-Length
+     * header.
+     */
+    public static final int TOO_LARGE_LENGTH = -10;
+
+    /**
+     * Psuedo-HTTP status code: Response body found too large upon reading.
+     */
+    public static final int TOO_LARGE        = -11;
+
+    /**
+     * Psuedo-HTTP status code:
+     */
+    public static final int NOT_ACCEPTED     = -20;
+
     public String url()
     {
         return _url;
@@ -52,10 +84,19 @@ public abstract class HTTPSession implements Closeable
     }
 
     public abstract void addRequestHeader( Header header );
+
     public abstract List<Header> requestHeaders();
-    public abstract int responseCode();
+
+    /**
+     * Return HTTP 1.1 status code or Psuedo-code as per above constants:
+     * zero or negative.
+     */
+    public abstract int statusCode();
+
     public abstract String statusText();
+
     public abstract List<Header> responseHeaders();
+
     public abstract InputStream responseStream() throws IOException;
 
     public void close() throws IOException
