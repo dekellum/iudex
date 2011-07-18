@@ -33,7 +33,7 @@ import iudex.http.Header;
 import iudex.http.Headers;
 import iudex.util.Charsets;
 
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gravitext.htmap.UniMap;
-import com.gravitext.util.ResizableByteBuffer;
 
 public class ContentFetcher implements AsyncFilterContainer
 {
@@ -83,7 +82,6 @@ public class ContentFetcher implements AsyncFilterContainer
         HTTPSession session = _client.createSession();
         session.setMethod( HTTPSession.Method.GET );
         session.setUrl( content.get( URL ).toString() );
-        //FIXME: Abort if no URL?
 
         CharSequence etag = content.get( ETAG );
         if( etag != null ) {
@@ -127,67 +125,54 @@ public class ContentFetcher implements AsyncFilterContainer
         }
 
         @Override
-        protected void handleSuccessUnsafe( HTTPSession session )
+        protected void sessionCompletedUnsafe( HTTPSession session )
         {
-            setHTTPValues( session );
             _content.set( STATUS, session.statusCode() );
+            _content.set( REQUEST_HEADERS, session.requestHeaders() );
+            _content.set( RESPONSE_HEADERS, session.responseHeaders() );
+
+            Exception error = session.error();
+            if( error != null ) {
+                _content.set( REASON, "i.c.f.ContentFetcher: " + error );
+                _log.warn( "Url: {} :: {}", session.url(), error.toString() );
+                _log.debug( "Stack Trace: ", error );
+            }
+            else if( ( session.statusCode() <  200 ) ||
+                     ( session.statusCode() >= 300 ) ) {
+                _log.warn( "Url: {}; Response: {} {}",
+                           new Object[] { session.url(),
+                                          session.statusCode(),
+                                          session.statusText() } );
+            }
 
             try {
                 handleRedirect( session );
             }
             catch ( VisitURL.SyntaxException e ) {
-                safeAbort( session );
-                handleError( session, -30 );
-            }
-
-            ContentType ctype = Headers.contentType( session.responseHeaders());
-
-            if( ! _acceptedContentTypes.contains( ctype ) ) {
-                safeAbort( session );
-                handleError( session, -20 );
-                return;
+                _content.set( STATUS, HTTPSession.INVALID_REDIRECT_URL );
+                _content.set( REASON, "i.c.f.ContentFetcher: " + e );
             }
 
             List<Header> headers = _content.get( RESPONSE_HEADERS );
+            if( headers == null ) {
+                headers = Collections.emptyList();
+            }
 
             Header etag = Headers.getFirst( headers, "ETag" );
             if( etag != null ) {
                 _content.set( ETAG, Headers.asCharSequence( etag.value() ) );
             }
 
-            int len = Headers.contentLength( headers );
-            if( len != 0 ) {
-                if( len > _maxContentLength ){
-                    safeAbort( session );
-                    handleError( session, -10 );
-                    return;
-                }
+            ByteBuffer body = session.responseBody();
 
-                ResizableByteBuffer buffer
-                    = new ResizableByteBuffer( (len > 0) ? len : 16 * 1024 );
-                try {
-                    buffer.putFromStream( session.responseStream(),
-                                          _maxContentLength + 1, 8 * 1024 );
-                }
-                catch( IOException x ) {
-                    safeAbort( session );
-                    handleError( session, -40 );
-                    return;
-                }
-
-                if( buffer.position() > _maxContentLength ) {
-                    safeAbort( session );
-                    handleError( session, -10 );
-                    return;
-                }
-
-                ContentSource cs =
-                    new ContentSource( buffer.flipAsByteBuffer() );
+            if( ( body != null ) && ( body.remaining() > 0 ) ) {
+                ContentSource cs = new ContentSource( body );
 
                 // Set default encoding
                 cs.setDefaultEncoding( _defaultEncoding );
 
                 // Set better default if charset in Content-Type
+                ContentType ctype = Headers.contentType( headers );
                 if( ctype != null ) {
                     String eName = ctype.charset();
                     if( eName != null ) {
@@ -198,25 +183,7 @@ public class ContentFetcher implements AsyncFilterContainer
 
                 _content.set( SOURCE, cs );
             }
-            _receiver.filter( _content );
-        }
 
-        @Override
-        public void handleError( HTTPSession session, int code )
-        {
-            _content.set( STATUS, code );
-            setHTTPValues( session );
-            super.handleError( session, code );
-            _receiver.filter( _content );
-        }
-
-        @Override
-        public void handleException( HTTPSession session, Exception x )
-        {
-            _content.set( STATUS, -1 );
-            setHTTPValues( session );
-            _content.set( REASON, "i.c.f.ContentFetcher: " + x.toString() );
-            super.handleException( session, x );
             _receiver.filter( _content );
         }
 
@@ -243,22 +210,6 @@ public class ContentFetcher implements AsyncFilterContainer
                     _content.set( URL, newUrl );
                 }
             }
-        }
-
-        private void safeAbort( HTTPSession session )
-        {
-            try {
-                session.abort();
-            }
-            catch( IOException e ) {
-                _log.warn(  "On abort (ignored): ", e );
-            }
-        }
-
-        private void setHTTPValues( HTTPSession session )
-        {
-            _content.set( REQUEST_HEADERS, session.requestHeaders() );
-            _content.set( RESPONSE_HEADERS, session.responseHeaders() );
         }
 
         private final UniMap _content;
