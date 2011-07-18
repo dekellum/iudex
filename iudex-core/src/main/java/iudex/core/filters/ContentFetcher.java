@@ -130,7 +130,7 @@ public class ContentFetcher implements AsyncFilterContainer
         protected void handleSuccessUnsafe( HTTPSession session )
         {
             setHTTPValues( session );
-            _content.set( STATUS, session.responseCode() );
+            _content.set( STATUS, session.statusCode() );
 
             try {
                 handleRedirect( session );

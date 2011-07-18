@@ -49,7 +49,7 @@ module TestHTTPMocks
       [ Header.new( "ETag", WEAK_ETAG ) ]
     end
 
-    def responseCode
+    def statusCode
       200
     end
 
@@ -165,7 +165,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
         handler.handle_exception( self,
                                   UnknownHostException.new( "foobar.com" ) )
       end
-      def s.responseCode
+      def s.statusCode
         nil
       end
       def s.responseHeaders
