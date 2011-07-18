@@ -17,13 +17,7 @@
 # permissions and limitations under the License.
 #++
 
-ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
-$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
-
-require 'rubygems'
-
-require 'minitest/unit'
-require 'minitest/autorun'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'rack/test'
 
@@ -82,12 +76,18 @@ class TestTestApp < MiniTest::Unit::TestCase
   def test_index
     get '/index'
     assert_equal( 200, last_response.status )
-    assert_match( last_response.content_type, %r{^text/html(;.*)?} )
+    assert_match( %r{^text/html(;.*)?}, last_response.content_type )
   end
 
   def test_atom
     get '/atom.xml'
     assert_equal( 200, last_response.status )
+    assert_match( %r{^application/atom\+xml(;.*)?}, last_response.content_type )
+  end
+
+  def test_echo_header
+    get( '/echo/header/Accept', {}, { 'HTTP_ACCEPT' => 'text/plain' } )
+    assert_equal( 'text/plain', last_response.body )
   end
 
 end

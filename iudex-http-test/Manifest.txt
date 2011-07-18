@@ -10,6 +10,7 @@ lib/iudex-http-test/helper.rb
 lib/iudex-http-test/server.rb
 lib/iudex-http-test/test_app.rb
 public/atom.xml
+test/setup.rb
 test/test_broken_server.rb
 test/test_server.rb
 test/test_test_app.rb
