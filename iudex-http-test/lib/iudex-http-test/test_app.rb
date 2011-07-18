@@ -15,14 +15,36 @@
 #++
 
 require 'rack'
+require 'rack/mime' #FIXME: Otherwise rack can fail on threaded autoload
+
 require 'sinatra/base'
 require 'markaby'
 require 'cgi'
 require 'thread'
+require 'rjack-slf4j'
 
 require 'iudex-http-test/base'
 
 module Iudex::HTTP::Test
+
+  # Sets up rack.logger to write to rack.errors stream
+  class SLogger
+    include RJack
+    def initialize( app, level = :info )
+      @app = app
+      @logger = SLF4J[ self.class ]
+      @level = level
+
+      def @logger.<<( msg )
+        send( @level, msg )
+      end
+    end
+
+    def call(env)
+      env['rack.logger'] = @logger
+      @app.call(env)
+    end
+  end
 
   class ConcurrentCounter
     def initialize
@@ -49,8 +71,14 @@ module Iudex::HTTP::Test
 
   class TestApp < Sinatra::Base
 
-    PUBLIC = File.expand_path( File.join(
-               File.dirname( __FILE__ ), '..', '..', 'public' ) )
+    PUBLIC = File.expand_path( File.join( File.dirname( __FILE__ ),
+                                          '..', '..', 'public' ) )
+
+    set :environment,     :production
+    set :show_exceptions, false
+    set :raise_errors,    true
+    set :dump_errors,     false
+    use SLogger
 
     @@counter = ConcurrentCounter.new
 
@@ -110,9 +138,33 @@ module Iudex::HTTP::Test
       request.inspect
     end
 
+    get '/error' do
+      raise "Raising this ERROR for you"
+    end
+
     get '/concount' do
       content_type 'text/plain'
       @@counter.count.to_s
+    end
+
+    get '/echo/header/:name' do
+      content_type 'text/plain'
+      env[ 'HTTP_' + params[ :name ].gsub( /-/, '_' ).upcase ].to_s
+    end
+
+    class GiantGenerator
+      FILLER = <<-END
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      END
+
+      def each
+        loop { yield FILLER }
+      end
+    end
+
+    get '/giant' do
+      [ 200, { 'Content-Type' => 'text/plain' }, GiantGenerator.new ]
     end
 
     def common( params )
