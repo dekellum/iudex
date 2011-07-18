@@ -102,9 +102,10 @@ public class HTTPClient3 implements HTTPClient
             return _requestedHeaders;
         }
 
-        public int responseCode()
+        @Override
+        public int statusCode()
         {
-            return _responseCode;
+            return _statusCode;
         }
 
         public String statusText()
@@ -168,11 +169,11 @@ public class HTTPClient3 implements HTTPClient
                 }
 
                 try {
-                    _responseCode = _client.executeMethod( _httpMethod );
+                    _statusCode = _client.executeMethod( _httpMethod );
                 }
                 catch( RedirectException e ) {
                     // Just get the 3xx status code and continue as normal.
-                    _responseCode = _httpMethod.getStatusCode();
+                    _statusCode = _httpMethod.getStatusCode();
                 }
 
                 copyResponseHeaders();
@@ -182,35 +183,35 @@ public class HTTPClient3 implements HTTPClient
 
                 ContentType ctype = Headers.contentType( _responseHeaders );
                 if( ! _acceptedContentTypes.contains( ctype ) ) {
-                    _responseCode = -20;
+                    _statusCode = NOT_ACCEPTED;
                     abort();
-                    handler.handleError( this, _responseCode );
+                    handler.handleError( this, _statusCode );
                     return;
                 }
 
                 int length = Headers.contentLength( _responseHeaders );
                 if( length > _maxContentLength ) {
-                    _responseCode = -10;
+                    _statusCode = TOO_LARGE_LENGTH;
                     abort();
-                    handler.handleError( this, _responseCode );
+                    handler.handleError( this, _statusCode );
                     return;
                 }
 
                 readBody( length );
 
                 if( _body.position() > _maxContentLength ) {
-                    _responseCode = -11;
+                    _statusCode = TOO_LARGE;
                     _body = null;
                     abort();
-                    handler.handleError( this, _responseCode );
+                    handler.handleError( this, _statusCode );
                     return;
                 }
 
-                if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
+                if( ( _statusCode >= 200 ) && ( _statusCode < 300 ) ) {
                     handler.handleSuccess( this );
                 }
                 else {
-                    handler.handleError( this, _responseCode );
+                    handler.handleError( this, _statusCode );
                 }
             }
             catch( IOException e ) {
@@ -270,7 +271,7 @@ public class HTTPClient3 implements HTTPClient
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
         private List<Header> _responseHeaders = Collections.emptyList();
-        private int _responseCode = 0;
+        private int _statusCode = STATUS_UNKNOWN;
         private ResizableByteBuffer _body = null;
 
         private HttpMethod _httpMethod = null;
