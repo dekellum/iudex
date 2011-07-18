@@ -24,50 +24,23 @@ public class BaseResponseHandler implements ResponseHandler
 {
 
     @Override
-    public void handleSuccess( HTTPSession session )
+    public void sessionCompleted( HTTPSession session )
     {
         try {
-            handleSuccessUnsafe( session );
+            sessionCompletedUnsafe( session );
         }
         catch( IOException x ) {
             _log.warn( "Url: {} :: {}",  session.url(), x.toString() );
             _log.debug( "Stack dump: ", x );
         }
         finally {
-            closeSession( session );
+            session.close();
         }
     }
 
-    @Override
-    public void handleError( HTTPSession session, int code )
-    {
-        _log.warn( "Url: {}; Response: {} {}",
-                   new Object[] { session.url(), code, session.statusText() } );
-        closeSession( session );
-    }
-
-    @Override
-    public void handleException( HTTPSession session, Exception x )
-    {
-        _log.warn( "Url: {} :: {}", session.url(), x.toString() );
-        _log.debug( "Stack Trace: ", x );
-        closeSession( session );
-    }
-
-    protected void handleSuccessUnsafe( HTTPSession session )
+    protected void sessionCompletedUnsafe( HTTPSession session )
         throws IOException
     {
-    }
-
-    protected void closeSession( HTTPSession session )
-    {
-        try {
-            session.close();
-            //FIXME: Catch in close() instead?
-        }
-        catch( IOException x ) {
-            _log.warn( "On session close: ", x );
-        }
     }
 
     private static final Logger _log =

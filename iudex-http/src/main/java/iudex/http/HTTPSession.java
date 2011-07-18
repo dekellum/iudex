@@ -16,9 +16,11 @@
 package iudex.http;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import com.gravitext.util.Streams;
 
 public abstract class HTTPSession implements Closeable
 {
@@ -55,9 +57,16 @@ public abstract class HTTPSession implements Closeable
     public static final int TOO_LARGE        = -11;
 
     /**
-     * Psuedo-HTTP status code:
+     * Psuedo-HTTP status code: Server improperly returned Non-Accepted
+     * Content-Type (despite our Accept header).
      */
     public static final int NOT_ACCEPTED     = -20;
+
+    /**
+     *  Psuedo-HTTP status code: A redirect was received with an invalid URL
+     *  (i.e. with iudex-core, VisitURL.SyntaxException).
+     */
+    public static final int INVALID_REDIRECT_URL = -30;
 
     public String url()
     {
@@ -95,18 +104,35 @@ public abstract class HTTPSession implements Closeable
 
     public abstract String statusText();
 
+    public Exception error()
+    {
+        return _error;
+    }
+
+    protected void setError( Exception e )
+    {
+        _error = e;
+    }
+
     public abstract List<Header> responseHeaders();
 
-    public abstract InputStream responseStream() throws IOException;
+    public abstract ByteBuffer responseBody();
 
-    public void close() throws IOException
+    public InputStream responseStream()
     {
+        ByteBuffer body = responseBody();
+
+        if ( body != null ) {
+            return Streams.inputStream( body );
+        }
+        return null;
     }
 
-    public void abort() throws IOException
-    {
-    }
+    public abstract void close();
+
+    public abstract void abort();
 
     private String _url;
     private Method _method = Method.GET;
+    private Exception _error;
 }
