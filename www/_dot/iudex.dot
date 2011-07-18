@@ -1,5 +1,5 @@
 digraph "iudex-gems" {
-  rankdir=LR
+  rankdir=LR;
   size="6.5,4";
   bgcolor="transparent";
   node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
@@ -15,14 +15,16 @@ digraph "iudex-gems" {
   simhash     [ label=<iudex<br/>simhash> ];
   worker      [ label=<iudex<br/>worker> ];
 
-  subgraph cluster_http {
-    style=invis;
+# subgraph cluster_http { style=invis };
+  http             [ label=<iudex<br/>http> ];
+  httpclient_3     [ label=<iudex<br/>httpclient-3<br/>> ];
+  jetty_httpclient [ label=<iudex<br/>jetty-httpclient<br/>> ];
+  http_test        [ label=<iudex<br/>http-test> ];
 
-    http         [ label=<iudex<br/>http> ];
-    httpclient_3 [ label=<iudex<br/>httpclient-3<br/>> ];
-
-    httpclient_3 -> http
-  }
+  httpclient_3     -> http
+  httpclient_3     -> http_test [ style=dashed ];
+  jetty_httpclient -> http
+  jetty_httpclient -> http_test [ style=dashed ];
 
   barc        -> http
   char_detect -> core
