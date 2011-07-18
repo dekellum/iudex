@@ -25,6 +25,7 @@ import iudex.http.ResponseHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,9 @@ import org.apache.commons.httpclient.RedirectException;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
+
+import com.gravitext.util.ResizableByteBuffer;
+import com.gravitext.util.Streams;
 
 public class HTTPClient3 implements HTTPClient
 {
@@ -113,9 +117,21 @@ public class HTTPClient3 implements HTTPClient
             return _responseHeaders;
         }
 
+        @SuppressWarnings("unused")
+        public ByteBuffer responseBody()
+        {
+            if ( _body != null ) {
+                _body.flipAsByteBuffer();
+            }
+            return null;
+        }
+
         public InputStream responseStream() throws IOException
         {
-            return _httpMethod.getResponseBodyAsStream();
+            if ( _body != null ) {
+                return Streams.inputStream( _body.flipAsByteBuffer() );
+            }
+            return null;
         }
 
         public void abort() throws IOException
@@ -169,6 +185,25 @@ public class HTTPClient3 implements HTTPClient
                     _responseCode = -20;
                     abort();
                     handler.handleError( this, _responseCode );
+                    return;
+                }
+
+                int length = Headers.contentLength( _responseHeaders );
+                if( length > _maxContentLength ) {
+                    _responseCode = -10;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                    return;
+                }
+
+                readBody( length );
+
+                if( _body.position() > _maxContentLength ) {
+                    _responseCode = -11;
+                    _body = null;
+                    abort();
+                    handler.handleError( this, _responseCode );
+                    return;
                 }
 
                 if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
@@ -181,6 +216,16 @@ public class HTTPClient3 implements HTTPClient
             catch( IOException e ) {
                 handler.handleException( this, e );
             }
+        }
+
+        private void readBody( int length ) throws IOException
+        {
+            InputStream stream = _httpMethod.getResponseBodyAsStream();
+
+            _body = new ResizableByteBuffer( ( length >= 0 ) ?
+                                               length : 16 * 1024 );
+
+            _body.putFromStream( stream, _maxContentLength + 1, 8 * 1024 );
         }
 
         private CharSequence reconstructRequestLine()
@@ -226,6 +271,7 @@ public class HTTPClient3 implements HTTPClient
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
         private List<Header> _responseHeaders = Collections.emptyList();
         private int _responseCode = 0;
+        private ResizableByteBuffer _body = null;
 
         private HttpMethod _httpMethod = null;
     }
