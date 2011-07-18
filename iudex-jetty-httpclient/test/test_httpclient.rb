@@ -65,7 +65,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client( :thread_pool => pool ) do |client|
       with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
       end
     end
 
@@ -76,14 +76,14 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
-        output_bomb( s ) unless s.response_code == 200
-        assert_equal( 200, s.response_code, "see bomb.out" )
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
         assert_match( /Test Index Page/, s.response_stream.to_io.read )
       end
 
       with_session_handler( client, "/atom.xml" ) do |s,x|
-        output_bomb( s ) unless s.response_code == 200
-        assert_equal( 200, s.response_code, "see bomb.out" )
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
         cl = find_header( s.response_headers, "Content-Length" )
         assert_operator( cl.to_i, :>, 10_000 )
       end
@@ -98,7 +98,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                             "/echo/header/Accept?noop=3",
                             true,
                             { 'Accept' => 'text/plain;moo' } ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_equal( 'GET /echo/header/Accept?noop=3',
                       find_header( s.request_headers, "Request-Line" ) )
         assert_equal( 'text/plain;moo',
@@ -153,7 +153,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_404
     with_new_client do |client|
       with_session_handler( client, "/not-found" ) do |s,x|
-        assert_equal( 404, s.response_code )
+        assert_equal( 404, s.status_code )
       end
     end
   end
@@ -171,7 +171,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_redirect
     with_new_client do |client|
       with_session_handler( client, "/" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/index', s.url )
       end
     end
@@ -180,7 +180,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_redirect_with_query_string
     with_new_client do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
                       s.url )
         assert_equal( 'GET /redirects/multi/1?sleep=0',
@@ -192,7 +192,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_multi_redirect
     with_new_client( :max_redirects => 8 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
-        assert_equal( 200, s.response_code )
+        assert_equal( 200, s.status_code )
         assert_nil x
       end
     end
@@ -201,7 +201,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_unfollowed_301_redirect
     with_new_client( :max_redirects => 0 ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
-        assert_equal( 301, s.response_code )
+        assert_equal( 301, s.status_code )
         lh = s.response_headers.find { |h| "Location" == h.name.to_s }
         assert_match( %r{/index$}, lh.value.to_s )
       end
@@ -212,7 +212,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :max_redirects => 18 ) do |client|
       #FIXME: One redirect off somewhere? 19 fails.
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
-        assert_equal( 302, s.response_code, x )
+        assert_equal( 302, s.status_code, x )
       end
     end
   end
@@ -280,8 +280,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
         with_session_handler( client, "/index?sleep=0.05&i=#{i}",
                               false ) do |s,x|
           sync do
-            resps << [ s.response_code, x ]
-            output_bomb( s ) if s.response_code != 200
+            resps << [ s.status_code, x ]
+            output_bomb( s ) if s.status_code != 200
           end
         end
       end
@@ -304,7 +304,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
         with_session_handler( client, "/index?sleep=0.1&con=2&i=#{i}",
                               false ) do |s,x|
           sync do
-            resps << [ s.response_code, x ]
+            resps << [ s.status_code, x ]
           end
         end
       end
@@ -319,7 +319,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       with_session_handler( client, "/giant" ) do |s,x|
         assert_nil( x )
-        assert_equal( -11, s.response_code )
+        assert_equal( HTTPSession::TOO_LARGE, s.status_code )
       end
     end
   end
@@ -329,7 +329,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       client.max_content_length = 1
       with_session_handler( client, "/atom.xml" ) do |s,x|
         assert_nil( x )
-        assert_equal( -10, s.response_code )
+        assert_equal( HTTPSession::TOO_LARGE_LENGTH, s.status_code )
       end
     end
   end
@@ -339,7 +339,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
       with_session_handler( client, "/giant" ) do |s,x|
         assert_nil( x )
-        assert_equal( -20, s.response_code )
+        assert_equal( HTTPSession::NOT_ACCEPTED, s.status_code )
       end
     end
   end

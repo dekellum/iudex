@@ -115,9 +115,9 @@ public class Client implements HTTPClient, Closeable
             //FIXME: Give requestedHeaders before execute?
         }
 
-        public int responseCode()
+        public int statusCode()
         {
-            return _responseCode;
+            return _statusCode;
         }
 
         public String statusText()
@@ -201,7 +201,7 @@ public class Client implements HTTPClient, Closeable
                                              int status,
                                              Buffer reason )
             {
-                _responseCode = status;
+                _statusCode = status;
                 _statusText = decode( reason ).toString();
 
                 try {
@@ -227,13 +227,13 @@ public class Client implements HTTPClient, Closeable
                 ContentType ctype = Headers.contentType( _responseHeaders );
 
                 if( ! _acceptedContentTypes.contains( ctype ) ) {
-                    _responseCode = -20; //FIXME: Constants in iudex.http?
+                    _statusCode = NOT_ACCEPTED;
                     abort();
                 }
                 else {
                     int length = Headers.contentLength( _responseHeaders );
                     if( length > _maxContentLength ) {
-                        _responseCode = -10;
+                        _statusCode = TOO_LARGE_LENGTH;
                         abort();
                     }
                     else {
@@ -248,7 +248,7 @@ public class Client implements HTTPClient, Closeable
             {
                 ByteBuffer chunk = wrap( content );
                 if( _body.position() + chunk.remaining() > _maxContentLength ) {
-                    _responseCode = -11;
+                    _statusCode = TOO_LARGE;
                     abort();
                 }
                 else {
@@ -259,11 +259,11 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onResponseComplete()
             {
-                if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
+                if( ( _statusCode >= 200 ) && ( _statusCode < 300 ) ) {
                     _handler.handleSuccess( Session.this );
                 }
                 else {
-                    _handler.handleError( Session.this, _responseCode );
+                    _handler.handleError( Session.this, _statusCode );
                 }
             }
 
@@ -283,12 +283,12 @@ public class Client implements HTTPClient, Closeable
             protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
-                    _responseCode = -1;
+                    _statusCode = ERROR;
                     _handler.handleException( Session.this, (Exception) t );
                 }
                 else {
                     _log.error( "Session onException (Throwable): ", t );
-                    _responseCode = -2;
+                    _statusCode = ERROR_CRITICAL;
                     Session.this.abort();
 
                     if( t instanceof Error) {
@@ -364,7 +364,7 @@ public class Client implements HTTPClient, Closeable
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
-        private int _responseCode = 0;
+        private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
         private ArrayList<Header> _responseHeaders = new ArrayList<Header>( 8 );
         private ResizableByteBuffer _body = null;
