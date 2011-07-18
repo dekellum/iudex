@@ -24,7 +24,6 @@ import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import com.gravitext.util.Charsets;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
-import com.gravitext.util.Streams;
 
 public class Client implements HTTPClient, Closeable
 {
@@ -134,19 +132,10 @@ public class Client implements HTTPClient, Closeable
             return Collections.emptyList();
         }
 
-        @SuppressWarnings("unused")
         public ByteBuffer responseBody()
         {
             if ( _body != null ) {
-                _body.flipAsByteBuffer();
-            }
-            return null;
-        }
-
-        public InputStream responseStream()
-        {
-            if ( _body != null ) {
-                return Streams.inputStream( _body.flipAsByteBuffer() );
+                return _body.flipAsByteBuffer();
             }
             return null;
         }
@@ -180,6 +169,18 @@ public class Client implements HTTPClient, Closeable
             catch( IOException e ) {
                 _exchange.onException( e );
             }
+        }
+
+        private void complete()
+        {
+            ResponseHandler handler = _handler;
+            if( handler == null ) {
+                throw new IllegalStateException(
+                   "Handler already completed!" );
+            }
+            _handler = null;
+
+            handler.sessionCompleted( this );
         }
 
         @SuppressWarnings("unused")
@@ -259,12 +260,7 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onResponseComplete()
             {
-                if( ( _statusCode >= 200 ) && ( _statusCode < 300 ) ) {
-                    _handler.handleSuccess( Session.this );
-                }
-                else {
-                    _handler.handleError( Session.this, _statusCode );
-                }
+                complete();
             }
 
             @Override
@@ -284,7 +280,8 @@ public class Client implements HTTPClient, Closeable
             {
                 if( t instanceof Exception ) {
                     _statusCode = ERROR;
-                    _handler.handleException( Session.this, (Exception) t );
+                    setError( (Exception) t );
+                    complete();
                 }
                 else {
                     _log.error( "Session onException (Throwable): ", t );
