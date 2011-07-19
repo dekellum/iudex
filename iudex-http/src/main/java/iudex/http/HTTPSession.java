@@ -16,9 +16,11 @@
 package iudex.http;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import com.gravitext.util.Streams;
 
 public abstract class HTTPSession implements Closeable
 {
@@ -26,6 +28,45 @@ public abstract class HTTPSession implements Closeable
         GET,
         HEAD
     }
+
+    /**
+     * Pseudo-HTTP status code: as yet unknown.
+     */
+    public static final int STATUS_UNKNOWN   =   0;
+
+    /**
+     * Pseudo-HTTP status code: ERROR delivered as exception
+     */
+    public static final int ERROR            =  -1;
+
+    /**
+     * Pseudo-HTTP status code: Critical (i.e. Throwable non-Exception)
+     * delivered as exception or re-thrown.
+     */
+    public static final int ERROR_CRITICAL   =  -2;
+
+    /**
+     * Pseudo-HTTP status code: Response body too large by Content-Length
+     * header.
+     */
+    public static final int TOO_LARGE_LENGTH = -10;
+
+    /**
+     * Pseudo-HTTP status code: Response body found too large upon reading.
+     */
+    public static final int TOO_LARGE        = -11;
+
+    /**
+     * Pseudo-HTTP status code: Server improperly returned Non-Accepted
+     * Content-Type (despite our Accept header).
+     */
+    public static final int NOT_ACCEPTED     = -20;
+
+    /**
+     *  Pseudo-HTTP status code: A redirect was received with an invalid URL
+     *  (i.e. with iudex-core, VisitURL.SyntaxException).
+     */
+    public static final int INVALID_REDIRECT_URL = -30;
 
     public String url()
     {
@@ -44,6 +85,8 @@ public abstract class HTTPSession implements Closeable
         _method = method;
     }
 
+    public abstract void addRequestHeader( Header header );
+
     public void addRequestHeaders( List<Header> headers )
     {
         for( Header h : headers ) {
@@ -51,21 +94,74 @@ public abstract class HTTPSession implements Closeable
         }
     }
 
-    public abstract void addRequestHeader( Header header );
     public abstract List<Header> requestHeaders();
-    public abstract int responseCode();
+
+    /**
+     * Set accepted mime types.
+     */
+    public void setAcceptedContentTypes( ContentTypeSet types )
+    {
+        _acceptedContentTypes = types;
+    }
+
+    public ContentTypeSet acceptedContentTypes()
+    {
+        return _acceptedContentTypes;
+    }
+
+    /**
+     * Set maximum length of content body to download in bytes.
+     */
+    public void setMaxContentLength( int maxContentLength )
+    {
+        _maxContentLength = maxContentLength;
+    }
+
+    public int maxContentLength()
+    {
+        return _maxContentLength;
+    }
+
+    /**
+     * Return HTTP 1.1 status code or Psuedo-code as per above constants:
+     * zero or negative.
+     */
+    public abstract int statusCode();
+
     public abstract String statusText();
+
+    public Exception error()
+    {
+        return _error;
+    }
+
+    protected void setError( Exception e )
+    {
+        _error = e;
+    }
+
     public abstract List<Header> responseHeaders();
-    public abstract InputStream responseStream() throws IOException;
 
-    public void close() throws IOException
+    public abstract ByteBuffer responseBody();
+
+    public InputStream responseStream()
     {
+        ByteBuffer body = responseBody();
+
+        if ( body != null ) {
+            return Streams.inputStream( body );
+        }
+        return null;
     }
 
-    public void abort() throws IOException
-    {
-    }
+    public abstract void close();
+
+    public abstract void abort();
 
     private String _url;
     private Method _method = Method.GET;
+    private Exception _error;
+
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
+    private int _maxContentLength = 1024 * 1024 - 1;
 }

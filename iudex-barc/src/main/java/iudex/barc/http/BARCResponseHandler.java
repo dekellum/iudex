@@ -45,21 +45,24 @@ public class BARCResponseHandler extends BaseResponseHandler
     }
 
     @Override
-    protected void handleSuccessUnsafe( HTTPSession session )
+    protected void sessionCompletedUnsafe( HTTPSession session )
         throws IOException
     {
-        Record rec = _barcFile.append();
-        try {
-            rec.setCompressed( _doCompress );
-            rec.writeMetaHeaders( Arrays.asList(
-                new Header( "url", session.url() ) ) );
-            rec.writeRequestHeaders( session.requestHeaders() );
-            rec.writeResponseHeaders( session.responseHeaders() );
-            _complete = copy( session.responseStream(),
-                              rec.bodyOutputStream() );
-        }
-        finally {
-            rec.close();
+        if( ( session.statusCode() >= 200 ) &&
+            ( session.statusCode() <  300 ) ) {
+            Record rec = _barcFile.append();
+            try {
+                rec.setCompressed( _doCompress );
+                rec.writeMetaHeaders( Arrays.asList(
+                    new Header( "url", session.url() ) ) );
+                rec.writeRequestHeaders( session.requestHeaders() );
+                rec.writeResponseHeaders( session.responseHeaders() );
+                _complete = copy( session.responseStream(),
+                                  rec.bodyOutputStream() );
+            }
+            finally {
+                rec.close();
+            }
         }
     }
 

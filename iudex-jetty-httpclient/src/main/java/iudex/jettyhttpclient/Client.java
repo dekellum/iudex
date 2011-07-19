@@ -24,7 +24,6 @@ import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import com.gravitext.util.Charsets;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
-import com.gravitext.util.Streams;
 
 public class Client implements HTTPClient, Closeable
 {
@@ -59,7 +57,10 @@ public class Client implements HTTPClient, Closeable
     @Override
     public HTTPSession createSession()
     {
-        return new Session();
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
     }
 
     @Override
@@ -98,12 +99,6 @@ public class Client implements HTTPClient, Closeable
 
     private class Session extends HTTPSession
     {
-        public Session()
-        {
-            super();
-            _exchange = new Exchange();
-        }
-
         public void addRequestHeader( Header header )
         {
             _requestedHeaders.add( header );
@@ -115,9 +110,9 @@ public class Client implements HTTPClient, Closeable
             //FIXME: Give requestedHeaders before execute?
         }
 
-        public int responseCode()
+        public int statusCode()
         {
-            return _responseCode;
+            return _statusCode;
         }
 
         public String statusText()
@@ -134,19 +129,10 @@ public class Client implements HTTPClient, Closeable
             return Collections.emptyList();
         }
 
-        @SuppressWarnings("unused")
         public ByteBuffer responseBody()
         {
             if ( _body != null ) {
-                _body.flipAsByteBuffer();
-            }
-            return null;
-        }
-
-        public InputStream responseStream()
-        {
-            if ( _body != null ) {
-                return Streams.inputStream( _body.flipAsByteBuffer() );
+                return _body.flipAsByteBuffer();
             }
             return null;
         }
@@ -182,6 +168,18 @@ public class Client implements HTTPClient, Closeable
             }
         }
 
+        private void complete()
+        {
+            ResponseHandler handler = _handler;
+            if( handler == null ) {
+                throw new IllegalStateException(
+                   "Handler already completed!" );
+            }
+            _handler = null;
+
+            handler.sessionCompleted( this );
+        }
+
         @SuppressWarnings("unused")
         public void waitForCompletion() throws InterruptedException
         {
@@ -201,7 +199,7 @@ public class Client implements HTTPClient, Closeable
                                              int status,
                                              Buffer reason )
             {
-                _responseCode = status;
+                _statusCode = status;
                 _statusText = decode( reason ).toString();
 
                 try {
@@ -226,14 +224,14 @@ public class Client implements HTTPClient, Closeable
                 //check Content-Type
                 ContentType ctype = Headers.contentType( _responseHeaders );
 
-                if( ! _acceptedContentTypes.contains( ctype ) ) {
-                    _responseCode = -20; //FIXME: Constants in iudex.http?
+                if( ! acceptedContentTypes().contains( ctype ) ) {
+                    _statusCode = NOT_ACCEPTED;
                     abort();
                 }
                 else {
                     int length = Headers.contentLength( _responseHeaders );
-                    if( length > _maxContentLength ) {
-                        _responseCode = -10;
+                    if( length > maxContentLength() ) {
+                        _statusCode = TOO_LARGE_LENGTH;
                         abort();
                     }
                     else {
@@ -247,8 +245,8 @@ public class Client implements HTTPClient, Closeable
             protected void onResponseContent( Buffer content )
             {
                 ByteBuffer chunk = wrap( content );
-                if( _body.position() + chunk.remaining() > _maxContentLength ) {
-                    _responseCode = -11;
+                if( _body.position() + chunk.remaining() > maxContentLength() ) {
+                    _statusCode = TOO_LARGE;
                     abort();
                 }
                 else {
@@ -259,12 +257,7 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onResponseComplete()
             {
-                if( ( _responseCode >= 200 ) && ( _responseCode < 300 ) ) {
-                    _handler.handleSuccess( Session.this );
-                }
-                else {
-                    _handler.handleError( Session.this, _responseCode );
-                }
+                complete();
             }
 
             @Override
@@ -283,12 +276,13 @@ public class Client implements HTTPClient, Closeable
             protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
-                    _responseCode = -1;
-                    _handler.handleException( Session.this, (Exception) t );
+                    _statusCode = ERROR;
+                    setError( (Exception) t );
+                    complete();
                 }
                 else {
                     _log.error( "Session onException (Throwable): ", t );
-                    _responseCode = -2;
+                    _statusCode = ERROR_CRITICAL;
                     Session.this.abort();
 
                     if( t instanceof Error) {
@@ -359,12 +353,12 @@ public class Client implements HTTPClient, Closeable
 
         }
 
-        private final Exchange _exchange;
+        private final Exchange _exchange = new Exchange();
         private ResponseHandler _handler = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
-        private int _responseCode = 0;
+        private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
         private ArrayList<Header> _responseHeaders = new ArrayList<Header>( 8 );
         private ResizableByteBuffer _body = null;
@@ -372,7 +366,7 @@ public class Client implements HTTPClient, Closeable
 
     private final HttpClient _client;
 
-    private int _maxContentLength = 2 * 1024 * 1024;
+    private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
