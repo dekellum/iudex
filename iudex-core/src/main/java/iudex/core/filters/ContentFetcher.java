@@ -54,22 +54,34 @@ public class ContentFetcher implements AsyncFilterContainer
     }
 
     /**
-     * Set the set of accepted mime types.
-     * Types should be normalized: trimmed, lower case, i.e. "text/html" ).
+     * Set accepted mime types.
      */
     public void setAcceptedContentTypes( ContentTypeSet types )
     {
         _acceptedContentTypes = types;
     }
 
-    public void setRequestHeaders( List<Header> headers )
-    {
-        _fixedRequestHeaders = headers;
-    }
-
     public ContentTypeSet acceptedContentTypes()
     {
         return _acceptedContentTypes;
+    }
+
+    /**
+     * Set maximum length of content body to download in bytes.
+     */
+    public void setMaxContentLength( int maxContentLength )
+    {
+        _maxContentLength = maxContentLength;
+    }
+
+    public int maxContentLength()
+    {
+        return _maxContentLength;
+    }
+
+    public void setRequestHeaders( List<Header> headers )
+    {
+        _fixedRequestHeaders = headers;
     }
 
     public void setDefaultEncoding( Charset defaultEncoding )
@@ -99,6 +111,9 @@ public class ContentFetcher implements AsyncFilterContainer
         // last success stored?
 
         session.addRequestHeaders( _fixedRequestHeaders );
+
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
 
         _client.request( session, new Handler( content ) );
 
@@ -215,12 +230,14 @@ public class ContentFetcher implements AsyncFilterContainer
         private final UniMap _content;
     }
 
-    private final int _maxContentLength = 1024 * 1024 - 1;
-
     private final HTTPClient _client;
-    private final FilterContainer _receiver;
+
     private List<Header> _fixedRequestHeaders = Collections.emptyList();
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
+    private int _maxContentLength = 1024 * 1024 - 1;
+
+    private final FilterContainer _receiver;
+
     private Charset _defaultEncoding = Charsets.defaultCharset();
 
     private final Logger _log = LoggerFactory.getLogger( ContentFetcher.class );
