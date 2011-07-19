@@ -202,8 +202,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :max_redirects => 0 ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
         assert_equal( 301, s.status_code )
-        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
-        assert_match( %r{/index$}, lh.value.to_s )
+        lh = find_header( s.response_headers, "Location" )
+        assert_match( %r{/index$}, lh )
       end
     end
   end
