@@ -37,9 +37,15 @@ module TestHTTPMocks
   WEAK_ETAG = 'W/"weak-etag"'
 
   class MockSession < Iudex::HTTP::HTTPSession
-    import 'com.gravitext.util.ByteBufferInputStream'
     import 'java.nio.ByteBuffer'
     include Iudex::HTTP
+
+    attr_writer :status
+
+    def initialize
+      super()
+      @status = 200
+    end
 
     def requestHeaders
       [ ]
@@ -49,12 +55,12 @@ module TestHTTPMocks
       [ Header.new( "ETag", WEAK_ETAG ) ]
     end
 
-    def responseCode
-      200
+    def statusCode
+      @status
     end
 
-    def responseStream
-      ByteBufferInputStream.new( ByteBuffer::wrap( "".to_java_bytes ) )
+    def responseBody
+      ByteBuffer::wrap( "BODY".to_java_bytes )
     end
 
     def statusText
@@ -62,7 +68,10 @@ module TestHTTPMocks
     end
 
     def execute( handler )
-      handler.handle_success( self )
+      handler.session_completed( self )
+    end
+
+    def close
     end
   end
 
@@ -119,13 +128,12 @@ class TestContentFetcher < MiniTest::Unit::TestCase
   def test_304
     client = MockHTTPClient.new
     def client.request( session, handler )
-      handler.handle_error( session, 304 )
+      session.status = 304
+      handler.session_completed( session )
     end
     fetch( create_content, client ) do |out|
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 304, out.status )
-      assert_nil( out.etag )
-      assert_nil( out.source )
     end
   end
 
@@ -162,11 +170,11 @@ class TestContentFetcher < MiniTest::Unit::TestCase
     def client.create_session
       s = MockSession.new
       def s.execute( handler )
-        handler.handle_exception( self,
-                                  UnknownHostException.new( "foobar.com" ) )
+        self.error = UnknownHostException.new( "foobar.com" )
+        handler.session_completed( self )
       end
-      def s.responseCode
-        nil
+      def s.statusCode
+        -1
       end
       def s.responseHeaders
         nil

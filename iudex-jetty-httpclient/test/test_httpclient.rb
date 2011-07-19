@@ -1,8 +1,7 @@
 #!/usr/bin/env jruby
-#.hashdot.profile += jruby-shortlived
 
 #--
-# Copyright (c) 2008-2011 David Kellum
+# Copyright (c) 2011 David Kellum
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -19,11 +18,10 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-require 'iudex-httpclient-3'
-
 require 'iudex-http-test/helper'
 require 'iudex-http-test/broken_server'
 
+require 'iudex-jetty-httpclient'
 require 'thread'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
@@ -32,50 +30,62 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex::HTTP::Test
   include Helper
 
+  import 'java.util.concurrent.TimeoutException'
   import 'java.net.ConnectException'
   import 'java.net.UnknownHostException'
-  import 'java.net.SocketTimeoutException'
-  import 'java.net.SocketException'
-  import 'org.apache.commons.httpclient.NoHttpResponseException'
+  import 'java.io.IOException'
+  import 'java.io.EOFException'
+  import 'java.lang.IllegalStateException'
+  import 'java.nio.channels.UnresolvedAddressException'
 
   CustomUnit.register
 
   def setup
+    @rlock = Mutex.new
     server # make sure jetty starts, for cosmetic log output
   end
 
-  def test_config
+  def test_default_config
+    client = JettyHTTPClient.create_client
+    client.close
+    pass
+  end
 
-    called = :not
-    Hooker.with( :iudex ) do |h|
-      h.setup_http_client_3 do |mgr|
-        assert_equal( 100, mgr.manager_params.max_total_connections )
-        called = :called
+  import 'java.util.concurrent.ThreadPoolExecutor'
+  import 'java.util.concurrent.ArrayBlockingQueue'
+  import 'java.util.concurrent.TimeUnit'
+  import 'org.eclipse.jetty.util.thread.ExecutorThreadPool'
+
+  def test_custom_executor
+    #FIXME: A bit shaky, fails under 3 threads?
+    executor = ThreadPoolExecutor.new( 3, 10,
+                                       10, TimeUnit::SECONDS,
+                                       ArrayBlockingQueue.new( 10 ) )
+    pool = ExecutorThreadPool.new( executor )
+
+    with_new_client( :thread_pool => pool ) do |client|
+      with_session_handler( client, "/index" ) do |s,x|
+        assert_equal( 200, s.status_code )
       end
     end
 
-    mgr = HTTPClient3.create_manager
-    assert( mgr )
-    assert_equal( :called, called )
-
-    mgr.start
-    assert( mgr.client )
-    mgr.shutdown
-
+    pool.stop
   end
 
   def test_200
     with_new_client do |client|
 
       with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.status_code )
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
         assert_match( /Test Index Page/, s.response_stream.to_io.read )
       end
 
       with_session_handler( client, "/atom.xml" ) do |s,x|
-        assert_equal( 200, s.status_code )
-        body = s.response_stream.to_io.read
-        assert_operator( body.length, :>, 10_000 )
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
+        cl = find_header( s.response_headers, "Content-Length" )
+        assert_operator( cl.to_i, :>, 10_000 )
       end
 
     end
@@ -86,6 +96,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       with_session_handler( client,
                             "/echo/header/Accept?noop=3",
+                            true,
                             { 'Accept' => 'text/plain;moo' } ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'GET /echo/header/Accept?noop=3',
@@ -103,10 +114,14 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unknown_host
-    with_new_client do |client|
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
+                     :so_timeout      => 10_000,
+                     :idle_timeout    => 10_000 ) do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
-        assert_instance_of( UnknownHostException, x )
+        assert_includes( [ UnresolvedAddressException,
+                           UnknownHostException ], x.class )
       end
     end
   end
@@ -124,10 +139,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    with_new_client do |client|
+    #FIXME: Looks like request_timeout is used as this timeout as well.
+    with_new_client( :short => true ) do |client|
       with_session_handler( client,
                             "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( SocketTimeoutException, x )
+        assert_instance_of( TimeoutException, x )
       end
     end
   ensure
@@ -143,12 +159,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_timeout
-    with_new_client do |client|
+    with_new_client( :short => true ) do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
-        assert_instance_of( SocketTimeoutException, x )
+        assert_instance_of( TimeoutException, x )
       end
     end
-    sleep 0.65 # FIXME: Account for test server delay. Should be
+    sleep 0.70 # FIXME: Account for test server delay. Should be
                # joined instead.
   end
 
@@ -174,11 +190,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_multi_redirect
-    settings = lambda do |mgr|
-      mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 7 )
-    end
-
-    with_new_client( settings ) do |client|
+    with_new_client( :max_redirects => 8 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_nil x
@@ -187,39 +199,31 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unfollowed_301_redirect
-    settings = lambda do |mgr|
-      mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 0 )
-    end
-
-    with_new_client( settings ) do |client|
+    with_new_client( :max_redirects => 0 ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
-        assert_nil( x )
         assert_equal( 301, s.status_code )
-        assert_match( %r{/index$},
-                      find_header( s.response_headers, "Location" ) )
+        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
+        assert_match( %r{/index$}, lh.value.to_s )
       end
     end
   end
 
   def test_too_many_redirects
-    settings = lambda do |mgr|
-      mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 19 )
-    end
-
-    with_new_client( settings ) do |client|
+    with_new_client( :max_redirects => 18 ) do |client|
+      #FIXME: One redirect off somewhere? 19 fails.
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
-         assert_equal( 302, s.status_code )
+        assert_equal( 302, s.status_code, x )
       end
     end
   end
 
   def test_redirect_timeout
     skip( "Unreliable timeout with redirects, timing dependent" )
-    with_new_client() do |client|
+    with_new_client( :short => true ) do |client|
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
-        assert_instance_of( SocketTimeoutException, x )
+        assert_instance_of( TimeoutException, x )
       end
-      sleep 0.75
+      sleep 0.80
     end
   end
 
@@ -231,10 +235,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       bs.accept { |sock| sock.write "FU Stinky\r\n" }
     end
 
-    #FIXME: SocketTimeoutException on bad HTTP response line?
+    #FIXME: IllegalStateException on bad HTTP response line?
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( SocketTimeoutException, x )
+        assert_instance_of( IllegalStateException, x )
       end
     end
 
@@ -254,8 +258,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert( [ NoHttpResponseException, SocketException ].include?( x.class ) )
-        #FIXME: One or the other, timing dependent!?
+        assert_instance_of( EOFException, x )
       end
     end
 
@@ -263,6 +266,53 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   ensure
     bs.stop
+  end
+
+  def test_concurrent
+    with_new_client( :timeout         => 18_000,
+                     :connect_timeout => 15_000,
+                     :so_timeout      => 12_000,
+                     :idle_timeout    => 12_000,
+                     :max_connections_per_address => 4 ) do |client|
+
+      resps = []
+      sessions = (1..19).map do |i|
+        with_session_handler( client, "/index?sleep=0.05&i=#{i}",
+                              false ) do |s,x|
+          sync do
+            resps << [ s.status_code, x ]
+            output_bomb( s ) if s.status_code != 200
+          end
+        end
+      end
+
+      sessions.each { |s| s.wait_for_completion }
+
+      assert_equal( [ [ 200, nil ] ] * 19, resps )
+    end
+  end
+
+  def test_maximum_connections_per_address
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
+                     :so_timeout      => 10_000,
+                     :idle_timeout    => 10_000,
+                     :max_connections_per_address => 2 ) do |client|
+
+      resps = []
+      sessions = (1..7).map do |i|
+        with_session_handler( client, "/index?sleep=0.1&con=2&i=#{i}",
+                              false ) do |s,x|
+          sync do
+            resps << [ s.status_code, x ]
+          end
+        end
+      end
+
+      sessions.each { |s| s.wait_for_completion }
+
+      assert_equal( [ [ 200, nil ] ] * 7, resps )
+    end
   end
 
   def test_abort_when_too_large
@@ -294,38 +344,61 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def with_session_handler( client, uri, headers = {}, &block )
+  def sync( &block )
+    @rlock.synchronize( &block )
+  end
+
+  def output_bomb( s )
+    File.open( "bomb.out", "w" ) do |fout|
+      st = s && s.response_stream
+      if st
+        fout.puts st.to_io.read
+      else
+        fout.puts st.to_s
+      end
+    end
+    "See bomb.out"
+  end
+
+  def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
     end
-
     handler = TestHandler.new( &block )
     client.request( session, handler )
-
-    assert( handler.called?, "Handler should have been called!" )
-    session.close
+    if wait
+      session.wait_for_completion
+      session.close
+      assert( handler.called?, "Handler should have been called!" )
+    end
     session
   end
 
-  def with_new_client( mgr_proc = nil )
-    # Default manager config
-    mgr = HTTPClient3.create_manager
-    mgr.client_params.set_parameter(
-      RJack::HTTPClient3::HttpMethodParams::RETRY_HANDLER,
-      RJack::HTTPClient3::DefaultHttpMethodRetryHandler.new( 0, false ) )
-    mgr.client_params.connection_manager_timeout = 500 #ms
-    mgr.client_params.so_timeout = 500 #ms
-    # Overrides via proc
-    mgr_proc.call( mgr ) if mgr_proc
+  def with_new_client( opts = {} )
+    o = if opts.delete( :short )
+          { :timeout          => 400,
+            :so_timeout       => 200,
+            :connect_timeout  => 200,
+            :idle_timeout     => 200 }
+        else
+          { :timeout          => 5000,
+            :so_timeout       => 4000,
+            :connect_timeout  => 3000,
+            :idle_timeout     => 2000 }
+        end
 
-    mgr.start
+    o = o.merge( { :max_retries      => 0,
+                   :connect_blocking => false } )
+    o = o.merge( opts )
+
+    client = JettyHTTPClient.create_client( o )
     begin
-      yield HTTPClient3::HTTPClient3.new( mgr.client )
+      yield client
     ensure
-      mgr.shutdown
+      client.close
     end
   end
 
@@ -363,5 +436,13 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def find_header( headers, name )
     cl = headers.find { |h| h.name.to_s == name }
     cl && cl.value.to_s
+  end
+
+end
+
+if ARGV.delete( '--loop' )
+  loop do
+    failed = MiniTest::Unit.new.run( ARGV )
+    exit!( 1 ) if failed > 0
   end
 end

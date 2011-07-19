@@ -17,16 +17,7 @@
 # permissions and limitations under the License.
 #++
 
-ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
-$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
-
-require 'rubygems'
-
-require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
-
-require 'minitest/unit'
-require 'minitest/autorun'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-http-test/helper'
 require 'net/http'
@@ -35,6 +26,18 @@ class TestServer < MiniTest::Unit::TestCase
   include Iudex::HTTP::Test
   include Helper
   CustomUnit.register
+
+  def test_byte_array_new
+    # Mizuno uses this.
+    # Seeing NPE on:
+    # jruby 1.5.6 (ruby 1.8.7 patchlevel 249) (2010-12-03 9cf97c3)
+    #             (OpenJDK Client VM 1.6.0_20) [i386-java]
+    #             (Java HotSpot(TM) Client VM 1.6.0_26) [i386-java]
+    #             (Java HotSpot(TM) Client VM 1.7.0) [i386-java]
+    # But not jruby 1.6.2, or either with Server VM
+    Java::byte[4096].new
+    pass
+  end
 
   def test_port
     assert server.port > 0
