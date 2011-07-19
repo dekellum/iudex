@@ -57,7 +57,10 @@ public class Client implements HTTPClient, Closeable
     @Override
     public HTTPSession createSession()
     {
-        return new Session();
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
     }
 
     @Override
@@ -96,12 +99,6 @@ public class Client implements HTTPClient, Closeable
 
     private class Session extends HTTPSession
     {
-        public Session()
-        {
-            super();
-            _exchange = new Exchange();
-        }
-
         public void addRequestHeader( Header header )
         {
             _requestedHeaders.add( header );
@@ -227,13 +224,13 @@ public class Client implements HTTPClient, Closeable
                 //check Content-Type
                 ContentType ctype = Headers.contentType( _responseHeaders );
 
-                if( ! _acceptedContentTypes.contains( ctype ) ) {
+                if( ! acceptedContentTypes().contains( ctype ) ) {
                     _statusCode = NOT_ACCEPTED;
                     abort();
                 }
                 else {
                     int length = Headers.contentLength( _responseHeaders );
-                    if( length > _maxContentLength ) {
+                    if( length > maxContentLength() ) {
                         _statusCode = TOO_LARGE_LENGTH;
                         abort();
                     }
@@ -248,7 +245,7 @@ public class Client implements HTTPClient, Closeable
             protected void onResponseContent( Buffer content )
             {
                 ByteBuffer chunk = wrap( content );
-                if( _body.position() + chunk.remaining() > _maxContentLength ) {
+                if( _body.position() + chunk.remaining() > maxContentLength() ) {
                     _statusCode = TOO_LARGE;
                     abort();
                 }
@@ -356,7 +353,7 @@ public class Client implements HTTPClient, Closeable
 
         }
 
-        private final Exchange _exchange;
+        private final Exchange _exchange = new Exchange();
         private ResponseHandler _handler = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
@@ -369,7 +366,7 @@ public class Client implements HTTPClient, Closeable
 
     private final HttpClient _client;
 
-    private int _maxContentLength = 2 * 1024 * 1024;
+    private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
