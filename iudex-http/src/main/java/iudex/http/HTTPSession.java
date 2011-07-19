@@ -30,40 +30,40 @@ public abstract class HTTPSession implements Closeable
     }
 
     /**
-     * Psuedo-HTTP status code: as yet unknown.
+     * Pseudo-HTTP status code: as yet unknown.
      */
     public static final int STATUS_UNKNOWN   =   0;
 
     /**
-     * Psuedo-HTTP status code: ERROR delivered as exception
+     * Pseudo-HTTP status code: ERROR delivered as exception
      */
     public static final int ERROR            =  -1;
 
     /**
-     * Psuedo-HTTP status code: Critical (i.e. Throwable non-Exception)
+     * Pseudo-HTTP status code: Critical (i.e. Throwable non-Exception)
      * delivered as exception or re-thrown.
      */
     public static final int ERROR_CRITICAL   =  -2;
 
     /**
-     * Psuedo-HTTP status code: Response body too large by Content-Length
+     * Pseudo-HTTP status code: Response body too large by Content-Length
      * header.
      */
     public static final int TOO_LARGE_LENGTH = -10;
 
     /**
-     * Psuedo-HTTP status code: Response body found too large upon reading.
+     * Pseudo-HTTP status code: Response body found too large upon reading.
      */
     public static final int TOO_LARGE        = -11;
 
     /**
-     * Psuedo-HTTP status code: Server improperly returned Non-Accepted
+     * Pseudo-HTTP status code: Server improperly returned Non-Accepted
      * Content-Type (despite our Accept header).
      */
     public static final int NOT_ACCEPTED     = -20;
 
     /**
-     *  Psuedo-HTTP status code: A redirect was received with an invalid URL
+     *  Pseudo-HTTP status code: A redirect was received with an invalid URL
      *  (i.e. with iudex-core, VisitURL.SyntaxException).
      */
     public static final int INVALID_REDIRECT_URL = -30;
@@ -85,6 +85,8 @@ public abstract class HTTPSession implements Closeable
         _method = method;
     }
 
+    public abstract void addRequestHeader( Header header );
+
     public void addRequestHeaders( List<Header> headers )
     {
         for( Header h : headers ) {
@@ -92,9 +94,33 @@ public abstract class HTTPSession implements Closeable
         }
     }
 
-    public abstract void addRequestHeader( Header header );
-
     public abstract List<Header> requestHeaders();
+
+    /**
+     * Set accepted mime types.
+     */
+    public void setAcceptedContentTypes( ContentTypeSet types )
+    {
+        _acceptedContentTypes = types;
+    }
+
+    public ContentTypeSet acceptedContentTypes()
+    {
+        return _acceptedContentTypes;
+    }
+
+    /**
+     * Set maximum length of content body to download in bytes.
+     */
+    public void setMaxContentLength( int maxContentLength )
+    {
+        _maxContentLength = maxContentLength;
+    }
+
+    public int maxContentLength()
+    {
+        return _maxContentLength;
+    }
 
     /**
      * Return HTTP 1.1 status code or Psuedo-code as per above constants:
@@ -135,4 +161,7 @@ public abstract class HTTPSession implements Closeable
     private String _url;
     private Method _method = Method.GET;
     private Exception _error;
+
+    private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
+    private int _maxContentLength = 1024 * 1024 - 1;
 }
