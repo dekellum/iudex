@@ -66,7 +66,10 @@ public class HTTPClient3 implements HTTPClient
     @Override
     public HTTPSession createSession()
     {
-        return new Session();
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
     }
 
     @Override
@@ -77,6 +80,7 @@ public class HTTPClient3 implements HTTPClient
 
     private final class Session extends HTTPSession
     {
+
         public void addRequestHeader( Header header )
         {
             _requestedHeaders.add( header );
@@ -170,14 +174,14 @@ public class HTTPClient3 implements HTTPClient
                 setUrl( _httpMethod.getURI().toString() );
 
                 ContentType ctype = Headers.contentType( _responseHeaders );
-                if( ! _acceptedContentTypes.contains( ctype ) ) {
+                if( ! acceptedContentTypes().contains( ctype ) ) {
                     _statusCode = NOT_ACCEPTED;
                     abort();
                     return;
                 }
 
                 int length = Headers.contentLength( _responseHeaders );
-                if( length > _maxContentLength ) {
+                if( length > maxContentLength() ) {
                     _statusCode = TOO_LARGE_LENGTH;
                     abort();
                     return;
@@ -185,7 +189,7 @@ public class HTTPClient3 implements HTTPClient
 
                 readBody( length );
 
-                if( _body.position() > _maxContentLength ) {
+                if( _body.position() > maxContentLength() ) {
                     _statusCode = TOO_LARGE;
                     _body = null;
                     abort();
@@ -208,7 +212,7 @@ public class HTTPClient3 implements HTTPClient
             _body = new ResizableByteBuffer( ( length >= 0 ) ?
                                                length : 16 * 1024 );
 
-            _body.putFromStream( stream, _maxContentLength + 1, 8 * 1024 );
+            _body.putFromStream( stream, maxContentLength() + 1, 8 * 1024 );
         }
 
         private CharSequence reconstructRequestLine()
@@ -255,11 +259,10 @@ public class HTTPClient3 implements HTTPClient
         private List<Header> _responseHeaders = Collections.emptyList();
         private int _statusCode = STATUS_UNKNOWN;
         private ResizableByteBuffer _body = null;
-
         private HttpMethod _httpMethod = null;
     }
 
     private HttpClient _client;
-    private int _maxContentLength = 2 * 1024 * 1024;
+    private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
 }
