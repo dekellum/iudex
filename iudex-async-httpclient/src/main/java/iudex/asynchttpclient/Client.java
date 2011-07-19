@@ -57,7 +57,10 @@ public class Client implements HTTPClient, Closeable
     @Override
     public HTTPSession createSession()
     {
-        return new Session();
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
     }
 
     @Override
@@ -241,7 +244,7 @@ public class Client implements HTTPClient, Closeable
 
             ContentType ctype = Headers.contentType( _responseHeaders );
 
-            if( ! _acceptedContentTypes.contains( ctype ) ) {
+            if( ! acceptedContentTypes().contains( ctype ) ) {
                 _statusCode = NOT_ACCEPTED;
                 abort();
             }
@@ -250,7 +253,7 @@ public class Client implements HTTPClient, Closeable
 
                 int length = Headers.contentLength( _responseHeaders );
 
-                if( length > _maxContentLength ) {
+                if( length > maxContentLength() ) {
                     _statusCode = TOO_LARGE_LENGTH;
                     abort();
                 }
@@ -268,7 +271,7 @@ public class Client implements HTTPClient, Closeable
         {
             byte[] buffer = part.getBodyPartBytes();
 
-            if( ( _body.position() + buffer.length ) > _maxContentLength ) {
+            if( ( _body.position() + buffer.length ) > maxContentLength() ) {
                 _statusCode = TOO_LARGE;
                 abort();
             }
