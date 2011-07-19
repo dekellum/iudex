@@ -48,23 +48,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     pass
   end
 
-  def test_200
-    with_new_client do |client|
-
-      with_session_handler( client, "/index" ) do |s,x|
-        assert_equal( 200, s.status_code )
-        assert_match( /Test Index Page/, s.response_stream.to_io.read )
-      end
-
-      with_session_handler( client, "/atom.xml" ) do |s,x|
-        assert_equal( 200, s.status_code )
-        cl = s.response_headers.find { |h| "Content-Length" == h.name.to_s }
-        assert_operator( cl.value.to_i, :>, 10_000 )
-      end
-
-    end
-  end
-
   import 'java.util.concurrent.ThreadPoolExecutor'
   import 'java.util.concurrent.ArrayBlockingQueue'
   import 'java.util.concurrent.TimeUnit'
@@ -79,6 +62,47 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
       with_session_handler( client, "/index" ) do |s,x|
         assert_equal( 200, s.status_code )
+      end
+    end
+
+    executor.shutdown
+  end
+
+  def test_200
+    with_new_client do |client|
+
+      with_session_handler( client, "/index" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_match( /Test Index Page/, s.response_stream.to_io.read )
+      end
+
+      with_session_handler( client, "/atom.xml" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        cl = find_header( s.response_headers, "Content-Length" )
+        assert_operator( cl.to_i, :>, 10_000 )
+      end
+
+    end
+  end
+
+  def test_headers
+    req,rsp = nil
+    with_new_client do |client|
+      with_session_handler( client,
+                            "/echo/header/Accept?noop=3",
+                            true,
+                            { 'Accept' => 'text/plain;moo' } ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( 'GET /echo/header/Accept?noop=3',
+                      find_header( s.request_headers, "Request-Line" ) )
+        assert_equal( 'text/plain;moo',
+                      find_header( s.request_headers, 'Accept' ) )
+        assert_equal( 'localhost:19292',
+                      find_header( s.request_headers, 'Host' ) )
+
+        assert_match( /^text\/plain/,
+                      find_header( s.response_headers, 'Content-Type' ) )
+        assert_match( /^text\/plain;moo$/, s.response_stream.to_io.read )
       end
     end
   end
@@ -136,6 +160,27 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect
+    with_new_client do |client|
+      with_session_handler( client, "/" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( 'http://localhost:19292/index', s.url )
+      end
+    end
+  end
+
+  def test_redirect_with_query_string
+    with_new_client do |client|
+      with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
+                      s.url )
+        assert_equal( 'GET /redirects/multi/1?sleep=0',
+                      find_header( s.request_headers, "Request-Line" ) )
+      end
+    end
+  end
+
+  def test_multi_redirect
     with_new_client( :follow_redirects => true,
                      :maximum_number_of_redirects => 7 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
@@ -149,8 +194,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => false ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
         assert_equal( 301, s.status_code )
-        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
-        assert_match( %r{/index$}, lh.value )
+        lh = find_header( s.response_headers, "Location" )
+        assert_match( %r{/index$}, lh )
       end
     end
   end
@@ -235,7 +280,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_maximum_connections_per_host
-    skip( "max_connections_per_host not honored?" )
+    #FIXME: skip( "max_connections_per_host not honored?" )
     with_new_client( :maximum_connections_per_host => 1 ) do |client|
 
       resps = []
@@ -252,10 +297,42 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def with_session_handler( client, uri, wait = true, &block )
+  def test_abort_when_too_large
+    with_new_client do |client|
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( HTTPSession::TOO_LARGE, s.status_code )
+      end
+    end
+  end
+
+  def test_abort_when_too_large_length
+    with_new_client do |client|
+      client.max_content_length = 1
+      with_session_handler( client, "/atom.xml" ) do |s,x|
+        assert_nil( x )
+        assert_equal( HTTPSession::TOO_LARGE_LENGTH, s.status_code )
+      end
+    end
+  end
+
+  def test_abort_when_wrong_type
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
+      with_session_handler( client, "/giant" ) do |s,x|
+        assert_nil( x )
+        assert_equal( HTTPSession::NOT_ACCEPTED, s.status_code )
+      end
+    end
+  end
+
+  def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
+    headers.each do |k,v|
+      session.add_request_header( Java::iudex.http.Header.new( k, v ) )
+    end
     handler = TestHandler.new( &block )
     client.request( session, handler )
     if wait
@@ -306,6 +383,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       @failure = x
     end
 
+  end
+
+  def find_header( headers, name )
+    cl = headers.find { |h| h.name.to_s == name }
+    cl && cl.value.to_s
   end
 
 end
