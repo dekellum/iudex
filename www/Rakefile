@@ -24,11 +24,11 @@ task :clean do
 end
 
 task :gen => [ :dot ] do
-  sh "jekyll"
+  sh "bundle exec jekyll"
 end
 
 task :server => [ :dot ] do
-  sh "jekyll --auto --server"
+  sh "bundle exec jekyll --auto --server"
 end
 
 DEST="/home/david/public_html/iudex"
