@@ -17,7 +17,7 @@ t.specify do |h|
                     [ 'mizuno',   '~> 0.4.0' ], #FIXME: custom build?
                     [ 'sinatra',  '~> 1.2.6' ],
                     [ 'markaby',  '~> 0.7.1' ],
-                    [ 'minitest', '~> 2.2.0' ] ]
+                    [ 'minitest', '~> 2.3' ] ]
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'rack-test',  '~> 0.6.0' ] ]
