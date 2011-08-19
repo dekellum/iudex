@@ -49,8 +49,7 @@ module Iudex::HTTP::Test
           if running_standalone?
             OpenStruct.new( :port => PORT )
           else
-            server = Server.new
-            server.port = PORT
+            server = Server.new( :port => PORT )
             server.start
             server
           end
