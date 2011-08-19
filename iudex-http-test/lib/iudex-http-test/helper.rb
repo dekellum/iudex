@@ -37,8 +37,6 @@ module Iudex::HTTP::Test
 
   module Helper
 
-    PORT = 19292
-
     def server
       Helper.server
     end
@@ -47,10 +45,9 @@ module Iudex::HTTP::Test
       @server ||=
         begin
           if running_standalone?
-            OpenStruct.new( :port => PORT )
+            OpenStruct.new( :port => Server::DEFAULT_PORT )
           else
             server = Server.new
-            server.port = PORT
             server.start
             server
           end
@@ -58,7 +55,7 @@ module Iudex::HTTP::Test
     end
 
     def self.running_standalone?
-      res = Net::HTTP.start( 'localhost', PORT ) do |http|
+      res = Net::HTTP.start( 'localhost', Server::DEFAULT_PORT ) do |http|
         http.open_timeout = 0.5
         http.read_timeout = 1.0
         http.get( '/index' )
@@ -72,6 +69,7 @@ module Iudex::HTTP::Test
       if @server
         $stderr.puts
         @server.stop
+        @server.join
         @server = nil
       end
     end
