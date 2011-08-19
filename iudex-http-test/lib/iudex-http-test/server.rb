@@ -21,27 +21,18 @@ require 'fishwife'
 
 module Iudex::HTTP::Test
 
-  class Server
+  class Server < Fishwife::HttpServer
+
+    DEFAULT_PORT = 19292
 
     def initialize( opts = {} )
-      opts = { :port => 0 }.merge( opts )
-      @server = Fishwife::HttpServer.new( opts )
+      opts = { :port => DEFAULT_PORT,
+               :max_threads => 20 }.merge( opts )
+      super( opts )
     end
 
-    def start
-      @server.start( TestApp.new )
-    end
-
-    def port
-      @server.port
-    end
-
-    def join
-      @server.join
-    end
-
-    def stop
-      @server.stop
+    def start( app = TestApp )
+      super
     end
 
   end

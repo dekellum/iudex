@@ -43,6 +43,8 @@ module IudexBinScript
     end
   end.parse!
 
-  HTTP::Test::Server.new( :port => 19292 ).start
+  server = HTTP::Test::Server.new
+  server.start
+  server.join
 
 end
