@@ -13,15 +13,15 @@ t = RJack::TarPit.new( 'iudex-brutefuzzy-service',
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps   += [ [ 'iudex-core',                '~> 1.0.0' ],
+  h.extra_deps   += [ [ 'iudex-core',                '~> 1.1.0' ],
                       [ 'rjack-logback',             '~> 1.0'   ],
-                      [ 'iudex-simhash',             '~> 1.0.0' ],
+                      [ 'iudex-simhash',             '~> 1.1.0' ],
                       [ 'iudex-brutefuzzy-protobuf', '~> 1.0.0' ],
                       [ 'rjack-jms',                 '~> 1.1.0' ],
                       [ 'rjack-qpid-client',         '~> 0.8.1' ] ]
 
   h.testlib = :minitest
-  h.extra_dev_deps << [ 'minitest',         '>= 1.7.1', '< 2.1' ]
+  h.extra_dev_deps << [ 'minitest', '~> 2.3' ]
 end
 
 file 'Manifest.txt' => "lib/#{t.name}/base.rb"

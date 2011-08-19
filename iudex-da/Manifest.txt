@@ -29,4 +29,4 @@ test/setup.rb
 test/test_migrate.rb
 test/test_poll_work.rb
 test/test_pool_factory.rb
-lib/iudex-da/iudex-da-1.0.0.jar
+lib/iudex-da/iudex-da-1.1.0.jar

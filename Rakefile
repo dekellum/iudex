@@ -1,7 +1,8 @@
 # -*- ruby -*- coding: utf-8 -*-
 
-gems = %w[ iudex-filter iudex-http iudex-barc
-           iudex-core iudex-httpclient-3
+gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
+           iudex-core iudex-httpclient-3 iudex-jetty-httpclient
+           iudex-char-detector
            iudex-html iudex-simhash iudex-rome iudex-da
            iudex-worker
            iudex-brutefuzzy-protobuf iudex-brutefuzzy-service ]
@@ -23,6 +24,16 @@ end
 subtasks.each do |sdt|
   desc ">> Run '#{sdt}' on all gem sub-directories"
   task sdt => :distribute
+end
+
+# Install parent pom first on install
+if sel_subtasks.include?( 'install' )
+  task :distribute => :install_parent_pom
+end
+
+desc "Install maven parent pom only"
+task :install_parent_pom do
+  sh( "mvn -N install" )
 end
 
 desc "Run multi['task1 tasks2'] tasks over all sub gems"

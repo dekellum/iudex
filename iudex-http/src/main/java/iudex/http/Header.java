@@ -17,7 +17,7 @@ package iudex.http;
 
 /**
  * A name/value pair suitable for HTTP and other header representation. All
- * name and value instances must support toString() as serialized from.
+ * name and value instances must support toString() as serialized form.
  */
 public final class Header
 {

@@ -39,7 +39,7 @@ class TestRome < MiniTest::Unit::TestCase
 
     rss_bytes = ByteBuffer.wrap( File.read( SIMPLE_RSS ).to_java_bytes )
     source = ContentSource.new( rss_bytes )
-    source.default_encoding = Charsets::UTF_8
+    source.set_default_encoding( Charsets::UTF_8 )
     map.source = source
 
     parser.filter( map )

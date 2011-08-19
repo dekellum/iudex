@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>iudex</groupId>
+  <artifactId>iudex-char-detector</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0.0</version>
+  <name>Iudex charset detection support</name>
+
+  <parent>
+    <groupId>iudex</groupId>
+    <artifactId>iudex-parent</artifactId>
+    <version>1.0</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>iudex</groupId>
+      <artifactId>iudex-core</artifactId>
+      <version>[1.1,1.2)</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
+      <version>[4.8,4.9)</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Parent settings -->
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

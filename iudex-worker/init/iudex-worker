@@ -24,7 +24,7 @@
 
 require 'rubygems'
 
-gem( "iudex-worker", "= 1.0.0" )
+gem( "iudex-worker", "= 1.1.0" )
 
 module IudexInitScript
 

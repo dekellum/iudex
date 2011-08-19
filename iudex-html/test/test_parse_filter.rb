@@ -32,20 +32,20 @@ class TestParseFilter < MiniTest::Unit::TestCase
   end
 
   def test_marked
-    assert( ! marked?( "" ) )
-    assert( ! marked?( "simple" ) )
-    assert( ! marked?( "<simple" ) )
-    assert( ! marked?( "x < y" ) )
-    assert( ! marked?( "AT&T" ) )
-    assert( ! marked?( "AT & T;" ) )
+    refute( marked?( "" ) )
+    refute( marked?( "simple" ) )
+    refute( marked?( "<simple" ) )
+    refute( marked?( "x < y" ) )
+    refute( marked?( "AT&T" ) )
+    refute( marked?( "AT & T;" ) )
 
-    assert(   marked?( "<a>" ) )
-    assert(   marked?( "Words &copy; 2010" ) )
-    assert(   marked?( "&#xf43e;" ) )
-    assert(   marked?( "&#2028;" ) )
-    assert(   marked?( "<![CDATA[simple]]>" ) )
-    assert(   marked?( "<![CDATA[simple" ) )
-    assert(   marked?( "<!-- comment -->" ) )
+    assert( marked?( "<a>" ) )
+    assert( marked?( "Words &copy; 2010" ) )
+    assert( marked?( "&#xf43e;" ) )
+    assert( marked?( "&#2028;" ) )
+    assert( marked?( "<![CDATA[simple]]>" ) )
+    assert( marked?( "<![CDATA[simple" ) )
+    assert( marked?( "<!-- comment -->" ) )
   end
 
   def marked?( text )
@@ -54,6 +54,7 @@ class TestParseFilter < MiniTest::Unit::TestCase
 
   def test_markup
     tests = [ [ "simple",               0, "simple" ],
+              [ "AT&T",                 0, "AT&T" ],
               [ "<i>inner</i>",         1, nil ],
               [ "&lt;i>inner&lt;/i>",   2, nil ],
               [    "<!--ignore-->text", 1, "text" ],
@@ -61,6 +62,21 @@ class TestParseFilter < MiniTest::Unit::TestCase
               [ "&lt;",                 1, "<" ],
               [ "&amp;lt;",             2, "<" ] ]
 
+    @filter.min_parse = 0
+    tests.each do | input, count, out |
+      map = UniMap.new
+      map.title = input
+      assert_equal( count, @filter.parse_loop( map ), input )
+      assert_equal( out, map.title && map.title.to_s )
+    end
+  end
+
+  def test_markup_nochange
+    tests = [ [ "simple",               1, "simple" ],
+              [ "AT&T",                 1, "AT&T" ],
+              [ "<i>AT&T</i>",          1, nil ] ]
+
+    @filter.min_parse = 1
     tests.each do | input, count, out |
       map = UniMap.new
       map.title = input

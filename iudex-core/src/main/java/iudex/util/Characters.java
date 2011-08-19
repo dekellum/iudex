@@ -231,6 +231,8 @@ public final class Characters
         case 0x2009:
         case 0x200A:
         case 0x200B: // ZERO WIDTH SPACE
+            //FIXME: Zero widths, joiner, etc. should be removed instead of
+            //replaced?
 
         case 0x2028: // LINE SEPARATOR
         case 0x2029: // PARAGRAPH SEPARATOR
@@ -238,6 +240,7 @@ public final class Characters
         case 0x202F: // NARROW NO-BREAK SPACE
 
         case 0x205F: // MEDIUM MATHEMATICAL SPACE
+        case 0x2060: // WORD JOINER
 
         case 0x3000: // IDEOGRAPHIC SPACE
 

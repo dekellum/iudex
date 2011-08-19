@@ -8,4 +8,4 @@ lib/iudex-rome.rb
 test/setup.rb
 test/simple_rss.xml
 test/test_rome.rb
-lib/iudex-rome/iudex-rome-1.0.0.jar
+lib/iudex-rome/iudex-rome-1.1.0.jar

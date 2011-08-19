@@ -1,4 +1,5 @@
 #!/usr/bin/env jruby
+# -*- coding: utf-8 -*-
 #.hashdot.profile += jruby-shortlived
 
 #--
@@ -86,9 +87,9 @@ HTML
     assert( f.has_display_none( '{display: none}' ) ) #lenient
     assert( f.has_display_none( 'other:foo; DISPLAY:NONE;' ) )
 
-    assert( ! f.has_display_none( 'display: block' ) )
-    assert( ! f.has_display_none( 'other-display: none' ) )
-    assert( ! f.has_display_none( 'display: nonetheless' ) )
+    refute( f.has_display_none( 'display: block' ) )
+    refute( f.has_display_none( 'other-display: none' ) )
+    refute( f.has_display_none( 'display: nonetheless' ) )
   end
 
   def test_css_display_filter
@@ -112,6 +113,13 @@ HTML
              :out => "<div><pre> &lt;i>keep&lt;/i> </pre></div>" }
 
     assert_transform( html, XmpToPreConverter.new )
+  end
+
+  def test_mojibake_cleaner
+    html = { :in  => "<div><p>ascii</p> Â° </div>",
+             :out => "<div><p>ascii</p> ~° </div>" }
+
+    assert_transform( html, MojiBakeCleaner.new )
   end
 
   def cut_atts( html, *atts )

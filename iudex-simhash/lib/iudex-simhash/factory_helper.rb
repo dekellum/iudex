@@ -28,9 +28,10 @@ module Iudex
                                    'config', 'stopwords.en' )
 
         def simhash_stopwords( wfile = DEFAULT_WORDS )
-          words = File.open( wfile ) { |fin| fin.readlines }
-          words.map! { |w| w.strip }
-          words.reject! { |w| w =~ /^#/ }
+          words =
+            File.open( wfile ) { |fin| fin.readlines }.
+            map { |w| w.strip }.
+            reject { |w| w =~ /^#/ }
 
           Gen::StopWordSet.new( words )
         end
@@ -40,7 +41,9 @@ module Iudex
         def simhash_generator( input = :simhash_generator_inputs,
                                stopwords = simhash_stopwords )
 
-          inputs = send( input ).map { |r| r.to_a }.map do | key, ratio |
+          inputs = send( input ).
+            map { |r| Array( r ) }.
+            map do | key, ratio |
             key = key.to_k
             i = if( key.value_type == Element.java_class )
                   SimHashGenerator::Input.forTree( key )

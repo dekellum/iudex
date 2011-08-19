@@ -14,3 +14,4 @@ test/setup.rb
 test/test_filter_base.rb
 test/test_filter_chain_factory.rb
 test/test_proc_filter.rb
+test/test_sublist_filter.rb
