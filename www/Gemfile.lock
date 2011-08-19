@@ -18,6 +18,7 @@ GEM
     jekyll-svg-plugin (1.0.0)
       imagesize (>= 0.1.1)
     json (1.5.3)
+    json (1.5.3-java)
     json-schema (0.9.10)
     kramdown (0.13.3)
     liquid (2.2.2)
@@ -29,6 +30,7 @@ GEM
     syntax (1.0.0)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
@@ -39,5 +41,5 @@ DEPENDENCIES
   json-schema (~> 0.9.8)
   kramdown (~> 0.13.3)
   liquid (~> 2.2.2)
-  minitest (~> 2.3.0)
+  minitest (~> 2.3)
   rake (>= 0.8.7)
