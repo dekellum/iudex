@@ -23,6 +23,7 @@ require 'iudex-http-test/broken_server'
 
 require 'iudex-jetty-httpclient'
 require 'thread'
+require 'cgi'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -185,6 +186,28 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                       s.url )
         assert_equal( 'GET /redirects/multi/1?sleep=0',
                       find_header( s.request_headers, "Request-Line" ) )
+      end
+    end
+  end
+
+  def test_redirect_multi_host
+    with_new_client do |client|
+      rurl = 'http://127.0.0.1:19292/index'
+      rurl_e = CGI.escape( rurl )
+      with_session_handler( client, "/redirect?loc=#{rurl_e}" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_bad_host
+    with_new_client do |client|
+      with_session_handler( client,
+                            "/redirect?loc=http://bad_host.com/" ) do |s,x|
+        assert_equal( -1, s.status_code )
+        assert_instance_of( UnresolvedAddressException, x )
+        # FIXME?
       end
     end
   end
