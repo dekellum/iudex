@@ -106,6 +106,12 @@ module Iudex::HTTP::Test
       redirect( to( '/index' ), 301 ) #"redirect body"
     end
 
+    get '/redirect' do
+      loc = params[ :loc ]
+      redirect loc if loc
+      halt 400, "loc query parameter required"
+    end
+
     get '/redirects/multi/:depth' do
       depth = params[:depth].to_i
       status = ( params[:code] || 302 ).to_i
