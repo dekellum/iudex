@@ -232,7 +232,7 @@ public class Client
                 }
                 catch( URISyntaxException e ) {
                     onException( e );
-                    //FIXME: Abort?
+                    cancel();
                 }
             }
 

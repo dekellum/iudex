@@ -35,6 +35,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.util.concurrent.TimeoutException'
   import 'java.net.ConnectException'
   import 'java.net.UnknownHostException'
+  import 'java.net.URISyntaxException'
   import 'java.io.IOException'
   import 'java.io.EOFException'
   import 'java.lang.IllegalStateException'
@@ -206,10 +207,9 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_redirect_bad_host
     with_new_client do |client|
       with_session_handler( client,
-                            "/redirect?loc=http://bad_host.com/" ) do |s,x|
+                            '/redirect?loc=http://\bad.com/' ) do |s,x|
         assert_equal( -1, s.status_code )
-        assert_instance_of( UnresolvedAddressException, x )
-        # FIXME?
+        assert_instance_of( URISyntaxException, x )
       end
     end
   end
