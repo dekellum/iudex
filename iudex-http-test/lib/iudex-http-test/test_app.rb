@@ -15,7 +15,10 @@
 #++
 
 require 'rack'
-require 'rack/mime' #FIXME: Otherwise rack can fail on threaded autoload
+
+#FIXME: Otherwise rack can fail on threaded autoload (to be fixed in jruby)
+require 'rack/mime'
+require 'rack/head'
 
 require 'sinatra/base'
 require 'markaby'
