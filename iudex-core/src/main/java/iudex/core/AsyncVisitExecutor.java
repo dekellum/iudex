@@ -64,6 +64,19 @@ public class AsyncVisitExecutor
         _doWaitOnGeneration = doWaitOnGeneration;
     }
 
+    public synchronized ThreadPoolExecutor startExecutor()
+    {
+        if( _executor == null ) {
+            LinkedBlockingQueue<Runnable> queue =
+                new LinkedBlockingQueue<Runnable>( _maxExecQueueCapacity );
+
+            _executor = new ThreadPoolExecutor( _maxThreads, _maxThreads,
+                                                30, TimeUnit.SECONDS,
+                                                queue );
+        }
+        return _executor;
+    }
+
     public synchronized void start()
     {
         if( _manager != null ) {
@@ -71,12 +84,7 @@ public class AsyncVisitExecutor
         }
         _manager = new Thread( this, "manager" );
 
-        LinkedBlockingQueue<Runnable> queue =
-            new LinkedBlockingQueue<Runnable>( _maxExecQueueCapacity );
-
-        _executor = new ThreadPoolExecutor( _maxThreads, _maxThreads,
-                                            30, TimeUnit.SECONDS,
-                                            queue );
+        startExecutor();
 
         if( _doShutdownHook ) {
             _shutdownHook = new ShutdownHook();
