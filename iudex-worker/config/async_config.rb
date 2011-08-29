@@ -4,7 +4,7 @@ RJack::Logback[ 'iudex.filter.core.FilterChain.agent' ].level =
 
 Iudex.configure do |c|
 
-  threads = 3
+  threads = 5
 
   c.setup_connect_props do
     { :database => 'iudex_test',

@@ -65,7 +65,9 @@ module Iudex
       def visit_executor( chain, wpoller, hclient )
         vexec = if @run_async
                   AsyncVisitExecutor.new( chain, wpoller ).tap do |ve|
+                    hclient.executor = ve.start_executor
                     hclient.host_access_listener = ve
+                    hclient.start
                   end
                 else
                   VisitExecutor.new( chain, wpoller )
