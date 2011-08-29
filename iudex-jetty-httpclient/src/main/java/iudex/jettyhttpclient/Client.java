@@ -33,6 +33,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.Address;
@@ -41,6 +42,7 @@ import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpFields.Field;
 import org.eclipse.jetty.io.Buffer;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,19 +59,9 @@ public class Client
         _client = client;
     }
 
-    @Override
-    public HTTPSession createSession()
+    public void setExecutor( ExecutorService executor )
     {
-        Session session = new Session();
-        session.setMaxContentLength( _maxContentLength );
-        session.setAcceptedContentTypes( _acceptedContentTypes );
-        return session;
-    }
-
-    @Override
-    public void request( HTTPSession session, ResponseHandler handler )
-    {
-        ((Session) session).execute( handler );
+        _client.setThreadPool( new ExecutorThreadPool( executor ) );
     }
 
     /**
@@ -92,6 +84,34 @@ public class Client
     public void setHostAccessListener( HostAccessListener listener )
     {
         _hostAccessListener = listener;
+    }
+
+    public void start() throws RuntimeException
+    {
+        try {
+            _client.start();
+        }
+        catch( RuntimeException x ) {
+            throw x;
+        }
+        catch( Exception x ) {
+            throw new RuntimeException( x );
+        }
+    }
+
+    @Override
+    public HTTPSession createSession()
+    {
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
+    }
+
+    @Override
+    public void request( HTTPSession session, ResponseHandler handler )
+    {
+        ((Session) session).execute( handler );
     }
 
     @Override
