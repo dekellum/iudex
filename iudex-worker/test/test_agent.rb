@@ -47,6 +47,14 @@ class TestAgent < MiniTest::Unit::TestCase
     assert_agent
   end
 
+  def test_agent_with_sample_config_async
+    # Test out the sample config
+    Hooker.load_file( File.join( File.dirname( __FILE__ ),
+                                 '..', 'config', 'async_config.rb' ) )
+
+    assert_agent
+  end
+
   def assert_agent
 
     # Stub VisitExecutor.start to allow agent.run to return early.

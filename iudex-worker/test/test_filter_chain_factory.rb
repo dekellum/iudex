@@ -26,6 +26,7 @@ require 'iudex-da/pool_data_source_factory'
 
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
+require 'iudex-httpclient-3'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex
