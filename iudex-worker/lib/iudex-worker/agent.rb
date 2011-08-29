@@ -36,6 +36,7 @@ module Iudex
       attr_accessor :run_async
 
       def initialize
+        @log = RJack::SLF4J[ self.class ]
         @run_async = false
         Hooker.apply( [ :iudex, :worker ], self )
       end
@@ -102,7 +103,10 @@ module Iudex
           @jetty_client.close if @jetty_client
           dsf.close
         end
+      rescue => e
+        @log.error( "On run: ", e )
       end
+
     end
 
   end
