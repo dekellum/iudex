@@ -7,7 +7,8 @@ Iudex.configure do |c|
   threads = 3
 
   c.setup_connect_props do
-    { :ds_pool  => { :max_active => threads / 3 * 2,
+    { :database => 'iudex_test',
+      :ds_pool  => { :max_active => threads / 3 * 2,
                      :max_idle   => threads / 3 },
       :loglevel => 1 }
   end
@@ -30,15 +31,15 @@ Iudex.configure do |c|
   c.setup_filter_factory do |ff|
 
     def ff.barc_writer
-      bw = super
-      bw.do_compress = false
-      bw
+      super.tap do |w|
+        w.do_compress = false
+      end
     end
 
     def ff.barc_directory
-      bdir = super
-      bdir.target_length = 2 * ( 1024 ** 2 )
-      bdir
+      super.tap do |bdir|
+        bdir.target_length = 2 * ( 1024 ** 2 )
+      end
     end
 
   end
