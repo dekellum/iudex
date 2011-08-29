@@ -4,7 +4,7 @@ RJack::Logback[ 'iudex.filter.core.FilterChain.agent' ].level =
 
 Iudex.configure do |c|
 
-  threads = 3
+  threads = 5
 
   c.setup_connect_props do
     { :database => 'iudex_test',
@@ -14,11 +14,13 @@ Iudex.configure do |c|
   end
 
   c.setup_worker do |worker|
-    worker.run_async = false
+    worker.run_async = true
   end
 
-  c.setup_http_client_3 do |mgr|
-    mgr.manager_params.max_total_connections = threads * 10
+  c.setup_jetty_httpclient do
+    { :timeout => 20_000,
+      :max_connections_per_address => 2,
+      :max_queue_size_per_address => 20 }
   end
 
   c.setup_visit_executor do |vx|

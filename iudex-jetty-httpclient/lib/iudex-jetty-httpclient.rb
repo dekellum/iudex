@@ -56,8 +56,6 @@ module Iudex
 
       jclient.register_listener( 'org.eclipse.jetty.client.RedirectListener' )
 
-      jclient.start
-
       jclient
     end
 

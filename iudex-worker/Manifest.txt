@@ -3,6 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 bin/iudex-worker-fg
+config/async_config.rb
 config/config.rb
 init/iudex-worker
 lib/iudex-worker/base.rb

@@ -23,6 +23,8 @@ require 'iudex-http-test/broken_server'
 
 require 'iudex-jetty-httpclient'
 require 'thread'
+require 'cgi'
+require 'uri'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -33,10 +35,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.util.concurrent.TimeoutException'
   import 'java.net.ConnectException'
   import 'java.net.UnknownHostException'
+  import 'java.net.URISyntaxException'
   import 'java.io.IOException'
   import 'java.io.EOFException'
   import 'java.lang.IllegalStateException'
   import 'java.nio.channels.UnresolvedAddressException'
+  import 'iudex.http.HostAccessListener'
 
   CustomUnit.register
 
@@ -185,6 +189,27 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                       s.url )
         assert_equal( 'GET /redirects/multi/1?sleep=0',
                       find_header( s.request_headers, "Request-Line" ) )
+      end
+    end
+  end
+
+  def test_redirect_multi_host
+    with_new_client do |client|
+      rurl = 'http://127.0.0.1:19292/index'
+      rurl_e = CGI.escape( rurl )
+      with_session_handler( client, "/redirect?loc=#{rurl_e}" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_bad_host
+    with_new_client do |client|
+      with_session_handler( client,
+                            '/redirect?loc=http://\bad.com/' ) do |s,x|
+        assert_equal( -1, s.status_code )
+        assert_instance_of( URISyntaxException, x )
       end
     end
   end
@@ -362,7 +387,13 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
-    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
+    if uri =~ /^http:/
+      @ha_listener.hostChange( URI.parse( uri ).host, nil )
+    else
+      uri = "http://localhost:#{server.port}#{uri}"
+      @ha_listener.hostChange( 'localhost', nil )
+    end
+
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
@@ -396,10 +427,40 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     client = JettyHTTPClient.create_client( o )
     begin
+      @ha_listener = HostAccessCounter.new
+      client.set_host_access_listener( @ha_listener )
+
+      client.start
+
       yield client
+
+      @ha_listener.check_hosts do |host,count|
+        assert_equal( 0, count, "host: #{host} count: #{count}" )
+      end
     ensure
       client.close
     end
+  end
+
+  class HostAccessCounter
+    include HostAccessListener
+
+    def initialize
+      @hosts = Hash.new { |k,v| k[v] = 0 }
+      @lock = Mutex.new
+    end
+
+    def hostChange( acquired, released )
+      @lock.synchronize do
+        @hosts[ acquired ] += 1 if acquired
+        @hosts[ released ] -= 1 if released
+      end
+    end
+
+    def check_hosts
+      @hosts.each { |h,c| yield( h, c ) }
+    end
+
   end
 
   class TestHandler < BaseResponseHandler

@@ -1,3 +1,4 @@
+
 #--
 # Copyright (c) 2008-2011 David Kellum
 #
@@ -32,6 +33,7 @@ module Iudex
     import 'iudex.core.ContentKeys'
     import 'iudex.core.ContentSource'
     import 'iudex.core.VisitExecutor'
+    import 'iudex.core.AsyncVisitExecutor'
     import 'iudex.core.VisitURL'
 
     module Filters

@@ -19,10 +19,6 @@
 
 require File.join( File.dirname( __FILE__ ), "setup" )
 
-RJack::Logback.config_console( :stderr => true, :mdc => "uhash" )
-
-RJack::Logback[ 'iudex' ].level = RJack::Logback::DEBUG
-
 require 'iudex-httpclient-3'
 
 require 'iudex-da'
@@ -30,10 +26,19 @@ require 'iudex-da/pool_data_source_factory'
 
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
+require 'iudex-httpclient-3'
 
 class TestFilterChainFactory < MiniTest::Unit::TestCase
   include Iudex
   include Gravitext::HTMap
+
+  def setup
+    RJack::Logback[ 'iudex' ].level = RJack::Logback::DEBUG
+  end
+
+  def teardown
+    RJack::Logback[ 'iudex' ].level = nil
+  end
 
   def test_filter
     fcf = Worker::FilterChainFactory.new( "test" )

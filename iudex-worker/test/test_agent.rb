@@ -27,6 +27,7 @@ class TestAgent < MiniTest::Unit::TestCase
 
   def setup
     Logback[ 'iudex.worker.FilterChainFactory' ].level = Logback::WARN
+    Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
   end
 
   def teardown
@@ -42,6 +43,14 @@ class TestAgent < MiniTest::Unit::TestCase
     # Test out the sample config
     Hooker.load_file( File.join( File.dirname( __FILE__ ),
                                  '..', 'config', 'config.rb' ) )
+
+    assert_agent
+  end
+
+  def test_agent_with_sample_config_async
+    # Test out the sample config
+    Hooker.load_file( File.join( File.dirname( __FILE__ ),
+                                 '..', 'config', 'async_config.rb' ) )
 
     assert_agent
   end
