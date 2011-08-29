@@ -430,6 +430,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       @ha_listener = HostAccessCounter.new
       client.set_host_access_listener( @ha_listener )
 
+      client.start
+
       yield client
 
       @ha_listener.check_hosts do |host,count|

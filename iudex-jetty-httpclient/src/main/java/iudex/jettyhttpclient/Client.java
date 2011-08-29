@@ -94,6 +94,19 @@ public class Client
         _hostAccessListener = listener;
     }
 
+    public void start() throws RuntimeException
+    {
+        try {
+            _client.start();
+        }
+        catch( RuntimeException x ) {
+            throw x;
+        }
+        catch( Exception x ) {
+            throw new RuntimeException( x );
+        }
+    }
+
     @Override
     public void close()
     {
