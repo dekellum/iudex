@@ -27,6 +27,7 @@ class TestAgent < MiniTest::Unit::TestCase
 
   def setup
     Logback[ 'iudex.worker.FilterChainFactory' ].level = Logback::WARN
+    Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
   end
 
   def teardown
