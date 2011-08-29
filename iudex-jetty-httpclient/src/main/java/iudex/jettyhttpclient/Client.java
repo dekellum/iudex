@@ -21,6 +21,8 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
+import iudex.http.HostAccessListenable;
+import iudex.http.HostAccessListener;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
@@ -47,7 +49,8 @@ import com.gravitext.util.Charsets;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
 
-public class Client implements HTTPClient, Closeable
+public class Client
+    implements HTTPClient, HostAccessListenable, Closeable
 {
     public Client( HttpClient client )
     {
@@ -83,6 +86,12 @@ public class Client implements HTTPClient, Closeable
     public void setMaxContentLength( int length )
     {
         _maxContentLength = length;
+    }
+
+    @Override
+    public void setHostAccessListener( HostAccessListener listener )
+    {
+        _hostAccessListener = listener;
     }
 
     @Override
@@ -156,6 +165,8 @@ public class Client implements HTTPClient, Closeable
             _exchange.setMethod( method().name() );
             _exchange.setURL( url() );
 
+            _host = _exchange.getAddress().getHost();
+
             for( Header h : _requestedHeaders ) {
                 _exchange.setRequestHeader(  h.name().toString(),
                                              h.value().toString() );
@@ -168,6 +179,16 @@ public class Client implements HTTPClient, Closeable
             }
         }
 
+        private void checkHostChange( String currentHost )
+        {
+            if( ! currentHost.equals( _host ) ) {
+                if( _hostAccessListener != null ) {
+                    _hostAccessListener.hostChange( currentHost, _host );
+                }
+                _host = currentHost;
+            }
+        }
+
         private void complete()
         {
             ResponseHandler handler = _handler;
@@ -176,7 +197,9 @@ public class Client implements HTTPClient, Closeable
                    "Handler already completed!" );
             }
             _handler = null;
-
+            if( _hostAccessListener != null ) {
+                _hostAccessListener.hostChange( null, _host );
+            }
             handler.sessionCompleted( this );
         }
 
@@ -202,12 +225,14 @@ public class Client implements HTTPClient, Closeable
                 _statusCode = status;
                 _statusText = decode( reason ).toString();
 
+                checkHostChange( getAddress().getHost() );
+
                 try {
                     Session.this.setUrl( lastURL() );
                 }
                 catch( URISyntaxException e ) {
                     onException( e );
-                    //FIXME: Abort?
+                    cancel();
                 }
             }
 
@@ -295,6 +320,15 @@ public class Client implements HTTPClient, Closeable
                 }
             }
 
+            @Override
+            protected void onRetry() throws IOException
+            {
+                // Detect host changes to indicate early host releases
+                checkHostChange( getAddress().getHost() );
+
+                super.onRetry();
+            }
+
             List<Header> requestHeaders()
             {
                 HttpFields fields = getRequestFields();
@@ -355,6 +389,7 @@ public class Client implements HTTPClient, Closeable
 
         private final Exchange _exchange = new Exchange();
         private ResponseHandler _handler = null;
+        private String _host = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
@@ -365,6 +400,8 @@ public class Client implements HTTPClient, Closeable
     }
 
     private final HttpClient _client;
+
+    private HostAccessListener _hostAccessListener = null;
 
     private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
