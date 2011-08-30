@@ -42,6 +42,8 @@ import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpFields.Field;
 import org.eclipse.jetty.io.Buffer;
+import org.eclipse.jetty.io.Connection;
+import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 import org.slf4j.Logger;
@@ -347,6 +349,15 @@ public class Client
                 checkHostChange( getAddress().getHost() );
 
                 super.onRetry();
+            }
+
+            @Override
+            protected Connection onSwitchProtocol( EndPoint endp )
+                throws IOException
+            {
+                _log.debug( "onSwitchProtocol: host {}",
+                            ( endp == null ) ? null : endp.getRemoteHost() );
+                return super.onSwitchProtocol( endp );
             }
 
             List<Header> requestHeaders()
