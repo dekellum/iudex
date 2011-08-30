@@ -245,7 +245,12 @@ public class Client
                                              Buffer reason )
             {
                 _statusCode = status;
-                _statusText = decode( reason ).toString();
+                if( reason != null ) {
+                    _statusText = decode( reason ).toString();
+                }
+                else {
+                    _statusText = null;
+                }
 
                 checkHostChange( getAddress().getHost() );
 
@@ -268,22 +273,27 @@ public class Client
             @Override
             protected void onResponseHeaderComplete()
             {
-                //check Content-Type
-                ContentType ctype = Headers.contentType( _responseHeaders );
+                if( _statusCode == 200 ) {
 
-                if( ! acceptedContentTypes().contains( ctype ) ) {
-                    _statusCode = NOT_ACCEPTED;
-                    abort();
-                }
-                else {
-                    int length = Headers.contentLength( _responseHeaders );
-                    if( length > maxContentLength() ) {
-                        _statusCode = TOO_LARGE_LENGTH;
+                    //check Content-Type
+                    ContentType ctype = Headers.contentType( _responseHeaders );
+
+                    if( ! acceptedContentTypes().contains( ctype ) ) {
+                        _statusCode = NOT_ACCEPTED;
+                        _statusText = null;
                         abort();
                     }
                     else {
-                        _body = new ResizableByteBuffer(
-                            ( length >= 0 ) ? length : 16 * 1024 );
+                        int length = Headers.contentLength( _responseHeaders );
+                        if( length > maxContentLength() ) {
+                            _statusCode = TOO_LARGE_LENGTH;
+                            _statusText = null;
+                            abort();
+                        }
+                        else {
+                            _body = new ResizableByteBuffer(
+                                        ( length >= 0 ) ? length : 16 * 1024 );
+                        }
                     }
                 }
             }
@@ -291,13 +301,20 @@ public class Client
             @Override
             protected void onResponseContent( Buffer content )
             {
-                ByteBuffer chunk = wrap( content );
-                if( _body.position() + chunk.remaining() > maxContentLength() ) {
-                    _statusCode = TOO_LARGE;
-                    abort();
+                if( _body != null ) {
+                    ByteBuffer chunk = wrap( content );
+                    if( ( _body.position() + chunk.remaining() ) >
+                        maxContentLength() ) {
+                        _statusCode = TOO_LARGE;
+                        _statusText = null;
+                        abort();
+                    }
+                    else {
+                        _body.put( chunk );
+                    }
                 }
                 else {
-                    _body.put( chunk );
+                    _log.debug( "Ignoring onResponseContent" );
                 }
             }
 
