@@ -73,6 +73,9 @@ public class AsyncVisitExecutor
             _executor = new ThreadPoolExecutor( _maxThreads, _maxThreads,
                                                 30, TimeUnit.SECONDS,
                                                 queue );
+
+            _executor.setRejectedExecutionHandler(
+                new ThreadPoolExecutor.CallerRunsPolicy() );
         }
         return _executor;
     }
@@ -470,7 +473,7 @@ public class AsyncVisitExecutor
     private long _maxShutdownWait         = 19 * 1000; //19s
     private boolean _doWaitOnGeneration   = false;
     private boolean _doShutdownHook       = true;
-    private int   _maxExecQueueCapacity   = 1000;
+    private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
     private int   _maxAccessCount         = 2;
 
     private Thread _manager               = null;
