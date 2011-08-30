@@ -207,6 +207,8 @@ public class AsyncVisitExecutor
             return;
         }
 
+        dumpHostCounts();
+
         if( _visitQ != null ) {
             delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
         }
@@ -276,6 +278,11 @@ public class AsyncVisitExecutor
            else {
                count.adjust( 1 );
            }
+           _log.debug( "Acquired host {} c: {} qo: {} qn: {}",
+                       new Object[] { host,
+                                      count.count(),
+                                      count.queue(),
+                                      queue } );
            if( queue != null ) count.push( queue );
            return count.count();
        }
@@ -285,7 +292,10 @@ public class AsyncVisitExecutor
     {
        synchronized( _hostCounts ) {
            AccessCount count = _hostCounts.get( host );
-           if( count.adjust( -1 ) == 0 ) {
+           int adjusted = count.adjust( -1 );
+           _log.debug( "Release host {} c: {} q: {}",
+                       new Object[] { host, adjusted, count.queue() } );
+           if( adjusted == 0 ) {
                HostQueue queue = count.pop();
                if( queue != null ) {
                    queue.setNextVisit( queue.lastTake() + _minHostDelay );
@@ -293,6 +303,27 @@ public class AsyncVisitExecutor
                }
            }
        }
+    }
+
+    private void dumpHostCounts()
+    {
+        if( _log.isDebugEnabled() ) {
+            StringBuilder out = new StringBuilder();
+            out.append(  "Host Counts Dump ::\n" );
+            synchronized( _hostCounts ) {
+                for( Map.Entry<String,AccessCount> e : _hostCounts.entrySet() ) {
+                    String host = e.getKey();
+                    AccessCount count = e.getValue();
+                    if( ( count.count() > 0 ) || ( count.queue() != null ) ) {
+                        out.append( String.format( "%30s %5d %s\n",
+                                                   host,
+                                                   count.count(),
+                                                   count.queue() ) );
+                    }
+                }
+            }
+            _log.debug( out.toString() );
+        }
     }
 
     private static final class AccessCount
@@ -323,6 +354,11 @@ public class AsyncVisitExecutor
         public int count()
         {
             return _count;
+        }
+
+        public HostQueue queue()
+        {
+            return _queue;
         }
 
         private int _count;
@@ -359,6 +395,8 @@ public class AsyncVisitExecutor
     private void shutdown( boolean fromVM )
         throws InterruptedException
     {
+        dumpHostCounts();
+
         Thread manager = null;
 
         synchronized( this ) {
