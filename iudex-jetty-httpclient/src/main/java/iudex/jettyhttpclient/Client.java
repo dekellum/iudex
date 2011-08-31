@@ -253,11 +253,15 @@ public class Client
                 else {
                     _statusText = null;
                 }
+                _log.debug( "onResponseStatus: {} {}",
+                            _statusCode, _statusText );
 
                 checkHostChange( getAddress().getHost() );
 
                 try {
-                    Session.this.setUrl( lastURL() );
+                    String lastURL = lastURL();
+                    _log.debug( "onResponseStatus: url: {}", lastURL );
+                    Session.this.setUrl( lastURL );
                 }
                 catch( URISyntaxException e ) {
                     onException( e );
