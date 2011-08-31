@@ -38,6 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.Address;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpFields.Field;
@@ -379,6 +380,19 @@ public class Client
                 _log.debug( "onSwitchProtocol: host {}",
                             ( endp == null ) ? null : endp.getRemoteHost() );
                 return super.onSwitchProtocol( endp );
+            }
+
+            @Override
+            protected void expire( HttpDestination destination )
+            {
+                try {
+                    super.expire( destination );
+                }
+                catch( IllegalStateException x ) {
+                    _log.debug( "On expire: ", x );
+                    onException( x );
+                    cancel();
+                }
             }
 
             List<Header> requestHeaders()
