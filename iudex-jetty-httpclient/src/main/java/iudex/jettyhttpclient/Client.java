@@ -170,6 +170,7 @@ public class Client
 
         public void abort()
         {
+            _log.debug( "Aborting with statusCode: {}", _statusCode );
             _body = null;
             _exchange.onResponseComplete();
             _exchange.cancel();
@@ -340,6 +341,9 @@ public class Client
             protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
+                    if( _handler == null ) {
+                        _log.error( "On Exception (already handled): ", t );
+                    }
                     _statusCode = ERROR;
                     setError( (Exception) t );
                     complete();
