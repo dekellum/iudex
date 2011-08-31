@@ -204,6 +204,46 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_redirect_multi_host_bad
+    skip( "Fails to complete, with java.lang.NumberFormatException" )
+    with_new_client do |client|
+      rurl = 'http://localhost:19292/index'
+      url = "http://127.0.0.1:19292?redirect?loc=" + CGI.escape( rurl )
+      # Note >?<redirect? above
+      url = "/redirect?loc=" + CGI.escape( url )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_multi_host_3
+    with_new_client do |client|
+      rurl = 'http://localhost:19292/index'
+      url = "http://127.0.0.1:19292/redirect?loc=" + CGI.escape( rurl )
+      url = "/redirect?loc=" + CGI.escape( url )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_multi_host_fragment
+    with_new_client do |client|
+      rurl = '/index#!foo'
+      url = "/redirect?loc=" + CGI.escape( rurl )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( 'http://localhost:19292' + rurl, s.url )
+      end
+    end
+  end
+
   def test_redirect_bad_host
     with_new_client do |client|
       with_session_handler( client,
