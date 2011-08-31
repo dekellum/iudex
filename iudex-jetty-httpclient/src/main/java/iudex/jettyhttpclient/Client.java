@@ -423,10 +423,17 @@ public class Client
             {
                 try {
                     Address adr = getAddress();
-                    URI uri = new URI( decode( getScheme() ).toString(),
+                    String scheme = decode( getScheme() ).toString();
+                    int port = adr.getPort();
+                    if( ( scheme.equals( "http" ) && port == 80 ) ||
+                        ( scheme.equals( "https" ) && port == 443 ) ) {
+                        port = -1;
+                    }
+
+                    URI uri = new URI( scheme,
                                        null,
                                        adr.getHost(),
-                                       adr.getPort(),
+                                       port,
                                        null,
                                        null,
                                        null );
