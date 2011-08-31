@@ -333,6 +333,36 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs.stop
   end
 
+  def test_early_close
+    bs = BrokenServer.new
+    bs.start
+
+    sthread = Thread.new do
+      bs.accept do |sock|
+        sock.write "HTTP/1.1 200 OK\r\n"
+        sock.write "Content-Type: text/plain\r\n"
+        sock.write "Transfer-Encoding: chunked\r\n"
+        sock.write "\r\n"
+        sock.write "FF3DF\r\n"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.close
+      end
+    end
+
+    with_new_client do |client|
+      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( EOFException, x )
+      end
+    end
+
+    sthread.join
+
+  ensure
+    bs.stop
+  end
+
   def test_redirect_early_close
     bs = BrokenServer.new
     bs.start
