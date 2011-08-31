@@ -421,18 +421,31 @@ public class Client
 
             private String lastURL() throws URISyntaxException
             {
-                Address adr = getAddress();
-                URI uri = new URI( decode( getScheme() ).toString(),
-                                   null,
-                                   adr.getHost(),
-                                   adr.getPort(),
-                                   null,
-                                   null,
-                                   null );
+                try {
+                    Address adr = getAddress();
+                    URI uri = new URI( decode( getScheme() ).toString(),
+                                       null,
+                                       adr.getHost(),
+                                       adr.getPort(),
+                                       null,
+                                       null,
+                                       null );
 
-                uri = uri.resolve( getURI() );
-
-                return uri.toString();
+                    uri = uri.resolve( getURI() );
+                    return uri.toString();
+                }
+                // URI can also throw IllegalArgumentException wrapping
+                // a URISyntaxException. Unwrap it.
+                catch ( IllegalArgumentException x ) {
+                    Throwable cause = x.getCause();
+                    if( ( cause != null ) &&
+                        ( cause instanceof URISyntaxException ) ) {
+                        throw (URISyntaxException) cause;
+                    }
+                    else {
+                        throw x;
+                    }
+                }
             }
 
             private CharBuffer decode( Buffer b )
