@@ -176,6 +176,20 @@ module Iudex::HTTP::Test
       [ 200, { 'Content-Type' => 'text/plain' }, GiantGenerator.new ]
     end
 
+    class ShortGenerator < GiantGenerator
+      def each
+        1000.times { yield FILLER }
+        Process.kill( "KILL", 0 )
+      end
+    end
+
+    get '/giant/short' do
+      [ 301,
+        { 'Content-Type' => 'text/plain',
+          'Location' => '/somewhere/else' },
+        ShortGenerator.new ]
+    end
+
     def common( params )
       ps = [ :sleep, :con ].
         map { |k| ( v = params[k] ) && [ k, v ] }.
