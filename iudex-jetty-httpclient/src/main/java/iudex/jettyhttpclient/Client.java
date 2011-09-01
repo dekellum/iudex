@@ -124,11 +124,20 @@ public class Client
     public void close()
     {
         try {
+            dump();
             _client.stop();
         }
         catch( Exception e ) {
             _log.warn( "On close: {}", e.toString() );
             _log.debug( "On close:", e );
+        }
+    }
+
+    public void dump()
+    {
+        //FIXME: This can deadlock jetty threads!
+        if( _log.isDebugEnabled() ) {
+            _log.debug( "Jetty Client Dump ::\n{}", _client.dump() );
         }
     }
 
