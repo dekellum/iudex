@@ -26,10 +26,13 @@ import iudex.http.HostAccessListener;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -126,6 +129,15 @@ public class Client
         catch( Exception e ) {
             _log.warn( "On close: {}", e.toString() );
             _log.debug( "On close:", e );
+        }
+    }
+
+    public static class Expired
+        extends TimeoutException
+    {
+        public Expired()
+        {
+            super();
         }
     }
 
@@ -339,17 +351,38 @@ public class Client
             @Override
             protected void onExpire()
             {
-                onException( new TimeoutException( "expired" ) );
+                onException( new Expired() );
             }
 
             @Override
             protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
+
                     if( _handler == null ) {
                         _log.error( "On Exception (already handled): ", t );
                     }
-                    _statusCode = ERROR;
+
+                    if( t instanceof Expired ) {
+                        _statusCode = TIMEOUT;
+                    }
+                    else if( t instanceof TimeoutException ) {
+                        _statusCode = TIMEOUT_CONNECT;
+                    }
+                    else if( t instanceof SocketTimeoutException ) {
+                        _statusCode = TIMEOUT_SOCKET;
+                    }
+                    else if( ( t instanceof UnresolvedAddressException ) ||
+                             ( t instanceof UnknownHostException ) ) {
+                        _statusCode = UNRESOLVED;
+                    }
+                    else if( t instanceof URISyntaxException ) {
+                        _statusCode = INVALID_REDIRECT_URL;
+                    }
+                    else {
+                        _statusCode = ERROR;
+                    }
+
                     setError( (Exception) t );
                     complete();
                 }

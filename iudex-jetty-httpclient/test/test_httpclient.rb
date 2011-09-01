@@ -124,6 +124,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                      :idle_timeout    => 10_000 ) do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
+        assert_equal( HTTPSession::UNRESOLVED, s.status_code )
         assert_includes( [ UnresolvedAddressException,
                            UnknownHostException ], x.class )
       end
@@ -147,7 +148,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :short => true ) do |client|
       with_session_handler( client,
                             "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( TimeoutException, x )
+        assert_includes( (-42..-40), s.status_code )
+        assert_kind_of( TimeoutException, x )
       end
     end
   ensure
@@ -165,7 +167,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_timeout
     with_new_client( :short => true ) do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
-        assert_instance_of( TimeoutException, x )
+        assert_includes( (-42..-40), s.status_code )
+        assert_kind_of( TimeoutException, x )
       end
     end
     sleep 0.70 # FIXME: Account for test server delay. Should be
@@ -248,7 +251,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       with_session_handler( client,
                             '/redirect?loc=http://\bad.com/' ) do |s,x|
-        assert_equal( -1, s.status_code )
+        assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
         assert_instance_of( URISyntaxException, x )
       end
     end
