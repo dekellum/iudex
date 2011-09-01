@@ -181,6 +181,29 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_external_redirect
+    with_new_client do |client|
+      with_session_handler( client, "http://read.bi/no6BUy" ) do |s,x|
+        assert_nil( x )
+        assert_equal( 200, s.status_code, s.url )
+        assert_equal( 'http://www.businessinsider.com/sony-hmz-t1-2011-8', s.url )
+      end
+    end
+  end
+
+  def test_external_redirect_2
+    with_new_client do |client|
+      with_session_handler( client, "http://awe.sm/5SCTg" ) do |s,x|
+        assert_nil( x )
+        assert_equal( 'http://www.extremaduradehoy.com/periodico/deportes' +
+                      '/la_extremena_lucia_mateos_campeona_del_mundo' +
+                      '_de_clubes_de_buceo_de_competicion-144985.html',
+                      s.url )
+        assert_equal( 200, s.status_code )
+      end
+    end
+  end
+
   def test_redirect_with_query_string
     with_new_client do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
