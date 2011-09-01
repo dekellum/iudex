@@ -207,6 +207,9 @@ public class Client
                 _exchange.setRequestHeader(  h.name().toString(),
                                              h.value().toString() );
             }
+
+            _exchange.onSend();
+
             try {
                 _client.send( _exchange );
             }
@@ -232,6 +235,8 @@ public class Client
                 throw new IllegalStateException(
                    "Handler already completed!" );
             }
+            _exchange.onComplete();
+
             _handler = null;
             if( _hostAccessListener != null ) {
                 _hostAccessListener.hostChange( null, _host );
@@ -247,10 +252,26 @@ public class Client
 
         private class Exchange extends HttpExchange
         {
+            /**
+             * Called by session for tracking.
+             */
+            void onSend()
+            {
+                _log.debug( "onSend Exchange {}", this );
+            }
+
+            /**
+             * Called by session.complete() for tracking.
+             */
+            void onComplete()
+            {
+               _log.debug( "onComplete Exchange {}", this );
+            }
 
             @Override
             protected void onRequestComplete()
             {
+                _log.debug( "onRequestComplete: {}", this );
             }
 
             @Override
