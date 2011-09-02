@@ -156,6 +156,12 @@ public class AsyncVisitExecutor
                 if( checkWorkPoll( now ) ) {
                     _log.warn( "Shutting down after {} generations",
                                _generation );
+
+                    synchronized( this ) {
+                        _manager = null;
+                        _running = false;
+                    }
+
                     shutdown();
                     return;
                 }
