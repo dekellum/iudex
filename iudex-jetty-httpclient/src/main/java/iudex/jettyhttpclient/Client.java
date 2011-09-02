@@ -135,9 +135,12 @@ public class Client
 
     public void dump()
     {
-        //FIXME: This can deadlock jetty threads!
-        if( _log.isDebugEnabled() ) {
-            _log.debug( "Jetty Client Dump ::\n{}", _client.dump() );
+        // Warning: Can deadlock jetty threads!
+        // Allow selective logging and only dump if debug logging enabled.
+        Logger log = LoggerFactory.getLogger( "iudex.jettyhttpclient.Dumper" );
+
+        if( log.isDebugEnabled() ) {
+            log.debug( "Jetty Client Dump ::\n{}", _client.dump() );
         }
     }
 
