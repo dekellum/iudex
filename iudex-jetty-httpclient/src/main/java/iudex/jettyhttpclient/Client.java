@@ -479,7 +479,7 @@ public class Client
 
                 return req.append( getMethod() ).
                            append( ' ' ).
-                           append( getURI() );
+                           append( getRequestURI() );
             }
 
             private String lastURL() throws URISyntaxException
@@ -501,7 +501,7 @@ public class Client
                                        null,
                                        null );
 
-                    uri = uri.resolve( getURI() );
+                    uri = uri.resolve( getRequestURI() );
                     return uri.toString();
                 }
                 // URI can also throw IllegalArgumentException wrapping

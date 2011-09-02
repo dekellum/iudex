@@ -208,7 +208,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_multi_host_bad
-    skip( "Fails to complete, with java.lang.NumberFormatException" )
+    skip( "Error: -1 java.lang.NumberFormatException" )
     with_new_client do |client|
       rurl = 'http://localhost:19292/index'
       url = "http://127.0.0.1:19292?redirect?loc=" + CGI.escape( rurl )
@@ -216,8 +216,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       url = "/redirect?loc=" + CGI.escape( url )
 
       with_session_handler( client, url ) do |s,x|
-        assert_equal( 200, s.status_code )
-        assert_equal( rurl, s.url )
+        assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
+        assert_instance_of( URISyntaxException, x )
       end
     end
   end
