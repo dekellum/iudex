@@ -64,6 +64,11 @@ public class AsyncVisitExecutor
         _doWaitOnGeneration = doWaitOnGeneration;
     }
 
+    public void setMaxGenerationsToShutdown( int generations )
+    {
+        _maxGenerationsToShutdown = generations;
+    }
+
     public synchronized ThreadPoolExecutor startExecutor()
     {
         if( _executor == null ) {
@@ -148,7 +153,12 @@ public class AsyncVisitExecutor
             long now = System.currentTimeMillis();
             while( _running ) {
 
-                checkWorkPoll( now );
+                if( checkWorkPoll( now ) ) {
+                    _log.warn( "Shutting down after {} generations",
+                               _generation );
+                    shutdown();
+                    return;
+                }
 
                 final HostQueue hq = _visitQ.take( maxTakeWait );
                 if( _running && ( hq != null ) ) {
@@ -201,13 +211,14 @@ public class AsyncVisitExecutor
      * WorkPollStrategy. If strategy returns a new VisitQueue, then await
      * for existing VisitTasks to complete.
      */
-    private synchronized void checkWorkPoll( long now )
+    private synchronized boolean checkWorkPoll( long now )
         throws InterruptedException
     {
         long delta = 0;
+        boolean doShutdown = false;
 
         if( _shutdown || now < _nextCheckWorkPoll ) {
-            return;
+            return doShutdown;
         }
 
         dumpHostCounts();
@@ -224,9 +235,14 @@ public class AsyncVisitExecutor
                     awaitExecutorEmpty();
                 }
 
-                ++_generation;
-
-                _visitQ = _poller.pollWork( null );
+                if( ( _maxGenerationsToShutdown > 0 ) &&
+                    ( _generation >= _maxGenerationsToShutdown ) ) {
+                    doShutdown = true;
+                }
+                else {
+                    ++_generation;
+                    _visitQ = _poller.pollWork( null );
+                }
             }
             else {
                 _poller.pollWork( _visitQ );
@@ -239,6 +255,7 @@ public class AsyncVisitExecutor
         }
 
         _nextCheckWorkPoll = now + delta;
+        return doShutdown;
     }
 
     private class VisitTask implements Runnable
@@ -475,6 +492,7 @@ public class AsyncVisitExecutor
     private boolean _doShutdownHook       = true;
     private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
     private int   _maxAccessCount         = 2;
+    private int   _maxGenerationsToShutdown = 0;
 
     private Thread _manager               = null;
     private ShutdownHook _shutdownHook    = null;
