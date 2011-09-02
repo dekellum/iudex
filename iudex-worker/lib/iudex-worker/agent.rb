@@ -34,10 +34,12 @@ module Iudex
       include Gravitext::HTMap
 
       attr_accessor :run_async
+      attr_accessor :common_executor
 
       def initialize
         @log = RJack::SLF4J[ self.class ]
         @run_async = false
+        @common_executor = true
         Hooker.apply( [ :iudex, :worker ], self )
       end
 
@@ -62,13 +64,9 @@ module Iudex
         end
       end
 
-      def visit_executor( chain, wpoller, hclient )
+      def visit_executor( chain, wpoller )
         vexec = if @run_async
-                  AsyncVisitExecutor.new( chain, wpoller ).tap do |ve|
-                    hclient.executor = ve.start_executor
-                    hclient.host_access_listener = ve
-                    hclient.start
-                  end
+                  AsyncVisitExecutor.new( chain, wpoller )
                 else
                   VisitExecutor.new( chain, wpoller )
                 end
@@ -93,7 +91,13 @@ module Iudex
           Hooker.apply( :filter_factory, fcf )
 
           fcf.filter do |chain|
-            vexec = visit_executor( chain, wpoller, hclient )
+            vexec = visit_executor( chain, wpoller )
+
+            if @run_async
+              hclient.host_access_listener = vexec
+              hclient.executor = vexec.start_executor if @common_executor
+              hclient.start
+            end
 
             Hooker.log_not_applied # All hooks should be used by now
 

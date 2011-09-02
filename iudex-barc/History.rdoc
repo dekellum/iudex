@@ -1,4 +1,7 @@
 === 1.1.0 (TBD)
+* Update to iudex-http ~> 1.1.0
+* Update to minitest ~> 2.3
+* BARCResponseHandler updates for iudex-http changes
 
 === 1.0.0 (2011-04-04)
 * Initial release.
