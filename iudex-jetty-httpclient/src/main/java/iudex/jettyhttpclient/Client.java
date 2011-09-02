@@ -384,6 +384,11 @@ public class Client
                         _log.error( "On Exception (already handled): ", t );
                     }
 
+                    if( ( t instanceof IllegalArgumentException ) &&
+                        ( t.getCause() instanceof URISyntaxException ) ) {
+                        t = t.getCause();
+                    }
+
                     if( t instanceof Expired ) {
                         _statusCode = TIMEOUT;
                     }

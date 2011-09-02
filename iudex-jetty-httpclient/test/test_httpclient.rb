@@ -249,8 +249,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_bad_host
     with_new_client do |client|
-      with_session_handler( client,
-                            '/redirect?loc=http://\bad.com/' ) do |s,x|
+      rurl = CGI.escape( 'http://\bad.com/' )
+      with_session_handler( client, "/redirect?loc=#{ rurl }" ) do |s,x|
         assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
         assert_instance_of( URISyntaxException, x )
       end
