@@ -64,6 +64,11 @@ public class AsyncVisitExecutor
         _doWaitOnGeneration = doWaitOnGeneration;
     }
 
+    public void setMaxGenerationsToShutdown( int generations )
+    {
+        _maxGenerationsToShutdown = generations;
+    }
+
     public synchronized ThreadPoolExecutor startExecutor()
     {
         if( _executor == null ) {
@@ -73,6 +78,9 @@ public class AsyncVisitExecutor
             _executor = new ThreadPoolExecutor( _maxThreads, _maxThreads,
                                                 30, TimeUnit.SECONDS,
                                                 queue );
+
+            _executor.setRejectedExecutionHandler(
+                new ThreadPoolExecutor.CallerRunsPolicy() );
         }
         return _executor;
     }
@@ -145,7 +153,18 @@ public class AsyncVisitExecutor
             long now = System.currentTimeMillis();
             while( _running ) {
 
-                checkWorkPoll( now );
+                if( checkWorkPoll( now ) ) {
+                    _log.warn( "Shutting down after {} generations",
+                               _generation );
+
+                    synchronized( this ) {
+                        _manager = null;
+                        _running = false;
+                    }
+
+                    shutdown();
+                    return;
+                }
 
                 final HostQueue hq = _visitQ.take( maxTakeWait );
                 if( _running && ( hq != null ) ) {
@@ -198,14 +217,17 @@ public class AsyncVisitExecutor
      * WorkPollStrategy. If strategy returns a new VisitQueue, then await
      * for existing VisitTasks to complete.
      */
-    private synchronized void checkWorkPoll( long now )
+    private synchronized boolean checkWorkPoll( long now )
         throws InterruptedException
     {
         long delta = 0;
+        boolean doShutdown = false;
 
         if( _shutdown || now < _nextCheckWorkPoll ) {
-            return;
+            return doShutdown;
         }
+
+        dumpHostCounts();
 
         if( _visitQ != null ) {
             delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
@@ -219,9 +241,14 @@ public class AsyncVisitExecutor
                     awaitExecutorEmpty();
                 }
 
-                ++_generation;
-
-                _visitQ = _poller.pollWork( null );
+                if( ( _maxGenerationsToShutdown > 0 ) &&
+                    ( _generation >= _maxGenerationsToShutdown ) ) {
+                    doShutdown = true;
+                }
+                else {
+                    ++_generation;
+                    _visitQ = _poller.pollWork( null );
+                }
             }
             else {
                 _poller.pollWork( _visitQ );
@@ -234,6 +261,7 @@ public class AsyncVisitExecutor
         }
 
         _nextCheckWorkPoll = now + delta;
+        return doShutdown;
     }
 
     private class VisitTask implements Runnable
@@ -276,6 +304,11 @@ public class AsyncVisitExecutor
            else {
                count.adjust( 1 );
            }
+           _log.debug( "Acquired host {} c: {} qo: {} qn: {}",
+                       new Object[] { host,
+                                      count.count(),
+                                      count.queue(),
+                                      queue } );
            if( queue != null ) count.push( queue );
            return count.count();
        }
@@ -285,7 +318,10 @@ public class AsyncVisitExecutor
     {
        synchronized( _hostCounts ) {
            AccessCount count = _hostCounts.get( host );
-           if( count.adjust( -1 ) == 0 ) {
+           int adjusted = count.adjust( -1 );
+           _log.debug( "Release host {} c: {} q: {}",
+                       new Object[] { host, adjusted, count.queue() } );
+           if( adjusted == 0 ) {
                HostQueue queue = count.pop();
                if( queue != null ) {
                    queue.setNextVisit( queue.lastTake() + _minHostDelay );
@@ -293,6 +329,27 @@ public class AsyncVisitExecutor
                }
            }
        }
+    }
+
+    private void dumpHostCounts()
+    {
+        if( _log.isDebugEnabled() ) {
+            StringBuilder out = new StringBuilder();
+            out.append(  "Host Counts Dump ::\n" );
+            synchronized( _hostCounts ) {
+                for( Map.Entry<String,AccessCount> e : _hostCounts.entrySet() ) {
+                    String host = e.getKey();
+                    AccessCount count = e.getValue();
+                    if( ( count.count() > 0 ) || ( count.queue() != null ) ) {
+                        out.append( String.format( "%30s %5d %s\n",
+                                                   host,
+                                                   count.count(),
+                                                   count.queue() ) );
+                    }
+                }
+            }
+            _log.debug( out.toString() );
+        }
     }
 
     private static final class AccessCount
@@ -323,6 +380,11 @@ public class AsyncVisitExecutor
         public int count()
         {
             return _count;
+        }
+
+        public HostQueue queue()
+        {
+            return _queue;
         }
 
         private int _count;
@@ -359,6 +421,8 @@ public class AsyncVisitExecutor
     private void shutdown( boolean fromVM )
         throws InterruptedException
     {
+        dumpHostCounts();
+
         Thread manager = null;
 
         synchronized( this ) {
@@ -432,8 +496,9 @@ public class AsyncVisitExecutor
     private long _maxShutdownWait         = 19 * 1000; //19s
     private boolean _doWaitOnGeneration   = false;
     private boolean _doShutdownHook       = true;
-    private int   _maxExecQueueCapacity   = 1000;
+    private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
     private int   _maxAccessCount         = 2;
+    private int   _maxGenerationsToShutdown = 0;
 
     private Thread _manager               = null;
     private ShutdownHook _shutdownHook    = null;

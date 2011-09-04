@@ -54,7 +54,7 @@ module Iudex
         jclient.__send__( "set_#{key}", value )
       end
 
-      jclient.register_listener( 'org.eclipse.jetty.client.RedirectListener' )
+      jclient.register_listener( 'iudex.jettyhttpclient.RedirectListener' )
 
       jclient
     end
