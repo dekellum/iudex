@@ -124,11 +124,23 @@ public class Client
     public void close()
     {
         try {
+            dump();
             _client.stop();
         }
         catch( Exception e ) {
             _log.warn( "On close: {}", e.toString() );
             _log.debug( "On close:", e );
+        }
+    }
+
+    public void dump()
+    {
+        // Warning: Can deadlock jetty threads!
+        // Allow selective logging and only dump if debug logging enabled.
+        Logger log = LoggerFactory.getLogger( "iudex.jettyhttpclient.Dumper" );
+
+        if( log.isDebugEnabled() ) {
+            log.debug( "Jetty Client Dump ::\n{}", _client.dump() );
         }
     }
 
