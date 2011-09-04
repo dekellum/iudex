@@ -15,7 +15,7 @@ t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
   h.extra_deps += [ [ 'iudex-http',             '~> 1.1.0' ],
-                    [ 'rjack-jetty',            '~> 7.4.3' ],
+                    [ 'rjack-jetty',            '~> 7.5.0' ],
                     [ 'hooker',                 '~> 1.0.0' ] ]
 
   h.testlib = :minitest
