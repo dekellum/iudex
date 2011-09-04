@@ -30,6 +30,26 @@ import com.gravitext.htmap.UniMap;
  */
 public class VisitQueue
 {
+    public long defaultMinHostDelay()
+    {
+        return _defaultMinHostDelay;
+    }
+
+    public void setDefaultMinHostDelay( long defaultMinHostDelay )
+    {
+        _defaultMinHostDelay = defaultMinHostDelay;
+    }
+
+    public int defaultMaxAccessPerHost()
+    {
+        return _defaultMaxAccessPerHost;
+    }
+
+    public void setDefaultMaxAccessPerHost( int defaultMaxAccessPerHost )
+    {
+        _defaultMaxAccessPerHost = defaultMaxAccessPerHost;
+    }
+
     public synchronized void addAll( List<UniMap> orders )
     {
         for( UniMap order : orders ) {
@@ -67,6 +87,7 @@ public class VisitQueue
      * returned, the calling thread owns it exclusively and must
      * guarantee to return it via untake() after removing the highest
      * priority visit order.
+     * @deprecated Use acquire/release instead.
      */
     public HostQueue take() throws InterruptedException
     {
@@ -81,6 +102,7 @@ public class VisitQueue
      * priority visit order.
      * @param maxWait maximum wait in milliseconds
      * @return HostQueue or null if maxWait exceeded
+     * @deprecated Use acquire/release instead.
      */
     public synchronized HostQueue take( long maxWait )
         throws InterruptedException
@@ -113,29 +135,77 @@ public class VisitQueue
         return ready;
     }
 
+    public synchronized UniMap acquire( long maxWait )
+        throws InterruptedException
+    {
+        UniMap job = null;
+        HostQueue hq = take( maxWait );
+        if( hq != null ) {
+            job = hq.remove();
+            untakeImpl( hq );
+        }
+        return job;
+    }
+
+    /**
+     * Release host by name from prior acquire
+     * @param host as previously acquired
+     * @param order optional, possibly new order to add with this release.
+     */
+    public synchronized void release( String host, UniMap order )
+    {
+        if( order != null ) privAdd( order );
+        --_orderCount;
+
+        HostQueue queue = _hosts.get( host );
+
+        if( queue.release() ) {
+            if( queue.size() > 0 ) {
+                _sleepHosts.add( queue );
+                notifyAll();
+            }
+            else if( queue.accessCount() == 0 ) {
+                _hosts.remove( queue.host() );
+            }
+        }
+    }
+
     /**
      * Return the previously taken HostQueue, after removing a single
      * visit order and adjusting the next visit time accordingly.
+     * @deprecated Use acquire/release instead.
      */
     public synchronized void untake( HostQueue queue )
     {
         --_orderCount;
-        if( queue.size() == 0 ) {
-            _hosts.remove( queue.host() );
-        }
-        else {
-            _sleepHosts.add( queue );
-            notifyAll();
+        queue.release();
+        untakeImpl( queue );
+    }
+
+    protected String hostKey( UniMap order )
+    {
+        return order.get( ContentKeys.URL ).host();
+    }
+
+    private void untakeImpl( HostQueue queue )
+    {
+        if( queue.isAvailable() ) {
+            if( queue.size() > 0 ) {
+                _sleepHosts.add( queue );
+                notifyAll();
+            }
         }
     }
 
     private void privAdd( UniMap order )
     {
-        String host = order.get( ContentKeys.URL ).host();
+        String host = hostKey( order );
 
         HostQueue queue = _hosts.get( host );
         final boolean isNew = ( queue == null );
-        if( isNew ) queue = new HostQueue( host );
+        if( isNew ) queue = new HostQueue( host,
+                                           _defaultMinHostDelay,
+                                           _defaultMaxAccessPerHost );
 
         queue.add( order );
 
@@ -147,8 +217,10 @@ public class VisitQueue
         ++_orderCount;
     }
 
-    private int _orderCount = 0;
+    private long _defaultMinHostDelay     = 500; //ms
+    private int  _defaultMaxAccessPerHost =   1;
 
+    private int _orderCount = 0;
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>();
 

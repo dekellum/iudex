@@ -16,6 +16,7 @@
 package iudex.core;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.PriorityQueue;
 
 import com.gravitext.htmap.UniMap;
@@ -38,11 +39,16 @@ public class HostQueue
         }
     }
 
-    public HostQueue( String host )
+    public HostQueue( String host, long minHostDelay, int maxAccessCount )
     {
         _host = host;
+        _minHostDelay = minHostDelay;
+        _maxAccess = maxAccessCount;
     }
 
+    /**
+     * @deprecated
+     */
     public long lastTake()
     {
         return _lastTake;
@@ -51,16 +57,12 @@ public class HostQueue
     public void setLastTake( long now )
     {
         _lastTake = now;
+        _nextVisit = _lastTake + _minHostDelay;
     }
 
     public long nextVisit()
     {
         return _nextVisit;
-    }
-
-    public void setNextVisit( long nextVisitMillis )
-    {
-        _nextVisit = nextVisitMillis;
     }
 
     public void add( UniMap order )
@@ -85,7 +87,25 @@ public class HostQueue
 
     public UniMap remove()
     {
-        return _work.remove();
+        ++_accessCount;
+        UniMap order = _work.remove();
+        order.set( ContentKeys.VISIT_START, new Date( _lastTake ) );
+        return order;
+    }
+
+    public int accessCount()
+    {
+        return _accessCount;
+    }
+
+    public boolean isAvailable()
+    {
+        return ( _accessCount < _maxAccess );
+    }
+
+    public boolean release()
+    {
+        return ( --_accessCount < _maxAccess );
     }
 
     /**
@@ -103,13 +123,16 @@ public class HostQueue
     }
     private static final PriorityComparator PRIORITY_COMPARATOR =
         new PriorityComparator();
-    private final String _host;
-    private long _nextVisit = 0;
-    private long _lastTake = 0;
 
-    // FIXME: Logically a priority queue but may be more optimal
-    // as a simple linked list FIFO, as we already get work from database in
-    // sorted priority order.
+    private final String _host;
+    private final long _minHostDelay;
+    private final int _maxAccess;
+
+    private long _nextVisit = 0;
+
+    private long _lastTake = 0;
+    private int  _accessCount = 0;
+
     private PriorityQueue<UniMap> _work =
         new PriorityQueue<UniMap>( 256, PRIORITY_COMPARATOR );
 

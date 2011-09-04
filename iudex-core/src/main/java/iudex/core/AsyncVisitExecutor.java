@@ -19,7 +19,6 @@ package iudex.core;
 import iudex.filter.FilterContainer;
 import iudex.http.HostAccessListener;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -173,8 +172,6 @@ public class AsyncVisitExecutor
                     int count = acquireHost( hq.host(), hq );
                     if( count <= _maxAccessCount ) {
                         UniMap order = hq.remove();
-                        order.set( ContentKeys.VISIT_START, new Date( now ) );
-
                         _executor.execute( new VisitTask( order ) );
                     }
                     else {
@@ -279,6 +276,8 @@ public class AsyncVisitExecutor
             }
             catch( RuntimeException x ) {
                 _log.error( "While processing: ", x );
+                //FIXME: Add this as executor thread error handler? InterOp
+                //with http clients?
             }
         }
 
@@ -324,7 +323,6 @@ public class AsyncVisitExecutor
            if( adjusted == 0 ) {
                HostQueue queue = count.pop();
                if( queue != null ) {
-                   queue.setNextVisit( queue.lastTake() + _minHostDelay );
                    _visitQ.untake( queue );
                }
            }
