@@ -154,6 +154,12 @@ public class VisitQueue
         return ready;
     }
 
+    /**
+     * Returns the highest priority of the available visit orders. May block
+     * up to maxWait milliseconds. Caller must call the
+     * {@link #release(UniMap, UniMap)}  when done processing this order.
+     * @return UniMap visit order or null if maxWait was  exceeded
+     */
     public synchronized UniMap acquire( long maxWait )
         throws InterruptedException
     {
@@ -169,8 +175,8 @@ public class VisitQueue
     }
 
     /**
-     * Release reference on host/domain previously acquired and possible add a
-     * new order.
+     * Release reference on host/domain previously obtained by
+     * {@link #acquire(long)}  and possibly add a new order.
      * @param acquired order with unchanged ContentKeys.URL from acquire.
      * @param newOrder optional, possibly new order to add with this release.
      */
