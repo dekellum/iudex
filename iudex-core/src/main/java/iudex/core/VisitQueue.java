@@ -31,7 +31,7 @@ import com.gravitext.htmap.UniMap;
  * host. The sleeping hosts queue is prioritized by least next visit
  * time.
  */
-public class VisitQueue
+public class VisitQueue implements VisitReleasable
 {
     public int defaultMinHostDelay()
     {
@@ -174,12 +174,7 @@ public class VisitQueue
         return job;
     }
 
-    /**
-     * Release reference on host/domain previously obtained by
-     * {@link #acquire(long)}  and possibly add a new order.
-     * @param acquired order with unchanged ContentKeys.URL from acquire.
-     * @param newOrder optional, possibly new order to add with this release.
-     */
+    @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
         if( newOrder != null ) privAdd( newOrder );
