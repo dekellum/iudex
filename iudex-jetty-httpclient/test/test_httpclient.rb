@@ -267,7 +267,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unfollowed_301_redirect
-    with_new_client( :max_redirects => 0 ) do |client|
+    with_new_client( :handle_redirects_internal => false ) do |client|
       with_session_handler( client, "/301" ) do |s,x|
         assert_equal( 301, s.status_code )
         lh = find_header( s.response_headers, "Location" )
