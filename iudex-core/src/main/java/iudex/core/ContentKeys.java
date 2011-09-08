@@ -116,6 +116,9 @@ public class ContentKeys
     public static final Key<UniMap> REFERENT =
         create( "referent", UniMap.class );
 
+    public static final Key<List<VisitURL>> REDIRECT_PATH =
+            createListKey( "redirect_path" );
+
     /**
      * The current state of content during a transform/update operation.
      */
