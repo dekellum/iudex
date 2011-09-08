@@ -210,8 +210,8 @@ public class ContentFetcher implements AsyncFilterContainer
                 if( ! newUrl.equals( _content.get( URL ) ) ) {
                     UniMap referer = _content.clone();
 
-                    //FIXME: Session might support obtaining the original
-                    //redirect code received. But for now we fake it:
+                    // FIXME: Session might support obtaining the original
+                    // redirect code received. But for now we fake it:
                     referer.set( STATUS, 302 );
 
                     // FIXME: Avoid circular reference for reference, and
