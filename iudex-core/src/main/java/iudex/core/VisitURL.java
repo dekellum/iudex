@@ -132,6 +132,25 @@ public final class VisitURL
         return _uhash;
     }
 
+    public VisitURL resolve( CharSequence other ) throws SyntaxException
+    {
+        try {
+            URI uri = normalize( _uri.resolve( preEncode( other ) ) );
+            return new VisitURL( uri );
+        }
+        catch( IllegalArgumentException x ) {
+            if( x.getCause() != null ) {
+                throw new SyntaxException( x.getCause() );
+            }
+            else {
+                throw new SyntaxException( x );
+            }
+        }
+        catch( URISyntaxException x ) {
+            throw new SyntaxException( x );
+        }
+    }
+
     public int compareTo( VisitURL other )
     {
         return uhash().compareTo( other.uhash() );
