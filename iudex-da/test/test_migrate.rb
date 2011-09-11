@@ -49,6 +49,11 @@ class TestMigrate < MiniTest::Unit::TestCase
     check_up_down
   end
 
+  def test_next_visit_profile
+    Hooker.add( [ :iudex, :migration_profiles ] ) { |p| p << :index_next_visit }
+    check_up_down
+  end
+
   def check_up_down
     suppress_messages? do
       migrate

@@ -18,6 +18,7 @@ db/0060_url_indexes.rb
 db/0070_add_created_at.rb
 db/0080_add_simhash.rb
 db/0081_remove_simhash_index.rb
+db/index_next_visit/0100_add_index_next_visit.rb
 db/simhash/0085_add_simhash_index.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
