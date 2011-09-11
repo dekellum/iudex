@@ -14,10 +14,10 @@ t = RJack::TarPit.new( 'iudex-da',
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
 
-  h.extra_deps += [ [ 'iudex-core',            '~> 1.1.0'  ],
-                    [ 'activerecord',          '~> 3.0.3'  ],
-                    [ 'jdbc-postgres',         '>= 8.4.702',  '< 9.1' ],
-                    [ 'activerecord-jdbcpostgresql-adapter', '~> 1.1.0' ],
+  h.extra_deps += [ [ 'iudex-core',            '~> 1.1.0'   ],
+                    [ 'activerecord',          '~> 3.0.10'  ],
+                    [ 'jdbc-postgres',         '~> 9.0.801' ],
+                    [ 'activerecord-jdbcpostgresql-adapter', '~> 1.1.3' ],
                     [ 'rjack-commons-dbcp',    '~> 1.4.0'  ],
                     [ 'rjack-commons-dbutils', '~> 1.3.0'  ] ]
 
