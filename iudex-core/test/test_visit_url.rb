@@ -30,6 +30,7 @@ class TestVisitURL < MiniTest::Unit::TestCase
   def test_normalize_basic
 
     sets = [ %w[ http://h.c/foo http://h.c/foo
+                                http://h.c//foo
                                 http://h.c/foo#anchor
                                 HTTP://H.C:80/foo
                                 HTTP://h.c/bar/../foo
@@ -109,6 +110,38 @@ class TestVisitURL < MiniTest::Unit::TestCase
 
     d = VisitURL.hash_domain( "other.com" );
     assert_equal( "ZleSiQ", d.to_s )
+  end
+
+  def test_resolve
+
+    sets = [ %w[ http://h.c/        http://h.c/foo ] << "",
+             %w[ http://h.c/        http://h.c/    ] << "",
+             %w[ http://h.c/        http://h.c/foo ] << " ",
+
+             %w[ http://h.c/        http://h.c/foo      .   ],
+             %w[ http://h.c/bar     http://h.c/foo     /bar ],
+             %w[ http://h.c/bar     http://h.c/foo      bar ],
+             %w[ http://h.c/bar     http://h.c/foo?q=1  bar ],
+             %w[ http://h.c/bar     http://h.c/foo/x/y /bar ],
+             %w[ http://h.c/foo/bar http://h.c/foo/x/y ../bar ],
+             %w[ http://h.c/foo/bar http://h.c/foo/     bar ],
+
+             %w[ http://h.c/a%20b/c%20d http://h.c/a%20b/f ] << "c d",
+
+             %w[ http://h.c/bar?q=1     http://h.c/foo      bar?q=1 ],
+             %w[ http://h.c/bar?q=1     http://h.c/foo/    /bar?q=1 ],
+             %w[ http://h.c/bar?q=1     http://h.c/foo?x=2  bar?q=1 ],
+             %w[ http://h.c/foo/bar?q=1 http://h.c/foo/     bar?q=1 ],
+             %w[ http://h.c/foo/bar?q=1 http://h.c/foo/   ./bar?q=1 ] ]
+
+    sets.each do |e,b,r|
+      expected = VisitURL.normalize( e )
+      base = VisitURL.normalize( b )
+      resolved = base.resolve( r )
+
+      assert_equal( expected.to_s, resolved.to_s, [ e,b,r ].inspect )
+    end
+
   end
 
 end
