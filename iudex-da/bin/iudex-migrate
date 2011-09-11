@@ -49,6 +49,12 @@ END
         { name.to_sym => value }
       end
     end
+    opts.on( "-p", "--profile NAME", String,
+             "Add a migration profile (ex: simhash)" ) do |p|
+      Hooker.add( [ :iudex, :migration_profiles ] ) do |profiles|
+        profiles << p
+      end
+    end
     opts.on( "-d", "--debug" ) do
       Logback[ 'iudex.da' ].level = Logback::DEBUG
     end
