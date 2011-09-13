@@ -108,6 +108,10 @@ public class RedirectHandler implements Filter
 
                     order.set( URL, newUrl );
 
+                    //FIXME: Set old as LAST key?
+
+                    //Release here, add new work new filter?
+
                     _releaser.release( old, order );
 
                     // FIXME: Split this up into two filters. Possible moving
