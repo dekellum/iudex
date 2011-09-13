@@ -17,11 +17,7 @@
 class AddIndexNextVisit < ActiveRecord::Migration
 
   def self.up
-    execute <<-SQL
-      CREATE INDEX "index_urls_on_next_visit_after"
-      ON urls
-        (next_visit_after DESC)
-    SQL
+    add_index( 'urls', 'next_visit_after' )
   end
 
   def self.down
