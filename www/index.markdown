@@ -18,6 +18,7 @@ Notable features:
 
 See also:
 
+* [Redirect Handling](redirects.html)
 * [Development Guide](dev.html)
 
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
