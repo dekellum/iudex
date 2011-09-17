@@ -31,7 +31,7 @@ import com.gravitext.htmap.UniMap;
  * host. The sleeping hosts queue is prioritized by least next visit
  * time.
  */
-public class VisitQueue implements VisitReleasable
+public class VisitQueue implements VisitCounter
 {
     public int defaultMinHostDelay()
     {

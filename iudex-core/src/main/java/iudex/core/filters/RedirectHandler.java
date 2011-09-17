@@ -24,7 +24,7 @@ import java.util.List;
 
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.VisitReleasable;
+import iudex.core.VisitCounter;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.Filter;
@@ -35,7 +35,7 @@ import iudex.http.Headers;
 
 public class RedirectHandler implements Filter
 {
-    public RedirectHandler( VisitReleasable releaser )
+    public RedirectHandler( VisitCounter releaser )
     {
         _releaser = releaser;
     }
@@ -134,6 +134,6 @@ public class RedirectHandler implements Filter
         return true;
     }
 
-    private final VisitReleasable _releaser;
+    private final VisitCounter _releaser;
     private int _maxPath = 6;
 }

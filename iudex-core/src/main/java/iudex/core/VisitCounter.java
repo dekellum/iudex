@@ -18,8 +18,13 @@ package iudex.core;
 
 import com.gravitext.htmap.UniMap;
 
-public interface VisitReleasable
+public interface VisitCounter
 {
+    /**
+     * Add a new order.
+     */
+    void add( UniMap order );
+
     /**
      * Release reference on host/domain previously obtained and possibly
      * add a new order.
