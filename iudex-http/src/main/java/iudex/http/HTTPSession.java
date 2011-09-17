@@ -73,6 +73,12 @@ public abstract class HTTPSession implements Closeable
      */
     public static final int INVALID_REDIRECT_URL = -30;
 
+    public static final int MISSING_REDIRECT_LOCATION = -31;
+
+    public static final int MAX_REDIRECTS_EXCEEDED = -32;
+
+    public static final int REDIRECT_LOOP = -33;
+
     /**
      * Pseudo-HTTP status code: Timeout (general)
      */
