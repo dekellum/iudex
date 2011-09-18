@@ -27,7 +27,8 @@ public class ContentKeys
         create( "url", VisitURL.class );
 
     /**
-     * Registration level domain extracted from URL's host.
+     * Registration level domain extracted from URL's host, or lacking
+     * a registration match, the host itself.
      */
     public static final Key<String> RL_DOMAIN =
         create( "rl_domain", String.class );
