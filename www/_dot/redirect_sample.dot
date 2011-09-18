@@ -2,7 +2,7 @@ digraph "iudex-gems" {
   rankdir=LR;
   bgcolor="transparent";
   edge [ arrowsize=0.80, fontname=Arial, fontsize=9 ];
-  node [ shape=box, style="filled,rounded", fillcolor="#f7f2e1", fontsize=10, fontname=Arial ];
+  node [ shape=box, style="filled,rounded", fillcolor="#f7e8b5", fontsize=10, fontname=Arial ];
 
   u1 [ label="http://www/1" ]
   u2 [ label="http://www/2" ]

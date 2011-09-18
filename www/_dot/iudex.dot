@@ -1,8 +1,8 @@
 digraph "iudex-gems" {
   rankdir=LR;
-  size="6.5,4";
+  size="6.5,4.5";
   bgcolor="transparent";
-  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b",
+  node [ shape=box, style="filled,rounded", fillcolor="#f7e8b5",
          fontname="Arial",  margin="0.2,0.1" ];
 
   barc        [ label=<iudex<br/>barc>, target=_parent, URL="../barc.html" ];
