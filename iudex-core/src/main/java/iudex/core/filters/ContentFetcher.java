@@ -212,8 +212,9 @@ public class ContentFetcher implements AsyncFilterContainer
                 if( ! newUrl.equals( _content.get( URL ) ) ) {
                     UniMap referer = _content.clone();
 
-                    // FIXME: Session can not always support getting original
-                    // status code, so fake it by setting 302.
+                    // FIXME: HTTPClient-s can not always support getting
+                    // original status code for internal redirects, so fake
+                    // it by setting 302.
                     referer.set( STATUS, 302 );
 
                     // Back reference (careful: circular)

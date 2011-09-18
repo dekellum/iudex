@@ -65,7 +65,6 @@ class TestRedirectHandler < MiniTest::Unit::TestCase
     assert_equal( "http://www/2", order.last.url.to_s )
     assert_equal( "http://www/1", order.referer.url.to_s )
     assert_equal( "http://www/3", order.referer.referent.url.to_s )
-
   end
 
   def test_third_redirect
