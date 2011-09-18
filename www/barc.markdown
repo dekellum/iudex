@@ -27,7 +27,6 @@ features/advantages:
 * toc
 {:toc}
 
-
 ## BARC Format
 
 A Human/machine readable header used for first record (offset zero)
@@ -68,7 +67,6 @@ The following compression modes are currently defined:
 :----:| -----------
 C     | Gzip compressed
 P     | Plain (uncompressed)
-
 
 ## iudex-barc utility
 
