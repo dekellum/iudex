@@ -21,28 +21,30 @@ digraph "iudex-gems" {
   jetty_httpclient [ label=<iudex<br/>jetty-httpclient<br/>> ];
   http_test        [ label=<iudex<br/>http-test> ];
 
-  httpclient_3     -> http
+  httpclient_3     -> http [ weight=2 ];
   httpclient_3     -> http_test [ style=dashed ];
-  jetty_httpclient -> http
+  jetty_httpclient -> http;
   jetty_httpclient -> http_test [ style=dashed ];
 
   barc        -> http
   char_detect -> core
   core        -> barc
   core        -> filter
-  core        -> http
+  core        -> http [ weight=2 ];
   da          -> core
   html        -> core
   rome        -> core
   simhash     -> core
   simhash     -> html
-  worker      -> barc
+#  worker      -> barc
   worker      -> char_detect
   worker      -> da
-  worker      -> html
+#  worker      -> html
   worker      -> httpclient_3
+  worker      -> jetty_httpclient [ style=dashed ];
   worker      -> rome
   worker      -> simhash
+#  worker      -> core
 
 #  barc        -> "gravitext-util"
 #  barc        -> "rjack-slf4j"
