@@ -161,6 +161,8 @@ public class ContentFetcher implements AsyncFilterContainer
             }
 
             try {
+                // Note: this redirect handling is only for HTTPClient internal
+                // redirect handling, and may be eventually deprecated.
                 handleRedirect( session );
             }
             catch ( VisitURL.SyntaxException e ) {
@@ -210,16 +212,13 @@ public class ContentFetcher implements AsyncFilterContainer
                 if( ! newUrl.equals( _content.get( URL ) ) ) {
                     UniMap referer = _content.clone();
 
-                    //FIXME: Session might support obtaining the original
-                    //redirect code received. But for now we fake it:
+                    // FIXME: HTTPClient-s can not always support getting
+                    // original status code for internal redirects, so fake
+                    // it by setting 302.
                     referer.set( STATUS, 302 );
 
-                    // FIXME: Avoid circular reference for reference, and
-                    // stack overflow on toString, by just making a copy
-                    // with URL.
-                    UniMap referent = new UniMap();
-                    referent.set( URL, newUrl );
-                    referer.set( REFERENT, referent );
+                    // Back reference (careful: circular)
+                    referer.set( REFERENT, _content );
 
                     _content.set( REFERER, referer );
                     _content.set( URL, newUrl );

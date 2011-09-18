@@ -1,0 +1,17 @@
+digraph "iudex-gems" {
+  rankdir=LR;
+  bgcolor="transparent";
+  edge [ arrowsize=0.80 ];
+  node [ shape=box, style="filled", fillcolor="#f7f2e1", fontsize=10, fontname=Arial ];
+
+  order        [ shape=record,
+                 label="<t>order|URL: http://www/2|PRIORITY: 1.5|<l>LAST|<rf>REFERER" ];
+
+  referer      [ shape=record,
+                 label="<t>referer|URL: http://www/1|PRIORITY: 1.0|STATUS: 302|<rt>REFERENT" ];
+
+  order:rf   -> referer:t;
+  referer:rt -> order:t [ style=dashed ];
+
+  order:l    -> referer:t;
+}

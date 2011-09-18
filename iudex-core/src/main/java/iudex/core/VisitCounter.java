@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2011 David Kellum
+ * Copyright (c) 2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -14,27 +14,25 @@
  * permissions and limitations under the License.
  */
 
-package iudex.core.filters;
-
-import static iudex.core.ContentKeys.*;
-import iudex.core.VisitURL;
-import iudex.filter.Filter;
+package iudex.core;
 
 import com.gravitext.htmap.UniMap;
 
 /**
- * Set (registration level) RL_DOMAIN from URLs host.
+ * VisitQueue methods needed by filter transitions, and possibly delegated.
  */
-public class RLDomainFilter implements Filter
+public interface VisitCounter
 {
-    @Override
-    public boolean filter( UniMap content )
-    {
-        VisitURL url = content.get( URL );
-        if( url != null ) {
-            content.set( RL_DOMAIN, url.domain() );
-        }
+    /**
+     * Add a new order.
+     */
+    void add( UniMap order );
 
-        return true;
-    }
+    /**
+     * Release reference on host/domain previously obtained and possibly
+     * add a new order.
+     * @param acquired order with unchanged ContentKeys.URL from acquire.
+     * @param newOrder optional, possibly new order to add with this release.
+     */
+    void release( UniMap acquired, UniMap newOrder );
 }

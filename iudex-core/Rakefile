@@ -15,7 +15,7 @@ t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
   h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1'  ],
                     [ 'hooker',         '~> 1.0.0'  ],
-                    [ 'gravitext-util', '~> 1.5.0'  ],
+                    [ 'gravitext-util', '~> 1.5.1'  ],
                     [ 'iudex-filter',   '~> 1.1.0'  ],
                     [ 'iudex-http',     '~> 1.1.0'  ],
                     [ 'iudex-barc',     '~> 1.1.0'  ] ]
