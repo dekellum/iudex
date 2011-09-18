@@ -64,12 +64,8 @@ module Iudex
         end
       end
 
-      def visit_executor( chain, wpoller )
-        vexec = if @run_async
-                  AsyncVisitExecutor.new( chain, wpoller )
-                else
-                  VisitExecutor.new( chain, wpoller )
-                end
+      def visit_executor( wpoller )
+        vexec = VisitManager.new( wpoller )
         Hooker.apply( [ :iudex, :visit_executor ], vexec )
       end
 
@@ -90,11 +86,12 @@ module Iudex
 
           Hooker.apply( :filter_factory, fcf )
 
-          fcf.filter do |chain|
-            vexec = visit_executor( chain, wpoller )
+          vexec = visit_executor( wpoller )
+          fcf.visit_counter = vexec
 
+          fcf.filter do |chain|
+            vexec.filter_chain = chain
             if @run_async
-              hclient.host_access_listener = vexec
               hclient.executor = vexec.start_executor if @common_executor
               hclient.start
             end
