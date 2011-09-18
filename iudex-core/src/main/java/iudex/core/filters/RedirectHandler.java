@@ -74,7 +74,7 @@ public class RedirectHandler implements Filter
     private void handle( UniMap order )
         throws SyntaxException, BadRedirect
     {
-        List<Header> headers = order.get( RESPONSE_HEADERS );
+        final List<Header> headers = order.get( RESPONSE_HEADERS );
         Header locHeader = null;
         if( headers != null ) {
             locHeader = Headers.getFirst( headers, "Location" );
@@ -90,7 +90,7 @@ public class RedirectHandler implements Filter
 
         checkPath( 1, order, newUrl );
 
-        UniMap revOrder = order.clone();
+        final UniMap revOrder = order.clone();
         revOrder.set( URL, newUrl );
         revOrder.set( PRIORITY, order.get( PRIORITY ) + _priorityIncrease );
 
@@ -138,6 +138,16 @@ public class RedirectHandler implements Filter
         revOrder.remove( ETAG );
     }
 
+    private boolean isRedirect( int status )
+    {
+        //FIXME: Add 300 as well?
+
+        return ( ( status == 301 ) ||
+                 ( status == 302 ) ||
+                 ( status == 303 ) ||
+                 ( status == 307 ) );
+    }
+
     private static class BadRedirect
         extends Exception
     {
@@ -156,21 +166,11 @@ public class RedirectHandler implements Filter
             return _status;
         }
 
-        private int _status;
-    }
-
-    private boolean isRedirect( int status )
-    {
-        //FIXME: Add 300 as well?
-
-        return ( ( status == 301 ) ||
-                 ( status == 302 ) ||
-                 ( status == 303 ) ||
-                 ( status == 307 ) );
+        private final int _status;
     }
 
     private final VisitCounter _visitCounter;
-    private int _maxPath = 6;
 
+    private int _maxPath = 6;
     private float _priorityIncrease = 0.5f;
 }
