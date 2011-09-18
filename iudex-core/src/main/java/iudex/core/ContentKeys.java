@@ -113,11 +113,14 @@ public class ContentKeys
     public static final Key<UniMap> REFERER =
         create( "referer", UniMap.class );
 
+    public static final Key<UniMap> LAST =
+        create( "last", UniMap.class );
+
     public static final Key<UniMap> REFERENT =
         create( "referent", UniMap.class );
 
-    public static final Key<List<VisitURL>> REDIRECT_PATH =
-            createListKey( "redirect_path" );
+    public static final Key<UniMap> REVISIT_ORDER =
+        create( "revisit_order", UniMap.class );
 
     /**
      * The current state of content during a transform/update operation.

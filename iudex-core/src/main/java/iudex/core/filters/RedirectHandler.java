@@ -18,8 +18,8 @@ package iudex.core.filters;
 
 import static iudex.core.ContentKeys.*;
 import static iudex.http.HTTPKeys.*;
+import static iudex.http.HTTPSession.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gravitext.htmap.UniMap;
@@ -28,16 +28,14 @@ import iudex.core.VisitCounter;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.Filter;
-import iudex.filter.FilterException;
-import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
 
 public class RedirectHandler implements Filter
 {
-    public RedirectHandler( VisitCounter releaser )
+    public RedirectHandler( VisitCounter counter )
     {
-        _releaser = releaser;
+        _visitCounter = counter;
     }
 
     public void setMaxPath( int maxPath )
@@ -51,89 +49,128 @@ public class RedirectHandler implements Filter
     }
 
     @Override
-    public boolean filter( UniMap order ) throws FilterException
+    public boolean filter( UniMap order )
     {
-        int status = order.get( STATUS );
-        if( ( status == 301 ) ||
-            ( status == 302 ) ||
-            ( status == 303 ) ||
-            ( status == 307 ) ) {
+        // Release the (old URL) order first, to minimize lease duration and
+        // to insure it happens regardless.
+        _visitCounter.release( order, null );
 
-            //FIXME: Add 300 as well?
-
-            List<Header> headers = order.get( RESPONSE_HEADERS );
-            Header locHeader = Headers.getFirst( headers, "Location" );
-            if( locHeader != null ) {
-                final VisitURL oldUrl = order.get( URL );
-                try {
-                    VisitURL newUrl = oldUrl.resolve(
-                        Headers.asCharSequence( locHeader.value() ) );
-
-                    List<VisitURL> path = order.get( REDIRECT_PATH );
-                    if( path == null ) {
-                        path = new ArrayList<VisitURL>( 3 );
-                    }
-
-                    if( oldUrl.equals( newUrl ) ||
-                        path.contains( newUrl ) ||
-                        path.size() >= _maxPath  ) {
-
-                        //FIXME: Log these as debug at minimum?
-                        return true;
-                    }
-
-                    path.add( oldUrl );
-                    order.set( REDIRECT_PATH, path );
-
-                    // FIXME: Better to explicitly copy only certain known keys
-                    // from old order to new. For example, don't keep
-                    // HTTP statuses, header in new?
-
-                    UniMap referer = order.get( REFERER );
-                    if( referer == null ) {
-                        referer = order.clone();
-                        order.set( REFERER, referer );
-                    }
-
-                    // FIXME: Avoid circular reference of referer to referent,
-                    // and stack overflow on toString, by just making a copy
-                    // with URL.
-                    UniMap referent = new UniMap();
-                    referent.set( URL, newUrl );
-                    referer.set( REFERENT, referent );
-
-                    // FIXME: Change release interface to just take this url?
-                    UniMap old = new UniMap();
-                    old.set( URL, oldUrl );
-
-                    order.set( URL, newUrl );
-
-                    //FIXME: Set old as LAST key?
-
-                    //Release here, add new work new filter?
-
-                    _releaser.release( old, order );
-
-                    // FIXME: Split this up into two filters. Possible moving
-                    // part one up into the ContentFilter itself, allowing
-                    // additional logic to decide to follow the newUrl or not,
-                    // database read for newUrl, etc.
-
-                    // The newUrl order will be processed in due course, so
-                    // this chain should end.
-                    return false;
-                }
-                catch( SyntaxException e ) {
-                    order.set( STATUS, HTTPSession.INVALID_REDIRECT_URL );
-                    order.set( REASON, "i.c.f.RedirectHandler: " + e );
-                }
+        try {
+            if( isRedirect( order.get( STATUS ) ) ) {
+                handle( order );
             }
-            //FIXME: Log no Location header case.
+        }
+        catch( SyntaxException e ) {
+            order.set( STATUS, INVALID_REDIRECT_URL );
+            order.set( REASON, "i.c.f.RedirectHandler: " + e );
+        }
+        catch( BadRedirect e ) {
+            order.set( STATUS, e.status() );
         }
 
         return true;
     }
 
-    private final VisitCounter _releaser;
+    private void handle( UniMap order )
+        throws SyntaxException, BadRedirect
+    {
+        List<Header> headers = order.get( RESPONSE_HEADERS );
+        Header locHeader = null;
+        if( headers != null ) {
+            locHeader = Headers.getFirst( headers, "Location" );
+        }
+
+        if( locHeader == null ) {
+            throw new BadRedirect( MISSING_REDIRECT_LOCATION );
+        }
+
+        final VisitURL oldUrl = order.get( URL );
+        final VisitURL newUrl =
+            oldUrl.resolve( Headers.asCharSequence( locHeader.value() ) );
+
+        checkPath( 1, order, newUrl );
+
+        UniMap revOrder = order.clone();
+        revOrder.set( URL, newUrl );
+        revOrder.set( PRIORITY, order.get( PRIORITY ) + _priorityIncrease );
+
+        // HTTP state details don't apply to the new revOrder
+        clean( revOrder );
+
+        // Set REFERER if not already set
+        UniMap referer = revOrder.get( REFERER );
+        if( referer == null ) {
+            referer = order;
+            revOrder.set( REFERER, referer );
+        }
+
+        // Always set referer's referent to newest revOrder
+        // (careful, this is circular)
+        referer.set( REFERENT, revOrder );
+
+        revOrder.set( LAST, order );
+
+        // Set REVISIT_ORDER for {@link Revisitor}
+        order.set( REVISIT_ORDER, revOrder );
+    }
+
+    private void checkPath( final int depth,
+                            final UniMap order,
+                            final VisitURL newUrl )
+        throws BadRedirect
+    {
+        if( depth >= _maxPath ) {
+            throw new BadRedirect( MAX_REDIRECTS_EXCEEDED );
+        }
+        if( newUrl.equals( order.get( URL ) ) ) {
+            throw new BadRedirect( REDIRECT_LOOP );
+        }
+        final UniMap last = order.get( LAST );
+        if( last != null ) checkPath( depth + 1, last, newUrl );
+    }
+
+    private void clean( UniMap revOrder )
+    {
+        revOrder.remove( STATUS );
+        revOrder.remove( REASON );
+        revOrder.remove( REQUEST_HEADERS );
+        revOrder.remove( RESPONSE_HEADERS );
+        revOrder.remove( ETAG );
+    }
+
+    private static class BadRedirect
+        extends Exception
+    {
+        public BadRedirect( int status )
+        {
+            this( status, null );
+        }
+
+        public BadRedirect( int status, String message )
+        {
+            super( message );
+            _status = status;
+        }
+        public int status()
+        {
+            return _status;
+        }
+
+        private int _status;
+    }
+
+    private boolean isRedirect( int status )
+    {
+        //FIXME: Add 300 as well?
+
+        return ( ( status == 301 ) ||
+                 ( status == 302 ) ||
+                 ( status == 303 ) ||
+                 ( status == 307 ) );
+    }
+
+    private final VisitCounter _visitCounter;
     private int _maxPath = 6;
+
+    private float _priorityIncrease = 0.5f;
 }
