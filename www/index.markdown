@@ -12,13 +12,13 @@ to its novel prioritization and filtering features.
 Notable features:
 
 * [Prioritization](prioritization.html)
+* [Redirect Handling](redirects.html)
 * [BARC](barc.html)
 * [Data Access](da/index.html) (DA)
 * [Scalability and Fault Tolerance](distribution.html)
 
 See also:
 
-* [Redirect Handling](redirects.html)
 * [Development Guide](dev.html)
 
 [wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
