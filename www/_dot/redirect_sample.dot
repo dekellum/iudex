@@ -11,5 +11,5 @@ digraph "iudex-gems" {
 
   u1 -> u2 [ label=302 ];
   u2 -> u3 [ label=301 ];
-  u3 -> done [ label=200 ];
+  u3 -> done [ label=200, arrowhead=dot ];
 }

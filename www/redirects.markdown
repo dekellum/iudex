@@ -5,7 +5,7 @@ layout: sub
 
 Iūdex 1.0 supported only an `HTTPClient` _internal_ redirect mode,
 where the URL change was recorded by the `ContentFetcher`. Iūdex 1.1+
-supports an _external_ redirect mode, where:
+adds support for an _external_ redirect mode, where:
 
 * The `HTTPClient` implementation and `ContentFetcher` filter returns
   the redirect status and `Location` header (does not follow).
@@ -24,17 +24,17 @@ Consider the following sequence of redirects:
 
 {% svg svg/redirect_sample.svg %}
 
-The following gives the processing sequence with `UniMap` order states.
+The sections below give the processing sequence with `UniMap` order states.
 
 ### First order redirect
 
-Start the initial order:
+Starting with the initial order:
 
 {% svg svg/redirect_orders_0.svg %}
 
 A 302 status is returned from the `ContentFetcher`. The
 `RedirectHandler` creates a `REVISIT_ORDER`, and adjusts `LAST`,
-`REFERER`, and `REFERENT` values as show below:
+`REFERER`, and `REFERENT` values as shown:
 
 {% svg svg/redirect_orders_0a.svg %}
 
@@ -42,8 +42,9 @@ Note that `PRIORITY` is also increased by a fixed per-redirect value
 (configurable, 0.5 default), representing the value of work conducted
 thus far and prioritizing the redirect over existing queued work.
 
-The `Revisitor` then removes `REVISIT_ORDER` and resubmits it to the
-`VisitQueue`, terminating the filter chain.
+The `Revisitor` then removes `REVISIT_ORDER`, submits it to the
+`VisitQueue` (`VisitCounter` interface, via `VisitManager`), and
+terminates the current filter chain.
 
 ### Second order redirect
 
