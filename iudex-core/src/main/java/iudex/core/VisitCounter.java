@@ -18,6 +18,9 @@ package iudex.core;
 
 import com.gravitext.htmap.UniMap;
 
+/**
+ * VisitQueue methods needed by filter transitions, and possibly delegated.
+ */
 public interface VisitCounter
 {
     /**
@@ -32,5 +35,4 @@ public interface VisitCounter
      * @param newOrder optional, possibly new order to add with this release.
      */
     void release( UniMap acquired, UniMap newOrder );
-
 }
