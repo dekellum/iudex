@@ -102,59 +102,6 @@ public class VisitQueue implements VisitCounter
     }
 
     /**
-     * Take the next ready/highest priority host queue. May block
-     * indefinitely for the next ready queue. Once a HostQueue is
-     * returned, the calling thread owns it exclusively and must
-     * guarantee to return it via untake() after removing the highest
-     * priority visit order.
-     * @deprecated Use acquire/release instead.
-     */
-    public HostQueue take() throws InterruptedException
-    {
-        return take( Long.MAX_VALUE );
-    }
-
-    /**
-     * Take the next ready/highest priority host queue. May block up
-     * to maxWait for the next ready queue. If a HostQueue is
-     * returned, the calling thread owns it exclusively and must
-     * guarantee to return it via untake() after removing the highest
-     * priority visit order.
-     * @param maxWait maximum wait in milliseconds
-     * @return HostQueue or null if maxWait exceeded
-     * @deprecated Use acquire/release instead.
-     */
-    public synchronized HostQueue take( long maxWait )
-        throws InterruptedException
-    {
-        long now = System.currentTimeMillis();
-        HostQueue ready = null;
-        while( ( ( ready = _readyHosts.poll() ) == null ) &&
-               ( maxWait > 0 ) ) {
-            HostQueue next = null;
-            while( ( next = _sleepHosts.peek() ) != null ) {
-                if( ( now - next.nextVisit() ) >= 0 ) {
-                    addReady( _sleepHosts.remove() );
-                }
-                else break;
-            }
-            if( _readyHosts.isEmpty() ) {
-
-                long delay = maxWait;
-                if( next != null ) {
-                    delay = Math.min( next.nextVisit() - now + 1, maxWait );
-                }
-                wait( delay );
-                long nextNow = System.currentTimeMillis();
-                maxWait -= nextNow - now;
-                now = nextNow;
-            }
-        }
-        if( ready != null ) ready.setLastTake( now );
-        return ready;
-    }
-
-    /**
      * Returns the highest priority of the available visit orders. May block
      * up to maxWait milliseconds. Caller must call the
      * {@link #release(UniMap, UniMap)}  when done processing this order.
@@ -191,19 +138,6 @@ public class VisitQueue implements VisitCounter
         }
     }
 
-    /**
-     * Return the previously taken HostQueue, after removing a single
-     * visit order and adjusting the next visit time accordingly.
-     * @deprecated Use acquire/release instead.
-     */
-    public synchronized void untake( HostQueue queue )
-    {
-        --_orderCount;
-        queue.release();
-        untakeImpl( queue );
-        checkRemove( queue );
-    }
-
     protected String orderKey( UniMap order )
     {
         return order.get( ContentKeys.URL ).domain();
@@ -214,6 +148,42 @@ public class VisitQueue implements VisitCounter
         host = Domains.normalize( host );
         String domain = Domains.registrationLevelDomain( host );
         return ( domain != null ) ? domain : host;
+    }
+
+    /**
+     * Take the next ready/highest priority host queue. May block up
+     * to maxWait for the next ready queue.
+     * @param maxWait maximum wait in milliseconds
+     * @return HostQueue or null if maxWait exceeded
+     */
+    private synchronized HostQueue take( long maxWait )
+        throws InterruptedException
+    {
+        long now = System.currentTimeMillis();
+        HostQueue ready = null;
+        while( ( ( ready = _readyHosts.poll() ) == null ) &&
+               ( maxWait > 0 ) ) {
+            HostQueue next = null;
+            while( ( next = _sleepHosts.peek() ) != null ) {
+                if( ( now - next.nextVisit() ) >= 0 ) {
+                    addReady( _sleepHosts.remove() );
+                }
+                else break;
+            }
+            if( _readyHosts.isEmpty() ) {
+
+                long delay = maxWait;
+                if( next != null ) {
+                    delay = Math.min( next.nextVisit() - now + 1, maxWait );
+                }
+                wait( delay );
+                long nextNow = System.currentTimeMillis();
+                maxWait -= nextNow - now;
+                now = nextNow;
+            }
+        }
+        if( ready != null ) ready.setLastTake( now );
+        return ready;
     }
 
     private void checkRemove( HostQueue queue )

@@ -40,7 +40,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.io.EOFException'
   import 'java.lang.IllegalStateException'
   import 'java.nio.channels.UnresolvedAddressException'
-  import 'iudex.http.HostAccessListener'
 
   CustomUnit.register
 
@@ -494,13 +493,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
-    if uri =~ /^http:/
-      @ha_listener.hostChange( URI.parse( uri ).host, nil )
-    else
-      uri = "http://localhost:#{server.port}#{uri}"
-      @ha_listener.hostChange( 'localhost', nil )
-    end
-
+    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
@@ -533,39 +526,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     o = o.merge( opts )
 
     client = JettyHTTPClient.create_client( o )
+    client.start
+
     begin
-      @ha_listener = HostAccessCounter.new
-      client.set_host_access_listener( @ha_listener )
-
-      client.start
-
       yield client
-
-      @ha_listener.check_hosts do |host,count|
-        assert_equal( 0, count, "host: #{host} count: #{count}" )
-      end
     ensure
       client.close
-    end
-  end
-
-  class HostAccessCounter
-    include HostAccessListener
-
-    def initialize
-      @hosts = Hash.new { |k,v| k[v] = 0 }
-      @lock = Mutex.new
-    end
-
-    def hostChange( acquired, released )
-      @lock.synchronize do
-        @hosts[ acquired ] += 1 if acquired
-        @hosts[ released ] -= 1 if released
-      end
-    end
-
-    def check_hosts
-      @hosts.each { |h,c| yield( h, c ) }
     end
 
   end

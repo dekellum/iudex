@@ -41,15 +41,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     @scheduler.shutdown_now if @scheduler
   end
 
-  def test_priority_acquire
-    check_priority
-  end
-
-  def test_priority_take
-    check_priority( :take_order )
-  end
-
-  def check_priority( access_method = :acquire_order )
+  def test_priority
     orders = [ %w[ h a 1.3 ],
                %w[ h b 1.1 ],
                %w[ h c 1.2 ] ].map do |oinp|
@@ -59,18 +51,10 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     @visit_q.add_all( orders )
 
     orders.sort { |p,n| n.priority <=> p.priority }.each do |o|
-      assert_equal( o.vtest_input, send( access_method ) )
+      assert_equal( o.vtest_input, acquire_order )
     end
 
     assert_empty
-  end
-
-  def test_hosts_acquire
-    check_priority_hosts
-  end
-
-  def test_hosts_take
-    check_priority_hosts( :take_order )
   end
 
   def add_common_orders
@@ -87,7 +71,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     end
   end
 
-  def check_priority_hosts( access_method = :acquire_order )
+  def test_hosts_acquire
     add_common_orders
 
     expected = [ %w[   h3 a 3.2 ],
@@ -101,7 +85,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
     p = 0
     expected.each do |o|
-      assert_equal( o, send( access_method ), p += 1 )
+      assert_equal( o, acquire_order, p += 1 )
     end
 
     assert_empty
@@ -193,20 +177,6 @@ class TestVisitQueue < MiniTest::Unit::TestCase
                              ( i[3] || 20 ).to_i,
                              TimeUnit::MILLISECONDS )
       end.slice( 0..2 )
-    end
-  end
-
-  def take_order
-    hq = @visit_q.take( 200 )
-    if hq
-      o = hq.remove
-      if o
-        o.vtest_input.tap do |i|
-          @scheduler.schedule( proc { @visit_q.untake( hq ) },
-                               ( i[3] || 20 ).to_i,
-                               TimeUnit::MILLISECONDS )
-        end.slice( 0..2 )
-      end
     end
   end
 
