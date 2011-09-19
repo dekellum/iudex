@@ -41,7 +41,7 @@ class TestVisitManager < MiniTest::Unit::TestCase
 
     test_filter = fltr do |order|
       @scheduler.schedule( proc { @manager.release( order, nil ) },
-                           20, TimeUnit::MILLISECONDS )
+                           rand( 20_000 ), TimeUnit::MICROSECONDS )
       @latch.countDown();
     end
 
