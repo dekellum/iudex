@@ -59,7 +59,7 @@
       <dependency>
         <groupId>com.gravitext</groupId>
         <artifactId>gravitext-util</artifactId>
-        <version>[1.5,1.6)</version>
+        <version>[1.5.1,1.6)</version>
         <scope>compile</scope>
       </dependency>
 

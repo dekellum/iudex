@@ -37,8 +37,11 @@ class TestVisitURL < MiniTest::Unit::TestCase
                                 http://h.c/./foo
                                 http://h.c./foo
                                 http://h.c/foo? ],
+
              %w[ http://h.c/    http://h.c ],
+
              %w[ http://h.c/?x=a%26b http://h.c/?x=a%26b ],
+
              [ "http://h.c/foo", " \thttp://h.c/foo\n\r\t" ],
              [ "http://h.c/foo?q=a+b",   "http://h.c/foo?q=a+b" ],
              [ "http://h.c/foo?q=a%20b", "http://h.c/foo?q=a b",

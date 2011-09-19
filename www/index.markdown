@@ -12,6 +12,7 @@ to its novel prioritization and filtering features.
 Notable features:
 
 * [Prioritization](prioritization.html)
+* [Redirect Handling](redirects.html)
 * [BARC](barc.html)
 * [Data Access](da/index.html) (DA)
 * [Scalability and Fault Tolerance](distribution.html)

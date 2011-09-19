@@ -45,6 +45,7 @@ module Iudex
       import 'iudex.core.filters.DefaultFilter'
       import 'iudex.core.filters.FutureDateFilter'
       import 'iudex.core.filters.RedirectHandler'
+      import 'iudex.core.filters.Revisitor'
       import 'iudex.core.filters.RLDomainFilter'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.UHashMDCSetter'
