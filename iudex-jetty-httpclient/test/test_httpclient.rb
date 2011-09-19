@@ -176,7 +176,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       with_session_handler( client, "/" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/index', s.url )
@@ -185,7 +185,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_with_query_string
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
@@ -197,7 +197,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_multi_host
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       rurl = 'http://127.0.0.1:19292/index'
       rurl_e = CGI.escape( rurl )
       with_session_handler( client, "/redirect?loc=#{rurl_e}" ) do |s,x|
@@ -209,7 +209,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_multi_host_bad
     skip( "Error: -1 java.lang.NumberFormatException" )
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       rurl = 'http://localhost:19292/index'
       url = "http://127.0.0.1:19292?redirect?loc=" + CGI.escape( rurl )
       # Note >?<redirect? above
@@ -223,7 +223,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_multi_host_3
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       rurl = 'http://localhost:19292/index'
       url = "http://127.0.0.1:19292/redirect?loc=" + CGI.escape( rurl )
       url = "/redirect?loc=" + CGI.escape( url )
@@ -236,7 +236,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_multi_host_fragment
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       rurl = '/index#!foo'
       url = "/redirect?loc=" + CGI.escape( rurl )
 
@@ -248,7 +248,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_bad_host
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       rurl = CGI.escape( 'http://\bad.com/' )
       with_session_handler( client, "/redirect?loc=#{ rurl }" ) do |s,x|
         assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
@@ -258,7 +258,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_multi_redirect
-    with_new_client( :max_redirects => 8 ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :max_redirects => 8 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_nil x
@@ -267,7 +268,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unfollowed_301_redirect
-    with_new_client( :handle_redirects_internal => false ) do |client|
+    with_new_client do |client|
       with_session_handler( client, "/301" ) do |s,x|
         assert_equal( 301, s.status_code )
         lh = find_header( s.response_headers, "Location" )
@@ -277,7 +278,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_too_many_redirects
-    with_new_client( :max_redirects => 18 ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :max_redirects => 18 ) do |client|
       #FIXME: One redirect off somewhere? 19 fails.
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
         assert_equal( 302, s.status_code, x )
@@ -287,7 +289,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_timeout
     skip( "Unreliable timeout with redirects, timing dependent" )
-    with_new_client( :short => true ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :short => true ) do |client|
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
