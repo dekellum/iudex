@@ -18,7 +18,7 @@ t.specify do |h|
                       [ 'iudex-simhash',             '~> 1.1.0' ],
                       [ 'iudex-brutefuzzy-protobuf', '~> 1.0.0' ],
                       [ 'rjack-jms',                 '~> 1.1.0' ],
-                      [ 'rjack-qpid-client',         '~> 0.8.1' ] ]
+                      [ 'rjack-qpid-client',         '~> 0.12.0' ] ]
 
   h.testlib = :minitest
   h.extra_dev_deps << [ 'minitest', '~> 2.3' ]
