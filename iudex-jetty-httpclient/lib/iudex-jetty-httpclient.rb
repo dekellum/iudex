@@ -43,18 +43,23 @@ module Iudex
               :max_redirects               => 6,
               :max_connections_per_address => 2,
               :max_queue_size_per_address  => 100,
-              :connect_blocking            => false }
+              :connect_blocking            => false,
+              :handle_redirects_internal   => true }
 
       cfg = cfg.merge( opts )
       cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
 
       jclient = HttpClient.new
 
+      redir_listen = cfg.delete( :handle_redirects_internal )
+
       cfg.each do |key,value|
         jclient.__send__( "set_#{key}", value )
       end
 
-      jclient.register_listener( 'iudex.jettyhttpclient.RedirectListener' )
+      if redir_listen
+        jclient.register_listener( 'iudex.jettyhttpclient.RedirectListener' )
+      end
 
       jclient
     end

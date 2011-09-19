@@ -19,13 +19,11 @@ package iudex.core;
 import iudex.filter.FilterContainer;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 
 /**
@@ -294,15 +292,10 @@ public class VisitExecutor implements Closeable, Runnable
                     final HostQueue hq = _visitQ.take( maxTakeWait );
                     if( ! _running ) break;
                     if( hq != null ) {
-                        final long now = hq.lastTake();
                         try {
-                            UniMap order = hq.remove();
-                            order.set( ContentKeys.VISIT_START,
-                                       new Date( now ) );
-                            _chain.filter( order );
+                            _chain.filter( hq.remove() );
                         }
                         finally {
-                            hq.setNextVisit( now + _minHostDelay );
                             _visitQ.untake( hq );
                         }
                     }
