@@ -44,7 +44,7 @@ module Iudex
               :max_connections_per_address => 2,
               :max_queue_size_per_address  => 100,
               :connect_blocking            => false,
-              :handle_redirects_internal   => true }
+              :handle_redirects_internal   => false }
 
       cfg = cfg.merge( opts )
       cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
