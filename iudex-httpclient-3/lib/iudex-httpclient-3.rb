@@ -34,10 +34,13 @@ module Iudex
 
       # Sensible defaults:
       mgr.manager_params.max_total_connections = 100
-      mgr.manager_params.default_max_connections_per_host = 2
+      mgr.manager_params.default_max_connections_per_host = 3
       mgr.manager_params.stale_checking_enabled = false
       mgr.client_params.connection_manager_timeout = 3_000 #ms
       mgr.client_params.so_timeout = 5_000 #ms
+
+      # Default no redirects
+      mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 0 )
 
       mgr.client_params.set_parameter(
           RJack::HTTPClient3::HttpMethodParams::RETRY_HANDLER,
