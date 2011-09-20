@@ -99,10 +99,15 @@ public abstract class GenericWorkPollStrategy
         return _minOrderRemainingRatio;
     }
 
+    public void setVisitQueueFactory( VisitQueueFactory factory )
+    {
+        _visitQueueFactory = factory;
+    }
+
     @Override
     public VisitQueue pollWork( VisitQueue current )
     {
-        VisitQueue vq = new VisitQueue();
+        VisitQueue vq = _visitQueueFactory.createVisitQueue();
 
         Stopwatch sw = new Stopwatch().start();
         pollWorkImpl( vq );
@@ -170,6 +175,8 @@ public abstract class GenericWorkPollStrategy
     {
         return ( ( (float) count ) / ( (float) highMark ) );
     }
+
+    private VisitQueueFactory _visitQueueFactory = new VisitQueueFactory();
 
     private long _minPollInterval  =      15 * 1000; //15sec
     private long _maxCheckInterval =      30 * 1000; //30sec;

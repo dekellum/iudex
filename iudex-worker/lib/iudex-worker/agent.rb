@@ -64,9 +64,20 @@ module Iudex
         end
       end
 
-      def visit_executor( wpoller )
+      def visit_manager( wpoller )
         vexec = VisitManager.new( wpoller )
-        Hooker.apply( [ :iudex, :visit_executor ], vexec )
+        Hooker.apply( [ :iudex, :visit_manager ], vexec )
+      end
+
+      def work_poller( data_source )
+        cmapper = ContentMapper.new( keys( poll_keys ) )
+        wpoller = WorkPoller.new( data_source, cmapper )
+
+        visit_q = Hooker.apply( [ :iudex, :visit_queue ], VisitQueue.new )
+
+        wpoller.visit_queue_factory = VisitQueueFactory.new( visit_q )
+
+        Hooker.apply( [ :iudex, :work_poller ], wpoller )
       end
 
       def run
@@ -74,9 +85,7 @@ module Iudex
           dsf = PoolDataSourceFactory.new
           data_source = dsf.create
 
-          cmapper = ContentMapper.new( keys( poll_keys ) )
-          wpoller = WorkPoller.new( data_source, cmapper )
-          Hooker.apply( :work_poller, wpoller )
+          wpoller = work_poller( data_source )
 
           hclient = http_client
 
@@ -86,7 +95,7 @@ module Iudex
 
           Hooker.apply( :filter_factory, fcf )
 
-          vexec = visit_executor( wpoller )
+          vexec = visit_manager( wpoller )
           fcf.visit_counter = vexec
 
           fcf.filter do |chain|

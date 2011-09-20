@@ -33,6 +33,7 @@ module Iudex
     import 'iudex.core.ContentKeys'
     import 'iudex.core.ContentSource'
     import 'iudex.core.VisitManager'
+    import 'iudex.core.VisitQueueFactory'
     import 'iudex.core.VisitQueue'
     import 'iudex.core.VisitURL'
 
