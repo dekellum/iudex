@@ -98,7 +98,7 @@ public class VisitQueue implements VisitCounter
      */
     public synchronized int hostCount()
     {
-        return _hosts.size();
+        return _hostCount;
     }
 
     /**
@@ -214,12 +214,12 @@ public class VisitQueue implements VisitCounter
 
     private void checkRemove( HostQueue queue )
     {
-        if( ( queue.accessCount() == 0 ) &&
-            ( queue.size() == 0 ) &&
-            ( queue.minHostDelay() == _defaultMinHostDelay ) &&
-            ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
-
-            _hosts.remove( queue.host() );
+        if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
+            --_hostCount;
+            if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
+                ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
+                _hosts.remove( queue.host() );
+            }
         }
     }
 
@@ -245,7 +245,10 @@ public class VisitQueue implements VisitCounter
 
         queue.add( order );
 
-        if( queue.size() == 1 ) addReady( queue );
+        if( queue.size() == 1 ) {
+            ++_hostCount;
+            addReady( queue );
+        }
 
         ++_orderCount;
     }
@@ -287,6 +290,8 @@ public class VisitQueue implements VisitCounter
     private int _defaultMaxAccessPerHost =   1;
 
     private int _orderCount = 0;
+    private int _hostCount = 0;
+
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>();
 
