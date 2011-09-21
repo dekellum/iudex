@@ -54,7 +54,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o.vtest_input, acquire_order )
     end
 
-    assert_empty
+    assert_queue_empty
   end
 
   def add_common_orders
@@ -69,6 +69,9 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
       @visit_q.add( order( oinp ) )
     end
+
+    assert_equal( 3, @visit_q.host_count, "host count" )
+    assert_equal( 8, @visit_q.order_count, "order count" )
   end
 
   def test_hosts_acquire
@@ -88,7 +91,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o, acquire_order, p += 1 )
     end
 
-    assert_empty
+    assert_queue_empty
   end
 
   def test_configure
@@ -104,6 +107,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       @visit_q.add( order( oinp ) )
 
     end
+    assert_equal( 3, @visit_q.host_count, "host count" )
 
     expected = [ %w[   h3 a 3.2 ],
                  %w[   h2 a 2.2 ],
@@ -117,7 +121,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o, acquire_order, p += 1 )
     end
 
-    assert_empty
+    assert_queue_empty
   end
 
   def test_multi_access_2
@@ -138,7 +142,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o, acquire_order, p += 1 )
     end
 
-    assert_empty
+    assert_queue_empty
   end
 
   def test_multi_access_3
@@ -159,14 +163,15 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o, acquire_order, p += 1 )
     end
 
-    assert_empty
+    assert_queue_empty
   end
 
-  def assert_empty
+  def assert_queue_empty
     @scheduler.shutdown
     @scheduler.await_termination( 2, TimeUnit::SECONDS )
     @scheduler = nil
     assert_equal( 0, @visit_q.order_count )
+    assert_equal( 0, @visit_q.host_count, "host count" )
   end
 
   def acquire_order
