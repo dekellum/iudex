@@ -133,7 +133,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert_equal( o, acquire_order, p += 1 )
     end
 
-    assert_empty
+    assert_empty( 1 )
   end
 
   def test_multi_access_2
@@ -178,11 +178,12 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     assert_empty
   end
 
-  def assert_empty
+  def assert_empty( expected_hosts = 0 )
     @scheduler.shutdown
     @scheduler.await_termination( 2, TimeUnit::SECONDS )
     @scheduler = nil
     assert_equal( 0, @visit_q.order_count )
+    assert_equal( expected_hosts, @visit_q.host_count )
   end
 
   def acquire_order

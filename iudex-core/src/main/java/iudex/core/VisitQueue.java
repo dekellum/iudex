@@ -183,12 +183,8 @@ public class VisitQueue implements VisitCounter
         HostQueue queue = _hosts.get( orderKey( acquired ) );
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
-        if( queue.release() ) {
-            if( queue.size() > 0 ) {
-                addSleep( queue );
-            }
-            else checkRemove( queue );
-        }
+        if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
+        checkRemove( queue );
     }
 
     /**
