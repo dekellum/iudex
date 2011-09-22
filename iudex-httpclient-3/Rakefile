@@ -4,7 +4,7 @@ $LOAD_PATH << './lib'
 require 'iudex-httpclient-3/base'
 
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.2'
+gem     'rjack-tarpit', '~> 1.4'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-httpclient-3',
