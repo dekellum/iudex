@@ -97,7 +97,7 @@ module Iudex
       end
 
       def feed_receiver
-        [ RedirectHandler.new( visit_counter ),
+        [ RedirectHandler.new,
           Revisitor.new( visit_counter ),
           RomeFeedParser.new,
           DefaultFilter.new,
@@ -157,7 +157,7 @@ module Iudex
       end
 
       def page_receiver
-        [ RedirectHandler.new( visit_counter ),
+        [ RedirectHandler.new,
           Revisitor.new( visit_counter ),
           CharDetectFilter.new,
           html_clean_filters( :source ),
