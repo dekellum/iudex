@@ -188,6 +188,9 @@ public class VisitManager
                 if( _running && ( order != null ) ) {
                     now = order.get( ContentKeys.VISIT_START ).getTime();
                     _executor.execute( new VisitTask( order ) );
+                    _log.debug( "Queued order for rldomain {}, depth: {}",
+                                order.get( ContentKeys.URL ).domain(),
+                                _executor.getTaskCount() );
                 }
                 else {
                     now = System.currentTimeMillis();
@@ -303,7 +306,7 @@ public class VisitManager
             now = System.currentTimeMillis();
         }
         if( now >= end ) {
-            _log.warn( "Excutor not empty after {}ms", _maxShutdownWait );
+            _log.warn( "Executor not empty after {}ms", _maxShutdownWait );
         }
         else {
             // FIXME: Lame additional padding, hoping for any remaining
