@@ -88,11 +88,15 @@ module Iudex
 
           vexec = visit_executor( wpoller )
           fcf.visit_counter = vexec
+          if @run_async
+            vexec.start_executor
+            fcf.executor = vexec.executor
+          end
 
           fcf.filter do |chain|
             vexec.filter_chain = chain
             if @run_async
-              hclient.executor = vexec.start_executor if @common_executor
+              hclient.executor = vexec.executor if @common_executor
               hclient.start
             end
 

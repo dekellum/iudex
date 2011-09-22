@@ -57,6 +57,7 @@ module Iudex
       attr_accessor :http_client
       attr_accessor :data_source
       attr_accessor :visit_counter
+      attr_accessor :executor
 
       def initialize( name )
         super

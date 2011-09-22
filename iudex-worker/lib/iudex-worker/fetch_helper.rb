@@ -28,6 +28,8 @@ module Iudex
                                  visit_counter,
                                  create_chain( receiver_sym ) )
 
+        cf.executor = executor if executor
+
         alist = accept_list( accept_types )
         unless alist.include?( '*/*' )
           cf.accepted_content_types = ContentTypeSet.new( alist )
