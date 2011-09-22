@@ -174,6 +174,8 @@ public class VisitQueue implements VisitCounter
         return job;
     }
 
+    // FIXME: Keep global acquired count for better orderCount, to constrain.
+
     @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
