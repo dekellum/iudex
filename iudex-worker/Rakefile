@@ -4,7 +4,7 @@ $LOAD_PATH << './lib'
 require 'iudex-worker/base'
 
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.2'
+gem     'rjack-tarpit', '~> 1.4'
 require 'rjack-tarpit'
 
 t = RJack::TarPit.new( 'iudex-worker', Iudex::Worker::VERSION, :java_platform )
