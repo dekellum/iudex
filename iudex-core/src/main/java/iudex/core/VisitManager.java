@@ -232,6 +232,11 @@ public class VisitManager
 
                 if( ( _visitQ != null ) && _doWaitOnGeneration ) {
                     awaitExecutorEmpty();
+
+                    if( _log.isDebugEnabled() ) {
+                        _log.debug( "Dump of old visit queue:\n{}",
+                                    _visitQ.dump() );
+                    }
                 }
 
                 if( ( _maxGenerationsToShutdown > 0 ) &&

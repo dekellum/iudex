@@ -222,6 +222,29 @@ public class VisitQueue implements VisitCounter
         return ( domain != null ) ? domain : host;
     }
 
+    synchronized CharSequence dump()
+    {
+        StringBuilder out = new StringBuilder(4096);
+        long now = System.currentTimeMillis();
+
+        for( HostQueue hq : _hosts.values() ) {
+
+            boolean isReady = _readyHosts.contains( hq );
+            boolean isSleep = _sleepHosts.contains( hq );
+
+            out.append( String.format(
+                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                hq.host(),
+                hq.size(),
+                hq.accessCount(),
+                hq.nextVisit() - now,
+                ( isReady ? 'R' : ' ' ),
+                ( isSleep ? 'S' : ' ' ) ) );
+         }
+
+        return out;
+    }
+
     private void checkRemove( HostQueue queue )
     {
         if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
