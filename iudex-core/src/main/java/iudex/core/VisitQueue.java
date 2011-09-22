@@ -115,6 +115,14 @@ public class VisitQueue implements VisitCounter
     }
 
     /**
+     * Return the total of acquired, and as not yet released orders.
+     */
+    public synchronized int acquiredCount()
+    {
+        return _acquiredCount;
+    }
+
+    /**
      * Return the total number of unique hosts for which there is at
      * least one visit order.
      */
@@ -139,17 +147,17 @@ public class VisitQueue implements VisitCounter
 
             job = hq.remove();
             untakeImpl( hq );
+            ++_acquiredCount;
         }
         return job;
     }
-
-    // FIXME: Keep global acquired count for better orderCount, to constrain.
 
     @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
         if( newOrder != null ) privAdd( newOrder );
         --_orderCount;
+        --_acquiredCount;
 
         HostQueue queue = _hosts.get( orderKey( acquired ) );
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
@@ -168,6 +176,29 @@ public class VisitQueue implements VisitCounter
         host = Domains.normalize( host );
         String domain = Domains.registrationLevelDomain( host );
         return ( domain != null ) ? domain : host;
+    }
+
+    synchronized CharSequence dump()
+    {
+        StringBuilder out = new StringBuilder(4096);
+        long now = System.currentTimeMillis();
+
+        for( HostQueue hq : _hosts.values() ) {
+
+            boolean isReady = _readyHosts.contains( hq );
+            boolean isSleep = _sleepHosts.contains( hq );
+
+            out.append( String.format(
+                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                hq.host(),
+                hq.size(),
+                hq.accessCount(),
+                hq.nextVisit() - now,
+                ( isReady ? 'R' : ' ' ),
+                ( isSleep ? 'S' : ' ' ) ) );
+         }
+
+        return out;
     }
 
     /**
@@ -284,6 +315,7 @@ public class VisitQueue implements VisitCounter
     private int _defaultMaxAccessPerHost =   1;
 
     private int _orderCount = 0;
+    private int _acquiredCount = 0;
     private int _hostCount = 0;
 
     private final Map<String, HostQueue> _hosts      =
