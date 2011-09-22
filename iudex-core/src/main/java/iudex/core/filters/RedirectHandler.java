@@ -24,7 +24,6 @@ import java.util.List;
 
 import com.gravitext.htmap.UniMap;
 
-import iudex.core.VisitCounter;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.Filter;
@@ -33,11 +32,6 @@ import iudex.http.Headers;
 
 public class RedirectHandler implements Filter
 {
-    public RedirectHandler( VisitCounter counter )
-    {
-        _visitCounter = counter;
-    }
-
     public void setMaxPath( int maxPath )
     {
         _maxPath = maxPath;
@@ -51,9 +45,6 @@ public class RedirectHandler implements Filter
     @Override
     public boolean filter( UniMap order )
     {
-        // Release the (old URL) order first, to minimize lease duration and
-        // to insure it happens regardless.
-        _visitCounter.release( order, null );
 
         try {
             if( isRedirect( order.get( STATUS ) ) ) {
@@ -168,8 +159,6 @@ public class RedirectHandler implements Filter
 
         private final int _status;
     }
-
-    private final VisitCounter _visitCounter;
 
     private int _maxPath = 6;
     private float _priorityIncrease = 0.5f;

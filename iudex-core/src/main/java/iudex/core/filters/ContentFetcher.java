@@ -20,17 +20,18 @@ import static iudex.core.ContentKeys.*;
 import static iudex.http.HTTPKeys.*;
 
 import iudex.core.ContentSource;
+import iudex.core.VisitCounter;
 import iudex.core.VisitURL;
 import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.AsyncFilterContainer;
 import iudex.filter.FilterContainer;
-import iudex.http.BaseResponseHandler;
 import iudex.http.ContentType;
 import iudex.http.ContentTypeSet;
 import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
+import iudex.http.ResponseHandler;
 import iudex.util.Charsets;
 
 import java.nio.ByteBuffer;
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +49,22 @@ import com.gravitext.htmap.UniMap;
 
 public class ContentFetcher implements AsyncFilterContainer
 {
-    public ContentFetcher( HTTPClient client, FilterContainer receiver )
+    public ContentFetcher( HTTPClient client,
+                           VisitCounter counter,
+                           FilterContainer receiver )
     {
         _client = client;
+        _visitCounter = counter;
         _receiver = receiver;
+    }
+
+    /**
+     * Set an executor to run receiver.filter() with, instead of
+     * the thread calling the Handler callback.
+     */
+    public void setExecutor( Executor executor )
+    {
+        _executor = executor;
     }
 
     /**
@@ -132,7 +146,7 @@ public class ContentFetcher implements AsyncFilterContainer
         _receiver.close();
     }
 
-    private final class Handler extends BaseResponseHandler
+    private final class Handler implements ResponseHandler
     {
         public Handler( UniMap content )
         {
@@ -140,7 +154,27 @@ public class ContentFetcher implements AsyncFilterContainer
         }
 
         @Override
-        protected void sessionCompletedUnsafe( HTTPSession session )
+        public void sessionCompleted( HTTPSession session )
+        {
+            try {
+                recordSession( session );
+
+                if( _executor != null ) {
+                    _executor.execute( new FilterTask( _content ) );
+                }
+                else {
+                    _receiver.filter( _content );
+                }
+            }
+            finally {
+                session.close();
+
+                // Release the (old URL) order
+                _visitCounter.release( _content, null );
+            }
+        }
+
+        private void recordSession( HTTPSession session )
         {
             _content.set( STATUS, session.statusCode() );
             _content.set( REQUEST_HEADERS, session.requestHeaders() );
@@ -153,7 +187,7 @@ public class ContentFetcher implements AsyncFilterContainer
                 _log.debug( "Stack Trace: ", error );
             }
             else if( ( session.statusCode() <  200 ) ||
-                     ( session.statusCode() >= 300 ) ) {
+                     ( session.statusCode() >  307 ) ) {
                 _log.warn( "Url: {}; Response: {} {}",
                            new Object[] { session.url(),
                                           session.statusCode(),
@@ -200,14 +234,6 @@ public class ContentFetcher implements AsyncFilterContainer
 
                 _content.set( SOURCE, cs );
             }
-
-            // FIXME: Make this a task for Executor?
-            // (free up async HttpClient connection sooner.)
-            // Alternative catch evrything here?
-
-            // FIXME: Move release to finally block, here?
-
-            _receiver.filter( _content );
         }
 
         private void handleRedirect( HTTPSession session )
@@ -235,14 +261,31 @@ public class ContentFetcher implements AsyncFilterContainer
         private final UniMap _content;
     }
 
+    private final class FilterTask implements Runnable
+    {
+        FilterTask( UniMap content )
+        {
+            _content = content;
+        }
+
+        @Override
+        public void run()
+        {
+            _receiver.filter( _content );
+        }
+
+        private final UniMap _content;
+    }
+
     private final HTTPClient _client;
+    private final VisitCounter _visitCounter;
+    private final FilterContainer _receiver;
+
+    private Executor _executor = null;
 
     private List<Header> _fixedRequestHeaders = Collections.emptyList();
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
     private int _maxContentLength = 1024 * 1024 - 1;
-
-    private final FilterContainer _receiver;
-
     private Charset _defaultEncoding = Charsets.defaultCharset();
 
     private final Logger _log = LoggerFactory.getLogger( ContentFetcher.class );
