@@ -93,6 +93,14 @@ public class VisitQueue implements VisitCounter
     }
 
     /**
+     * Return the total of acquired, and as not yet released orders.
+     */
+    public synchronized int acquiredCount()
+    {
+        return _acquiredCount;
+    }
+
+    /**
      * Return the total number of unique hosts for which there is at
      * least one visit order.
      */
@@ -170,17 +178,17 @@ public class VisitQueue implements VisitCounter
 
             job = hq.remove();
             untakeImpl( hq );
+            ++_acquiredCount;
         }
         return job;
     }
-
-    // FIXME: Keep global acquired count for better orderCount, to constrain.
 
     @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
         if( newOrder != null ) privAdd( newOrder );
         --_orderCount;
+        --_acquiredCount;
 
         HostQueue queue = _hosts.get( orderKey( acquired ) );
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
@@ -292,6 +300,7 @@ public class VisitQueue implements VisitCounter
     private int _defaultMaxAccessPerHost =   1;
 
     private int _orderCount = 0;
+    private int _acquiredCount = 0;
     private int _hostCount = 0;
 
     private final Map<String, HostQueue> _hosts      =

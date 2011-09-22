@@ -154,11 +154,12 @@ public abstract class GenericWorkPollStrategy
             wait = Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
         }
         if( ( wait > 0 ) && _log.isDebugEnabled() ) {
-            _log.debug( "orders {} ({}), hosts {} ({}); wait {}s",
+            _log.debug( "orders {} ({}), hosts {} ({}), acq {}; wait {}s",
                         new Object[] { Metric.format( oCount ),
                                        Metric.formatDifference( oRatio ),
                                        Metric.format( hCount ),
                                        Metric.formatDifference( hRatio ),
+                                       Metric.format( current.acquiredCount() ),
                                        Metric.format( (double) wait /
                                                       1000d ) } );
         }
