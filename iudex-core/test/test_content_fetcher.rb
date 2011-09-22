@@ -151,33 +151,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
     end
   end
 
-  REDIRECT_URL  = "http://gravitext.com/redirect#foo"
-  REDIRECT_NORM = "http://gravitext.com/redirect"
-
-  def test_internal_redirect
-    client = MockHTTPClient.new
-    def client.create_session
-      s = MockSession.new
-      def s.execute( handler )
-        self.url = REDIRECT_URL
-        super
-      end
-      s
-    end
-    fetch( create_content, client ) do |out|
-      assert_equal( REDIRECT_NORM, out.url.to_s )
-      assert_equal( 200, out.status )
-
-      ref = out.referer
-
-      assert_equal( DEFAULT_URL, ref.url.to_s )
-      assert_equal( 302, ref.status )
-      assert_equal( REDIRECT_NORM, ref.referent.url.to_s )
-    end
-  end
-
   import "java.net.UnknownHostException"
-  import "java.io.IOException"
 
   def test_connect_error
     client = MockHTTPClient.new

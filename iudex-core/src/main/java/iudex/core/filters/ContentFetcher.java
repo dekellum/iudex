@@ -21,8 +21,6 @@ import static iudex.http.HTTPKeys.*;
 
 import iudex.core.ContentSource;
 import iudex.core.VisitCounter;
-import iudex.core.VisitURL;
-import iudex.core.VisitURL.SyntaxException;
 import iudex.filter.AsyncFilterContainer;
 import iudex.filter.FilterContainer;
 import iudex.http.ContentType;
@@ -194,16 +192,6 @@ public class ContentFetcher implements AsyncFilterContainer
                                           session.statusText() } );
             }
 
-            try {
-                // Note: this redirect handling is only for HTTPClient internal
-                // redirect handling, and may be eventually deprecated.
-                handleRedirect( session );
-            }
-            catch ( VisitURL.SyntaxException e ) {
-                _content.set( STATUS, HTTPSession.INVALID_REDIRECT_URL );
-                _content.set( REASON, "i.c.f.ContentFetcher: " + e );
-            }
-
             List<Header> headers = _content.get( RESPONSE_HEADERS );
             if( headers == null ) {
                 headers = Collections.emptyList();
@@ -233,28 +221,6 @@ public class ContentFetcher implements AsyncFilterContainer
                 }
 
                 _content.set( SOURCE, cs );
-            }
-        }
-
-        private void handleRedirect( HTTPSession session )
-            throws SyntaxException
-        {
-            if( ! _content.get( URL ).toString().equals( session.url() ) ) {
-                VisitURL newUrl = VisitURL.normalize( session.url() );
-                if( ! newUrl.equals( _content.get( URL ) ) ) {
-                    UniMap referer = _content.clone();
-
-                    // FIXME: HTTPClient-s can not always support getting
-                    // original status code for internal redirects, so fake
-                    // it by setting 302.
-                    referer.set( STATUS, 302 );
-
-                    // Back reference (careful: circular)
-                    referer.set( REFERENT, _content );
-
-                    _content.set( REFERER, referer );
-                    _content.set( URL, newUrl );
-                }
             }
         }
 
