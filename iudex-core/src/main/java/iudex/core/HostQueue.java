@@ -82,6 +82,9 @@ public class HostQueue
 
     public void add( UniMap order )
     {
+        if( order == null ) {
+            throw new IllegalArgumentException( "HostQueue.add null" );
+        }
         _work.add( order );
     }
 
@@ -101,7 +104,9 @@ public class HostQueue
      */
     public UniMap remove()
     {
-        ++_accessCount;
+        if( ++_accessCount > _maxAccess ) {
+            throw new IllegalStateException( "Access count exceeded." );
+        }
         UniMap order = _work.remove();
         order.set( ContentKeys.VISIT_START, new Date( _lastTake ) );
         return order;
@@ -124,6 +129,9 @@ public class HostQueue
      */
     public boolean release()
     {
+        if( _accessCount < 1 ) {
+            throw new IllegalStateException( "Release below accessCount" );
+        }
         return ( _accessCount-- == _maxAccess );
     }
 

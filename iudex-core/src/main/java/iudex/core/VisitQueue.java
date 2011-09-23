@@ -197,7 +197,18 @@ public class VisitQueue implements VisitCounter
         --_orderCount;
         --_acquiredCount;
 
-        HostQueue queue = _hosts.get( orderKey( acquired ) );
+        if( acquired == null ) {
+            throw new IllegalStateException( "Null release!" );
+        }
+
+        String orderKey = orderKey( acquired );
+        HostQueue queue = _hosts.get( orderKey );
+
+        if( queue == null ) {
+            throw new IllegalStateException( "Host order key [" +
+                                             orderKey + "] not found" );
+        }
+
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );

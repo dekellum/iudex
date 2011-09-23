@@ -199,24 +199,27 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       @visit_q.add( order( oinp ) )
     end
 
-    (392 + 8 ).times do |i|
-      o = @visit_q.acquire( 100 )
-      assert( o )
-      @scheduler.schedule( Job.new { @visit_q.release( o, nil ) },
-                           rand( 20 ), TimeUnit::MILLISECONDS )
-      if i < 392
-        @scheduler.schedule( Job.new {
-                               @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )],
-                                                      i,
-                                                      o.priority + 0.5 ] ) ) },
-                           rand( 20 ), TimeUnit::MILLISECONDS )
-      end
-      #puts o.url.to_string
-      #puts @visit_q.dump.to_string
-    end
+    c = @visit_q.order_count
+    added = 0
 
-    @scheduler.shutdown
-    assert( @scheduler.await_termination( 5, TimeUnit::SECONDS ) )
+    while c > 0
+      o = @visit_q.acquire( 300 )
+      assert( o, "acquire returned null" )
+      c -= 1
+      @scheduler.schedule( ReleaseJob.new( @visit_q, o ),
+                           rand( 20 ), TimeUnit::MILLISECONDS )
+
+      while ( added < 1_000 ) && ( rand(3) != 1 )
+        added += 1
+        c += 1
+        priority = o.priority + rand - 0.5
+        j = Job.new( added, priority ) do | i, p |
+          @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, p ] ) )
+        end
+        @scheduler.schedule( j, rand( 20 ), TimeUnit::MILLISECONDS )
+      end
+
+    end
 
     assert_queue_empty
   end
@@ -267,17 +270,33 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     VisitURL.normalize( url )
   end
 
-  class Job
-    include RJack
+  LOG = RJack::SLF4J[ self ]
+
+  class ReleaseJob
     include Runnable
 
-    LOG = SLF4J[ self.class ]
+    def initialize( visit_q, order )
+      super()
+      @visit_q = visit_q
+      @order = order
+    end
 
-    def initialize( &block )
+    def run
+      @visit_q.release( @order, nil )
+    rescue => e
+      LOG.error( e )
+    end
+  end
+
+  class Job
+    include Runnable
+
+    def initialize( *args, &block )
       @block = block
+      @args = args
     end
     def run
-      @block.call
+      @block.call( *@args )
     rescue => e
       LOG.error( e )
     end
