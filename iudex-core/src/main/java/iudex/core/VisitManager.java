@@ -350,6 +350,11 @@ public class VisitManager
         _executor.awaitTermination( _maxShutdownWait,
                                     TimeUnit.MILLISECONDS );
 
+        if( ( _visitQ != null ) && _log.isDebugEnabled() ) {
+            _log.debug( "Dump of old visit queue:\n{}",
+                        _visitQ.dump() );
+        }
+
         if( !fromVM ) {
             synchronized( this ) {
                 if( _shutdownHook != null ) {
