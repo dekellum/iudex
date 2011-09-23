@@ -269,10 +269,17 @@ public class VisitQueue implements VisitCounter
         return ( domain != null ) ? domain : host;
     }
 
-    synchronized CharSequence dump()
+    synchronized String dump()
     {
         StringBuilder out = new StringBuilder(4096);
         long now = System.currentTimeMillis();
+
+        out.append( String.format(
+            "VisitQueue@%x Dump, orders %d, acq %d, hosts %d ::\n",
+            System.identityHashCode( this ),
+            orderCount(),
+            acquiredCount(),
+            hostCount() ) );
 
         for( HostQueue hq : _hosts.values() ) {
 
@@ -289,7 +296,7 @@ public class VisitQueue implements VisitCounter
                 ( isSleep ? 'S' : ' ' ) ) );
          }
 
-        return out;
+        return out.toString();
     }
 
     private void checkRemove( HostQueue queue )

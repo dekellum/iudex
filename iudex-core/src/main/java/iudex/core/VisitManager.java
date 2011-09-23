@@ -228,8 +228,7 @@ public class VisitManager
                     awaitExecutorEmpty();
 
                     if( _log.isDebugEnabled() ) {
-                        _log.debug( "Dump of old visit queue:\n{}",
-                                    _visitQ.dump() );
+                        _log.debug( _visitQ.dump() );
                     }
                 }
 
@@ -337,8 +336,7 @@ public class VisitManager
                                     TimeUnit.MILLISECONDS );
 
         if( ( _visitQ != null ) && _log.isDebugEnabled() ) {
-            _log.debug( "Dump of old visit queue:\n{}",
-                        _visitQ.dump() );
+            _log.debug( _visitQ.dump() );
         }
 
         if( !fromVM ) {
