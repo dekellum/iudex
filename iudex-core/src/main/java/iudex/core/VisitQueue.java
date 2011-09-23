@@ -176,7 +176,14 @@ public class VisitQueue implements VisitCounter
         if( hq != null ) {
             _log.debug( "Take: {}", hq.host() );
 
+            if( ! hq.isAvailable() ) {
+                throw new IllegalStateException( "Unavailable host take!");
+            }
+
             job = hq.remove();
+
+            if( job == null ) throw new IllegalStateException( "empty remove!");
+
             untakeImpl( hq );
             ++_acquiredCount;
         }
@@ -194,6 +201,13 @@ public class VisitQueue implements VisitCounter
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
+        else if( queue.isAvailable() &&
+                 ( queue.size() > 0 ) &&
+                 !( _sleepHosts.contains( queue ) ||
+                    _readyHosts.contains( queue ) ) ) {
+            throw new IllegalStateException( "Orphaned host queue!" );
+        }
+
         checkRemove( queue );
     }
 
@@ -292,6 +306,11 @@ public class VisitQueue implements VisitCounter
             _log.debug( "addReady: {} {}", queue.host(), queue.size() );
             checkAdd( queue );
         }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addReady!");
+        }
+
         _readyHosts.add( queue );
     }
 
@@ -301,6 +320,11 @@ public class VisitQueue implements VisitCounter
             _log.debug( "addSleep: {} {}", queue.host(), queue.size() );
             checkAdd( queue );
         }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addSleep!");
+        }
+
         _sleepHosts.add( queue );
         notifyAll();
     }
