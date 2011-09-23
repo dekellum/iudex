@@ -94,7 +94,7 @@ public class HostQueue
     public void add( UniMap order )
     {
         if( order == null ) {
-            throw new IllegalArgumentException( "HostQueue.add null" );
+            throw new NullPointerException( "HostQueue.add null" );
         }
         _work.add( order );
     }

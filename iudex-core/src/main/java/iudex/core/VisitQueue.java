@@ -208,8 +208,6 @@ public class VisitQueue implements VisitCounter
 
             job = hq.remove();
 
-            if( job == null ) throw new IllegalStateException( "empty remove!");
-
             untakeImpl( hq );
             ++_acquiredCount;
         }
@@ -224,7 +222,7 @@ public class VisitQueue implements VisitCounter
         --_acquiredCount;
 
         if( acquired == null ) {
-            throw new IllegalStateException( "Null release!" );
+            throw new NullPointerException( "Null release!" );
         }
 
         String orderKey = orderKey( acquired );
@@ -238,12 +236,6 @@ public class VisitQueue implements VisitCounter
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
-        else if( queue.isAvailable() &&
-                 ( queue.size() > 0 ) &&
-                 !( _sleepHosts.contains( queue ) ||
-                    _readyHosts.contains( queue ) ) ) {
-            throw new IllegalStateException( "Orphaned host queue!" );
-        }
 
         checkRemove( queue );
     }
