@@ -292,9 +292,11 @@ public class VisitQueue implements VisitCounter
 
         queue.add( order );
 
-        if( queue.size() == 1 ) {
-            ++_hostCount;
+        if( ( queue.size() == 1 ) && ( queue.isAvailable() ) ) {
             addReady( queue );
+        }
+        if( ( queue.size() == 1 ) && ( queue.accessCount() == 0 ) ) {
+            ++_hostCount;
         }
 
         ++_orderCount;
