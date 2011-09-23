@@ -188,7 +188,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     @visit_q.default_min_host_delay = 3 #ms
     @visit_q.configure_host( 'h2.com', 1, 4 )
 
-    2_000.times do |i|
+    512.times do |i|
       @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, 5 * rand ] ) )
     end
 
@@ -197,12 +197,12 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
     while c > 0
       o = @visit_q.acquire( 300 )
-      assert( o, "acquire returned null" )
+      flunk( "acquire returned null" ) unless o
       c -= 1
       @scheduler.schedule( ReleaseJob.new( @visit_q, o ),
                            rand( 20_000 ), TimeUnit::MICROSECONDS )
 
-      while ( added < 2_000 ) && ( rand(3) != 1 )
+      while ( added < 1024 ) && ( rand(3) != 1 )
         added += 1
         c += 1
         j = Job.new( added ) do | i, p |
