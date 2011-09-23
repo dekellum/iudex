@@ -236,8 +236,9 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     o = @visit_q.acquire( 200 )
     if o
       o.vtest_input.tap do |i|
-        @scheduler.schedule( Job.new { @visit_q.release( o, nil ) },
-                             ( i[3] || 20 ).to_i,
+        delay = ( i[3] || 20 ).to_i
+        @scheduler.schedule( ReleaseJob.new( @visit_q, o ),
+                             delay,
                              TimeUnit::MILLISECONDS )
       end.slice( 0..2 )
     end
