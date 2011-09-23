@@ -49,11 +49,6 @@ public class VisitManager
         _maxThreads = maxThreads;
     }
 
-    public void setMinHostDelay( long minHostDelay )
-    {
-        _minHostDelay = minHostDelay;
-    }
-
     public void setMaxShutdownWait( long maxShutdownWait )
     {
         _maxShutdownWait = maxShutdownWait;
@@ -167,7 +162,6 @@ public class VisitManager
         _running = true;
 
         try {
-            final long maxTakeWait = maxTakeWait();
             long now = System.currentTimeMillis();
             while( _running ) {
 
@@ -184,7 +178,7 @@ public class VisitManager
                     return;
                 }
 
-                UniMap order = _visitQ.acquire( maxTakeWait );
+                UniMap order = _visitQ.acquire( 50 );
                 if( _running && ( order != null ) ) {
                     now = order.get( ContentKeys.VISIT_START ).getTime();
                     _executor.execute( new VisitTask( order ) );
@@ -283,14 +277,6 @@ public class VisitManager
         }
 
         private final UniMap _order;
-    }
-
-    private long maxTakeWait()
-    {
-        long mwait = _minHostDelay + 10;
-        mwait = Math.min( mwait, _maxShutdownWait - 10 );
-
-        return mwait;
     }
 
     private synchronized void awaitExecutorEmpty() throws InterruptedException
@@ -394,7 +380,6 @@ public class VisitManager
     private long _nextCheckWorkPoll = 0;
 
     private int  _maxThreads              = 10;
-    private long _minHostDelay            =  2 * 1000; //2s
     private long _maxShutdownWait         = 19 * 1000; //19s
     private boolean _doWaitOnGeneration   = false;
     private boolean _doShutdownHook       = true;

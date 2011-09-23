@@ -23,9 +23,15 @@ Iudex.configure do |c|
       :max_queue_size_per_address => 20 }
   end
 
-  c.setup_visit_executor do |vx|
+  c.setup_visit_manager do |vx|
     vx.max_threads = threads
-    vx.min_host_delay = 100 #ms
+  end
+
+  c.setup_visit_queue do |q|
+    q.default_min_host_delay = 100 #ms
+    q.default_max_access_per_host = 1
+
+    q.configure_host( "gravitext.com", 100, 2 ) # 100ms, 2 connections
   end
 
   c.setup_work_poller do |wp|

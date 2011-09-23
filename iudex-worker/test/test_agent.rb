@@ -57,9 +57,9 @@ class TestAgent < MiniTest::Unit::TestCase
 
   def assert_agent
 
-    # Stub VisitExecutor.start to allow agent.run to return early.
-    Hooker.add( [ :iudex, :visit_executor ] ) do |vexec|
-      def vexec.start
+    # Stub VisitManager.start to allow agent.run to return early.
+    Hooker.add( [ :iudex, :visit_manager ] ) do |vm|
+      def vm.start
         #disable
       end
     end
