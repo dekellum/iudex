@@ -26,6 +26,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
   import 'java.util.concurrent.Executors'
   import 'java.util.concurrent.TimeUnit'
+  import 'java.lang.Runnable'
 
   UniMap.create_key( 'vtest_input' )
 
@@ -182,19 +183,57 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     assert_queue_empty
   end
 
+  def test_interleaved
+    @visit_q.default_max_access_per_host = 3
+    @visit_q.default_min_host_delay = 3 #ms
+
+    [ %w[   h1 a 5.1 ],
+      %w[   h1 b 5.2 ],
+      %w[   h1 c 5.3 ],
+      %w[   h1 d 5.4 ],
+      %w[   h2 a 1.1 ],
+      %w[   h2 b 1.2 ],
+      %w[   h2 c 1.3 ],
+      %w[   h2 d 1.4 ] ].each do |oinp|
+
+      @visit_q.add( order( oinp ) )
+    end
+
+    (392 + 8 ).times do |i|
+      o = @visit_q.acquire( 100 )
+      assert( o )
+      @scheduler.schedule( Job.new { @visit_q.release( o, nil ) },
+                           rand( 20 ), TimeUnit::MILLISECONDS )
+      if i < 392
+        @scheduler.schedule( Job.new {
+                               @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )],
+                                                      i,
+                                                      o.priority + 0.5 ] ) ) },
+                           rand( 20 ), TimeUnit::MILLISECONDS )
+      end
+      #puts o.url.to_string
+      #puts @visit_q.dump.to_string
+    end
+
+    @scheduler.shutdown
+    assert( @scheduler.await_termination( 5, TimeUnit::SECONDS ) )
+
+    assert_queue_empty
+  end
+
   def assert_queue_empty
     @scheduler.shutdown
     @scheduler.await_termination( 2, TimeUnit::SECONDS )
     @scheduler = nil
-    assert_equal( 0, @visit_q.order_count )
-    assert_equal( 0, @visit_q.host_count, "host count" )
+    assert_equal( 0, @visit_q.order_count, "order count" )
+    assert_equal( 0, @visit_q.host_count,  "host count" )
   end
 
   def acquire_order
     o = @visit_q.acquire( 200 )
     if o
       o.vtest_input.tap do |i|
-        @scheduler.schedule( proc { @visit_q.release( o, nil ) },
+        @scheduler.schedule( Job.new { @visit_q.release( o, nil ) },
                              ( i[3] || 20 ).to_i,
                              TimeUnit::MILLISECONDS )
       end.slice( 0..2 )
@@ -226,6 +265,22 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
   def visit_url( url )
     VisitURL.normalize( url )
+  end
+
+  class Job
+    include RJack
+    include Runnable
+
+    LOG = SLF4J[ self.class ]
+
+    def initialize( &block )
+      @block = block
+    end
+    def run
+      @block.call
+    rescue => e
+      LOG.error( e )
+    end
   end
 
 end
