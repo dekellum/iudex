@@ -87,7 +87,11 @@ public class VisitQueue implements VisitCounter
         VisitQueue newQ = new VisitQueue();
         newQ._defaultMinHostDelay     = _defaultMinHostDelay;
         newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
-        newQ._hosts.putAll( _hosts );
+
+        //Very important to deep copy the host queues
+        for( HostQueue hq : _hosts.values() ) {
+            newQ._hosts.put( hq.host(), hq.clone() );
+        }
 
         return newQ;
     }

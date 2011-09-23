@@ -46,6 +46,17 @@ public class HostQueue
         _maxAccess = maxAccessCount;
     }
 
+    @Override
+    public HostQueue clone()
+    {
+        if( ! _work.isEmpty() ) {
+            throw new IllegalStateException(
+                "HostQueue can't be cloned with orders" );
+        }
+
+        return new HostQueue( _host, _minHostDelay, _maxAccess );
+    }
+
     public String host()
     {
         return _host;
