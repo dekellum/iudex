@@ -184,7 +184,7 @@ public class VisitManager
                     _executor.execute( new VisitTask( order ) );
                     _log.debug( "Queued order for rldomain {}, depth: {}",
                                 order.get( ContentKeys.URL ).domain(),
-                                _executor.getTaskCount() );
+                                _executor.getQueue().size() );
                 }
                 else {
                     now = System.currentTimeMillis();
@@ -228,8 +228,7 @@ public class VisitManager
                     awaitExecutorEmpty();
 
                     if( _log.isDebugEnabled() ) {
-                        _log.debug( "Dump of old visit queue:\n{}",
-                                    _visitQ.dump() );
+                        _log.debug( _visitQ.dump() );
                     }
                 }
 
@@ -314,7 +313,7 @@ public class VisitManager
         synchronized( this ) {
             _shutdown = true;         //Avoid more visitors
 
-            //Shutdown executor
+            //Shutdown manager thread
             _running = false;
             notifyAll();
             manager = _manager;
@@ -331,10 +330,14 @@ public class VisitManager
             }
         }
 
-        //FIXME: Is this really how we want to do this?
+        //Shutdown executor
         _executor.shutdown();
         _executor.awaitTermination( _maxShutdownWait,
                                     TimeUnit.MILLISECONDS );
+
+        if( ( _visitQ != null ) && _log.isDebugEnabled() ) {
+            _log.debug( _visitQ.dump() );
+        }
 
         if( !fromVM ) {
             synchronized( this ) {
