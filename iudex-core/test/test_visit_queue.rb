@@ -35,7 +35,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   def setup
     @visit_q = VisitQueue.new
     @visit_q.default_min_host_delay = 50 #ms
-    @scheduler = Executors::new_scheduled_thread_pool( 1 )
+    @scheduler = Executors::new_scheduled_thread_pool( 2 )
   end
 
   def teardown
@@ -184,19 +184,12 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   end
 
   def test_interleaved
-    @visit_q.default_max_access_per_host = 3
+    @visit_q.default_max_access_per_host = 2
     @visit_q.default_min_host_delay = 3 #ms
+    @visit_q.configure_host( 'h2.com', 1, 4 )
 
-    [ %w[   h1 a 5.1 ],
-      %w[   h1 b 5.2 ],
-      %w[   h1 c 5.3 ],
-      %w[   h1 d 5.4 ],
-      %w[   h2 a 1.1 ],
-      %w[   h2 b 1.2 ],
-      %w[   h2 c 1.3 ],
-      %w[   h2 d 1.4 ] ].each do |oinp|
-
-      @visit_q.add( order( oinp ) )
+    2_000.times do |i|
+      @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, 5 * rand ] ) )
     end
 
     c = @visit_q.order_count
@@ -207,16 +200,15 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       assert( o, "acquire returned null" )
       c -= 1
       @scheduler.schedule( ReleaseJob.new( @visit_q, o ),
-                           rand( 20 ), TimeUnit::MILLISECONDS )
+                           rand( 20_000 ), TimeUnit::MICROSECONDS )
 
-      while ( added < 1_000 ) && ( rand(3) != 1 )
+      while ( added < 2_000 ) && ( rand(3) != 1 )
         added += 1
         c += 1
-        priority = o.priority + rand - 0.5
-        j = Job.new( added, priority ) do | i, p |
-          @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, p ] ) )
+        j = Job.new( added ) do | i, p |
+          @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, 5 * rand ] ) )
         end
-        @scheduler.schedule( j, rand( 20 ), TimeUnit::MILLISECONDS )
+        @scheduler.schedule( j, rand( 20_000 ), TimeUnit::MICROSECONDS )
       end
 
     end
