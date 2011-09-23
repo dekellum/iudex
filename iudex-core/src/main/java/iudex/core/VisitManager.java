@@ -190,7 +190,7 @@ public class VisitManager
                     _executor.execute( new VisitTask( order ) );
                     _log.debug( "Queued order for rldomain {}, depth: {}",
                                 order.get( ContentKeys.URL ).domain(),
-                                _executor.getTaskCount() );
+                                _executor.getQueue().size() );
                 }
                 else {
                     now = System.currentTimeMillis();
@@ -328,7 +328,7 @@ public class VisitManager
         synchronized( this ) {
             _shutdown = true;         //Avoid more visitors
 
-            //Shutdown executor
+            //Shutdown manager thread
             _running = false;
             notifyAll();
             manager = _manager;
@@ -345,7 +345,7 @@ public class VisitManager
             }
         }
 
-        //FIXME: Is this really how we want to do this?
+        //Shutdown executor
         _executor.shutdown();
         _executor.awaitTermination( _maxShutdownWait,
                                     TimeUnit.MILLISECONDS );
