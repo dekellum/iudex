@@ -87,7 +87,11 @@ public class VisitQueue implements VisitCounter
         VisitQueue newQ = new VisitQueue();
         newQ._defaultMinHostDelay     = _defaultMinHostDelay;
         newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
-        newQ._hosts.putAll( _hosts );
+
+        //Very important to deep copy the host queues
+        for( HostQueue hq : _hosts.values() ) {
+            newQ._hosts.put( hq.host(), hq.clone() );
+        }
 
         return newQ;
     }
@@ -112,6 +116,14 @@ public class VisitQueue implements VisitCounter
     public synchronized int orderCount()
     {
         return _orderCount;
+    }
+
+    /**
+     * Return the total of acquired, and as not yet released orders.
+     */
+    public synchronized int acquiredCount()
+    {
+        return _acquiredCount;
     }
 
     /**
@@ -190,24 +202,41 @@ public class VisitQueue implements VisitCounter
         if( hq != null ) {
             _log.debug( "Take: {}", hq.host() );
 
+            if( ! hq.isAvailable() ) {
+                throw new IllegalStateException( "Unavailable host take!");
+            }
+
             job = hq.remove();
+
             untakeImpl( hq );
+            ++_acquiredCount;
         }
         return job;
     }
-
-    // FIXME: Keep global acquired count for better orderCount, to constrain.
 
     @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
         if( newOrder != null ) privAdd( newOrder );
         --_orderCount;
+        --_acquiredCount;
 
-        HostQueue queue = _hosts.get( orderKey( acquired ) );
+        if( acquired == null ) {
+            throw new NullPointerException( "Null release!" );
+        }
+
+        String orderKey = orderKey( acquired );
+        HostQueue queue = _hosts.get( orderKey );
+
+        if( queue == null ) {
+            throw new IllegalStateException( "Host order key [" +
+                                             orderKey + "] not found" );
+        }
+
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
+
         checkRemove( queue );
     }
 
@@ -234,6 +263,36 @@ public class VisitQueue implements VisitCounter
         host = Domains.normalize( host );
         String domain = Domains.registrationLevelDomain( host );
         return ( domain != null ) ? domain : host;
+    }
+
+    synchronized String dump()
+    {
+        StringBuilder out = new StringBuilder(4096);
+        long now = System.currentTimeMillis();
+
+        out.append( String.format(
+            "VisitQueue@%x Dump, orders %d, acq %d, hosts %d ::\n",
+            System.identityHashCode( this ),
+            orderCount(),
+            acquiredCount(),
+            hostCount() ) );
+
+        for( HostQueue hq : _hosts.values() ) {
+
+            boolean isReady = _readyHosts.contains( hq );
+            boolean isSleep = _sleepHosts.contains( hq );
+
+            out.append( String.format(
+                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                hq.host(),
+                hq.size(),
+                hq.accessCount(),
+                hq.nextVisit() - now,
+                ( isReady ? 'R' : ' ' ),
+                ( isSleep ? 'S' : ' ' ) ) );
+         }
+
+        return out.toString();
     }
 
     private void checkRemove( HostQueue queue )
@@ -269,9 +328,11 @@ public class VisitQueue implements VisitCounter
 
         queue.add( order );
 
-        if( queue.size() == 1 ) {
-            ++_hostCount;
+        if( ( queue.size() == 1 ) && ( queue.isAvailable() ) ) {
             addReady( queue );
+        }
+        if( ( queue.size() == 1 ) && ( queue.accessCount() == 0 ) ) {
+            ++_hostCount;
         }
 
         ++_orderCount;
@@ -283,6 +344,11 @@ public class VisitQueue implements VisitCounter
             _log.debug( "addReady: {} {}", queue.host(), queue.size() );
             checkAdd( queue );
         }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addReady!");
+        }
+
         _readyHosts.add( queue );
     }
 
@@ -292,6 +358,11 @@ public class VisitQueue implements VisitCounter
             _log.debug( "addSleep: {} {}", queue.host(), queue.size() );
             checkAdd( queue );
         }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addSleep!");
+        }
+
         _sleepHosts.add( queue );
         notifyAll();
     }
@@ -314,6 +385,7 @@ public class VisitQueue implements VisitCounter
     private int _defaultMaxAccessPerHost =   1;
 
     private int _orderCount = 0;
+    private int _acquiredCount = 0;
     private int _hostCount = 0;
 
     private final Map<String, HostQueue> _hosts      =
