@@ -11,4 +11,9 @@ Iudex.configure do |c|
       :loglevel => 2 }
   end
 
+  # Add optional migration profiles
+  c.setup_migration_profiles do |profiles|
+    profiles += [ :simhash :index_next_visit ]
+  end
+
 end
