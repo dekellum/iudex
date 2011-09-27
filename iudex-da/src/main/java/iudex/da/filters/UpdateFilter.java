@@ -95,7 +95,7 @@ public class UpdateFilter implements FilterContainer
                 _log.error( s.getMessage() );
                 s = s.getNextException();
             }
-            // FIXME: As in fatal?
+            // FIXME: Really want to treat this as fatal?
             throw new RuntimeException( x );
         }
 

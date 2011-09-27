@@ -201,6 +201,12 @@ public class ContentFetcher implements AsyncFilterContainer
                 _content.set( SOURCE, cs );
             }
 
+            // FIXME: Make this a task for Executor?
+            // (free up async HttpClient connection sooner.)
+            // Alternative catch evrything here?
+
+            // FIXME: Move release to finally block, here?
+
             _receiver.filter( _content );
         }
 

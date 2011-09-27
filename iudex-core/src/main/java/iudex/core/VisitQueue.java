@@ -120,7 +120,7 @@ public class VisitQueue implements VisitCounter
      */
     public synchronized int hostCount()
     {
-        return _hosts.size();
+        return _hostCount;
     }
 
     /**
@@ -196,6 +196,8 @@ public class VisitQueue implements VisitCounter
         return job;
     }
 
+    // FIXME: Keep global acquired count for better orderCount, to constrain.
+
     @Override
     public synchronized void release( UniMap acquired, UniMap newOrder )
     {
@@ -205,12 +207,8 @@ public class VisitQueue implements VisitCounter
         HostQueue queue = _hosts.get( orderKey( acquired ) );
         _log.debug( "Release: {} {}", queue.host(), queue.size() );
 
-        if( queue.release() ) {
-            if( queue.size() > 0 ) {
-                addSleep( queue );
-            }
-            else checkRemove( queue );
-        }
+        if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
+        checkRemove( queue );
     }
 
     /**
@@ -240,12 +238,12 @@ public class VisitQueue implements VisitCounter
 
     private void checkRemove( HostQueue queue )
     {
-        if( ( queue.accessCount() == 0 ) &&
-            ( queue.size() == 0 ) &&
-            ( queue.minHostDelay() == _defaultMinHostDelay ) &&
-            ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
-
-            _hosts.remove( queue.host() );
+        if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
+            --_hostCount;
+            if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
+                ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
+                _hosts.remove( queue.host() );
+            }
         }
     }
 
@@ -271,7 +269,10 @@ public class VisitQueue implements VisitCounter
 
         queue.add( order );
 
-        if( queue.size() == 1 ) addReady( queue );
+        if( queue.size() == 1 ) {
+            ++_hostCount;
+            addReady( queue );
+        }
 
         ++_orderCount;
     }
@@ -313,6 +314,8 @@ public class VisitQueue implements VisitCounter
     private int _defaultMaxAccessPerHost =   1;
 
     private int _orderCount = 0;
+    private int _hostCount = 0;
+
     private final Map<String, HostQueue> _hosts      =
         new HashMap<String, HostQueue>( 2048 );
 
