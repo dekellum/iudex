@@ -17,10 +17,6 @@
 package iudex.core;
 
 import iudex.filter.FilterContainer;
-import iudex.http.HostAccessListener;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,12 +28,12 @@ import com.gravitext.htmap.UniMap;
 import com.gravitext.util.Closeable;
 
 /**
- * A Visit Executor for use with an asynchronous HTTP client.
+ * A manager to poll work and create visit tasks.
  */
-public class AsyncVisitExecutor
-    implements Closeable, Runnable, HostAccessListener
+public class VisitManager
+    implements Closeable, Runnable, VisitReleasable
 {
-    public AsyncVisitExecutor( FilterContainer chain, WorkPollStrategy poller )
+    public VisitManager( FilterContainer chain, WorkPollStrategy poller )
     {
         _chain = chain;
         _poller = poller;
@@ -141,6 +137,13 @@ public class AsyncVisitExecutor
     }
 
     @Override
+    public void release( UniMap acquired, UniMap newOrder )
+    {
+        //FIXME: Risk of null, or need for synchronization?
+        _visitQ.release( acquired, newOrder );
+    }
+
+    @Override
     public void run()
     {
         //FIXME: Replace with Runnable for privacy?
@@ -165,21 +168,10 @@ public class AsyncVisitExecutor
                     return;
                 }
 
-                final HostQueue hq = _visitQ.take( maxTakeWait );
-                if( _running && ( hq != null ) ) {
-                    now = hq.lastTake();
-
-                    int count = acquireHost( hq.host(), hq );
-                    if( count <= _maxAccessCount ) {
-                        UniMap order = hq.remove();
-                        _executor.execute( new VisitTask( order ) );
-                    }
-                    else {
-                        _log.warn( "Skipping host {} with access count {}",
-                                   hq.host(), count );
-                        // Access listener should still untake( queue ) on
-                        // the last releaseHost()
-                    }
+                UniMap order = _visitQ.acquire( maxTakeWait );
+                if( _running && ( order != null ) ) {
+                    now = order.get( ContentKeys.VISIT_START ).getTime();
+                    _executor.execute( new VisitTask( order ) );
                 }
                 else {
                     now = System.currentTimeMillis();
@@ -193,19 +185,6 @@ public class AsyncVisitExecutor
             _log.info( "Manager thread exit" );
             _manager = null;
             _running = false;
-        }
-    }
-
-    @Override
-    public void hostChange( String acquiredHost, String releasedHost )
-    {
-        synchronized( _hostCounts ) {
-            if( acquiredHost != null ) {
-                acquireHost( acquiredHost, null );
-            }
-            if( releasedHost != null ) {
-                releaseHost( releasedHost );
-            }
         }
     }
 
@@ -223,8 +202,6 @@ public class AsyncVisitExecutor
         if( _shutdown || now < _nextCheckWorkPoll ) {
             return doShutdown;
         }
-
-        dumpHostCounts();
 
         if( _visitQ != null ) {
             delta = _poller.nextPollWork( _visitQ, now - _lastPollTime );
@@ -292,103 +269,6 @@ public class AsyncVisitExecutor
         return mwait;
     }
 
-    private int acquireHost( String host, HostQueue queue )
-    {
-       synchronized( _hostCounts ) {
-           AccessCount count = _hostCounts.get( host );
-           if( count == null ) {
-               count = new AccessCount( 1 );
-               _hostCounts.put( host, count );
-           }
-           else {
-               count.adjust( 1 );
-           }
-           _log.debug( "Acquired host {} c: {} qo: {} qn: {}",
-                       new Object[] { host,
-                                      count.count(),
-                                      count.queue(),
-                                      queue } );
-           if( queue != null ) count.push( queue );
-           return count.count();
-       }
-    }
-
-    private void releaseHost( String host )
-    {
-       synchronized( _hostCounts ) {
-           AccessCount count = _hostCounts.get( host );
-           int adjusted = count.adjust( -1 );
-           _log.debug( "Release host {} c: {} q: {}",
-                       new Object[] { host, adjusted, count.queue() } );
-           if( adjusted == 0 ) {
-               HostQueue queue = count.pop();
-               if( queue != null ) {
-                   _visitQ.untake( queue );
-               }
-           }
-       }
-    }
-
-    private void dumpHostCounts()
-    {
-        if( _log.isDebugEnabled() ) {
-            StringBuilder out = new StringBuilder();
-            out.append(  "Host Counts Dump ::\n" );
-            synchronized( _hostCounts ) {
-                for( Map.Entry<String,AccessCount> e : _hostCounts.entrySet() ) {
-                    String host = e.getKey();
-                    AccessCount count = e.getValue();
-                    if( ( count.count() > 0 ) || ( count.queue() != null ) ) {
-                        out.append( String.format( "%30s %5d %s\n",
-                                                   host,
-                                                   count.count(),
-                                                   count.queue() ) );
-                    }
-                }
-            }
-            _log.debug( out.toString() );
-        }
-    }
-
-    private static final class AccessCount
-    {
-        AccessCount( int count )
-        {
-            _count = count;
-        }
-
-        public int adjust( int adjustment )
-        {
-            _count += adjustment;
-            return _count;
-        }
-
-        public void push( HostQueue queue )
-        {
-            _queue = queue;
-        }
-
-        public HostQueue pop()
-        {
-            HostQueue q = _queue;
-            _queue = null;
-            return q;
-        }
-
-        public int count()
-        {
-            return _count;
-        }
-
-        public HostQueue queue()
-        {
-            return _queue;
-        }
-
-        private int _count;
-        private HostQueue _queue = null;
-    }
-
     private synchronized void awaitExecutorEmpty() throws InterruptedException
     {
         //FIXME: Or use custom task that notify's?
@@ -419,8 +299,6 @@ public class AsyncVisitExecutor
     private void shutdown( boolean fromVM )
         throws InterruptedException
     {
-        dumpHostCounts();
-
         Thread manager = null;
 
         synchronized( this ) {
@@ -484,9 +362,6 @@ public class AsyncVisitExecutor
     private final WorkPollStrategy _poller;
     private ThreadPoolExecutor _executor = null;
 
-    private Map<String,AccessCount> _hostCounts =
-        new HashMap<String,AccessCount>( 8 * 1024 );
-
     private long _nextCheckWorkPoll = 0;
 
     private int  _maxThreads              = 10;
@@ -495,7 +370,6 @@ public class AsyncVisitExecutor
     private boolean _doWaitOnGeneration   = false;
     private boolean _doShutdownHook       = true;
     private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
-    private int   _maxAccessCount         = 2;
     private int   _maxGenerationsToShutdown = 0;
 
     private Thread _manager               = null;

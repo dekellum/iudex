@@ -43,7 +43,7 @@ public final class Domains
         return null;
     }
 
-    static String normalize( String name )
+    public static String normalize( String name )
     {
         if( name != null ) {
             name = name.toLowerCase();
