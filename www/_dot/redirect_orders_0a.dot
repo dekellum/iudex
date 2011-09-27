@@ -1,0 +1,19 @@
+digraph "iudex-gems" {
+  rankdir=LR;
+  bgcolor="transparent";
+  edge [ arrowsize=0.80 ];
+  node [ shape=box, style="filled", fillcolor="#f7f2e1", fontsize=10, fontname=Arial ];
+
+  order        [ shape=record,
+                 label="<t>order|URL: http://www/1|PRIORITY: 1.0|STATUS: 302|<ro>REVISIT_ORDER|<rt>REFERENT" ];
+
+  revisit      [ shape=record,
+                 label="<t>revisit|URL: http://www/2|PRIORITY: 1.5|<l>LAST|<rf>REFERER" ];
+
+  order:ro -> revisit:t [ color="#2844a1", style=bold, weight=10 ];
+
+  order:t  -> revisit:rf [ dir=back ];
+  order:t  -> revisit:l  [ dir=back ];
+
+  order:rt -> revisit:t [ style=dashed ];
+}

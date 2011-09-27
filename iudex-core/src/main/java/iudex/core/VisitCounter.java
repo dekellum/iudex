@@ -18,8 +18,16 @@ package iudex.core;
 
 import com.gravitext.htmap.UniMap;
 
-public interface VisitReleasable
+/**
+ * VisitQueue methods needed by filter transitions, and possibly delegated.
+ */
+public interface VisitCounter
 {
+    /**
+     * Add a new order.
+     */
+    void add( UniMap order );
+
     /**
      * Release reference on host/domain previously obtained and possibly
      * add a new order.
@@ -27,5 +35,4 @@ public interface VisitReleasable
      * @param newOrder optional, possibly new order to add with this release.
      */
     void release( UniMap acquired, UniMap newOrder );
-
 }

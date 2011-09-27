@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2011 David Kellum
+ * Copyright (c) 2011 David Kellum
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License.  You may
@@ -17,24 +17,30 @@
 package iudex.core.filters;
 
 import static iudex.core.ContentKeys.*;
-import iudex.core.VisitURL;
+
+import iudex.core.VisitCounter;
 import iudex.filter.Filter;
 
 import com.gravitext.htmap.UniMap;
 
-/**
- * Set (registration level) RL_DOMAIN from URLs host.
- */
-public class RLDomainFilter implements Filter
+public class Revisitor implements Filter
 {
-    @Override
-    public boolean filter( UniMap content )
+    public Revisitor( VisitCounter releaser )
     {
-        VisitURL url = content.get( URL );
-        if( url != null ) {
-            content.set( RL_DOMAIN, url.domain() );
+        _visitCounter = releaser;
+    }
+
+    @Override
+    public boolean filter( UniMap order )
+    {
+        UniMap revisitOrder = order.remove( REVISIT_ORDER );
+        if( revisitOrder != null ) {
+            _visitCounter.add( revisitOrder );
+            return false;
         }
 
         return true;
     }
+
+    private final VisitCounter _visitCounter;
 }

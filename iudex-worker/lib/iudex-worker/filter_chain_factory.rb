@@ -56,6 +56,7 @@ module Iudex
 
       attr_accessor :http_client
       attr_accessor :data_source
+      attr_accessor :visit_counter
 
       def initialize( name )
         super
@@ -96,7 +97,9 @@ module Iudex
       end
 
       def feed_receiver
-        [ RomeFeedParser.new,
+        [ RedirectHandler.new( visit_counter ),
+          Revisitor.new( visit_counter ),
+          RomeFeedParser.new,
           DefaultFilter.new,
           DateChangeFilter.new( false ),
           feed_updater ]
@@ -154,7 +157,9 @@ module Iudex
       end
 
       def page_receiver
-        [ CharDetectFilter.new,
+        [ RedirectHandler.new( visit_counter ),
+          Revisitor.new( visit_counter ),
+          CharDetectFilter.new,
           html_clean_filters( :source ),
           simhash_generator,
           page_updater ].flatten

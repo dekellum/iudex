@@ -118,8 +118,8 @@ public final class VisitURL
     public String domain()
     {
         if( _domain == null ) {
-            String h = host();
-            String d = Domains.registrationLevelDomain( h );
+            final String h = host();
+            final String d = Domains.registrationLevelDomain( h );
             _domain = ( d != null ) ? d : h;
         }
         return _domain;

@@ -31,8 +31,13 @@ import com.gravitext.util.Closeable;
  * A manager to poll work and create visit tasks.
  */
 public class VisitManager
-    implements Closeable, Runnable, VisitReleasable
+    implements Closeable, Runnable, VisitCounter
 {
+    public VisitManager( WorkPollStrategy poller )
+    {
+        this( null, poller );
+    }
+
     public VisitManager( FilterContainer chain, WorkPollStrategy poller )
     {
         _chain = chain;
@@ -62,6 +67,11 @@ public class VisitManager
     public void setMaxGenerationsToShutdown( int generations )
     {
         _maxGenerationsToShutdown = generations;
+    }
+
+    public void setFilterChain( FilterContainer chain )
+    {
+        _chain = chain;
     }
 
     public synchronized ThreadPoolExecutor startExecutor()
@@ -134,6 +144,12 @@ public class VisitManager
         catch( InterruptedException x ) {
             _log.warn( "On executor shutdown: " + x );
         }
+    }
+
+    @Override
+    public void add( UniMap order )
+    {
+        _visitQ.add( order );
     }
 
     @Override
@@ -358,7 +374,7 @@ public class VisitManager
         }
     }
 
-    private final FilterContainer _chain;
+    private FilterContainer _chain;
     private final WorkPollStrategy _poller;
     private ThreadPoolExecutor _executor = null;
 
