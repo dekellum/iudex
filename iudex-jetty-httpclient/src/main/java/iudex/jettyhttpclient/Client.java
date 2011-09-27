@@ -21,24 +21,34 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
+import iudex.http.HostAccessListenable;
+import iudex.http.HostAccessListener;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.Address;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpFields.Field;
 import org.eclipse.jetty.io.Buffer;
+import org.eclipse.jetty.io.Connection;
+import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,26 +57,17 @@ import com.gravitext.util.Charsets;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
 
-public class Client implements HTTPClient, Closeable
+public class Client
+    implements HTTPClient, HostAccessListenable, Closeable
 {
     public Client( HttpClient client )
     {
         _client = client;
     }
 
-    @Override
-    public HTTPSession createSession()
+    public void setExecutor( ExecutorService executor )
     {
-        Session session = new Session();
-        session.setMaxContentLength( _maxContentLength );
-        session.setAcceptedContentTypes( _acceptedContentTypes );
-        return session;
-    }
-
-    @Override
-    public void request( HTTPSession session, ResponseHandler handler )
-    {
-        ((Session) session).execute( handler );
+        _client.setThreadPool( new ExecutorThreadPool( executor ) );
     }
 
     /**
@@ -86,14 +87,69 @@ public class Client implements HTTPClient, Closeable
     }
 
     @Override
+    public void setHostAccessListener( HostAccessListener listener )
+    {
+        _hostAccessListener = listener;
+    }
+
+    public void start() throws RuntimeException
+    {
+        try {
+            _client.start();
+        }
+        catch( RuntimeException x ) {
+            throw x;
+        }
+        catch( Exception x ) {
+            throw new RuntimeException( x );
+        }
+    }
+
+    @Override
+    public HTTPSession createSession()
+    {
+        Session session = new Session();
+        session.setMaxContentLength( _maxContentLength );
+        session.setAcceptedContentTypes( _acceptedContentTypes );
+        return session;
+    }
+
+    @Override
+    public void request( HTTPSession session, ResponseHandler handler )
+    {
+        ((Session) session).execute( handler );
+    }
+
+    @Override
     public void close()
     {
         try {
+            dump();
             _client.stop();
         }
         catch( Exception e ) {
             _log.warn( "On close: {}", e.toString() );
             _log.debug( "On close:", e );
+        }
+    }
+
+    public void dump()
+    {
+        // Warning: Can deadlock jetty threads!
+        // Allow selective logging and only dump if debug logging enabled.
+        Logger log = LoggerFactory.getLogger( "iudex.jettyhttpclient.Dumper" );
+
+        if( log.isDebugEnabled() ) {
+            log.debug( "Jetty Client Dump ::\n{}", _client.dump() );
+        }
+    }
+
+    public static class Expired
+        extends TimeoutException
+    {
+        public Expired()
+        {
+            super();
         }
     }
 
@@ -139,6 +195,7 @@ public class Client implements HTTPClient, Closeable
 
         public void abort()
         {
+            _log.debug( "Aborting with statusCode: {}", _statusCode );
             _body = null;
             _exchange.onResponseComplete();
             _exchange.cancel();
@@ -156,15 +213,30 @@ public class Client implements HTTPClient, Closeable
             _exchange.setMethod( method().name() );
             _exchange.setURL( url() );
 
+            _host = _exchange.getAddress().getHost();
+
             for( Header h : _requestedHeaders ) {
                 _exchange.setRequestHeader(  h.name().toString(),
                                              h.value().toString() );
             }
+
+            _exchange.onSend();
+
             try {
                 _client.send( _exchange );
             }
             catch( IOException e ) {
                 _exchange.onException( e );
+            }
+        }
+
+        private void checkHostChange( String currentHost )
+        {
+            if( ! currentHost.equals( _host ) ) {
+                if( _hostAccessListener != null ) {
+                    _hostAccessListener.hostChange( currentHost, _host );
+                }
+                _host = currentHost;
             }
         }
 
@@ -175,8 +247,12 @@ public class Client implements HTTPClient, Closeable
                 throw new IllegalStateException(
                    "Handler already completed!" );
             }
-            _handler = null;
+            _exchange.onComplete();
 
+            _handler = null;
+            if( _hostAccessListener != null ) {
+                _hostAccessListener.hostChange( null, _host );
+            }
             handler.sessionCompleted( this );
         }
 
@@ -188,10 +264,26 @@ public class Client implements HTTPClient, Closeable
 
         private class Exchange extends HttpExchange
         {
+            /**
+             * Called by session for tracking.
+             */
+            void onSend()
+            {
+                _log.debug( "onSend Exchange {}", this );
+            }
+
+            /**
+             * Called by session.complete() for tracking.
+             */
+            void onComplete()
+            {
+               _log.debug( "onComplete Exchange {}", this );
+            }
 
             @Override
             protected void onRequestComplete()
             {
+                _log.debug( "onRequestComplete: {}", this );
             }
 
             @Override
@@ -200,14 +292,25 @@ public class Client implements HTTPClient, Closeable
                                              Buffer reason )
             {
                 _statusCode = status;
-                _statusText = decode( reason ).toString();
+                if( reason != null ) {
+                    _statusText = decode( reason ).toString();
+                }
+                else {
+                    _statusText = null;
+                }
+                _log.debug( "onResponseStatus: {} {}",
+                            _statusCode, _statusText );
+
+                checkHostChange( getAddress().getHost() );
 
                 try {
-                    Session.this.setUrl( lastURL() );
+                    String lastURL = lastURL();
+                    _log.debug( "onResponseStatus: url: {}", lastURL );
+                    Session.this.setUrl( lastURL );
                 }
                 catch( URISyntaxException e ) {
                     onException( e );
-                    //FIXME: Abort?
+                    cancel();
                 }
             }
 
@@ -221,22 +324,27 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onResponseHeaderComplete()
             {
-                //check Content-Type
-                ContentType ctype = Headers.contentType( _responseHeaders );
+                if( _statusCode == 200 ) {
 
-                if( ! acceptedContentTypes().contains( ctype ) ) {
-                    _statusCode = NOT_ACCEPTED;
-                    abort();
-                }
-                else {
-                    int length = Headers.contentLength( _responseHeaders );
-                    if( length > maxContentLength() ) {
-                        _statusCode = TOO_LARGE_LENGTH;
+                    //check Content-Type
+                    ContentType ctype = Headers.contentType( _responseHeaders );
+
+                    if( ! acceptedContentTypes().contains( ctype ) ) {
+                        _statusCode = NOT_ACCEPTED;
+                        _statusText = null;
                         abort();
                     }
                     else {
-                        _body = new ResizableByteBuffer(
-                            ( length >= 0 ) ? length : 16 * 1024 );
+                        int length = Headers.contentLength( _responseHeaders );
+                        if( length > maxContentLength() ) {
+                            _statusCode = TOO_LARGE_LENGTH;
+                            _statusText = null;
+                            abort();
+                        }
+                        else {
+                            _body = new ResizableByteBuffer(
+                                        ( length >= 0 ) ? length : 16 * 1024 );
+                        }
                     }
                 }
             }
@@ -244,13 +352,20 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onResponseContent( Buffer content )
             {
-                ByteBuffer chunk = wrap( content );
-                if( _body.position() + chunk.remaining() > maxContentLength() ) {
-                    _statusCode = TOO_LARGE;
-                    abort();
+                if( _body != null ) {
+                    ByteBuffer chunk = wrap( content );
+                    if( ( _body.position() + chunk.remaining() ) >
+                        maxContentLength() ) {
+                        _statusCode = TOO_LARGE;
+                        _statusText = null;
+                        abort();
+                    }
+                    else {
+                        _body.put( chunk );
+                    }
                 }
                 else {
-                    _body.put( chunk );
+                    _log.debug( "Ignoring onResponseContent" );
                 }
             }
 
@@ -269,14 +384,43 @@ public class Client implements HTTPClient, Closeable
             @Override
             protected void onExpire()
             {
-                onException( new TimeoutException( "expired" ) );
+                onException( new Expired() );
             }
 
             @Override
             protected void onException( Throwable t ) throws Error
             {
                 if( t instanceof Exception ) {
-                    _statusCode = ERROR;
+
+                    if( _handler == null ) {
+                        _log.error( "On Exception (already handled): ", t );
+                    }
+
+                    if( ( t instanceof IllegalArgumentException ) &&
+                        ( t.getCause() instanceof URISyntaxException ) ) {
+                        t = t.getCause();
+                    }
+
+                    if( t instanceof Expired ) {
+                        _statusCode = TIMEOUT;
+                    }
+                    else if( t instanceof TimeoutException ) {
+                        _statusCode = TIMEOUT_CONNECT;
+                    }
+                    else if( t instanceof SocketTimeoutException ) {
+                        _statusCode = TIMEOUT_SOCKET;
+                    }
+                    else if( ( t instanceof UnresolvedAddressException ) ||
+                             ( t instanceof UnknownHostException ) ) {
+                        _statusCode = UNRESOLVED;
+                    }
+                    else if( t instanceof URISyntaxException ) {
+                        _statusCode = INVALID_REDIRECT_URL;
+                    }
+                    else {
+                        _statusCode = ERROR;
+                    }
+
                     setError( (Exception) t );
                     complete();
                 }
@@ -292,6 +436,37 @@ public class Client implements HTTPClient, Closeable
                         // Weird shit outside Exception or Error branches.
                         throw new RuntimeException( t );
                     }
+                }
+            }
+
+            @Override
+            protected void onRetry() throws IOException
+            {
+                // Detect host changes to indicate early host releases
+                checkHostChange( getAddress().getHost() );
+
+                super.onRetry();
+            }
+
+            @Override
+            protected Connection onSwitchProtocol( EndPoint endp )
+                throws IOException
+            {
+                _log.debug( "onSwitchProtocol: host {}",
+                            ( endp == null ) ? null : endp.getRemoteHost() );
+                return super.onSwitchProtocol( endp );
+            }
+
+            @Override
+            protected void expire( HttpDestination destination )
+            {
+                try {
+                    super.expire( destination );
+                }
+                catch( IllegalStateException x ) {
+                    _log.debug( "On expire: ", x );
+                    onException( x );
+                    cancel();
                 }
             }
 
@@ -316,23 +491,43 @@ public class Client implements HTTPClient, Closeable
 
                 return req.append( getMethod() ).
                            append( ' ' ).
-                           append( getURI() );
+                           append( getRequestURI() );
             }
 
             private String lastURL() throws URISyntaxException
             {
-                Address adr = getAddress();
-                URI uri = new URI( decode( getScheme() ).toString(),
-                                   null,
-                                   adr.getHost(),
-                                   adr.getPort(),
-                                   null,
-                                   null,
-                                   null );
+                try {
+                    Address adr = getAddress();
+                    String scheme = decode( getScheme() ).toString();
+                    int port = adr.getPort();
+                    if( ( scheme.equals( "http" ) && port == 80 ) ||
+                        ( scheme.equals( "https" ) && port == 443 ) ) {
+                        port = -1;
+                    }
 
-                uri = uri.resolve( getURI() );
+                    URI uri = new URI( scheme,
+                                       null,
+                                       adr.getHost(),
+                                       port,
+                                       null,
+                                       null,
+                                       null );
 
-                return uri.toString();
+                    uri = uri.resolve( getRequestURI() );
+                    return uri.toString();
+                }
+                // URI can also throw IllegalArgumentException wrapping
+                // a URISyntaxException. Unwrap it.
+                catch ( IllegalArgumentException x ) {
+                    Throwable cause = x.getCause();
+                    if( ( cause != null ) &&
+                        ( cause instanceof URISyntaxException ) ) {
+                        throw (URISyntaxException) cause;
+                    }
+                    else {
+                        throw x;
+                    }
+                }
             }
 
             private CharBuffer decode( Buffer b )
@@ -355,6 +550,7 @@ public class Client implements HTTPClient, Closeable
 
         private final Exchange _exchange = new Exchange();
         private ResponseHandler _handler = null;
+        private String _host = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
@@ -365,6 +561,8 @@ public class Client implements HTTPClient, Closeable
     }
 
     private final HttpClient _client;
+
+    private HostAccessListener _hostAccessListener = null;
 
     private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;

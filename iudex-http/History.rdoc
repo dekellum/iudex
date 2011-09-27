@@ -1,4 +1,11 @@
 === 1.1.0 (TBD)
+* New general ContentTypeSet with Content-Type match test.
+* ResponseHandler simplified to a single sessionCompleted() callback.
+* New HostAccessListener,Listenable interfaces for track host
+  connection usage.
+* HTTPSession constants for psuedo-HTTP status error codes, other
+  additions.
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

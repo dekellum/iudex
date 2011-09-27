@@ -1,10 +1,10 @@
 destination: ./_site
-exclude    : [ "Rakefile" ]
+exclude    : [ "Rakefile", "Gemfile", "Gemfile.lock" ]
 auto:        false
 lsi:         false
 server_port: 4000
 pygments:    true
-markdown:    maruku
+markdown:    kramdown
 permalink:   date
 maruku:
   use_tex:    false

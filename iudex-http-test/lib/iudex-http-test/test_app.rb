@@ -15,7 +15,10 @@
 #++
 
 require 'rack'
-require 'rack/mime' #FIXME: Otherwise rack can fail on threaded autoload
+
+#FIXME: Otherwise rack can fail on threaded autoload (to be fixed in jruby)
+require 'rack/mime'
+require 'rack/head'
 
 require 'sinatra/base'
 require 'markaby'
@@ -104,6 +107,12 @@ module Iudex::HTTP::Test
 
     get '/301' do
       redirect( to( '/index' ), 301 ) #"redirect body"
+    end
+
+    get '/redirect' do
+      loc = params[ :loc ]
+      redirect loc if loc
+      halt 400, "loc query parameter required"
     end
 
     get '/redirects/multi/:depth' do

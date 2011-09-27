@@ -18,8 +18,6 @@ require 'iudex-da'
 require 'iudex-da/key_helper'
 require 'iudex-da/pool_data_source_factory'
 
-require 'iudex-httpclient-3'
-
 require 'iudex-worker'
 require 'iudex-worker/filter_chain_factory'
 
@@ -35,7 +33,13 @@ module Iudex
       include Iudex::Worker
       include Gravitext::HTMap
 
+      attr_accessor :run_async
+      attr_accessor :common_executor
+
       def initialize
+        @log = RJack::SLF4J[ self.class ]
+        @run_async = false
+        @common_executor = true
         Hooker.apply( [ :iudex, :worker ], self )
       end
 
@@ -48,28 +52,58 @@ module Iudex
         FilterChainFactory.new( 'agent' )
       end
 
+      def http_client
+        if @run_async
+          require 'iudex-jetty-httpclient'
+          @jetty_client = JettyHTTPClient.create_client
+        else
+          require 'iudex-httpclient-3'
+          @http_3_mgr = HTTPClient3.create_manager
+          @http_3_mgr.start
+          HTTPClient3::HTTPClient3.new( @http_3_mgr.client )
+        end
+      end
+
+      def visit_manager( wpoller )
+        vexec = VisitManager.new( wpoller )
+        Hooker.apply( [ :iudex, :visit_manager ], vexec )
+      end
+
+      def work_poller( data_source )
+        cmapper = ContentMapper.new( keys( poll_keys ) )
+        wpoller = WorkPoller.new( data_source, cmapper )
+
+        visit_q = Hooker.apply( [ :iudex, :visit_queue ], VisitQueue.new )
+
+        wpoller.visit_queue_factory = VisitQueueFactory.new( visit_q )
+
+        Hooker.apply( [ :iudex, :work_poller ], wpoller )
+      end
+
       def run
         Hooker.with( :iudex ) do
           dsf = PoolDataSourceFactory.new
           data_source = dsf.create
 
-          cmapper = ContentMapper.new( keys( poll_keys ) )
-          wpoller = WorkPoller.new( data_source, cmapper )
-          Hooker.apply( :work_poller, wpoller )
+          wpoller = work_poller( data_source )
 
-          mgr = HTTPClient3.create_manager
-          mgr.start
-          http_client = HTTPClient3::HTTPClient3.new( mgr.client )
+          hclient = http_client
 
           fcf = filter_chain_factory
-          fcf.http_client = http_client
+          fcf.http_client = hclient
           fcf.data_source = data_source
 
           Hooker.apply( :filter_factory, fcf )
 
+          vexec = visit_manager( wpoller )
+          fcf.visit_counter = vexec
+
           fcf.filter do |chain|
-            vexec = VisitExecutor.new( chain, wpoller )
-            Hooker.apply( :visit_executor, vexec )
+            vexec.filter_chain = chain
+            if @run_async
+              hclient.executor = vexec.start_executor if @common_executor
+              hclient.start
+            end
 
             Hooker.log_not_applied # All hooks should be used by now
 
@@ -77,10 +111,14 @@ module Iudex
             vexec.join    #Run until interrupted
           end # fcf closes
 
-          mgr.shutdown
+          @http_3_mgr.shutdown if @http_3_mgr
+          @jetty_client.close if @jetty_client
           dsf.close
         end
+      rescue => e
+        @log.error( "On run: ", e )
       end
+
     end
 
   end

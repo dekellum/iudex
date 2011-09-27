@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gravitext.htmap.UniMap;
 
 /**
@@ -28,8 +31,71 @@ import com.gravitext.htmap.UniMap;
  * host. The sleeping hosts queue is prioritized by least next visit
  * time.
  */
-public class VisitQueue
+public class VisitQueue implements VisitCounter
 {
+    public int defaultMinHostDelay()
+    {
+        return _defaultMinHostDelay;
+    }
+
+    public void setDefaultMinHostDelay( int defaultMinHostDelay )
+    {
+        _defaultMinHostDelay = defaultMinHostDelay;
+    }
+
+    public int defaultMaxAccessPerHost()
+    {
+        return _defaultMaxAccessPerHost;
+    }
+
+    public void setDefaultMaxAccessPerHost( int defaultMaxAccessPerHost )
+    {
+        _defaultMaxAccessPerHost = defaultMaxAccessPerHost;
+    }
+
+    public synchronized void configureHost( String host,
+                                            int minHostDelay,
+                                            int maxAccessCount )
+    {
+        String key = hostKey( host.trim() );
+        HostQueue hq = _hosts.get( key );
+        if( hq != null ) {
+            throw new IllegalStateException(
+                "configureHost on non empty VisitQueue or " +
+                hq.host() +
+                " already configured." );
+        }
+
+        _hosts.put( key,
+                    new HostQueue( key, minHostDelay, maxAccessCount ) );
+    }
+
+    /**
+     * Create a new VisitQueue with the same defaults and host configuration.
+     * This is intended to support configuring a VisitQueue template and
+     * cloning repeatedly for use.
+     * @throws IllegalStateException if this VisitQueue has orders already.
+     */
+    @Override
+    public VisitQueue clone()
+    {
+        if( _orderCount > 0 ) {
+            throw new IllegalStateException(
+                "VisitQueue can't be cloned with orders" );
+        }
+
+        VisitQueue newQ = new VisitQueue();
+        newQ._defaultMinHostDelay     = _defaultMinHostDelay;
+        newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
+
+        //Very important to deep copy the host queues
+        for( HostQueue hq : _hosts.values() ) {
+            newQ._hosts.put( hq.host(), hq.clone() );
+        }
+
+        return newQ;
+    }
+
     public synchronized void addAll( List<UniMap> orders )
     {
         for( UniMap order : orders ) {
@@ -53,12 +119,20 @@ public class VisitQueue
     }
 
     /**
+     * Return the total of acquired, and as not yet released orders.
+     */
+    public synchronized int acquiredCount()
+    {
+        return _acquiredCount;
+    }
+
+    /**
      * Return the total number of unique hosts for which there is at
      * least one visit order.
      */
     public synchronized int hostCount()
     {
-        return _hosts.size();
+        return _hostCount;
     }
 
     /**
@@ -67,6 +141,7 @@ public class VisitQueue
      * returned, the calling thread owns it exclusively and must
      * guarantee to return it via untake() after removing the highest
      * priority visit order.
+     * @deprecated Use acquire/release instead.
      */
     public HostQueue take() throws InterruptedException
     {
@@ -81,6 +156,7 @@ public class VisitQueue
      * priority visit order.
      * @param maxWait maximum wait in milliseconds
      * @return HostQueue or null if maxWait exceeded
+     * @deprecated Use acquire/release instead.
      */
     public synchronized HostQueue take( long maxWait )
         throws InterruptedException
@@ -92,10 +168,9 @@ public class VisitQueue
             HostQueue next = null;
             while( ( next = _sleepHosts.peek() ) != null ) {
                 if( ( now - next.nextVisit() ) >= 0 ) {
-                    _readyHosts.add( _sleepHosts.remove() );
+                    addReady( _sleepHosts.remove() );
                 }
-                else
-                    break;
+                else break;
             }
             if( _readyHosts.isEmpty() ) {
 
@@ -114,47 +189,213 @@ public class VisitQueue
     }
 
     /**
+     * Returns the highest priority of the available visit orders. May block
+     * up to maxWait milliseconds. Caller must call the
+     * {@link #release(UniMap, UniMap)}  when done processing this order.
+     * @return UniMap visit order or null if maxWait was  exceeded
+     */
+    public synchronized UniMap acquire( long maxWait )
+        throws InterruptedException
+    {
+        UniMap job = null;
+        HostQueue hq = take( maxWait );
+        if( hq != null ) {
+            _log.debug( "Take: {}", hq.host() );
+
+            if( ! hq.isAvailable() ) {
+                throw new IllegalStateException( "Unavailable host take!");
+            }
+
+            job = hq.remove();
+
+            untakeImpl( hq );
+            ++_acquiredCount;
+        }
+        return job;
+    }
+
+    @Override
+    public synchronized void release( UniMap acquired, UniMap newOrder )
+    {
+        if( newOrder != null ) privAdd( newOrder );
+        --_orderCount;
+        --_acquiredCount;
+
+        if( acquired == null ) {
+            throw new NullPointerException( "Null release!" );
+        }
+
+        String orderKey = orderKey( acquired );
+        HostQueue queue = _hosts.get( orderKey );
+
+        if( queue == null ) {
+            throw new IllegalStateException( "Host order key [" +
+                                             orderKey + "] not found" );
+        }
+
+        _log.debug( "Release: {} {}", queue.host(), queue.size() );
+
+        if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
+
+        checkRemove( queue );
+    }
+
+    /**
      * Return the previously taken HostQueue, after removing a single
      * visit order and adjusting the next visit time accordingly.
+     * @deprecated Use acquire/release instead.
      */
     public synchronized void untake( HostQueue queue )
     {
         --_orderCount;
-        if( queue.size() == 0 ) {
-            _hosts.remove( queue.host() );
+        queue.release();
+        untakeImpl( queue );
+        checkRemove( queue );
+    }
+
+    protected String orderKey( UniMap order )
+    {
+        return order.get( ContentKeys.URL ).domain();
+    }
+
+    protected String hostKey( String host )
+    {
+        host = Domains.normalize( host );
+        String domain = Domains.registrationLevelDomain( host );
+        return ( domain != null ) ? domain : host;
+    }
+
+    synchronized String dump()
+    {
+        StringBuilder out = new StringBuilder(4096);
+        long now = System.currentTimeMillis();
+
+        out.append( String.format(
+            "VisitQueue@%x Dump, orders %d, acq %d, hosts %d ::\n",
+            System.identityHashCode( this ),
+            orderCount(),
+            acquiredCount(),
+            hostCount() ) );
+
+        for( HostQueue hq : _hosts.values() ) {
+
+            boolean isReady = _readyHosts.contains( hq );
+            boolean isSleep = _sleepHosts.contains( hq );
+
+            out.append( String.format(
+                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                hq.host(),
+                hq.size(),
+                hq.accessCount(),
+                hq.nextVisit() - now,
+                ( isReady ? 'R' : ' ' ),
+                ( isSleep ? 'S' : ' ' ) ) );
+         }
+
+        return out.toString();
+    }
+
+    private void checkRemove( HostQueue queue )
+    {
+        if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
+            --_hostCount;
+            if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
+                ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
+                _hosts.remove( queue.host() );
+            }
         }
-        else {
-            _sleepHosts.add( queue );
-            notifyAll();
+    }
+
+    private void untakeImpl( HostQueue queue )
+    {
+        if( queue.isAvailable() && ( queue.size() > 0 ) ) {
+            addSleep( queue );
         }
     }
 
     private void privAdd( UniMap order )
     {
-        String host = order.get( ContentKeys.URL ).host();
+        String host = orderKey( order );
 
         HostQueue queue = _hosts.get( host );
         final boolean isNew = ( queue == null );
-        if( isNew ) queue = new HostQueue( host );
+        if( isNew ) {
+              queue = new HostQueue( host,
+                                     _defaultMinHostDelay,
+                                     _defaultMaxAccessPerHost );
+              _hosts.put( host, queue );
+        }
 
         queue.add( order );
 
-        if( isNew ) {
-            _hosts.put( host, queue );
-            _readyHosts.add( queue );
+        if( ( queue.size() == 1 ) && ( queue.isAvailable() ) ) {
+            addReady( queue );
+        }
+        if( ( queue.size() == 1 ) && ( queue.accessCount() == 0 ) ) {
+            ++_hostCount;
         }
 
         ++_orderCount;
     }
 
+    private void addReady( HostQueue queue )
+    {
+        if( _log.isDebugEnabled() ) {
+            _log.debug( "addReady: {} {}", queue.host(), queue.size() );
+            checkAdd( queue );
+        }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addReady!");
+        }
+
+        _readyHosts.add( queue );
+    }
+
+    private void addSleep( HostQueue queue )
+    {
+        if( _log.isDebugEnabled() ) {
+            _log.debug( "addSleep: {} {}", queue.host(), queue.size() );
+            checkAdd( queue );
+        }
+
+        if( ! queue.isAvailable() ) {
+            throw new IllegalStateException( "Unavailable addSleep!");
+        }
+
+        _sleepHosts.add( queue );
+        notifyAll();
+    }
+
+    private void checkAdd( HostQueue queue )
+        throws IllegalStateException
+    {
+        if( _readyHosts.contains( queue ) ) {
+            throw new IllegalStateException( "Already ready!" );
+        }
+        if( _sleepHosts.contains( queue ) ) {
+            throw new IllegalStateException( "Already sleeping!" );
+        }
+        if( queue.size() == 0 ) {
+            throw new IllegalStateException( "Adding empty queue!" );
+        }
+    }
+
+    private int _defaultMinHostDelay     = 500; //ms
+    private int _defaultMaxAccessPerHost =   1;
+
     private int _orderCount = 0;
+    private int _acquiredCount = 0;
+    private int _hostCount = 0;
 
     private final Map<String, HostQueue> _hosts      =
-        new HashMap<String, HostQueue>();
+        new HashMap<String, HostQueue>( 2048 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
         new PriorityQueue<HostQueue>( 1024, new HostQueue.TopOrderComparator());
 
     private PriorityQueue<HostQueue>     _sleepHosts =
         new PriorityQueue<HostQueue>( 128, new HostQueue.NextVisitComparator());
+
+    private Logger _log = LoggerFactory.getLogger( getClass() );
 }

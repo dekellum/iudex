@@ -33,9 +33,13 @@ module Iudex::DA
   setup #FIXME: Require explicit setup for use?
 
   def migrate( target_version = nil )
-    ActiveRecord::Migrator.migrate( File.join( LIB_DIR, '..', '..', 'db' ),
-                                    target_version )
-    #FIXME: Support additional migration directories?
+    base = File.join( LIB_DIR, '..', '..', 'db' )
+
+    profiles = Hooker.apply( [ :iudex, :migration_profiles ], [] )
+
+    ext = profiles.compact.map { |p| "/#{p}" }.join(',')
+    base += "{#{ext},}" unless ext.empty?
+    ActiveRecord::Migrator.migrate( base, target_version )
   end
 
   module_function :migrate

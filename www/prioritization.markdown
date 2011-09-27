@@ -10,36 +10,36 @@ executor with the following features:
 
 * Per-host fetch rate limiting for politeness.
 
-* HostQueue(s) containing visit orders for that host to be processed
-  in priority order.
+* `HostQueue`s containing visit orders for the same host, to be
+  processed in priority order.
 
-* A VisitQueue of ready and sleeping (delay for politeness)
-  HostQueue's. The ready queue is prioritized by HostQueue topmost
+* A `VisitQueue` of ready and sleeping (delay for politeness)
+  `HostQueue`s. The ready queue is prioritized by `HostQueue` topmost
   priority. The sleeping queue is ordered by least next visit time.
 
-* A custom threaded-concurrent VisitExecutor for processing the
-  VisitQueue while upholding host politeness constraints.
+* A custom threaded, concurrent `VisitManager` for processing the
+  `VisitQueue` while upholding host politeness constraints.
 
-* A pluggable WorkPollStrategy.
+* A pluggable `WorkPollStrategy`.
 
-* A GenericWorkPollStrategy including support for minimum poll
-  interval, and minimum remaining ratios of orders and hosts before a
+* A `GenericWorkPollStrategy` including support for minimum poll
+  interval, and minimum remaining ratios of orders and hosts before
   new work is polled.
 
-* The VisitExecutor supports generations of VisitQueue(s) and visitor
+* The `VisitManager` supports generations of VisitQueue(s) and visitor
   threads, for high concurrency, and avoiding over-commitment to any
   single host.
 
 ## Postgres-backed persistent priority queue
 
-The [iudex-da] modules provides a WorkPoller implementation of
-WorkPollStrategy which obtains prioritized visit orders from a
+The [iudex-da] modules provides a `WorkPoller` implementation of
+`WorkPollStrategy` which obtains prioritized visit orders from a
 Postgres database. Features:
 
-* Only visit orders (urls) with NEXT_VISIT_AFTER the current time are
+* Only visit orders (urls) with `NEXT_VISIT_AFTER` the current time are
   considered.
 
-* Visit orders are considered in descending PRIORITY order.
+* Visit orders are considered in descending `PRIORITY` order.
 
 * The priority of the highest orders associated with a each host (by
   URL) is discounted by a fixed factor of per-host depth. This biases

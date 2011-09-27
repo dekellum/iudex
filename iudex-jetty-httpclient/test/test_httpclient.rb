@@ -23,6 +23,8 @@ require 'iudex-http-test/broken_server'
 
 require 'iudex-jetty-httpclient'
 require 'thread'
+require 'cgi'
+require 'uri'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -33,10 +35,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.util.concurrent.TimeoutException'
   import 'java.net.ConnectException'
   import 'java.net.UnknownHostException'
+  import 'java.net.URISyntaxException'
   import 'java.io.IOException'
   import 'java.io.EOFException'
   import 'java.lang.IllegalStateException'
   import 'java.nio.channels.UnresolvedAddressException'
+  import 'iudex.http.HostAccessListener'
 
   CustomUnit.register
 
@@ -120,6 +124,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                      :idle_timeout    => 10_000 ) do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
+        assert_equal( HTTPSession::UNRESOLVED, s.status_code )
         assert_includes( [ UnresolvedAddressException,
                            UnknownHostException ], x.class )
       end
@@ -143,7 +148,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :short => true ) do |client|
       with_session_handler( client,
                             "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( TimeoutException, x )
+        assert_includes( (-42..-40), s.status_code )
+        assert_kind_of( TimeoutException, x )
       end
     end
   ensure
@@ -161,7 +167,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_timeout
     with_new_client( :short => true ) do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
-        assert_instance_of( TimeoutException, x )
+        assert_includes( (-42..-40), s.status_code )
+        assert_kind_of( TimeoutException, x )
       end
     end
     sleep 0.70 # FIXME: Account for test server delay. Should be
@@ -169,7 +176,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       with_session_handler( client, "/" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/index', s.url )
@@ -178,7 +185,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_with_query_string
-    with_new_client do |client|
+    with_new_client( :handle_redirects_internal => true ) do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
@@ -189,8 +196,70 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_redirect_multi_host
+    with_new_client( :handle_redirects_internal => true ) do |client|
+      rurl = 'http://127.0.0.1:19292/index'
+      rurl_e = CGI.escape( rurl )
+      with_session_handler( client, "/redirect?loc=#{rurl_e}" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_multi_host_bad
+    skip( "Error: -1 java.lang.NumberFormatException" )
+    with_new_client( :handle_redirects_internal => true ) do |client|
+      rurl = 'http://localhost:19292/index'
+      url = "http://127.0.0.1:19292?redirect?loc=" + CGI.escape( rurl )
+      # Note >?<redirect? above
+      url = "/redirect?loc=" + CGI.escape( url )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
+        assert_instance_of( URISyntaxException, x )
+      end
+    end
+  end
+
+  def test_redirect_multi_host_3
+    with_new_client( :handle_redirects_internal => true ) do |client|
+      rurl = 'http://localhost:19292/index'
+      url = "http://127.0.0.1:19292/redirect?loc=" + CGI.escape( rurl )
+      url = "/redirect?loc=" + CGI.escape( url )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_multi_host_fragment
+    with_new_client( :handle_redirects_internal => true ) do |client|
+      rurl = '/index#!foo'
+      url = "/redirect?loc=" + CGI.escape( rurl )
+
+      with_session_handler( client, url ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_equal( 'http://localhost:19292' + rurl, s.url )
+      end
+    end
+  end
+
+  def test_redirect_bad_host
+    with_new_client( :handle_redirects_internal => true ) do |client|
+      rurl = CGI.escape( 'http://\bad.com/' )
+      with_session_handler( client, "/redirect?loc=#{ rurl }" ) do |s,x|
+        assert_equal( HTTPSession::INVALID_REDIRECT_URL, s.status_code )
+        assert_instance_of( URISyntaxException, x )
+      end
+    end
+  end
+
   def test_multi_redirect
-    with_new_client( :max_redirects => 8 ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :max_redirects => 8 ) do |client|
       with_session_handler( client, "/redirects/multi/6" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_nil x
@@ -199,17 +268,18 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unfollowed_301_redirect
-    with_new_client( :max_redirects => 0 ) do |client|
+    with_new_client do |client|
       with_session_handler( client, "/301" ) do |s,x|
         assert_equal( 301, s.status_code )
-        lh = s.response_headers.find { |h| "Location" == h.name.to_s }
-        assert_match( %r{/index$}, lh.value.to_s )
+        lh = find_header( s.response_headers, "Location" )
+        assert_match( %r{/index$}, lh )
       end
     end
   end
 
   def test_too_many_redirects
-    with_new_client( :max_redirects => 18 ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :max_redirects => 18 ) do |client|
       #FIXME: One redirect off somewhere? 19 fails.
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
         assert_equal( 302, s.status_code, x )
@@ -219,7 +289,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_redirect_timeout
     skip( "Unreliable timeout with redirects, timing dependent" )
-    with_new_client( :short => true ) do |client|
+    with_new_client( :handle_redirects_internal => true,
+                     :short => true ) do |client|
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
@@ -254,6 +325,67 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     sthread = Thread.new do
       bs.accept { |sock| sock.close }
+    end
+
+    with_new_client do |client|
+      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( EOFException, x )
+      end
+    end
+
+    sthread.join
+
+  ensure
+    bs.stop
+  end
+
+  def test_early_close
+    bs = BrokenServer.new
+    bs.start
+
+    sthread = Thread.new do
+      bs.accept do |sock|
+        sock.write "HTTP/1.1 200 OK\r\n"
+        sock.write "Content-Type: text/plain\r\n"
+        sock.write "Transfer-Encoding: chunked\r\n"
+        sock.write "\r\n"
+        sock.write "FF3DF\r\n"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.close
+      end
+    end
+
+    with_new_client do |client|
+      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+        assert_instance_of( EOFException, x )
+      end
+    end
+
+    sthread.join
+
+  ensure
+    bs.stop
+  end
+
+  def test_redirect_early_close
+    bs = BrokenServer.new
+    bs.start
+
+    sthread = Thread.new do
+      bs.accept do |sock|
+        sock.write "HTTP/1.1 302 Found\r\n"
+        sock.write "Location: http://localhost:54929/no-exist\r\n"
+        sock.write "Content-Type: text/plain\r\n"
+        sock.write "Transfer-Encoding: chunked\r\n"
+        sock.write "\r\n"
+        sock.write "FF3DF\r\n"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.write "An incomplete chunk"
+        sock.close
+      end
     end
 
     with_new_client do |client|
@@ -362,7 +494,13 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
-    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
+    if uri =~ /^http:/
+      @ha_listener.hostChange( URI.parse( uri ).host, nil )
+    else
+      uri = "http://localhost:#{server.port}#{uri}"
+      @ha_listener.hostChange( 'localhost', nil )
+    end
+
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
@@ -396,10 +534,40 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     client = JettyHTTPClient.create_client( o )
     begin
+      @ha_listener = HostAccessCounter.new
+      client.set_host_access_listener( @ha_listener )
+
+      client.start
+
       yield client
+
+      @ha_listener.check_hosts do |host,count|
+        assert_equal( 0, count, "host: #{host} count: #{count}" )
+      end
     ensure
       client.close
     end
+  end
+
+  class HostAccessCounter
+    include HostAccessListener
+
+    def initialize
+      @hosts = Hash.new { |k,v| k[v] = 0 }
+      @lock = Mutex.new
+    end
+
+    def hostChange( acquired, released )
+      @lock.synchronize do
+        @hosts[ acquired ] += 1 if acquired
+        @hosts[ released ] -= 1 if released
+      end
+    end
+
+    def check_hosts
+      @hosts.each { |h,c| yield( h, c ) }
+    end
+
   end
 
   class TestHandler < BaseResponseHandler

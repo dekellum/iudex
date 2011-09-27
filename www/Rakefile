@@ -1,5 +1,8 @@
 # -*- ruby -*-
 
+require 'rubygems'
+require 'bundler/setup'
+
 task :default => [ :gen ]
 
 directory 'svg'
@@ -23,12 +26,18 @@ task :clean do
   rm_rf %w[ svg _site ]
 end
 
+desc "Run Jekyll to generate files"
 task :gen => [ :dot ] do
-  sh "jekyll"
+  require 'jekyll'
+  ARGV.clear
+  load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 
+desc "Run auto-regenerating Jekyll server"
 task :server => [ :dot ] do
-  sh "jekyll --auto --server"
+  require 'jekyll'
+  ARGV.replace( %w[ --auto --server ] )
+  load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 
 DEST="/home/david/public_html/iudex"

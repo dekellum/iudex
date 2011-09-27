@@ -1,0 +1,15 @@
+digraph "iudex-gems" {
+  rankdir=LR;
+  bgcolor="transparent";
+  edge [ arrowsize=0.80, fontname=Arial, fontsize=9 ];
+  node [ shape=box, style="filled,rounded", fillcolor="#f7e8b5", fontsize=10, fontname=Arial ];
+
+  u1 [ label="http://www/1" ]
+  u2 [ label="http://www/2" ]
+  u3 [ label="http://www/3" ]
+  done [ style=invis ];
+
+  u1 -> u2 [ label=302 ];
+  u2 -> u3 [ label=301 ];
+  u3 -> done [ label=200, arrowhead=dot ];
+}

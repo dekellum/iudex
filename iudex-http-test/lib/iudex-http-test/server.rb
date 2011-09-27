@@ -17,31 +17,22 @@
 require 'iudex-http-test/base'
 require 'iudex-http-test/test_app'
 
-require 'mizuno'
+require 'fishwife'
 
 module Iudex::HTTP::Test
 
-  class Server
-    attr_accessor :port
+  class Server < Fishwife::HttpServer
 
-    def initialize
-      @handler = Mizuno::HttpServer
-      # FIXME: Do the jetty setup ourselves?
+    DEFAULT_PORT = 19292
 
-      # FIXME: Have to use a fixed port, even for testing as can't get
-      # arbitrary port back out of Mizuno.
-      @port = 19292
+    def initialize( opts = {} )
+      opts = { :port => DEFAULT_PORT,
+               :max_threads => 20 }.merge( opts )
+      super( opts )
     end
 
-    def start
-      @handler.run( TestApp.new,
-                    :host => '0.0.0.0',
-                    :port => @port,
-                    :embedded => true )
-    end
-
-    def stop
-      @handler.stop
+    def start( app = TestApp )
+      super
     end
 
   end

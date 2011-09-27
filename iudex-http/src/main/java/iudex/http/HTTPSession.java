@@ -46,6 +46,11 @@ public abstract class HTTPSession implements Closeable
     public static final int ERROR_CRITICAL   =  -2;
 
     /**
+     * Pseudo-HTTP status code: Host was not resolved (DNS lookup failed).
+     */
+    public static final int UNRESOLVED       =  -5;
+
+    /**
      * Pseudo-HTTP status code: Response body too large by Content-Length
      * header.
      */
@@ -67,6 +72,27 @@ public abstract class HTTPSession implements Closeable
      *  (i.e. with iudex-core, VisitURL.SyntaxException).
      */
     public static final int INVALID_REDIRECT_URL = -30;
+
+    public static final int MISSING_REDIRECT_LOCATION = -31;
+
+    public static final int MAX_REDIRECTS_EXCEEDED = -32;
+
+    public static final int REDIRECT_LOOP = -33;
+
+    /**
+     * Pseudo-HTTP status code: Timeout (general)
+     */
+    public static final int TIMEOUT          = -40;
+
+    /**
+     * Pseudo-HTTP status code: Timeout waiting on connection.
+     */
+    public static final int TIMEOUT_CONNECT  = -41;
+
+    /**
+     * Pseudo-HTTP status code: Timeout on socket read.
+     */
+    public static final int TIMEOUT_SOCKET   = -42;
 
     public String url()
     {

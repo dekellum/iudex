@@ -1,0 +1,8 @@
+digraph "iudex-gems" {
+  rankdir=LR;
+  bgcolor="transparent";
+  node [ shape=box, style="filled", fillcolor="#f7e8b5", fontsize=10, fontname=Arial ];
+
+  order        [ shape=record,
+                 label="<t>order|URL: http://www/1|PRIORITY: 1.0" ];
+}

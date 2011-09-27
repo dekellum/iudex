@@ -17,7 +17,6 @@
 package iudex.core.filters;
 
 import static iudex.core.ContentKeys.*;
-import iudex.core.Domains;
 import iudex.core.VisitURL;
 import iudex.filter.Filter;
 
@@ -33,8 +32,7 @@ public class RLDomainFilter implements Filter
     {
         VisitURL url = content.get( URL );
         if( url != null ) {
-            content.set( RL_DOMAIN,
-                         Domains.registrationLevelDomain( url.host() ) );
+            content.set( RL_DOMAIN, url.domain() );
         }
 
         return true;

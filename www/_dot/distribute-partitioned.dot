@@ -2,7 +2,7 @@ digraph "distribute-partitioned" {
   rankdir=RL;
   size="6,2.5";
   bgcolor="transparent";
-  node [ shape=box, style="filled", fillcolor="#f8df8b",
+  node [ shape=box, style="filled", fillcolor="#f7e8b5",
          fontname="Arial", margin="0.30,0.1" ];
   edge [ fontname="Arial", labeldistance="2.7", arrowsize="0.8", minlen="2" ];
 

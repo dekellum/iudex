@@ -1,3 +1,4 @@
+
 #--
 # Copyright (c) 2008-2011 David Kellum
 #
@@ -32,6 +33,10 @@ module Iudex
     import 'iudex.core.ContentKeys'
     import 'iudex.core.ContentSource'
     import 'iudex.core.VisitExecutor'
+    import 'iudex.core.VisitManager'
+    import 'iudex.core.VisitQueueFactory'
+    import 'iudex.core.VisitQueue'
+    import 'iudex.core.AsyncVisitExecutor'
     import 'iudex.core.VisitURL'
 
     module Filters
@@ -40,6 +45,8 @@ module Iudex
       import 'iudex.core.filters.DateChangeFilter'
       import 'iudex.core.filters.DefaultFilter'
       import 'iudex.core.filters.FutureDateFilter'
+      import 'iudex.core.filters.RedirectHandler'
+      import 'iudex.core.filters.Revisitor'
       import 'iudex.core.filters.RLDomainFilter'
       import 'iudex.core.filters.TextCtrlWSFilter'
       import 'iudex.core.filters.UHashMDCSetter'

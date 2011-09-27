@@ -1,4 +1,12 @@
 === 1.1.0 (TBD)
+* Update to iudex-filter,http,barc ~> 1.1.0.
+* ContentFetcher updates for iudex-http changes
+* New MojiBakeFilter, MojiBakeMapper with config table loading support
+* New AsyncVisitExecutor for use with an asynchronous HTTP client
+* Added encoding confidence map to ContentSource (supports encoding
+  detection)
+* Add U+2060 WORD JOINER to Characters.ctrlWS list
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

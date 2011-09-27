@@ -16,6 +16,7 @@
 package iudex.core;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.PriorityQueue;
 
 import com.gravitext.htmap.UniMap;
@@ -38,11 +39,42 @@ public class HostQueue
         }
     }
 
-    public HostQueue( String host )
+    public HostQueue( String host, int minHostDelay, int maxAccessCount )
     {
         _host = host;
+        _minHostDelay = minHostDelay;
+        _maxAccess = maxAccessCount;
     }
 
+    @Override
+    public HostQueue clone()
+    {
+        if( ! _work.isEmpty() ) {
+            throw new IllegalStateException(
+                "HostQueue can't be cloned with orders" );
+        }
+
+        return new HostQueue( _host, _minHostDelay, _maxAccess );
+    }
+
+    public String host()
+    {
+        return _host;
+    }
+
+    public int minHostDelay()
+    {
+        return _minHostDelay;
+    }
+
+    public int maxAccessCount()
+    {
+        return _maxAccess;
+    }
+
+    /**
+     * @deprecated
+     */
     public long lastTake()
     {
         return _lastTake;
@@ -51,6 +83,7 @@ public class HostQueue
     public void setLastTake( long now )
     {
         _lastTake = now;
+        _nextVisit = _lastTake + _minHostDelay;
     }
 
     public long nextVisit()
@@ -58,19 +91,12 @@ public class HostQueue
         return _nextVisit;
     }
 
-    public void setNextVisit( long nextVisitMillis )
-    {
-        _nextVisit = nextVisitMillis;
-    }
-
     public void add( UniMap order )
     {
+        if( order == null ) {
+            throw new NullPointerException( "HostQueue.add null" );
+        }
         _work.add( order );
-    }
-
-    public String host()
-    {
-        return _host;
     }
 
     public int size()
@@ -83,9 +109,41 @@ public class HostQueue
         return _work.peek();
     }
 
+    /**
+     * Remove top order and record an access reference.
+     * @see #release()
+     */
     public UniMap remove()
     {
-        return _work.remove();
+        if( ++_accessCount > _maxAccess ) {
+            throw new IllegalStateException( "Access count exceeded." );
+        }
+        UniMap order = _work.remove();
+        order.set( ContentKeys.VISIT_START, new Date( _lastTake ) );
+        return order;
+    }
+
+    public int accessCount()
+    {
+        return _accessCount;
+    }
+
+    public boolean isAvailable()
+    {
+        return ( _accessCount < _maxAccess );
+    }
+
+    /**
+     * Release prior access reference acquired via {@link #remove()}.
+     * @return true if this release transitions the queue to
+     * {@link #isAvailable()}.
+     */
+    public boolean release()
+    {
+        if( _accessCount < 1 ) {
+            throw new IllegalStateException( "Release below accessCount" );
+        }
+        return ( _accessCount-- == _maxAccess );
     }
 
     /**
@@ -103,13 +161,15 @@ public class HostQueue
     }
     private static final PriorityComparator PRIORITY_COMPARATOR =
         new PriorityComparator();
+
     private final String _host;
+    private final int _minHostDelay;
+    private final int _maxAccess;
+
     private long _nextVisit = 0;
     private long _lastTake = 0;
+    private int  _accessCount = 0;
 
-    // FIXME: Logically a priority queue but may be more optimal
-    // as a simple linked list FIFO, as we already get work from database in
-    // sorted priority order.
     private PriorityQueue<UniMap> _work =
         new PriorityQueue<UniMap>( 256, PRIORITY_COMPARATOR );
 

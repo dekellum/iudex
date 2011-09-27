@@ -99,10 +99,15 @@ public abstract class GenericWorkPollStrategy
         return _minOrderRemainingRatio;
     }
 
+    public void setVisitQueueFactory( VisitQueueFactory factory )
+    {
+        _visitQueueFactory = factory;
+    }
+
     @Override
     public VisitQueue pollWork( VisitQueue current )
     {
-        VisitQueue vq = new VisitQueue();
+        VisitQueue vq = _visitQueueFactory.createVisitQueue();
 
         Stopwatch sw = new Stopwatch().start();
         pollWorkImpl( vq );
@@ -154,11 +159,12 @@ public abstract class GenericWorkPollStrategy
             wait = Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
         }
         if( ( wait > 0 ) && _log.isDebugEnabled() ) {
-            _log.debug( "orders {} ({}), hosts {} ({}); wait {}s",
+            _log.debug( "orders {} ({}), hosts {} ({}), acq {}; wait {}s",
                         new Object[] { Metric.format( oCount ),
                                        Metric.formatDifference( oRatio ),
                                        Metric.format( hCount ),
                                        Metric.formatDifference( hRatio ),
+                                       Metric.format( current.acquiredCount() ),
                                        Metric.format( (double) wait /
                                                       1000d ) } );
         }
@@ -170,6 +176,8 @@ public abstract class GenericWorkPollStrategy
     {
         return ( ( (float) count ) / ( (float) highMark ) );
     }
+
+    private VisitQueueFactory _visitQueueFactory = new VisitQueueFactory();
 
     private long _minPollInterval  =      15 * 1000; //15sec
     private long _maxCheckInterval =      30 * 1000; //30sec;

@@ -140,7 +140,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
   REDIRECT_URL  = "http://gravitext.com/redirect#foo"
   REDIRECT_NORM = "http://gravitext.com/redirect"
 
-  def test_redirect
+  def test_internal_redirect
     client = MockHTTPClient.new
     def client.create_session
       s = MockSession.new

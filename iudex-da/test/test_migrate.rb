@@ -26,16 +26,49 @@ class TestMigrate < MiniTest::Unit::TestCase
   include Iudex::DA
   include RJack
 
-  def test_up_down_up
-    Logback[ 'iudex.da.ActiveRecord' ].level = Logback::WARN
+  VERBOSE = ! ( ARGV & %w[ -v --verbose ] ).empty?
 
-    ActiveRecord::Migration.suppress_messages do
-      migrate
-      migrate( 0 )
-      migrate
+  def setup
+    unless VERBOSE
+      Logback[ 'iudex.da.ActiveRecord' ].level = Logback::WARN
     end
+  end
 
+  def teardown
+    Hooker.send( :clear )
+    suppress_messages? { migrate }
     Logback[ 'iudex.da.ActiveRecord' ].level = nil
+  end
+
+  def test_default
+    check_up_down
+  end
+
+  def test_simhash_profile
+    Hooker.add( [ :iudex, :migration_profiles ] ) { |p| p << :simhash }
+    check_up_down
+  end
+
+  def test_next_visit_profile
+    Hooker.add( [ :iudex, :migration_profiles ] ) { |p| p << :index_next_visit }
+    check_up_down
+  end
+
+  def check_up_down
+    suppress_messages? do
+      migrate
+      pass
+      migrate( 0 )
+      pass
+    end
+  end
+
+  def suppress_messages?( &block )
+    if VERBOSE
+      block.call
+    else
+      ActiveRecord::Migration.suppress_messages &block
+    end
   end
 
 end

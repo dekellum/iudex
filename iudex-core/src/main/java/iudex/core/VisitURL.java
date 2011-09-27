@@ -86,8 +86,6 @@ public final class VisitURL
         }
     }
 
-    // FIXME: domain() via http://publicsuffix.org/list/ (see notes)
-
     public boolean hasUrl()
     {
         return ( _uri != null );
@@ -112,11 +110,45 @@ public final class VisitURL
         return _uri.getHost();
     }
 
+    /**
+     * Returns the registration-level domain for this URL or lacking a
+     * registration match, the host name itself.
+     * @see Domains#registrationLevelDomain(String)
+     */
+    public String domain()
+    {
+        if( _domain == null ) {
+            final String h = host();
+            final String d = Domains.registrationLevelDomain( h );
+            _domain = ( d != null ) ? d : h;
+        }
+        return _domain;
+    }
+
     public String uhash()
     {
         //lazy init
         if( _uhash == null ) _uhash = hashURL( url() ).toString();
         return _uhash;
+    }
+
+    public VisitURL resolve( CharSequence other ) throws SyntaxException
+    {
+        try {
+            URI uri = normalize( _uri.resolve( preEncode( other ) ) );
+            return new VisitURL( uri );
+        }
+        catch( IllegalArgumentException x ) {
+            if( x.getCause() != null ) {
+                throw new SyntaxException( x.getCause() );
+            }
+            else {
+                throw new SyntaxException( x );
+            }
+        }
+        catch( URISyntaxException x ) {
+            throw new SyntaxException( x );
+        }
     }
 
     public int compareTo( VisitURL other )
@@ -258,5 +290,5 @@ public final class VisitURL
 
     private final URI _uri;
     private String _uhash = null;
-
+    private String _domain = null;
 }

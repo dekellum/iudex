@@ -7,18 +7,29 @@ Iudex.configure do |c|
   threads = 3
 
   c.setup_connect_props do
-    { :ds_pool  => { :max_active => threads / 3 * 2,
+    { :database => 'iudex_test',
+      :ds_pool  => { :max_active => threads / 3 * 2,
                      :max_idle   => threads / 3 },
       :loglevel => 1 }
+  end
+
+  c.setup_worker do |worker|
+    worker.run_async = false
   end
 
   c.setup_http_client_3 do |mgr|
     mgr.manager_params.max_total_connections = threads * 10
   end
 
-  c.setup_visit_executor do |vx|
+  c.setup_visit_manager do |vx|
     vx.max_threads = threads
-    vx.min_host_delay = 100 #ms
+  end
+
+  c.setup_visit_queue do |q|
+    q.default_min_host_delay = 100 #ms
+    q.default_max_access_per_host = 1
+
+    q.configure_host( "gravitext.com", 100, 2 ) # 100ms, 2 connections
   end
 
   c.setup_work_poller do |wp|
@@ -30,15 +41,15 @@ Iudex.configure do |c|
   c.setup_filter_factory do |ff|
 
     def ff.barc_writer
-      bw = super
-      bw.do_compress = false
-      bw
+      super.tap do |w|
+        w.do_compress = false
+      end
     end
 
     def ff.barc_directory
-      bdir = super
-      bdir.target_length = 2 * ( 1024 ** 2 )
-      bdir
+      super.tap do |bdir|
+        bdir.target_length = 2 * ( 1024 ** 2 )
+      end
     end
 
   end

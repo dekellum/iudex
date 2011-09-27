@@ -21,7 +21,7 @@ $LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
 
 require 'rubygems'
 require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
+RJack::Logback.config_console( :stderr => true, :mdc => "uhash" )
 
 require 'minitest/unit'
 require 'minitest/autorun'

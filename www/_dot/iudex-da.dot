@@ -2,7 +2,7 @@ digraph "iudex-da-gems" {
   rankdir=LR
   size="5.2,5";
   bgcolor="transparent";
-  node [ shape=box, style="filled,rounded", fillcolor="#f8df8b", fontname="Arial",
+  node [ shape=box, style="filled,rounded", fillcolor="#f7e8b5", fontname="Arial",
          margin="0.30,0.1" ];
 
   "iudex-da" -> "activerecord" -> "activesupport"
