@@ -70,6 +70,28 @@ public class VisitQueue implements VisitCounter
                     new HostQueue( key, minHostDelay, maxAccessCount ) );
     }
 
+    /**
+     * Create a new VisitQueue with the same defaults and host configuration.
+     * This is intended to support configuring a VisitQueue template and
+     * cloning repeatedly for use.
+     * @throws IllegalStateException if this VisitQueue has orders already.
+     */
+    @Override
+    public VisitQueue clone()
+    {
+        if( _orderCount > 0 ) {
+            throw new IllegalStateException(
+                "VisitQueue can't be cloned with orders" );
+        }
+
+        VisitQueue newQ = new VisitQueue();
+        newQ._defaultMinHostDelay     = _defaultMinHostDelay;
+        newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
+        newQ._hosts.putAll( _hosts );
+
+        return newQ;
+    }
+
     public synchronized void addAll( List<UniMap> orders )
     {
         for( UniMap order : orders ) {
@@ -292,7 +314,7 @@ public class VisitQueue implements VisitCounter
 
     private int _orderCount = 0;
     private final Map<String, HostQueue> _hosts      =
-        new HashMap<String, HostQueue>();
+        new HashMap<String, HostQueue>( 2048 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
         new PriorityQueue<HostQueue>( 1024, new HostQueue.TopOrderComparator());
