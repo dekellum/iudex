@@ -21,12 +21,6 @@ See also:
 
 * [Development Guide](dev.html)
 
-[wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
-
-[^wik]: Pronunciation and audio from
-        [Wiktionary: Iudex](http://en.wiktionary.org/wiki/iudex)
-        (Creative Commons Licensed)
-
 ## Modules and Dependencies
 
 Iūdex is constructed of modules with carefully controlled
@@ -40,5 +34,11 @@ for java dependency management.
 
 All Iūdex code and documentation is licensed under the
 [Apache License, 2.0][AL2].
+
+[wiki-ogg]: http://upload.wikimedia.org/wikipedia/commons/9/92/La-cls-iudex.ogg
+
+[^wik]: Pronunciation and audio from
+        [Wiktionary: Iudex](http://en.wiktionary.org/wiki/iudex)
+        (Creative Commons Licensed)
 
 [AL2]: http://www.apache.org/licenses/LICENSE-2.0

@@ -13,11 +13,12 @@ implementation makes direct use PostgreSQL including unique features:
 * A politeness-aware persistent priority queue using SQL:2003
   Window Functions (PostgreSQL 8.4)
 * JRuby/ActiveRecord based schema definition and migrations
-* A high performance thread-safe Java JDBC-based and extensible Data Access Layer
+* A high performance thread-safe Java JDBC-based and extensible Data
+  Access Layer
 
-Great care has been taken to isolate all PostgreSQL dependencies to
-the iudex-da package. This should make is possible to experement with
-alternativs such as fully distributed "nosql" stores in the future.
+Care has been taken to isolate all PostgreSQL dependencies to the
+iudex-da package. This should make it possible to experiment with
+alternatives such as fully distributed _NoSQL_ stores in the future.
 
 [prioritization]: {{ page.root }}/prioritization.html
 
