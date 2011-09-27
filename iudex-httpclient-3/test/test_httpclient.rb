@@ -318,6 +318,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       RJack::HTTPClient3::DefaultHttpMethodRetryHandler.new( 0, false ) )
     mgr.client_params.connection_manager_timeout = 500 #ms
     mgr.client_params.so_timeout = 500 #ms
+
+    # For testing redirects
+    mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 20 )
+
     # Overrides via proc
     mgr_proc.call( mgr ) if mgr_proc
 
