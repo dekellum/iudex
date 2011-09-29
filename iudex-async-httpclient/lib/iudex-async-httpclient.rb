@@ -43,7 +43,7 @@ module Iudex
               :max_request_retry             =>     2,
               :maximum_connections_total     =>   100,
               :maximum_connections_per_host  =>     2,
-              :follow_redirects              =>  true,
+              :follow_redirects              => false,
               :maximum_number_of_redirects   =>     6,
               :compression_enabled           =>  true }
 

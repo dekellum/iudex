@@ -160,7 +160,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect
-    with_new_client do |client|
+    with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/index', s.url )
@@ -169,7 +169,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_redirect_with_query_string
-    with_new_client do |client|
+    with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
         assert_equal( 200, s.status_code )
         assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
