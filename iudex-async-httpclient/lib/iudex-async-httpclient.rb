@@ -40,7 +40,7 @@ module Iudex
       cfg = { :connection_timeout_in_ms      => 3_000,
               :idle_connection_timeout_in_ms => 6_000,
               :request_timeout_in_ms         => 5_000,
-              :max_request_retry             =>     2,
+              :max_request_retry             =>     1,
               :maximum_connections_total     =>   100,
               :maximum_connections_per_host  =>     2,
               :follow_redirects              => false,
