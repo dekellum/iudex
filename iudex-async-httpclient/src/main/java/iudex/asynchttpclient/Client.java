@@ -24,6 +24,7 @@ import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,13 +105,14 @@ public class Client implements HTTPClient, Closeable
         {
             if( _request != null ) {
 
-                FluentCaseInsensitiveStringsMap inHeaders = _request.getHeaders();
+                FluentCaseInsensitiveStringsMap inHeaders =
+                    _request.getHeaders();
 
                 List<Header> outHeaders =
-                    new ArrayList<Header>( inHeaders.size() + 1 );
+                    new ArrayList<Header>( _implHeaders.size() +
+                                           inHeaders.size() );
 
-                outHeaders.add( new Header( "Request-Line",
-                                            reconstructRequestLine() ) );
+                outHeaders.addAll( _implHeaders );
 
                 copyHeaders( inHeaders, outHeaders );
 
@@ -223,7 +225,9 @@ public class Client implements HTTPClient, Closeable
             _statusCode = status.getStatusCode();
             _statusText = status.getStatusText();
 
-            setUrl( status.getUrl().toString() );
+            URI url = status.getUrl();
+            setImplHeaders( url );
+            setUrl( url.toString() );
 
             return _state;
         }
@@ -236,9 +240,13 @@ public class Client implements HTTPClient, Closeable
 
             _responseHeaders = new ArrayList<Header>( hmap.size() + 1 );
 
-            _responseHeaders.add( new Header( "Status-Line",
-                String.valueOf( _statusCode ) + " " + _statusText ) );
-            //FIXME: Incomplete: create full status
+            StringBuilder sline = new StringBuilder( 5 +
+                ( ( _statusText != null ) ? _statusText.length() : 0 ) );
+            sline.append( _statusCode );
+            if( _statusText != null ) {
+                sline.append( ' ' ).append( _statusText );
+            }
+            _responseHeaders.add( new Header( "Status-Line", sline ) );
 
             copyHeaders( hmap, _responseHeaders );
 
@@ -313,19 +321,37 @@ public class Client implements HTTPClient, Closeable
             }
         }
 
-        private CharSequence reconstructRequestLine()
+        private void setImplHeaders( URI uri )
         {
+            List<Header> implHeaders = new ArrayList<Header>( 2 );
+
             StringBuilder reqLine = new StringBuilder( 128 );
 
             reqLine.append( _request.getMethod() );
             reqLine.append( ' ' );
-            reqLine.append( _request.getUrl() );
+            String path = uri.getRawPath();
+            reqLine.append( ( path != null ) ? path : '/' );
+            String query = uri.getRawQuery();
+            if( query != null ) {
+                reqLine.append( '?' );
+                reqLine.append( query );
+            }
 
-            //FIXME: Not correct
-            //reqLine.append( '?' );
-            //_request.getQueryParams();
+            implHeaders.add( new Header( "Request-Line", reqLine ) );
 
-            return reqLine;
+            StringBuilder host = new StringBuilder( 32 );
+            host.append( uri.getHost() );
+            int port = uri.getPort();
+            boolean isHttps = "https".equals( uri.getScheme() );
+            if( !( ( port == 80 && !isHttps ) ||
+                   ( port == 443 && isHttps ) ) ) {
+                host.append( ':' );
+                host.append( port );
+            }
+
+            implHeaders.add( new Header( "Host", host ) );
+
+            _implHeaders = implHeaders;
         }
 
         private List<Header>
@@ -341,6 +367,7 @@ public class Client implements HTTPClient, Closeable
         }
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _implHeaders = Collections.emptyList();
 
         private Request _request = null;
 
