@@ -280,7 +280,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_maximum_connections_per_host
-    #FIXME: skip( "max_connections_per_host not honored?" )
+    skip( "max_connections_per_host not honored?" )
     with_new_client( :maximum_connections_per_host => 1 ) do |client|
 
       resps = []
