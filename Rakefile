@@ -2,6 +2,7 @@
 
 gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
            iudex-core iudex-httpclient-3 iudex-jetty-httpclient
+           iudex-async-httpclient
            iudex-char-detector
            iudex-html iudex-simhash iudex-rome iudex-da
            iudex-worker
