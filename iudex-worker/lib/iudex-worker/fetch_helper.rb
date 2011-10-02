@@ -24,7 +24,11 @@ module Iudex
       include Iudex::Core::Filters
 
       def create_content_fetcher( accept_types, receiver_sym )
-        cf = ContentFetcher.new( http_client, create_chain( receiver_sym ) )
+        cf = ContentFetcher.new( http_client,
+                                 visit_counter,
+                                 create_chain( receiver_sym ) )
+
+        cf.executor = executor if executor
 
         alist = accept_list( accept_types )
         unless alist.include?( '*/*' )

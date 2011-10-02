@@ -144,27 +144,11 @@ class TestRedirectHandler < MiniTest::Unit::TestCase
     assert_nil( order.revisit_order )
   end
 
-  import 'iudex.core.VisitCounter'
-
-  class TestVisitCounter
-    include VisitCounter
-    attr_reader :released
-
-    def add( order )
-    end
-
-    def release( acquired, newOrder )
-      @released = acquired.url
-    end
-  end
-
   def do_filter( order, max_path = 4 )
     orig_url = order.url
-    counter = TestVisitCounter.new
-    handler = RedirectHandler.new( counter )
+    handler = RedirectHandler.new
     handler.max_path = max_path
     handler.filter( order )
-    assert_equal( orig_url, counter.released, "Orig URL released" )
   end
 
   def revisit( order )

@@ -57,6 +57,7 @@ module Iudex
       attr_accessor :http_client
       attr_accessor :data_source
       attr_accessor :visit_counter
+      attr_accessor :executor
 
       def initialize( name )
         super
@@ -97,7 +98,7 @@ module Iudex
       end
 
       def feed_receiver
-        [ RedirectHandler.new( visit_counter ),
+        [ RedirectHandler.new,
           Revisitor.new( visit_counter ),
           RomeFeedParser.new,
           DefaultFilter.new,
@@ -157,7 +158,7 @@ module Iudex
       end
 
       def page_receiver
-        [ RedirectHandler.new( visit_counter ),
+        [ RedirectHandler.new,
           Revisitor.new( visit_counter ),
           CharDetectFilter.new,
           html_clean_filters( :source ),

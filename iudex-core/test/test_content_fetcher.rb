@@ -97,6 +97,20 @@ module TestHTTPMocks
     end
   end
 
+  import 'iudex.core.VisitCounter'
+
+  class TestVisitCounter
+    include VisitCounter
+    attr_reader :released
+
+    def add( order )
+    end
+
+    def release( acquired, newOrder )
+      @released = acquired.url
+    end
+  end
+
 end
 
 class TestContentFetcher < MiniTest::Unit::TestCase
@@ -190,7 +204,9 @@ class TestContentFetcher < MiniTest::Unit::TestCase
 
   def fetch( content, client = MockHTTPClient.new, &block )
     rec = TestReceiver.new( &block )
+    counter = TestVisitCounter.new
     cf = ContentFetcher.new( client,
+                             counter,
                              FilterChain.new( "test-rec", [ rec ] ) )
     cf.filter( content )
   end
