@@ -13,10 +13,6 @@ Iudex.configure do |c|
       :loglevel => 1 }
   end
 
-  c.setup_worker do |worker|
-    worker.run_async = false
-  end
-
   c.setup_http_client_3 do |mgr|
     mgr.manager_params.max_total_connections = threads * 10
   end
