@@ -189,13 +189,6 @@ public class HTTPClient3 implements HTTPClient
 
                 readBody( length );
 
-                if( _body.position() > maxContentLength() ) {
-                    _statusCode = TOO_LARGE;
-                    _body = null;
-                    abort();
-                    return;
-                }
-
             }
             catch( IOException e ) {
                 setError( e );
@@ -208,11 +201,18 @@ public class HTTPClient3 implements HTTPClient
         private void readBody( int length ) throws IOException
         {
             InputStream stream = _httpMethod.getResponseBodyAsStream();
+            if( stream != null ) {
+                _body = new ResizableByteBuffer( ( length >= 0 ) ?
+                                                 length : 16 * 1024 );
 
-            _body = new ResizableByteBuffer( ( length >= 0 ) ?
-                                               length : 16 * 1024 );
+                _body.putFromStream( stream, maxContentLength() + 1, 8 * 1024 );
 
-            _body.putFromStream( stream, maxContentLength() + 1, 8 * 1024 );
+                if( _body.position() > maxContentLength() ) {
+                    _statusCode = TOO_LARGE;
+                    _body = null;
+                    abort();
+                }
+            }
         }
 
         private CharSequence reconstructRequestLine()
