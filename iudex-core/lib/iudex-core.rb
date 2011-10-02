@@ -32,11 +32,9 @@ module Iudex
 
     import 'iudex.core.ContentKeys'
     import 'iudex.core.ContentSource'
-    import 'iudex.core.VisitExecutor'
     import 'iudex.core.VisitManager'
     import 'iudex.core.VisitQueueFactory'
     import 'iudex.core.VisitQueue'
-    import 'iudex.core.AsyncVisitExecutor'
     import 'iudex.core.VisitURL'
 
     module Filters

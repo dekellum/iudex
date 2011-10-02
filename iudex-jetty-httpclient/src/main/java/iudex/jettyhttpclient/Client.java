@@ -21,8 +21,6 @@ import iudex.http.HTTPClient;
 import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
-import iudex.http.HostAccessListenable;
-import iudex.http.HostAccessListener;
 import iudex.http.ResponseHandler;
 
 import java.io.IOException;
@@ -58,7 +56,7 @@ import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
 
 public class Client
-    implements HTTPClient, HostAccessListenable, Closeable
+    implements HTTPClient, Closeable
 {
     public Client( HttpClient client )
     {
@@ -84,12 +82,6 @@ public class Client
     public void setMaxContentLength( int length )
     {
         _maxContentLength = length;
-    }
-
-    @Override
-    public void setHostAccessListener( HostAccessListener listener )
-    {
-        _hostAccessListener = listener;
     }
 
     public void start() throws RuntimeException
@@ -213,8 +205,6 @@ public class Client
             _exchange.setMethod( method().name() );
             _exchange.setURL( url() );
 
-            _host = _exchange.getAddress().getHost();
-
             for( Header h : _requestedHeaders ) {
                 _exchange.setRequestHeader(  h.name().toString(),
                                              h.value().toString() );
@@ -230,16 +220,6 @@ public class Client
             }
         }
 
-        private void checkHostChange( String currentHost )
-        {
-            if( ! currentHost.equals( _host ) ) {
-                if( _hostAccessListener != null ) {
-                    _hostAccessListener.hostChange( currentHost, _host );
-                }
-                _host = currentHost;
-            }
-        }
-
         private void complete()
         {
             ResponseHandler handler = _handler;
@@ -250,9 +230,6 @@ public class Client
             _exchange.onComplete();
 
             _handler = null;
-            if( _hostAccessListener != null ) {
-                _hostAccessListener.hostChange( null, _host );
-            }
             handler.sessionCompleted( this );
         }
 
@@ -300,8 +277,6 @@ public class Client
                 }
                 _log.debug( "onResponseStatus: {} {}",
                             _statusCode, _statusText );
-
-                checkHostChange( getAddress().getHost() );
 
                 try {
                     String lastURL = lastURL();
@@ -442,9 +417,6 @@ public class Client
             @Override
             protected void onRetry() throws IOException
             {
-                // Detect host changes to indicate early host releases
-                checkHostChange( getAddress().getHost() );
-
                 super.onRetry();
             }
 
@@ -550,7 +522,6 @@ public class Client
 
         private final Exchange _exchange = new Exchange();
         private ResponseHandler _handler = null;
-        private String _host = null;
 
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
 
@@ -561,8 +532,6 @@ public class Client
     }
 
     private final HttpClient _client;
-
-    private HostAccessListener _hostAccessListener = null;
 
     private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;

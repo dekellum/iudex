@@ -199,36 +199,9 @@ public class VisitQueue implements VisitCounter
         return ( domain != null ) ? domain : host;
     }
 
+<<<<<<< HEAD
     synchronized String dump()
-    {
-        StringBuilder out = new StringBuilder(4096);
-        long now = System.currentTimeMillis();
-
-        out.append( String.format(
-            "VisitQueue@%x Dump, orders %d, acq %d, hosts %d ::\n",
-            System.identityHashCode( this ),
-            orderCount(),
-            acquiredCount(),
-            hostCount() ) );
-
-        for( HostQueue hq : _hosts.values() ) {
-
-            boolean isReady = _readyHosts.contains( hq );
-            boolean isSleep = _sleepHosts.contains( hq );
-
-            out.append( String.format(
-                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
-                hq.host(),
-                hq.size(),
-                hq.accessCount(),
-                hq.nextVisit() - now,
-                ( isReady ? 'R' : ' ' ),
-                ( isSleep ? 'S' : ' ' ) ) );
-         }
-
-        return out.toString();
-    }
-
+=======
     /**
      * Take the next ready/highest priority host queue. May block up
      * to maxWait for the next ready queue.
@@ -263,6 +236,37 @@ public class VisitQueue implements VisitCounter
         }
         if( ready != null ) ready.setLastTake( now );
         return ready;
+    }
+
+    private void checkRemove( HostQueue queue )
+>>>>>>> redirect-filter-purge
+    {
+        StringBuilder out = new StringBuilder(4096);
+        long now = System.currentTimeMillis();
+
+        out.append( String.format(
+            "VisitQueue@%x Dump, orders %d, acq %d, hosts %d ::\n",
+            System.identityHashCode( this ),
+            orderCount(),
+            acquiredCount(),
+            hostCount() ) );
+
+        for( HostQueue hq : _hosts.values() ) {
+
+            boolean isReady = _readyHosts.contains( hq );
+            boolean isSleep = _sleepHosts.contains( hq );
+
+            out.append( String.format(
+                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                hq.host(),
+                hq.size(),
+                hq.accessCount(),
+                hq.nextVisit() - now,
+                ( isReady ? 'R' : ' ' ),
+                ( isSleep ? 'S' : ' ' ) ) );
+         }
+
+        return out.toString();
     }
 
     private void checkRemove( HostQueue queue )
