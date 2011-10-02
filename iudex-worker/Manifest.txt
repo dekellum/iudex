@@ -3,8 +3,8 @@ Manifest.txt
 README.rdoc
 Rakefile
 bin/iudex-worker-fg
-config/async_config.rb
 config/config.rb
+config/config_jetty_http.rb
 init/iudex-worker
 lib/iudex-worker/base.rb
 lib/iudex-worker.rb

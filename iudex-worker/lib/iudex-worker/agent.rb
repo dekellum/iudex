@@ -33,13 +33,9 @@ module Iudex
       include Iudex::Worker
       include Gravitext::HTMap
 
-      attr_accessor :run_async
-      attr_accessor :common_executor
-
       def initialize
         @log = RJack::SLF4J[ self.class ]
-        @run_async = false
-        @common_executor = true
+        @http_manager = nil
         Hooker.apply( [ :iudex, :worker ], self )
       end
 
@@ -52,15 +48,17 @@ module Iudex
         FilterChainFactory.new( 'agent' )
       end
 
-      def http_client
-        if @run_async
-          require 'iudex-jetty-httpclient'
-          @jetty_client = JettyHTTPClient.create_client
+      def http_client( executor )
+        if defined?( JettyHTTPClient )
+          JettyHTTPClient.create_client.tap do |c|
+            c.executor = executor
+            c.start
+          end
         else
           require 'iudex-httpclient-3'
-          @http_3_mgr = HTTPClient3.create_manager
-          @http_3_mgr.start
-          HTTPClient3::HTTPClient3.new( @http_3_mgr.client )
+          @http_manager = HTTPClient3.create_manager
+          @http_manager.start
+          HTTPClient3::HTTPClient3.new( @http_manager.client )
         end
       end
 
@@ -86,28 +84,21 @@ module Iudex
           data_source = dsf.create
 
           wpoller = work_poller( data_source )
+          vexec = visit_manager( wpoller )
+          vexec.start_executor
 
-          hclient = http_client
+          hclient = http_client( vexec.executor )
 
           fcf = filter_chain_factory
           fcf.http_client = hclient
           fcf.data_source = data_source
+          fcf.visit_counter = vexec
+          fcf.executor = vexec.executor unless @http_manager
 
           Hooker.apply( :filter_factory, fcf )
 
-          vexec = visit_manager( wpoller )
-          fcf.visit_counter = vexec
-          if @run_async
-            vexec.start_executor
-            fcf.executor = vexec.executor
-          end
-
           fcf.filter do |chain|
             vexec.filter_chain = chain
-            if @run_async
-              hclient.executor = vexec.executor if @common_executor
-              hclient.start
-            end
 
             Hooker.log_not_applied # All hooks should be used by now
 
@@ -115,8 +106,9 @@ module Iudex
             vexec.join    #Run until interrupted
           end # fcf closes
 
-          @http_3_mgr.shutdown if @http_3_mgr
-          @jetty_client.close if @jetty_client
+          hclient.close if hclient.respond_to?( :close )
+          @http_manager.shutdown if @http_manager
+
           dsf.close
         end
       rescue => e
