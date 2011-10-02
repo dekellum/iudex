@@ -50,12 +50,17 @@ module Iudex
 
       def http_client( executor )
         if defined?( JettyHTTPClient )
+          @log.info "Setting up JettyHTTPClient"
           JettyHTTPClient.create_client.tap do |c|
             c.executor = executor
             c.start
           end
+        elsif defined?( AsyncHTTPClient )
+          @log.info "Setting up AsyncHTTPClient"
+          AsyncHTTPClient.create_client( :executor_service => executor )
         else
           require 'iudex-httpclient-3'
+          @log.info "Setting up HTTPClient3"
           @http_manager = HTTPClient3.create_manager
           @http_manager.start
           HTTPClient3::HTTPClient3.new( @http_manager.client )
@@ -93,6 +98,9 @@ module Iudex
           fcf.http_client = hclient
           fcf.data_source = data_source
           fcf.visit_counter = vexec
+
+          # FilterChain's executor is the same executor, unless using
+          # HTTPClient3, where executor is best not used
           fcf.executor = vexec.executor unless @http_manager
 
           Hooker.apply( :filter_factory, fcf )

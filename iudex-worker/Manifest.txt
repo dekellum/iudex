@@ -4,6 +4,7 @@ README.rdoc
 Rakefile
 bin/iudex-worker-fg
 config/config.rb
+config/config_async_http.rb
 config/config_jetty_http.rb
 init/iudex-worker
 lib/iudex-worker/base.rb

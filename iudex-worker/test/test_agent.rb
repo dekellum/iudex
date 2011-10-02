@@ -47,8 +47,7 @@ class TestAgent < MiniTest::Unit::TestCase
     assert_agent
   end
 
-  def test_agent_with_sample_config_jetty
-    # Test out the sample config
+  def test_agent_with_sample_config_jetty_http
     Hooker.load_file( File.join( File.dirname( __FILE__ ),
                                  '..', 'config', 'config_jetty_http.rb' ) )
 
@@ -58,6 +57,16 @@ class TestAgent < MiniTest::Unit::TestCase
     # require iudex-jetty-httpclient. This only works once, but
     # thats enough for testing.
     Iudex.send( :remove_const, :JettyHTTPClient )
+  end
+
+  def test_agent_with_sample_config_async_http
+    Hooker.load_file( File.join( File.dirname( __FILE__ ),
+                                 '..', 'config', 'config_async_http.rb' ) )
+
+    assert_agent
+  ensure
+    # Same hack as above.
+    Iudex.send( :remove_const, :AsyncHTTPClient )
   end
 
   def assert_agent

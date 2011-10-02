@@ -23,7 +23,8 @@ t.specify do |h|
 
   h.testlib = :minitest
   h.extra_dev_deps += [ [ 'minitest',   '~> 2.3' ],
-                        [ 'iudex-jetty-httpclient', '~> 1.0.0' ] ]
+                        [ 'iudex-jetty-httpclient', '~> 1.0.0' ],
+                        [ 'iudex-async-httpclient', '~> 1.0.0' ] ]
 end
 
 task :chk_hist_vers do
