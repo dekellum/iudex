@@ -131,6 +131,8 @@ module Iudex
             desc = desc.to_s.gsub( /_/, '-' )
           end
 
+          flts = flts.flatten.compact if flts
+
           if flts.nil? || flts.empty?
             NoOpFilter.new
           else
