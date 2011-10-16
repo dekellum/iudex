@@ -64,7 +64,7 @@ module Iudex
           # listeners via create_chain
           @listener = place_holder = NoOpListener.new
 
-          flts = filters
+          flts = filters.flatten.compact
           log_and_register( flts )
 
           @chain = create_chain( @description, flts, :main )
