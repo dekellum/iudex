@@ -173,11 +173,13 @@ public class HTTPClient3 implements HTTPClient
                 // Record possibly redirected URL.
                 setUrl( _httpMethod.getURI().toString() );
 
-                ContentType ctype = Headers.contentType( _responseHeaders );
-                if( ! acceptedContentTypes().contains( ctype ) ) {
-                    _statusCode = NOT_ACCEPTED;
-                    abort();
-                    return;
+                if( _statusCode == 200 ) {
+                    ContentType ctype = Headers.contentType( _responseHeaders );
+                    if( ! acceptedContentTypes().contains( ctype ) ) {
+                        _statusCode = NOT_ACCEPTED;
+                        abort();
+                        return;
+                    }
                 }
 
                 int length = Headers.contentLength( _responseHeaders );
