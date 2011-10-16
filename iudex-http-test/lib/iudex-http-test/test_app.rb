@@ -151,6 +151,10 @@ module Iudex::HTTP::Test
       raise "Raising this ERROR for you"
     end
 
+    get '/304' do
+      halt 304
+    end
+
     get '/concount' do
       content_type 'text/plain'
       @@counter.count.to_s

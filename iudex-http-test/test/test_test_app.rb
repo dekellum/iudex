@@ -41,6 +41,12 @@ class TestTestApp < MiniTest::Unit::TestCase
     assert_equal( 301, last_response.status )
   end
 
+  def test_304
+    get '/304'
+    assert_equal( 304, last_response.status )
+    assert_equal( "", last_response.body )
+  end
+
   def test_redirect
     get '/redirect?loc=http://foo.com/bar'
     assert_equal( 'http://foo.com/bar', last_response.headers[ 'Location' ] )
