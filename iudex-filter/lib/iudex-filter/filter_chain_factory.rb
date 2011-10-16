@@ -67,8 +67,8 @@ module Iudex
           flts = filters
           log_and_register( flts )
 
-          @listener = ListenerChain.new( listeners )
           @chain = create_chain( @description, flts, :main )
+          @listener = ListenerChain.new( listeners )
 
           # Now replace the temp listener with the final listener
           # chain

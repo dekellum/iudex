@@ -64,6 +64,8 @@ public class FilterChain
     public void setListener( FilterListener listener )
     {
         _listener = listener;
+
+        if( hasSameFilter( this ) ) _notifyPassed = false;
     }
 
     public FilterListener listener()
@@ -83,10 +85,10 @@ public class FilterChain
                 passed = filter.filter( in );
             }
 
-            if( passed ) {
-                if( _notifyPassed ) _listener.accepted( in );
+            if( _notifyPassed ) {
+                if( passed ) _listener.accepted( in );
+                else         _listener.rejected( filter, in );
             }
-            else                    _listener.rejected( filter, in );
         }
         catch( FilterException x ) {
             _listener.failed( filter, in, x );
@@ -115,8 +117,23 @@ public class FilterChain
         return _description;
     }
 
+    private boolean hasSameFilter( FilterContainer fc )
+    {
+        for( Filter sf : fc.children() ) {
+            if( ( sf instanceof FilterChain ) &&
+                ( _listener == ( (FilterChain) sf ).listener() ) ) {
+                return true;
+            }
+            if( ( sf instanceof FilterContainer ) &&
+                hasSameFilter( (FilterContainer) sf ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private final List<String> _description;
     private final ArrayList<Filter> _filters;
-    private final boolean _notifyPassed;
+    private boolean _notifyPassed;
     private FilterListener _listener = new NoOpListener();
 }
