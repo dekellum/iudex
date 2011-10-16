@@ -65,8 +65,7 @@ module Iudex
       end
 
       def setup_reporters
-        add_summary_reporter
-        add_by_filter_reporter
+        # Use default, preserved for overrides
       end
 
       def filters
@@ -81,8 +80,8 @@ module Iudex
       end
 
       def type_map
-        { "FEED" => feed_fetcher,
-          "PAGE" => page_fetcher }
+        { "FEED" => [ feed_fetcher, :main ],
+          "PAGE" => [ page_fetcher, :main ] }
       end
 
       def type_switch( tmap = type_map )
@@ -90,11 +89,11 @@ module Iudex
       end
 
       def feed_fetcher
-        [ create_content_fetcher( feed_mime_types, :feed_receiver ) ]
+        [ create_content_fetcher( feed_mime_types, :feed_receiver, :main ) ]
       end
 
       def page_fetcher
-        [ create_content_fetcher( page_mime_types, :page_receiver ) ]
+        [ create_content_fetcher( page_mime_types, :page_receiver, :main ) ]
       end
 
       def feed_receiver
