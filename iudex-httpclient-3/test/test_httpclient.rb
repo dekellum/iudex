@@ -81,6 +81,18 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_correct_type
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "text/html" ] )
+      with_session_handler( client, "/index" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_nil( x )
+        assert_match( /^text\/html/,
+                      find_header( s.response_headers, 'Content-Type' ) )
+      end
+    end
+  end
+
   def test_headers
     req,rsp = nil
     with_new_client do |client|
