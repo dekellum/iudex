@@ -71,5 +71,10 @@ public final class ContentTypeSet
         return match;
     }
 
+    public String toString()
+    {
+        return _set.toString();
+    }
+
     private final Set<String> _set;
 }

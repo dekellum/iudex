@@ -85,6 +85,18 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_correct_type
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "text/html" ] )
+      with_session_handler( client, "/index" ) do |s,x|
+        assert_equal( 200, s.status_code )
+        assert_nil( x )
+        assert_match( /^text\/html/,
+                      find_header( s.response_headers, 'Content-Type' ) )
+      end
+    end
+  end
+
   def test_headers
     req,rsp = nil
     with_new_client do |client|
@@ -145,6 +157,15 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       with_session_handler( client, "/not-found" ) do |s,x|
         assert_equal( 404, s.status_code )
+      end
+    end
+  end
+
+  def test_304
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "text/html" ] )
+      with_session_handler( client, "/304" ) do |s,x|
+        assert_equal( 304, s.status_code )
       end
     end
   end

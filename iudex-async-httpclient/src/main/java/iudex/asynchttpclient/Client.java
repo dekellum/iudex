@@ -252,22 +252,24 @@ public class Client implements HTTPClient, Closeable
 
             ContentType ctype = Headers.contentType( _responseHeaders );
 
-            if( ! acceptedContentTypes().contains( ctype ) ) {
-                _statusCode = NOT_ACCEPTED;
-                abort();
-            }
+            if( _statusCode == 200 ) {
 
-            if( _state == STATE.CONTINUE ) {
-
-                int length = Headers.contentLength( _responseHeaders );
-
-                if( length > maxContentLength() ) {
-                    _statusCode = TOO_LARGE_LENGTH;
+                if( ! acceptedContentTypes().contains( ctype ) ) {
+                    _statusCode = NOT_ACCEPTED;
                     abort();
                 }
                 else {
-                    _body = new ResizableByteBuffer(
-                        ( length >= 0 ) ? length : 16 * 1024 );
+
+                    int length = Headers.contentLength( _responseHeaders );
+
+                    if( length > maxContentLength() ) {
+                        _statusCode = TOO_LARGE_LENGTH;
+                        abort();
+                    }
+                    else {
+                        _body = new ResizableByteBuffer(
+                             ( length >= 0 ) ? length : 16 * 1024 );
+                    }
                 }
             }
 
@@ -277,14 +279,19 @@ public class Client implements HTTPClient, Closeable
         @Override
         public STATE onBodyPartReceived( HttpResponseBodyPart part )
         {
-            byte[] buffer = part.getBodyPartBytes();
+            if( _body != null ) {
+                byte[] buffer = part.getBodyPartBytes();
 
-            if( ( _body.position() + buffer.length ) > maxContentLength() ) {
-                _statusCode = TOO_LARGE;
-                abort();
+                if( (_body.position() + buffer.length) > maxContentLength() ) {
+                    _statusCode = TOO_LARGE;
+                    abort();
+                }
+                else {
+                    _body.put( buffer );
+                }
             }
             else {
-                _body.put( buffer );
+                _log.debug( "Ignoring onBodyPartReceived" );
             }
 
             return _state;
