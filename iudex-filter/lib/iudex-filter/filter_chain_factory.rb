@@ -25,6 +25,9 @@ module Iudex
       class FilterChainFactory
         attr_reader :description
 
+        attr_accessor :main_summary_period
+        attr_accessor :main_by_filter_period
+
         include KeyHelper
 
         def initialize( description = "default" )
@@ -33,20 +36,22 @@ module Iudex
           @log = RJack::SLF4J[ [ RJack::SLF4J.to_log_name( self.class ),
                                  description ].join('.') ]
 
-          @summary_period = nil
-          @by_filter_period = nil
+          @main_summary_period = 10.0
+          @main_by_filter_period = 60.0
 
           @index = nil
           @chain = nil
           @listener = nil
         end
 
+        # Deprecated: Use main_summary_period accessor
         def add_summary_reporter( period_s = 10.0 )
-          @summary_period = period_s
+          @main_summary_period = period_s
         end
 
+        # Deprecated: Use main_by_filter_period accessor
         def add_by_filter_reporter( period_s = 60 * 10.0 )
-          @by_filter_period = period_s
+          @main_by_filter_period = period_s
         end
 
         def open
@@ -101,23 +106,10 @@ module Iudex
           []
         end
 
-        def log_listener( desc )
-          LogListener.new( "iudex.filter.core.FilterChain.#{desc}", @index )
-        end
-
         def listeners
-          ll = [ log_listener( @description ) ]
-
-          if @summary_period
-            ll << SummaryReporter.new( @description, @summary_period )
-          end
-
-          if @by_filter_period
-            ll << ByFilterReporter.new( @index,
-                                        ByFilterLogger.new( @description, @index ),
-                                        @by_filter_period )
-          end
-          ll
+          create_listeners( @description,
+                            @main_summary_period,
+                            @main_by_filter_period )
         end
 
         # Create, yield to optional block, and return FilterChain if
@@ -156,6 +148,19 @@ module Iudex
         end
 
         private
+
+        def create_listeners( desc, summary_period, by_filter_period )
+          [ log_listener( desc ),
+            ( SummaryReporter.new( desc, summary_period ) if summary_period ),
+            ( ByFilterReporter.new( @index,
+                                    ByFilterLogger.new( desc, @index ),
+                                    by_filter_period ) if by_filter_period )
+          ].compact
+        end
+
+        def log_listener( desc )
+          LogListener.new( "iudex.filter.core.FilterChain.#{desc}", @index )
+        end
 
         def log_and_register( filters, depth = 0 )
           filters.each do |filter|
