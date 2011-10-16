@@ -23,10 +23,10 @@ module Iudex
       include Iudex::HTTP
       include Iudex::Core::Filters
 
-      def create_content_fetcher( accept_types, receiver_sym )
+      def create_content_fetcher( accept_types, receiver, listener = nil )
         cf = ContentFetcher.new( http_client,
                                  visit_counter,
-                                 create_chain( receiver_sym ) )
+                                 create_chain( receiver, nil, listener ) )
 
         cf.executor = executor if executor
 
