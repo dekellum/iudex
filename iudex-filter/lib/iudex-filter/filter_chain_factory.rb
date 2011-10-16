@@ -59,12 +59,20 @@ module Iudex
 
           @index = FilterIndex.new
 
+          # Temp setup of empty listener, since full listeners setup
+          # requires filters, log_and_register which itself requires
+          # listeners via create_chain
+          @listener = place_holder = NoOpListener.new
+
           flts = filters
           log_and_register( flts )
 
           @listener = ListenerChain.new( listeners )
-          @chain = create_chain( @description, flts )
-          @chain.listener = @listener
+          @chain = create_chain( @description, flts, :main )
+
+          # Now replace the temp listener with the final listener
+          # chain
+          replace_listeners( @chain, place_holder, @listener )
 
           # With all filters loaded and thus key references, make sure
           # UniMap accessors are defined (for ruby filters)
@@ -114,9 +122,9 @@ module Iudex
 
         # Create, yield to optional block, and return FilterChain if
         # flts is not empty. Otherwise return a NoOpFilter and don't
-        # yield. If passed a single Symbol argument, will use both
+        # yield. If passed a Symbol desc and nil flts, will use both
         # as description and method to obtain flts array from.
-        def create_chain( desc, flts = nil )
+        def create_chain( desc, flts = nil, listener = nil )
 
           if desc.is_a?( Symbol )
             flts = send( desc ) unless flts
@@ -129,18 +137,24 @@ module Iudex
             NoOpFilter.new
           else
             c = FilterChain.new( desc, flts )
-            c.listener = log_listener( desc )
+            if listener.nil?
+              c.listener = log_listener( desc )
+            elsif listener == :main
+              c.listener = @listener
+            else
+              c.listener = listener
+            end
             yield c if block_given?
             c
           end
         end
 
         # Create a new Switch given selector key and map of values to
-        # filters.
+        # filters, or values to [filters,listener]
         def create_switch( key, value_filters_map )
           switch = Switch.new
-          value_filters_map.each do |value, filters|
-            create_chain( value.to_s.downcase, filters ) do |chain|
+          value_filters_map.each do |value, (filters, listener)|
+            create_chain( value.to_s.downcase, filters, listener ) do |chain|
               switch.add_proposition( Selector.new( key, value ), chain )
             end
           end
@@ -171,6 +185,20 @@ module Iudex
             end
           end
         end
+
+        def replace_listeners( filter, place_holder, listener )
+          if filter.kind_of?( FilterContainer )
+            if filter.kind_of?( FilterChain )
+              if filter.listener == place_holder
+                filter.listener = listener
+              end
+            end
+            filter.children.each do |c|
+              replace_listeners( c, place_holder, listener )
+            end
+          end
+        end
+
       end
 
     end

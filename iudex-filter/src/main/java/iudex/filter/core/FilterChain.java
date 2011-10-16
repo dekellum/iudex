@@ -66,6 +66,11 @@ public class FilterChain
         _listener = listener;
     }
 
+    public FilterListener listener()
+    {
+        return _listener;
+    }
+
     @Override
     public boolean filter( UniMap in )
     {
