@@ -142,6 +142,15 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_304
+    with_new_client do |client|
+      client.accepted_content_types = ContentTypeSet.new( [ "text/html" ] )
+      with_session_handler( client, "/304" ) do |s,x|
+        assert_equal( 304, s.status_code )
+      end
+    end
+  end
+
   def test_timeout
     with_new_client do |client|
       with_session_handler( client, "/index?sleep=1.0" ) do |s,x|
