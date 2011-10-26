@@ -37,7 +37,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.net.UnknownHostException'
   import 'java.net.URISyntaxException'
   import 'java.io.IOException'
-  import 'java.io.EOFException'
   import 'java.lang.IllegalStateException'
   import 'java.nio.channels.UnresolvedAddressException'
 
@@ -349,7 +348,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( EOFException, x )
+        assert_match( /EofException/i, x.class.name )
       end
     end
 
@@ -379,7 +378,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( EOFException, x )
+        assert_match( /EofException/i, x.class.name )
       end
     end
 
@@ -410,7 +409,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_instance_of( EOFException, x )
+        assert_match( /EofException/i, x.class.name )
       end
     end
 
