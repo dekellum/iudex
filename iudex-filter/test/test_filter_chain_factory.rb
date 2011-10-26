@@ -1,4 +1,3 @@
-
 #!/usr/bin/env jruby
 #.hashdot.profile += jruby-shortlived
 
@@ -55,8 +54,8 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
 
   def test_filter_chain
     fcf = FilterChainFactory.new( "test" )
-    fcf.add_summary_reporter( 1.0 )
-    fcf.add_by_filter_reporter( 2.5 )
+    fcf.main_summary_period = 1.0
+    fcf.main_by_filter_period = 2.5
 
     def fcf.filters
       [ MDCSetter.new( TKEY ) ] + super +
@@ -81,6 +80,36 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
 
       refute( fcf.open? )
     end
+
+  end
+
+  def test_nested_reporting
+    fcf = FilterChainFactory.new( "test" )
+    class << fcf
+      attr_accessor :summary_reporter
+      def filters
+        [ create_chain( :sub_filters, nil, :main ) ]
+      end
+      def listeners
+        super.tap do |ll|
+          @summary_reporter = ll[1] #FIXME: Brittle
+        end
+      end
+
+      def sub_filters
+        [ 6, 4, 6, 6 ].map { |p| RandomFilter.new( p ) }
+      end
+    end
+
+    fcf.filter do |chain|
+      100.times do |t|
+        map = UniMap.new
+        map.tkey = t
+        chain.filter( map )
+      end
+    end
+
+    assert_equal( 100, fcf.summary_reporter.total_count )
 
   end
 
