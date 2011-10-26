@@ -35,6 +35,8 @@ module TestSetup
       def puts( *a );  $stdout.puts( *a ); end
     end
     MiniTest::Unit.output = TestOut.new
+    Logback[ 'org.eclipse.jetty.http.ssl.SslContextFactory' ].level =
+      Logback::WARN
   else
     Logback.root.level = Logback::DEBUG
   end
