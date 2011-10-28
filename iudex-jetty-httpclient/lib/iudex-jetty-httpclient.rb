@@ -58,7 +58,7 @@ module Iudex
       end
 
       if redir_listen
-        jclient.register_listener( 'iudex.jettyhttpclient.RedirectListener' )
+        jclient.register_listener( 'org.eclipse.jetty.client.RedirectListener' )
       end
 
       jclient
