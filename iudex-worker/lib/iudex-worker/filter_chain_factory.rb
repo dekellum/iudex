@@ -65,15 +65,14 @@ module Iudex
       end
 
       def setup_reporters
-        add_summary_reporter
-        add_by_filter_reporter
+        # Use default, preserved for overrides
       end
 
       def filters
         [ UHashMDCSetter.new,
           DefaultFilter.new,
           super,
-          type_switch ].flatten
+          type_switch ]
       end
 
       def listeners
@@ -81,8 +80,8 @@ module Iudex
       end
 
       def type_map
-        { "FEED" => feed_fetcher,
-          "PAGE" => page_fetcher }
+        { "FEED" => [ feed_fetcher, :main ],
+          "PAGE" => [ page_fetcher, :main ] }
       end
 
       def type_switch( tmap = type_map )
@@ -90,11 +89,11 @@ module Iudex
       end
 
       def feed_fetcher
-        [ create_content_fetcher( feed_mime_types, :feed_receiver ) ]
+        [ create_content_fetcher( feed_mime_types, :feed_receiver, :main ) ]
       end
 
       def page_fetcher
-        [ create_content_fetcher( page_mime_types, :page_receiver ) ]
+        [ create_content_fetcher( page_mime_types, :page_receiver, :main ) ]
       end
 
       def feed_receiver
@@ -116,7 +115,7 @@ module Iudex
           ref_common_cleanup,
           Prioritizer.new( "feed-ref-new",
                            :constant => 50,
-                           :min_next => 0.0 ) ].flatten
+                           :min_next => 0.0 ) ]
       end
 
       def feed_ref_update
@@ -125,7 +124,7 @@ module Iudex
           ref_common_cleanup,
           Prioritizer.new( "feed-ref-update",
                            :constant => 10,
-                           :min_next => 0.0 ) ].flatten
+                           :min_next => 0.0 ) ]
       end
 
       # Note: *_post is run possibly twice, once for both base content
@@ -136,13 +135,13 @@ module Iudex
           Prioritizer.new( "feed-post",
                            :constant => 30,
                            :visiting_now => true ),
-          last_visit_setter ].flatten
+          last_visit_setter ]
       end
 
       def ref_common_cleanup
         [ ref_html_filters,
           TextCtrlWSFilter.new( :title.to_k ),
-          FutureDateFilter.new( :pub_date.to_k ) ].flatten
+          FutureDateFilter.new( :pub_date.to_k ) ]
       end
 
       def ref_html_filters
@@ -150,7 +149,7 @@ module Iudex
           html_clean_filters( :summary ),
           html_clean_filters( :content ),
           html_write_filter( :summary ),
-          html_write_filter( :content ) ].flatten
+          html_write_filter( :content ) ]
       end
 
       def feed_update_keys
@@ -163,7 +162,7 @@ module Iudex
           CharDetectFilter.new,
           html_clean_filters( :source ),
           simhash_generator,
-          page_updater ].flatten
+          page_updater ]
       end
 
       def barc_writer

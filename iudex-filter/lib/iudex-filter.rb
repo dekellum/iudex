@@ -27,9 +27,11 @@ module Iudex
 
     import 'iudex.filter.Filter'
     import 'iudex.filter.FilterContainer'
+    import 'iudex.filter.FilterException'
     import 'iudex.filter.Described'
     import 'iudex.filter.Named'
     import 'iudex.filter.NoOpFilter'
+    import 'iudex.filter.NoOpListener'
 
     module Core
       import 'iudex.filter.core.ByFilterReporter'
