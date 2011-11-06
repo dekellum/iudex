@@ -127,8 +127,16 @@ module Iudex
                            :min_next => 0.0 ) ]
       end
 
-      # Note: *_post is run possibly twice, once for both base content
-      # map and referer map.
+      # Filters to apply for feed update.
+      #
+      # Notes:
+      #
+      # * This is run possibly twice, for both base content map and
+      #   referer map if present.
+      #
+      # * If this is an update then these filters act on a *new* map,
+      #   thus any changes made here will not be visible after exit
+      #   from the update_filter.
       def feed_post
         [ UHashMDCSetter.new,
           ref_common_cleanup,
@@ -180,8 +188,16 @@ module Iudex
         create_update_filter( keys( page_update_keys ), :page_post )
       end
 
-      # Note: *_post is run possibly twice, once for both base content
-      # map and referer map.
+      # Filters to apply during page update
+      #
+      # Notes:
+      #
+      # * This is run possibly twice, for both base content map and
+      #   referer map if present.
+      #
+      # * If this is an update then these filters act on a *new* map,
+      #   thus any changes made here will not be visible after exit
+      #   from the update_filter.
       def page_post
         [ UHashMDCSetter.new,
           barc_writer, # Not run in 302 referer case, since no SOURCE.
