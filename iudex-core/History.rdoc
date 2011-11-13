@@ -1,12 +1,23 @@
-=== 1.1.0 (TBD)
-* Update to iudex-filter,http,barc ~> 1.1.0.
+=== 1.1.0 (2011-11-13)
+* Update to iudex-filter,http,barc ~> 1.1.0
 * ContentFetcher updates for iudex-http changes
 * New MojiBakeFilter, MojiBakeMapper with config table loading support
-* New AsyncVisitExecutor for use with an asynchronous HTTP client
-* Added encoding confidence map to ContentSource (supports encoding
+* Replaced VisitExecutor with asynchronous client compatible
+  VisitManager
+* Visit/HostQueue acquire/release for concurrecy and per host settings
+* VisitQueue uses VisitURL.domain (registration level) host keys
+* New VisitCounter interface
+* New RedirectHandler and Revisitor filters for direct redirect
+  handling with filter access
+* VisitURL.resolve for redirect support
+* Drop now redundant RLDomainFilter and RL_DOMAIN key
+* Add domain to iudex-url-norm output
+* Add encoding confidence map to ContentSource (supports encoding
   detection)
 * Add U+2060 WORD JOINER to Characters.ctrlWS list
 * Update to minitest ~> 2.3
+* Update to gravitext-util ~> 1.5.1 (for UniMap.toString)
+* Update TLDSets based on upstream 9411dffc948b (2011-09-02)
 
 === 1.0.0 (2011-04-04)
 * Initial release.

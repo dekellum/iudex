@@ -1,4 +1,6 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
+* Update to iudex-html ~> 1.1.0
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

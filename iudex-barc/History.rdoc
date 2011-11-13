@@ -1,7 +1,8 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
 * Update to iudex-http ~> 1.1.0
-* Update to minitest ~> 2.3
 * BARCResponseHandler updates for iudex-http changes
+* Update to gravitext-util ~> 1.5.1 (for UniMap.toString)
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

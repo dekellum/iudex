@@ -1,4 +1,14 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
+* Update to iudex-core, -da, -rome, -html, -simhash ~> 1.1.0
+* Changes for VisitManager, VisitCounter, RedirectHandler, Revisitor
+* Use ContentTypeSet in ContentFetcher
+* Generalize Agent to for all three HTTP clients; all are now
+  optional/dev dependencies
+* Add iudex-char-detector ~> 1.1.0 dep and use CharDetectFilter in
+  FCF.page_receiver
+* Improved setup error logging in Agent
+* Enable :main listeners in filter_chain_factory
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

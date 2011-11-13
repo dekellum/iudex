@@ -1,5 +1,11 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
 * Update to iudex-core ~> 1.1.0
+* Update to activerecord ~> 3.0.10, pg ~> 9.0.801, adapter ~> 1.1.3
+* Expand commons-pool pom dep to [1.5.4, 1.5.6]
+* Migrate host field to domain (registration level), mapper/writer
+  domain support, :domain in WorkPoller, drop :host key.
+* Add migration profile support, move simhash index to simhash
+  profile, add index_next_visit migration profile
 * Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)

@@ -1,4 +1,10 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
+* Update to iudex-http ~> 1.1.0 and associated changes:
+  ContentTypeSet, buffer in Client, acceptedContentType
+  maxContentLength from session.
+* Default max-redirects 0
+* Adopt iudex-http-test based tests and fix failure cases.
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.

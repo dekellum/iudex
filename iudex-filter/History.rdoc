@@ -1,6 +1,12 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
+* Filter chain factory ergonomics:
+  * flatten.compact filters in create_chain, top level filters
+  * main_summary_period, main_by_filter_period on by default
+  * Add listener param to create_chain, create_switch for nested listener
 * New SubListFilter
+* Add FilterException to imports (Siddharth Raghavan)
 * Update to minitest ~> 2.3
+* Update to gravitext-util ~> 1.5.1 (for UniMap.toString)
 
 === 1.0.0 (2011-04-04)
 * Initial release.

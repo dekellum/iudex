@@ -1,4 +1,9 @@
-=== 1.1.0 (TBD)
+=== 1.1.0 (2011-11-13)
+* Update to iudex-core ~> 1.1.0
+* Add NekoHTMLParser charset expansion and ContentSource encoding
+  confidence support
+* Add MojiBakeCleaner tree filter, helper support
+* Update to minitest ~> 2.3
 
 === 1.0.0 (2011-04-04)
 * Initial release.
