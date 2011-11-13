@@ -11,6 +11,10 @@ t = RJack::TarPit.new( 'iudex', Iudex::VERSION, :java_platform )
 
 t.specify do |h|
   h.developer( "David Kellum", "dek-oss@gravitext.com" )
+  h.extra_deps += [ [ 'iudex-worker',           '~> 1.1.0' ],
+                    [ 'iudex-httpclient-3',     '~> 1.1.0' ],
+                    [ 'iudex-jetty-httpclient', '~> 1.1.0' ],
+                    [ 'iudex-async-httpclient', '~> 1.1.0' ] ]
 end
 
 task :chk_hist_vers do
