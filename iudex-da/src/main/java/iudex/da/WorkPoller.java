@@ -29,7 +29,7 @@ import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 import static iudex.core.ContentKeys.*;
-import static iudex.da.ContentMapper.HOST;
+import static iudex.da.ContentMapper.DOMAIN;
 
 public class WorkPoller extends GenericWorkPollStrategy
 {
@@ -92,8 +92,8 @@ public class WorkPoller extends GenericWorkPollStrategy
     {
         CharSequence fs = _contentReader.mapper().fieldNames();
         CharSequence fsh = fs;
-        if( ! _contentReader.mapper().fields().contains( HOST ) ) {
-            fsh = fs.toString() + ", host";
+        if( ! _contentReader.mapper().fields().contains( DOMAIN ) ) {
+            fsh = fs.toString() + ", domain";
         }
 
         String query = String.format( POLL_QUERY, fs, fsh, fsh, fsh, fsh );
@@ -124,7 +124,7 @@ public class WorkPoller extends GenericWorkPollStrategy
     "FROM ( SELECT %s " +
     "       FROM ( SELECT %s, ( priority - ( ( hpos - 1 ) / ? ) ) AS adj_priority " +
     "              FROM ( SELECT %s, " +
-    "                            row_number() OVER ( PARTITION BY host " +
+    "                            row_number() OVER ( PARTITION BY domain " +
     "                                                ORDER BY priority DESC ) AS hpos " +
     "                     FROM ( SELECT %s " +
     "                            FROM urls " +
@@ -137,7 +137,7 @@ public class WorkPoller extends GenericWorkPollStrategy
     "            ) AS subA " +
     "      ORDER BY adj_priority DESC " +
     "      LIMIT ? ) AS subF " +
-    "ORDER BY host, priority DESC; ";
+    "ORDER BY domain, priority DESC; ";
 
     private static final List<Key> REQUIRED_KEYS =
         Arrays.asList( new Key[] { URL, PRIORITY, NEXT_VISIT_AFTER } );

@@ -209,7 +209,7 @@ module Iudex
       end
 
       def page_update_keys
-        [ :uhash, :host, :url, :type,
+        [ :uhash, :domain, :url, :type,
           :ref_pub_date, :pub_date,
           :priority, :last_visit, :next_visit_after,
           :status, :etag, :reason, :referer, :referent,

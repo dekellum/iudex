@@ -85,6 +85,6 @@ public class ContentUpdaterTest
     }
 
     private final ContentMapper _kmap =
-        new ContentMapper( UHASH, HOST, URL, TYPE, REF_PUB_DATE,
+        new ContentMapper( UHASH, DOMAIN, URL, TYPE, REF_PUB_DATE,
                            PRIORITY, NEXT_VISIT_AFTER, REFERER );
 }

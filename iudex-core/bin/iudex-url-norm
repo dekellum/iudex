@@ -41,7 +41,7 @@ module IudexBinScript
     opts.on_tail( "-h", "--help", "Show help and exit" ) do
       puts opts
       puts
-      puts( "Write uhash and normalized URLs to STDOUT, " +
+      puts( "Write uhash, domain, and normalized URLs to STDOUT, " +
             "from UrlsFile(s) or STDIN." )
       exit 1
     end
@@ -62,8 +62,8 @@ module IudexBinScript
 
   def self.process( fin )
     fin.each do |url|
-      vurl = Core::VisitURL.normalize( url.chomp )
-      puts vurl.uhash + ' ' + vurl.to_s
+      vurl = Core::VisitURL.normalize( url )
+      puts '%23s %24s %s' % [ vurl.uhash, vurl.domain, vurl ]
     end
   end
 

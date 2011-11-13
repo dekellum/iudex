@@ -48,7 +48,7 @@ public class WorkPollerTest
     public void test() throws SQLException, SyntaxException
     {
         ContentMapper mapper =
-            new ContentMapper( UHASH, HOST, URL, TYPE, PRIORITY,
+            new ContentMapper( UHASH, DOMAIN, URL, TYPE, PRIORITY,
                                NEXT_VISIT_AFTER );
 
         ContentWriter writer = new ContentWriter( dataSource(), mapper );

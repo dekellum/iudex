@@ -66,7 +66,7 @@ module Iudex::DA
     end
 
     def import_keys
-      [ :uhash, :host, :url, :type, :priority, :next_visit_after ]
+      [ :uhash, :domain, :url, :type, :priority, :next_visit_after ]
     end
 
     def template_map

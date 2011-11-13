@@ -157,7 +157,7 @@ public class ContentWriter
         LoggerFactory.getLogger( ContentWriter.class  );
 
     private static final List<Key> REQUIRED_KEYS =
-        Arrays.asList( new Key[] { URL, UHASH, HOST, TYPE } );
+        Arrays.asList( new Key[] { URL, UHASH, DOMAIN, TYPE } );
 
     private final DataSource _dataSource;
     private final ContentMapper _mapper;
