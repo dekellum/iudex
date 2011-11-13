@@ -7,4 +7,4 @@ lib/iudex-async-httpclient/base.rb
 lib/iudex-async-httpclient.rb
 test/setup.rb
 test/test_httpclient.rb
-lib/iudex-async-httpclient/iudex-async-httpclient-1.0.0.jar
+lib/iudex-async-httpclient/iudex-async-httpclient-1.1.0.jar

@@ -72,7 +72,7 @@ end
 task :rdoc   => [ :rdocdeps ]
 task :rerdoc => [ :rdocdeps ]
 
-require 'rake/rdoctask'
+require 'rdoc/task'
 
 Rake::RDocTask.new do |rd|
   rd.main = "README.rdoc"
