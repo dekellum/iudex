@@ -51,12 +51,6 @@ public final class ContentMapper
         LOGICAL_KEYS.create( "uhash", String.class );
 
     /**
-     * Logical key UHASH mapped to URL->VisitURL.host()
-     */
-    public static final Key<String> HOST =
-        LOGICAL_KEYS.create( "host", String.class );
-
-    /**
      * Logical key DOMAIN mapped to URL->VisitURL.domain()
      */
     public static final Key<String> DOMAIN =
@@ -113,7 +107,7 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
-            else if(( key == UHASH ) || ( key == HOST ) || ( key == DOMAIN )) {
+            else if(( key == UHASH ) || ( key == DOMAIN ) ) {
                 // ignore on input
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -146,8 +140,7 @@ public final class ContentMapper
         throws SQLException
     {
         final String name = key.name();
-        if( ( key == URL ) || ( key == UHASH ) ||
-            ( key == HOST ) || ( key == DOMAIN ) ) {
+        if( ( key == URL ) || ( key == UHASH ) || ( key == DOMAIN ) ) {
             rset.updateString( name, convertURL( key, out.get( URL ) ) );
         }
         else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -187,8 +180,7 @@ public final class ContentMapper
     {
         int i = 1;
         for( Key<?> key : _fields ) {
-            if( ( key == URL ) || ( key == UHASH ) ||
-                ( key == HOST ) || ( key == DOMAIN ) ) {
+            if( ( key == URL ) || ( key == UHASH ) || ( key == DOMAIN ) ) {
                 stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -225,7 +217,6 @@ public final class ContentMapper
     {
         if( key == URL   ) return url.toString();
         if( key == UHASH ) return url.uhash();
-        if( key == HOST  ) return url.host();
         if( key == DOMAIN ) return url.domain();
 
         throw new IllegalArgumentException
