@@ -67,7 +67,7 @@ class TestMigrate < MiniTest::Unit::TestCase
     if VERBOSE
       block.call
     else
-      ActiveRecord::Migration.suppress_messages &block
+      ActiveRecord::Migration.suppress_messages( &block )
     end
   end
 
