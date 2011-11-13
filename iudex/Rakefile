@@ -29,3 +29,5 @@ task :tag  => [ :chk_hist_vers, :chk_hist_date ]
 task :push => [                 :chk_hist_date ]
 
 t.define_tasks
+
+task :test
