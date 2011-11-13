@@ -13,4 +13,4 @@ test/sample.html.utf16le
 test/sample.html.utf8
 test/setup.rb
 test/test_char_detector.rb
-lib/iudex-char-detector/iudex-char-detector-1.0.0.jar
+lib/iudex-char-detector/iudex-char-detector-1.1.0.jar
