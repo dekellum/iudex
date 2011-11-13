@@ -1,2 +1,5 @@
+=== 1.1.0 (TBD)
+* Add dependencies for iudex-worker ~> 1.1.0 and optional httpclients.
+
 === 1.0.0 (2010-7-25)
 * Initial release.
