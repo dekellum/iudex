@@ -56,6 +56,12 @@ public final class ContentMapper
     public static final Key<String> HOST =
         LOGICAL_KEYS.create( "host", String.class );
 
+    /**
+     * Logical key DOMAIN mapped to URL->VisitURL.domain()
+     */
+    public static final Key<String> DOMAIN =
+        LOGICAL_KEYS.create( "domain", String.class );
+
     public ContentMapper( List<Key> fields )
     {
         _fields = fields;
@@ -107,7 +113,7 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
-            else if( ( key == UHASH ) || ( key == HOST ) ) {
+            else if(( key == UHASH ) || ( key == HOST ) || ( key == DOMAIN )) {
                 // ignore on input
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -140,7 +146,8 @@ public final class ContentMapper
         throws SQLException
     {
         final String name = key.name();
-        if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
+        if( ( key == URL ) || ( key == UHASH ) ||
+            ( key == HOST ) || ( key == DOMAIN ) ) {
             rset.updateString( name, convertURL( key, out.get( URL ) ) );
         }
         else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -180,7 +187,8 @@ public final class ContentMapper
     {
         int i = 1;
         for( Key<?> key : _fields ) {
-            if( ( key == URL ) || ( key == UHASH ) || ( key == HOST ) ) {
+            if( ( key == URL ) || ( key == UHASH ) ||
+                ( key == HOST ) || ( key == DOMAIN ) ) {
                 stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -218,6 +226,7 @@ public final class ContentMapper
         if( key == URL   ) return url.toString();
         if( key == UHASH ) return url.uhash();
         if( key == HOST  ) return url.host();
+        if( key == DOMAIN ) return url.domain();
 
         throw new IllegalArgumentException
             ( "Non URL derived logical key: " + key );
