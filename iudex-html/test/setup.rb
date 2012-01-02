@@ -14,25 +14,27 @@
 # permissions and limitations under the License.
 #++
 
-#### General test setup: LOAD_PATH, logging, console output ####
-
-test_dir = File.dirname( __FILE__ )
-
-ldir = File.join( test_dir, "..", "lib" )
-$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
+#### General test setup, logging, console output ####
 
 require 'rubygems'
-require 'rjack-logback'
-RJack::Logback.config_console( :stderr => true )
+require 'bundler/setup'
 
 require 'minitest/unit'
 require 'minitest/autorun'
 
-require File.join( test_dir, 'html_test_helper.rb' )
+require 'rjack-logback'
 
-# Make test output logging compatible: no partial lines.
-# class TestOut
-#   def print( *a ); $stdout.puts( *a ); end
-#   def puts( *a );  $stdout.puts( *a ); end
-# end
-# MiniTest::Unit.output = TestOut.new
+module TestSetup
+  include RJack
+  Logback.config_console( :stderr => true, :thread => true )
+
+  if ( ARGV & %w[ -v --verbose --debug ] ).empty?
+    Logback.root.level = Logback::INFO
+  else
+    Logback.root.level = Logback::DEBUG
+  end
+
+  ARGV.delete( '--debug' )
+end
+
+require File.join( File.dirname( __FILE__ ), 'html_test_helper.rb' )
