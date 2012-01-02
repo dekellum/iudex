@@ -15,7 +15,6 @@ bdir = File.dirname( __FILE__ )
 
 gems.each do |gname|
   if File.exist? File.join( bdir, gname, gname + ".gemspec" )
-    puts "FIXME: Found spec: #{gname}"
     gemspec :path => gname, :name => gname
   end
 end
