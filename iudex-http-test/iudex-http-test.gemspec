@@ -15,6 +15,7 @@ RJack::TarPit.specify do |s|
 
   s.depend 'fishwife',              '~> 1.1.0'
   s.depend 'sinatra',               '~> 1.3.1'
+  s.depend 'builder',               '~> 2.1.2' #constrain markaby
   s.depend 'markaby',               '~> 0.7.1'
   s.depend 'minitest',              '~> 2.3'
 
