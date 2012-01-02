@@ -14,15 +14,15 @@
 # permissions and limitations under the License.
 #++
 
-#### General test setup: LOAD_PATH, logging, console output ####
-
-ldir = File.join( File.dirname( __FILE__ ), "..", "lib" )
-$LOAD_PATH.unshift( ldir ) unless $LOAD_PATH.include?( ldir )
+#### General test setup, logging, console output ####
 
 require 'rubygems'
-require 'rjack-logback'
+require 'bundler/setup'
+
 require 'minitest/unit'
 require 'minitest/autorun'
+
+require 'rjack-logback'
 
 module TestSetup
   include RJack
