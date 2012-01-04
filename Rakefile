@@ -102,6 +102,10 @@ task :generate_gemfile_per_gem do
 # -*- ruby -*-
 source :rubygems
 gemspec :path => '.', :name => '#{gname}'
+
+RJack::TarPit.last_spec.dependencies.each do |d|
+  gem( d.name, :path => "../\#\{d.name\}" ) if d.name =~ /^iudex/
+end
 RUBY
       end
 
