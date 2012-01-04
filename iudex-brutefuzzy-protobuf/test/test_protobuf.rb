@@ -17,8 +17,7 @@
 # permissions and limitations under the License.
 #++
 
-require 'minitest/unit'
-require 'minitest/autorun'
+require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-brutefuzzy-protobuf'
 
