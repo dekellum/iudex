@@ -20,6 +20,7 @@ RJack::TarPit.specify do |s|
   s.depend 'minitest',              '~> 2.3'
 
   s.depend 'rack-test',             '~> 0.6.0',       :dev
+  s.depend 'rjack-logback',         '~> 1.0',         :dev
 
   s.platform = :java
 end
