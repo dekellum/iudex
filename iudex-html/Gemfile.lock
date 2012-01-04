@@ -6,6 +6,17 @@ PATH
       iudex-core (~> 1.1.0)
       rjack-nekohtml (~> 1.9.14)
 
+PATH
+  remote: ../iudex-core
+  specs:
+    iudex-core (1.1.0-java)
+      gravitext-util (~> 1.5.1)
+      hooker (~> 1.0.0)
+      iudex-barc (~> 1.1.0)
+      iudex-filter (~> 1.1.0)
+      iudex-http (~> 1.1.0)
+      rjack-slf4j (~> 1.6.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -15,13 +26,6 @@ GEM
     hooker (1.0.0)
     iudex-barc (1.1.0-java)
       gravitext-util (~> 1.5.1)
-      iudex-http (~> 1.1.0)
-      rjack-slf4j (~> 1.6.1)
-    iudex-core (1.1.0-java)
-      gravitext-util (~> 1.5.1)
-      hooker (~> 1.0.0)
-      iudex-barc (~> 1.1.0)
-      iudex-filter (~> 1.1.0)
       iudex-http (~> 1.1.0)
       rjack-slf4j (~> 1.6.1)
     iudex-filter (1.1.0-java)
@@ -51,6 +55,7 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  iudex-core!
   iudex-html!
   minitest (~> 2.3)
   rjack-logback (~> 1.0)

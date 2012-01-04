@@ -9,6 +9,30 @@ PATH
       rjack-logback (~> 1.0)
       rjack-qpid-client (~> 0.12.0)
 
+PATH
+  remote: ../iudex-brutefuzzy-protobuf
+  specs:
+    iudex-brutefuzzy-protobuf (1.0.0-java)
+      rjack-protobuf (~> 2.4.1)
+
+PATH
+  remote: ../iudex-core
+  specs:
+    iudex-core (1.1.0-java)
+      gravitext-util (~> 1.5.1)
+      hooker (~> 1.0.0)
+      iudex-barc (~> 1.1.0)
+      iudex-filter (~> 1.1.0)
+      iudex-http (~> 1.1.0)
+      rjack-slf4j (~> 1.6.1)
+
+PATH
+  remote: ../iudex-simhash
+  specs:
+    iudex-simhash (1.1.0-java)
+      iudex-core (~> 1.1.0)
+      iudex-html (~> 1.1.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -18,15 +42,6 @@ GEM
     hooker (1.0.0)
     iudex-barc (1.1.0-java)
       gravitext-util (~> 1.5.1)
-      iudex-http (~> 1.1.0)
-      rjack-slf4j (~> 1.6.1)
-    iudex-brutefuzzy-protobuf (1.0.0-java)
-      rjack-protobuf (~> 2.4.1)
-    iudex-core (1.1.0-java)
-      gravitext-util (~> 1.5.1)
-      hooker (~> 1.0.0)
-      iudex-barc (~> 1.1.0)
-      iudex-filter (~> 1.1.0)
       iudex-http (~> 1.1.0)
       rjack-slf4j (~> 1.6.1)
     iudex-filter (1.1.0-java)
@@ -39,8 +54,6 @@ GEM
     iudex-http (1.1.0-java)
       gravitext-util (~> 1.5.1)
       rjack-slf4j (~> 1.6.1)
-    iudex-simhash (1.1.0-java)
-      iudex-html (~> 1.1.0)
     json (1.6.4-java)
     minitest (2.10.0)
     rake (0.9.2.2)
@@ -73,6 +86,9 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  iudex-brutefuzzy-protobuf!
   iudex-brutefuzzy-service!
+  iudex-core!
+  iudex-simhash!
   minitest (~> 2.3)
   rjack-tarpit (~> 2.0.a.0)

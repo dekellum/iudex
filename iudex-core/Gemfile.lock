@@ -9,21 +9,33 @@ PATH
       iudex-http (~> 1.1.0)
       rjack-slf4j (~> 1.6.1)
 
+PATH
+  remote: ../iudex-barc
+  specs:
+    iudex-barc (1.1.0-java)
+      gravitext-util (~> 1.5.1)
+      iudex-http (~> 1.1.0)
+      rjack-slf4j (~> 1.6.1)
+
+PATH
+  remote: ../iudex-filter
+  specs:
+    iudex-filter (1.1.0-java)
+      gravitext-util (~> 1.5.1)
+      rjack-slf4j (~> 1.6.1)
+
+PATH
+  remote: ../iudex-http
+  specs:
+    iudex-http (1.1.0-java)
+      gravitext-util (~> 1.5.1)
+      rjack-slf4j (~> 1.6.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
     gravitext-util (1.5.1-java)
     hooker (1.0.0)
-    iudex-barc (1.1.0-java)
-      gravitext-util (~> 1.5.1)
-      iudex-http (~> 1.1.0)
-      rjack-slf4j (~> 1.6.1)
-    iudex-filter (1.1.0-java)
-      gravitext-util (~> 1.5.1)
-      rjack-slf4j (~> 1.6.1)
-    iudex-http (1.1.0-java)
-      gravitext-util (~> 1.5.1)
-      rjack-slf4j (~> 1.6.1)
     json (1.6.4-java)
     minitest (2.10.0)
     rake (0.9.2.2)
@@ -42,7 +54,10 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  iudex-barc!
   iudex-core!
+  iudex-filter!
+  iudex-http!
   minitest (~> 2.3)
   rjack-logback (~> 1.0)
   rjack-tarpit (~> 2.0.a.0)

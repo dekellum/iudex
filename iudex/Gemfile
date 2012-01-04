@@ -1,3 +1,7 @@
 # -*- ruby -*-
 source :rubygems
 gemspec :path => '.', :name => 'iudex'
+
+RJack::TarPit.last_spec.dependencies.each do |d|
+  gem( d.name, :path => "../#{d.name}" ) if d.name =~ /^iudex/
+end
