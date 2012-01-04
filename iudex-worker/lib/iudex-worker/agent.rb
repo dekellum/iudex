@@ -49,13 +49,13 @@ module Iudex
       end
 
       def http_client( executor )
-        if defined?( JettyHTTPClient )
+        if defined?( JettyHTTPClient.create_client )
           @log.info "Setting up JettyHTTPClient"
           JettyHTTPClient.create_client.tap do |c|
             c.executor = executor
             c.start
           end
-        elsif defined?( AsyncHTTPClient )
+        elsif defined?( AsyncHTTPClient.create_client )
           @log.info "Setting up AsyncHTTPClient"
           AsyncHTTPClient.create_client( :executor_service => executor )
         else
