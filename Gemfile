@@ -11,10 +11,6 @@ gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
            iudex-brutefuzzy-protobuf iudex-brutefuzzy-service
            iudex ]
 
-bdir = File.dirname( __FILE__ )
-
 gems.each do |gname|
-  if File.exist? File.join( bdir, gname, gname + ".gemspec" )
-    gemspec :path => gname, :name => gname
-  end
+  gemspec :path => gname, :name => gname
 end
