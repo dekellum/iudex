@@ -1,4 +1,13 @@
 PATH
+  remote: iudex
+  specs:
+    iudex (1.1.0-java)
+      iudex-async-httpclient (~> 1.1.0)
+      iudex-httpclient-3 (~> 1.1.0)
+      iudex-jetty-httpclient (~> 1.1.0)
+      iudex-worker (~> 1.1.0)
+
+PATH
   remote: iudex-async-httpclient
   specs:
     iudex-async-httpclient (1.1.0-java)
@@ -15,6 +24,30 @@ PATH
       rjack-slf4j (~> 1.6.1)
 
 PATH
+  remote: iudex-brutefuzzy-protobuf
+  specs:
+    iudex-brutefuzzy-protobuf (1.0.0-java)
+      rjack-protobuf (~> 2.4.1)
+
+PATH
+  remote: iudex-brutefuzzy-service
+  specs:
+    iudex-brutefuzzy-service (1.0.0-java)
+      iudex-brutefuzzy-protobuf (~> 1.0.0)
+      iudex-core (~> 1.1.0)
+      iudex-simhash (~> 1.1.0)
+      rjack-jms (~> 1.1.0)
+      rjack-logback (~> 1.0)
+      rjack-qpid-client (~> 0.12.0)
+
+PATH
+  remote: iudex-char-detector
+  specs:
+    iudex-char-detector (1.1.0-java)
+      iudex-core (~> 1.1.0)
+      rjack-icu (~> 4.8.0)
+
+PATH
   remote: iudex-core
   specs:
     iudex-core (1.1.0-java)
@@ -26,11 +59,30 @@ PATH
       rjack-slf4j (~> 1.6.1)
 
 PATH
+  remote: iudex-da
+  specs:
+    iudex-da (1.1.1-java)
+      activerecord (~> 3.0.10)
+      activerecord-jdbcpostgresql-adapter (~> 1.1.3)
+      iudex-core (~> 1.1.0)
+      jdbc-postgres (~> 9.0.801)
+      rjack-commons-dbcp (~> 1.4.0)
+      rjack-commons-dbutils (~> 1.3.0)
+
+PATH
   remote: iudex-filter
   specs:
     iudex-filter (1.1.0-java)
       gravitext-util (~> 1.5.1)
       rjack-slf4j (~> 1.6.1)
+
+PATH
+  remote: iudex-html
+  specs:
+    iudex-html (1.1.0-java)
+      gravitext-xmlprod (~> 1.4.0)
+      iudex-core (~> 1.1.0)
+      rjack-nekohtml (~> 1.9.14)
 
 PATH
   remote: iudex-http
@@ -43,6 +95,7 @@ PATH
   remote: iudex-http-test
   specs:
     iudex-http-test (1.1.0-java)
+      builder (~> 2.1.2)
       fishwife (~> 1.1.0)
       markaby (~> 0.7.1)
       minitest (~> 2.3)
@@ -64,16 +117,61 @@ PATH
       iudex-http (~> 1.1.0)
       rjack-jetty (~> 7.5.2)
 
+PATH
+  remote: iudex-rome
+  specs:
+    iudex-rome (1.1.0-java)
+      iudex-core (~> 1.1.0)
+      rjack-rome (~> 1.0.2)
+
+PATH
+  remote: iudex-simhash
+  specs:
+    iudex-simhash (1.1.0-java)
+      iudex-core (~> 1.1.0)
+      iudex-html (~> 1.1.0)
+
+PATH
+  remote: iudex-worker
+  specs:
+    iudex-worker (1.1.0-java)
+      iudex-char-detector (~> 1.1.0)
+      iudex-core (~> 1.1.0)
+      iudex-da (~> 1.1.0)
+      iudex-html (~> 1.1.0)
+      iudex-rome (~> 1.1.0)
+      iudex-simhash (~> 1.1.0)
+      rjack-logback (~> 1.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
-    builder (3.0.0)
+    activemodel (3.0.10)
+      activesupport (= 3.0.10)
+      builder (~> 2.1.2)
+      i18n (~> 0.5.0)
+    activerecord (3.0.10)
+      activemodel (= 3.0.10)
+      activesupport (= 3.0.10)
+      arel (~> 2.0.10)
+      tzinfo (~> 0.3.23)
+    activerecord-jdbc-adapter (1.1.3)
+    activerecord-jdbcpostgresql-adapter (1.1.3)
+      activerecord-jdbc-adapter (= 1.1.3)
+      jdbc-postgres (~> 9.0.0)
+    activesupport (3.0.10)
+    arel (2.0.10)
+    builder (2.1.2)
     fishwife (1.1.1-java)
       rack (~> 1.3.2)
       rjack-jetty (~> 7.5.0)
       rjack-slf4j (~> 1.6.1)
     gravitext-util (1.5.1-java)
+    gravitext-xmlprod (1.4.1-java)
+      gravitext-util (~> 1.5.0)
     hooker (1.0.0)
+    i18n (0.5.0)
+    jdbc-postgres (9.0.801)
     json (1.6.4-java)
     markaby (0.7.2)
       builder (>= 2.0.0)
@@ -89,36 +187,68 @@ GEM
     rjack-async-httpclient (1.6.5.0-java)
       rjack-slf4j (~> 1.6.1)
     rjack-commons-codec (1.4.2-java)
+    rjack-commons-dbcp (1.4.0.1-java)
+      rjack-commons-pool (~> 1.5.3)
+    rjack-commons-dbutils (1.3.2-java)
+    rjack-commons-pool (1.5.6.0-java)
     rjack-httpclient-3 (3.1.5-java)
       rjack-commons-codec (~> 1.4.0)
       rjack-slf4j (>= 1.5.8, < 1.7)
+    rjack-icu (4.8.1.1-java)
+    rjack-jdom (1.1.0.2-java)
     rjack-jetty (7.5.4.0-java)
+    rjack-jms (1.1.0-java)
+      rjack-jms-spec (~> 1.1.1)
+      rjack-slf4j (>= 1.5.8, < 1.7)
+    rjack-jms-spec (1.1.1-java)
     rjack-logback (1.3.0-java)
       rjack-slf4j (~> 1.6.0)
     rjack-maven (3.0.3.1-java)
+    rjack-mina (1.0.10.0-java)
+      rjack-slf4j (>= 1.5.8, < 1.7)
+    rjack-nekohtml (1.9.15.0-java)
+      rjack-xerces (~> 2.9.1)
+    rjack-protobuf (2.4.1.0-java)
+    rjack-qpid-client (0.12.0-java)
+      rjack-jms (>= 1.0.0, < 1.2)
+      rjack-mina (~> 1.0.10)
+      rjack-slf4j (>= 1.5.8, < 1.7)
+    rjack-rome (1.0.2-java)
+      rjack-jdom (~> 1.1.0)
     rjack-slf4j (1.6.4.0-java)
     rjack-tarpit (2.0.a.0-java)
       rake (~> 0.9.2)
       rdoc (~> 3.6)
       rjack-maven (~> 3.0)
+    rjack-xerces (2.9.1.0-java)
     sinatra (1.3.1)
       rack (~> 1.3, >= 1.3.4)
       rack-protection (~> 1.1, >= 1.1.2)
       tilt (~> 1.3, >= 1.3.3)
     tilt (1.3.3)
+    tzinfo (0.3.29)
 
 PLATFORMS
   java
 
 DEPENDENCIES
+  iudex!
   iudex-async-httpclient!
   iudex-barc!
+  iudex-brutefuzzy-protobuf!
+  iudex-brutefuzzy-service!
+  iudex-char-detector!
   iudex-core!
+  iudex-da!
   iudex-filter!
+  iudex-html!
   iudex-http!
   iudex-http-test!
   iudex-httpclient-3!
   iudex-jetty-httpclient!
+  iudex-rome!
+  iudex-simhash!
+  iudex-worker!
   minitest (~> 2.3)
   rack-test (~> 0.6.0)
   rjack-logback (~> 1.0)
