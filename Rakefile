@@ -36,6 +36,7 @@ end
 desc "Install maven parent pom only"
 task :install_parent_pom do
   sh( "mvn -N install" )
+  #FIXME: Use rmvn or load gem for this
 end
 
 desc "Run multi['task1 tasks2'] tasks over all sub gems"
