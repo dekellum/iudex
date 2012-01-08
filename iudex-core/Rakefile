@@ -1,45 +1,10 @@
 # -*- ruby -*-
 
-$LOAD_PATH << './lib'
-require 'iudex-core/base'
-
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.4'
+require 'bundler/setup'
 require 'rjack-tarpit'
 
-t = RJack::TarPit.new( 'iudex-core',
-                       Iudex::Core::VERSION,
-                       :no_assembly, :java_platform )
-
-t.specify do |h|
-  h.developer( "David Kellum", "dek-oss@gravitext.com" )
-  h.extra_deps += [ [ 'rjack-slf4j',    '~> 1.6.1'  ],
-                    [ 'hooker',         '~> 1.0.0'  ],
-                    [ 'gravitext-util', '~> 1.5.1'  ],
-                    [ 'iudex-filter',   '~> 1.1.0'  ],
-                    [ 'iudex-http',     '~> 1.1.0'  ],
-                    [ 'iudex-barc',     '~> 1.1.0'  ] ]
-
-  h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',      '~> 2.3' ],
-                        [ 'rjack-logback', '~> 1.0' ] ]
-end
-
-file 'Manifest.txt' => "lib/#{t.name}/base.rb"
-
-task :check_pom_version do
-  t.test_line_match( 'pom.xml', /<version>/, /#{t.version}/ )
-end
-task :check_history_version do
-  t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
-end
-task :check_history_date do
-  t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
-end
-
-task :gem  => [ :check_pom_version, :check_history_version                      ]
-task :tag  => [ :check_pom_version, :check_history_version, :check_history_date ]
-task :push => [                                             :check_history_date ]
+RJack::TarPit.new( 'iudex-core' ).define_tasks
 
 file 'src/main/java/iudex/core/TLDSets.java' => FileList.new( "build/*" ) do
   require 'build/tld_set_generator'
@@ -57,5 +22,3 @@ task :refresh_tld_dat do
   sh( "curl http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1" +
       " -o build/effective_tld_name.dat" )
 end
-
-t.define_tasks

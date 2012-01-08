@@ -8,3 +8,4 @@
 */pkg
 *~
 */lib/**/*.jar
+.bundle

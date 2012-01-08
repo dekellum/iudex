@@ -1,44 +1,7 @@
 # -*- ruby -*-
 
-$LOAD_PATH << './lib'
-require 'iudex-worker/base'
-
 require 'rubygems'
-gem     'rjack-tarpit', '~> 1.4'
+require 'bundler/setup'
 require 'rjack-tarpit'
 
-t = RJack::TarPit.new( 'iudex-worker', Iudex::Worker::VERSION, :java_platform )
-
-t.specify do |h|
-  h.developer( "David Kellum", "dek-oss@gravitext.com" )
-
-  h.extra_deps += [ [ 'iudex-core',     '~> 1.1.0' ],
-                    [ 'rjack-logback',  '~> 1.0'   ],
-                    [ 'iudex-da',       '~> 1.1.0' ],
-                    [ 'iudex-rome',     '~> 1.1.0' ],
-                    [ 'iudex-html',     '~> 1.1.0' ],
-                    [ 'iudex-simhash',  '~> 1.1.0' ],
-                    [ 'iudex-char-detector', '~> 1.1.0' ] ]
-
-  h.testlib = :minitest
-  h.extra_dev_deps += [ [ 'minitest',   '~> 2.3' ],
-                        [ 'iudex-httpclient-3',     '~> 1.1.0' ],
-                        [ 'iudex-jetty-httpclient', '~> 1.1.0' ],
-                        [ 'iudex-async-httpclient', '~> 1.1.0' ] ]
-end
-
-task :chk_hist_vers do
-  t.test_line_match( 'History.rdoc', /^==/, / #{t.version} / )
-end
-task :chk_init_v do
-  t.test_line_match( 'init/iudex-worker', /^gem.+#{t.name}/, /= #{t.version}/ )
-end
-task :chk_hist_date do
-  t.test_line_match( 'History.rdoc', /^==/, /\([0-9\-]+\)$/ )
-end
-
-task :gem  => [ :chk_hist_vers, :chk_init_v                 ]
-task :tag  => [ :chk_hist_vers, :chk_init_v, :chk_hist_date ]
-task :push => [                              :chk_hist_date ]
-
-t.define_tasks
+RJack::TarPit.new( 'iudex-worker' ).define_tasks
