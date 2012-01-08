@@ -14,4 +14,7 @@ RJack::TarPit.specify do |s|
   s.depend 'minitest',               '~> 2.3',       :dev
 
   s.maven_strategy = :no_assembly
+
+  s.generated_files =
+    [ 'src/main/java/iudex/brutefuzzy/protobuf/ProtocolBuffers.java' ]
 end

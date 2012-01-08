@@ -5,3 +5,11 @@ require 'bundler/setup'
 require 'rjack-tarpit'
 
 RJack::TarPit.new( 'iudex-brutefuzzy-protobuf' ).define_tasks
+
+directory 'src/main/java'
+
+messages_java = 'src/main/java/iudex/brutefuzzy/protobuf/ProtocolBuffers.java'
+
+file messages_java  => [ 'proto/brutefuzzy.proto', 'src/main/java' ] do
+  sh "protoc --java_out=src/main/java proto/brutefuzzy.proto"
+end
