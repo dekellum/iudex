@@ -1,13 +1,10 @@
 # -*- ruby -*-
 
-gem 'rjack-tarpit', '~> 2.0.a'
+gem 'rjack-tarpit', '~> 2.0'
 require 'rjack-tarpit/spec'
 
-$LOAD_PATH.unshift( File.join( File.dirname( __FILE__ ), 'lib' ) )
-
-require 'iudex/base'
-
 RJack::TarPit.specify do |s|
+  require 'iudex/base'
 
   s.version  = Iudex::VERSION
 

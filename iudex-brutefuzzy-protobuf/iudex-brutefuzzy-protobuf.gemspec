@@ -1,13 +1,10 @@
-# -*- ruby -*- encoding: utf-8 -*-
+# -*- ruby -*-
 
-gem 'rjack-tarpit', '~> 2.0.a'
+gem 'rjack-tarpit', '~> 2.0'
 require 'rjack-tarpit/spec'
 
-$LOAD_PATH.unshift( File.join( File.dirname( __FILE__ ), 'lib' ) )
-
-require 'iudex-brutefuzzy-protobuf/base'
-
 RJack::TarPit.specify do |s|
+  require 'iudex-brutefuzzy-protobuf/base'
 
   s.version  = Iudex::BruteFuzzy::Protobuf::VERSION
 
@@ -17,5 +14,4 @@ RJack::TarPit.specify do |s|
   s.depend 'minitest',               '~> 2.3',       :dev
 
   s.maven_strategy = :no_assembly
-
 end

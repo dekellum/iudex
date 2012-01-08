@@ -1,13 +1,10 @@
-# -*- ruby -*- encoding: utf-8 -*-
+# -*- ruby -*-
 
-gem 'rjack-tarpit', '~> 2.0.a'
+gem 'rjack-tarpit', '~> 2.0'
 require 'rjack-tarpit/spec'
 
-$LOAD_PATH.unshift( File.join( File.dirname( __FILE__ ), 'lib' ) )
-
-require 'iudex-da/base'
-
 RJack::TarPit.specify do |s|
+  require 'iudex-da/base'
 
   s.version  = Iudex::DA::VERSION
 
@@ -24,5 +21,4 @@ RJack::TarPit.specify do |s|
   s.depend 'rjack-logback',                       '~> 1.0',       :dev
 
   s.maven_strategy = :no_assembly
-
 end

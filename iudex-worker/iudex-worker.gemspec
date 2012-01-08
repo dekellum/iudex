@@ -1,13 +1,10 @@
-# -*- ruby -*- encoding: utf-8 -*-
+# -*- ruby -*-
 
-gem 'rjack-tarpit', '~> 2.0.a'
+gem 'rjack-tarpit', '~> 2.0'
 require 'rjack-tarpit/spec'
 
-$LOAD_PATH.unshift( File.join( File.dirname( __FILE__ ), 'lib' ) )
-
-require 'iudex-worker/base'
-
 RJack::TarPit.specify do |s|
+  require 'iudex-worker/base'
 
   s.version  = Iudex::Worker::VERSION
 
@@ -28,5 +25,4 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-async-httpclient', '~> 1.1.0',     :dev
 
   s.platform = :java
-
 end
