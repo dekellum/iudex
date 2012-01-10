@@ -6,7 +6,7 @@ require 'rjack-tarpit/spec'
 RJack::TarPit.specify do |s|
   require 'iudex-core/base'
 
-  s.version  = Iudex::Core::VERSION
+  s.version = Iudex::Core::VERSION
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 

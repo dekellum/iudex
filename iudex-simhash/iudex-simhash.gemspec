@@ -6,7 +6,7 @@ require 'rjack-tarpit/spec'
 RJack::TarPit.specify do |s|
   require 'iudex-simhash/base'
 
-  s.version  = Iudex::SimHash::VERSION
+  s.version = Iudex::SimHash::VERSION
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
