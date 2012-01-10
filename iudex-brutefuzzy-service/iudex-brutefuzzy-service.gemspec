@@ -6,7 +6,7 @@ require 'rjack-tarpit/spec'
 RJack::TarPit.specify do |s|
   require 'iudex-brutefuzzy-service/base'
 
-  s.version  = Iudex::BruteFuzzy::Service::VERSION
+  s.version = Iudex::BruteFuzzy::Service::VERSION
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
