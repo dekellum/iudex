@@ -7,5 +7,4 @@ lib/iudex-brutefuzzy-protobuf/base.rb
 lib/iudex-brutefuzzy-protobuf.rb
 proto/brutefuzzy.proto
 test/test_protobuf.rb
-src/main/java/iudex/brutefuzzy/protobuf/ProtocolBuffers.java
 lib/iudex-brutefuzzy-protobuf/iudex-brutefuzzy-protobuf-1.0.0.jar

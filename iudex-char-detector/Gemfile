@@ -1,0 +1,7 @@
+# -*- ruby -*-
+source :rubygems
+gemspec :path => '.', :name => 'iudex-char-detector'
+
+RJack::TarPit.last_spec.dependencies.each do |d|
+  gem( d.name, :path => "../#{d.name}" ) if d.name =~ /^iudex/
+end

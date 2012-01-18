@@ -16,7 +16,11 @@ RJack::TarPit.specify do |s|
   s.depend 'markaby',               '~> 0.7.1'
   s.depend 'minitest',              '~> 2.3'
 
+  s.depend 'rack',                  '~> 1.3.2',       :dev
+  # FIXME: rack-test has open ended rack dep, which without above
+  # causes problems.
   s.depend 'rack-test',             '~> 0.6.0',       :dev
+
   s.depend 'rjack-logback',         '~> 1.0',         :dev
 
   s.platform = :java

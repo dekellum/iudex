@@ -88,3 +88,31 @@ Rake::RDocTask.new do |rd|
                            "#{gem}/lib/**/*.rb" )
   end
 end
+
+desc "Generate per-gem Gemfiles and jbundle install each"
+task :generate_gemfile_per_gem do
+
+  gems.each do |gname|
+    Dir.chdir( gname ) do
+
+      puts "=== Gemfile: #{gname} ==="
+
+      File.open( 'Gemfile', 'w' ) do |fout|
+        fout.write <<RUBY
+# -*- ruby -*-
+source :rubygems
+gemspec :path => '.', :name => '#{gname}'
+
+RJack::TarPit.last_spec.dependencies.each do |d|
+  gem( d.name, :path => "../\#\{d.name\}" ) if d.name =~ /^iudex/
+end
+RUBY
+      end
+
+      system "jbundle install --path /home/david/.gem --local" or
+        raise "Failed with #{$?}"
+
+    end
+  end
+
+end
