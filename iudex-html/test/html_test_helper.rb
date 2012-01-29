@@ -19,16 +19,19 @@ require 'iudex-html/factory_helper'
 
 require 'iudex-filter/key_helper'
 
+require 'gravitext-xmlprod/extensions'
+
 module HTMLTestHelper
 
   include Gravitext::HTMap
   UniMap.define_accessors
 
+  include Gravitext::XMLProd
+
   include Iudex::Filter::Core
   include Iudex::HTML::Filters::FactoryHelper
 
   import 'com.gravitext.xml.tree.TreeUtils'
-  import 'com.gravitext.xml.producer.Indentor'
 
   import 'iudex.html.HTML'
   import 'iudex.html.HTMLUtils'
@@ -54,8 +57,7 @@ module HTMLTestHelper
 
   def assert_doc( html, root )
     html = compress( html )
-    assert_equal( html,
-                  TreeUtils::produceString( root, Indentor::COMPRESSED ) )
+    assert_equal( html, root.to_xml )
   end
 
   def assert_fragment( html, root, remove_padding = false )
