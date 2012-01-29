@@ -6,4 +6,5 @@ pom.xml
 lib/iudex-brutefuzzy-protobuf/base.rb
 lib/iudex-brutefuzzy-protobuf.rb
 proto/brutefuzzy.proto
+test/setup.rb
 test/test_protobuf.rb

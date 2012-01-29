@@ -12,7 +12,7 @@ RJack::TarPit.specify do |s|
 
   s.depend 'rjack-slf4j',           '~> 1.6.1'
   s.depend 'gravitext-util',        '~> 1.5.1'
-  s.depend 'iudex-http',            '~> 1.1.0'
+  s.depend 'iudex-http',            '~> 1.2.b'
 
   s.depend 'minitest',              '~> 2.3',       :dev
 

@@ -10,10 +10,10 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-worker',           '~> 1.1.0'
-  s.depend 'iudex-httpclient-3',     '~> 1.1.0'
-  s.depend 'iudex-jetty-httpclient', '~> 1.1.0'
-  s.depend 'iudex-async-httpclient', '~> 1.1.0'
+  s.depend 'iudex-worker',           '~> 1.2.b'
+  s.depend 'iudex-httpclient-3',     '~> 1.2.b'
+  s.depend 'iudex-jetty-httpclient', '~> 1.2.b'
+  s.depend 'iudex-async-httpclient', '~> 1.2.b'
 
   s.platform = :java
 end

@@ -1,2 +1,4 @@
+=== 1.2.b.0 (TBD)
+
 === 1.1.0 (2011-11-13)
 * Initial release with Iudex 1.1.x.

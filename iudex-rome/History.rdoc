@@ -1,3 +1,5 @@
+=== 1.2.b.0 (TBD)
+
 === 1.1.0 (2011-11-13)
 * Update to iudex-core ~> 1.1.0
 * Update to minitest ~> 2.3

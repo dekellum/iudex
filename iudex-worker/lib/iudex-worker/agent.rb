@@ -59,7 +59,7 @@ module Iudex
           @log.info "Setting up AsyncHTTPClient"
           AsyncHTTPClient.create_client( :executor_service => executor )
         else
-          gem     'iudex-httpclient-3', '~> 1.1.0'
+          gem     'iudex-httpclient-3', '~> 1.2.b'
           require 'iudex-httpclient-3'
           @log.info "Setting up HTTPClient3"
           @http_manager = HTTPClient3.create_manager

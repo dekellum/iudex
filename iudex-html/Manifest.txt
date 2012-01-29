@@ -21,4 +21,4 @@ test/test_other_tree_filters.rb
 test/test_parse_filter.rb
 test/test_tree_walker.rb
 test/test_word_counters.rb
-lib/iudex-html/iudex-html-1.1.0.jar
+lib/iudex-html/iudex-html-1.2.b.0.jar

@@ -1,3 +1,5 @@
+=== 1.2.b.0 (TBD)
+
 === 1.1.0 (2011-11-13)
 * New general ContentTypeSet with Content-Type match test.
 * ResponseHandler simplified to a single sessionCompleted() callback.
