@@ -1,26 +1,26 @@
 PATH
   remote: iudex
   specs:
-    iudex (1.1.0-java)
-      iudex-async-httpclient (~> 1.1.0)
-      iudex-httpclient-3 (~> 1.1.0)
-      iudex-jetty-httpclient (~> 1.1.0)
-      iudex-worker (~> 1.1.0)
+    iudex (1.2.b.0-java)
+      iudex-async-httpclient (~> 1.2.b)
+      iudex-httpclient-3 (~> 1.2.b)
+      iudex-jetty-httpclient (~> 1.2.b)
+      iudex-worker (~> 1.2.b)
 
 PATH
   remote: iudex-async-httpclient
   specs:
-    iudex-async-httpclient (1.1.0-java)
+    iudex-async-httpclient (1.2.b.0-java)
       hooker (~> 1.0.0)
-      iudex-http (~> 1.1.0)
+      iudex-http (~> 1.2.b)
       rjack-async-httpclient (~> 1.6.5)
 
 PATH
   remote: iudex-barc
   specs:
-    iudex-barc (1.1.0-java)
+    iudex-barc (1.2.b.0-java)
       gravitext-util (~> 1.5.1)
-      iudex-http (~> 1.1.0)
+      iudex-http (~> 1.2.b)
       rjack-slf4j (~> 1.6.1)
 
 PATH
@@ -34,8 +34,8 @@ PATH
   specs:
     iudex-brutefuzzy-service (1.0.0-java)
       iudex-brutefuzzy-protobuf (~> 1.0.0)
-      iudex-core (~> 1.1.0)
-      iudex-simhash (~> 1.1.0)
+      iudex-core (~> 1.2.b)
+      iudex-simhash (~> 1.2.b)
       rjack-jms (~> 1.1.0)
       rjack-logback (~> 1.0)
       rjack-qpid-client (~> 0.12.0)
@@ -43,28 +43,28 @@ PATH
 PATH
   remote: iudex-char-detector
   specs:
-    iudex-char-detector (1.1.0-java)
-      iudex-core (~> 1.1.0)
+    iudex-char-detector (1.2.b.0-java)
+      iudex-core (~> 1.2.b)
       rjack-icu (~> 4.8.0)
 
 PATH
   remote: iudex-core
   specs:
-    iudex-core (1.1.0-java)
+    iudex-core (1.2.b.0-java)
       gravitext-util (~> 1.5.1)
       hooker (~> 1.0.0)
-      iudex-barc (~> 1.1.0)
-      iudex-filter (~> 1.1.0)
-      iudex-http (~> 1.1.0)
+      iudex-barc (~> 1.2.b)
+      iudex-filter (~> 1.2.b)
+      iudex-http (~> 1.2.b)
       rjack-slf4j (~> 1.6.1)
 
 PATH
   remote: iudex-da
   specs:
-    iudex-da (1.1.1-java)
+    iudex-da (1.2.b.0-java)
       activerecord (~> 3.0.10)
       activerecord-jdbcpostgresql-adapter (~> 1.1.3)
-      iudex-core (~> 1.1.0)
+      iudex-core (~> 1.2.b)
       jdbc-postgres (~> 9.0.801)
       rjack-commons-dbcp (~> 1.4.0)
       rjack-commons-dbutils (~> 1.3.0)
@@ -72,29 +72,29 @@ PATH
 PATH
   remote: iudex-filter
   specs:
-    iudex-filter (1.1.0-java)
+    iudex-filter (1.2.b.0-java)
       gravitext-util (~> 1.5.1)
       rjack-slf4j (~> 1.6.1)
 
 PATH
   remote: iudex-html
   specs:
-    iudex-html (1.1.0-java)
+    iudex-html (1.2.b.0-java)
       gravitext-xmlprod (~> 1.4.0)
-      iudex-core (~> 1.1.0)
+      iudex-core (~> 1.2.b)
       rjack-nekohtml (~> 1.9.14)
 
 PATH
   remote: iudex-http
   specs:
-    iudex-http (1.1.0-java)
+    iudex-http (1.2.b.0-java)
       gravitext-util (~> 1.5.1)
       rjack-slf4j (~> 1.6.1)
 
 PATH
   remote: iudex-http-test
   specs:
-    iudex-http-test (1.1.0-java)
+    iudex-http-test (1.2.b.0-java)
       builder (~> 2.1.2)
       fishwife (~> 1.1.0)
       markaby (~> 0.7.1)
@@ -104,43 +104,43 @@ PATH
 PATH
   remote: iudex-httpclient-3
   specs:
-    iudex-httpclient-3 (1.1.0-java)
+    iudex-httpclient-3 (1.2.b.0-java)
       hooker (~> 1.0.0)
-      iudex-http (~> 1.1.0)
+      iudex-http (~> 1.2.b)
       rjack-httpclient-3 (~> 3.1.3)
 
 PATH
   remote: iudex-jetty-httpclient
   specs:
-    iudex-jetty-httpclient (1.1.0-java)
+    iudex-jetty-httpclient (1.2.b.0-java)
       hooker (~> 1.0.0)
-      iudex-http (~> 1.1.0)
+      iudex-http (~> 1.2.b)
       rjack-jetty (~> 7.5.2)
 
 PATH
   remote: iudex-rome
   specs:
-    iudex-rome (1.1.0-java)
-      iudex-core (~> 1.1.0)
+    iudex-rome (1.2.b.0-java)
+      iudex-core (~> 1.2.b)
       rjack-rome (~> 1.0.2)
 
 PATH
   remote: iudex-simhash
   specs:
-    iudex-simhash (1.1.0-java)
-      iudex-core (~> 1.1.0)
-      iudex-html (~> 1.1.0)
+    iudex-simhash (1.2.b.0-java)
+      iudex-core (~> 1.2.b)
+      iudex-html (~> 1.2.b)
 
 PATH
   remote: iudex-worker
   specs:
-    iudex-worker (1.1.0-java)
-      iudex-char-detector (~> 1.1.0)
-      iudex-core (~> 1.1.0)
-      iudex-da (~> 1.1.0)
-      iudex-html (~> 1.1.0)
-      iudex-rome (~> 1.1.0)
-      iudex-simhash (~> 1.1.0)
+    iudex-worker (1.2.b.0-java)
+      iudex-char-detector (~> 1.2.b)
+      iudex-core (~> 1.2.b)
+      iudex-da (~> 1.2.b)
+      iudex-html (~> 1.2.b)
+      iudex-rome (~> 1.2.b)
+      iudex-simhash (~> 1.2.b)
       rjack-logback (~> 1.0)
 
 GEM
