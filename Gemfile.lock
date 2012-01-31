@@ -170,7 +170,7 @@ GEM
     gravitext-util (1.6.b.0-java)
       rjack-logback (~> 1.0)
       rjack-slf4j (~> 1.6.1)
-    gravitext-xmlprod (1.5.b.0-java)
+    gravitext-xmlprod (1.5.b.1-java)
       gravitext-util (~> 1.6.b)
     hooker (1.0.0)
     i18n (0.5.0)

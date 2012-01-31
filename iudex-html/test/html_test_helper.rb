@@ -66,8 +66,7 @@ module HTMLTestHelper
 
   def assert_fragment_ws( html, root, remove_padding = false )
     html = html.gsub( /~+/, '' ) if remove_padding
-    assert_equal( html,
-      HTMLUtils::produceFragmentString( root, Indentor::COMPRESSED ) )
+    assert_equal( html, root.to_xml( :implied_ns => [ HTML::NS_XHTML ] ) )
   end
 
   def assert_transform( html, filter = nil, func = :walk_depth_first )
