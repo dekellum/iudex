@@ -3,6 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-html-perftest
 build/HTML.java.erb
 build/attributes
 build/java_generate.rb
@@ -11,6 +12,7 @@ lib/iudex-html/base.rb
 lib/iudex-html.rb
 lib/iudex-html/factory_helper.rb
 test/html_test_helper.rb
+test/reddit.xhtml
 test/setup.rb
 test/test_characters_normalizer.rb
 test/test_extract_filter.rb
@@ -19,6 +21,7 @@ test/test_html_parser.rb
 test/test_other_filters.rb
 test/test_other_tree_filters.rb
 test/test_parse_filter.rb
+test/test_stax_parser.rb
 test/test_tree_walker.rb
 test/test_word_counters.rb
 lib/iudex-html/iudex-html-1.2.b.0.jar

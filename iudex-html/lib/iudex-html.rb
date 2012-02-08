@@ -16,9 +16,10 @@
 
 require 'iudex-core'
 require 'gravitext-xmlprod'
+require 'gravitext-xmlprod/extensions'
 require 'rjack-nekohtml'
 
-require 'iudex-html/base.rb'
+require 'iudex-html/base'
 
 require 'java'
 
@@ -39,6 +40,12 @@ module Iudex
     module Tree
       import 'iudex.html.tree.HTMLTreeKeys'
       import 'iudex.html.tree.TreeFilterChain'
+      import 'iudex.html.tree.HTMLStAXConsumer'
+
+      def self.parse( input )
+        Gravitext::XMLProd::XMLHelper.
+          stax_parse_string( input, HTMLStAXConsumer.new )
+      end
 
       module Filters
         import 'iudex.html.tree.filters.AttributeCleaner'
