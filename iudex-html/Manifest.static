@@ -3,6 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-html-clean
 bin/iudex-html-perftest
 build/HTML.java.erb
 build/attributes
