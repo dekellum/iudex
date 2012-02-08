@@ -15,14 +15,6 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <repositories>
-    <repository>
-      <id>Sonatype</id>
-      <name>Sonatype Release</name>
-      <url>http://oss.sonatype.org/content/repositories/releases </url>
-    </repository>
-  </repositories>
-
   <dependencies>
 
     <dependency>
