@@ -75,6 +75,26 @@ HTML
     assert_doc( HTML_SKIP_TAGS_SKIPPED, parse( HTML_SKIP_TAGS, "ISO-8859-1" ) )
   end
 
+  def test_attr_duplicates
+    input = <<-HTML
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head/>
+  <body>
+    <p class="foo" class="bar">hello</p>
+  </body>
+</html>
+HTML
+    output = <<-HTML
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head/>
+  <body>
+    <p class="bar">hello</p>
+  </body>
+</html>
+HTML
+    assert_doc( output, parse( input ) )
+  end
+
   HTML_OUTSIDE = <<HTML
 before
 <html xmlns="http://www.w3.org/1999/xhtml">
