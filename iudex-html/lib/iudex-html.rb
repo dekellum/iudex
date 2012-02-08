@@ -18,7 +18,7 @@ require 'iudex-core'
 require 'gravitext-xmlprod'
 require 'rjack-nekohtml'
 
-require 'iudex-html/base.rb'
+require 'iudex-html/base'
 
 require 'java'
 
