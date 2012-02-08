@@ -291,8 +291,21 @@ public class NekoHTMLParser
                 final Attribute attr =
                     HTML.ATTRIBUTES.get( attributes.getLocalName( i ) );
                 if( attr != null ) {
-                    atts.add(
-                        new AttributeValue( attr, attributes.getValue( i ) ) );
+
+                    AttributeValue av =
+                        new AttributeValue( attr, attributes.getValue( i ) );
+
+                    // Neko will let through duplicate attributes. Last value
+                    // wins.
+                    int j = 0;
+                    while( j < atts.size() ) {
+                        if( atts.get( j ).attribute() == attr ) {
+                            atts.set( j, av );
+                            break;
+                        }
+                        ++j;
+                    }
+                    if( j == atts.size() ) atts.add( av );
                 }
             }
 
