@@ -3,6 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 pom.xml
+bin/iudex-html-clean
 build/HTML.java.erb
 build/attributes
 build/java_generate.rb
