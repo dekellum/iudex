@@ -1,4 +1,11 @@
 === 1.2.b.0 (TBD)
+* Fix duplicate attributes from Neko, last value wins.
+* Use Element.to_xml( :implied_ns ) from xmlprod 1.b.5.1 in tests.
+* Add StAX-based HTMLStAXConsumer for faster parsing of pre-cleaned,
+  trusted XHTML. Add Tree.parse ruby utility.  Unrecognized tags are
+  constructed as BANNED.
+* Add iudex-html-perftest (neko vs stax)
+* Add basic iudex-html-clean utility for ad hoc testing
 
 === 1.1.0 (2011-11-13)
 * Update to iudex-core ~> 1.1.0
