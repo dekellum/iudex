@@ -30,12 +30,15 @@ class TestStAXParser < MiniTest::Unit::TestCase
  </head>
  <body>
   <p>Iūdex test.</p>
+  <n:bogus xmlns:n="bogo">truely</n:bogus>
  </body>
 </html>
 HTML
 
-  def test_charset_same
-    assert_doc( HTML_FULL, parse( HTML_FULL, "UTF-8" ) )
+  def test_with_non_html
+    root = parse( HTML_FULL, "UTF-8" )
+    assert( root.find( 'body' ).find( 'bogus' ).tag.banned? )
+    assert_doc( HTML_FULL, root )
   end
 
   HTML_CDATA = {
@@ -59,8 +62,7 @@ HTML
 
   # Helper overrrides
   def parse( html, charset = "UTF-8" )
-    source = HTMLStAXUtils.staxInput( compress( html ).to_java_bytes )
-    HTMLStAXUtils.staxParse( source )
+    Iudex::HTML::Tree.parse( compress( html ) )
   end
 
 end

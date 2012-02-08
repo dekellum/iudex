@@ -16,30 +16,37 @@
 
 package iudex.html.tree;
 
+import java.util.Collections;
+
 import iudex.html.HTML;
 import iudex.html.HTMLTag;
 
 import javax.xml.stream.XMLStreamReader;
 
 import com.gravitext.xml.producer.Attribute;
+import com.gravitext.xml.producer.Namespace;
 import com.gravitext.xml.tree.Element;
 import com.gravitext.xml.tree.StAXConsumer;
 
 /**
- * StaxConsumer building a Node tree using HTML tags,attributes. Note that
- * error handling is brutal in this implementation. Use the NekoHTMLParser for
- * suspect HTML input.
+ * StaxConsumer building a Node tree using HTML tags, attributes. If tags are
+ * not known in advance, they will be created on the fly (inefficiently) as
+ * BANNED tags. Unrecognized attributes will be dropped.
  */
 public class HTMLStAXConsumer extends StAXConsumer
 {
     @Override
+    @SuppressWarnings("unchecked")
     protected Element createElement( XMLStreamReader sr )
     {
         HTMLTag tag = HTML.TAGS.get( sr.getLocalName() );
-        if( tag == null ) {
-            throw new IllegalStateException
-                ( "Tag [" + sr.getLocalName() + "] is not a known HTML tag." );
 
+        if( tag == null ) {
+            tag = new HTMLTag( sr.getLocalName(),
+                               new Namespace( sr.getPrefix(),
+                                              sr.getNamespaceURI() ),
+                               Collections.EMPTY_LIST,
+                               HTMLTag.Flag.BANNED );
         }
         Element element = new Element( tag );
 
@@ -49,14 +56,6 @@ public class HTMLStAXConsumer extends StAXConsumer
     @Override
     protected Attribute findAttribute( XMLStreamReader sr, int i )
     {
-        final Attribute attr =
-            HTML.ATTRIBUTES.get( sr.getAttributeLocalName( i ) );
-
-        if( attr == null ) {
-            throw new IllegalStateException
-            ( "Attribute [" + sr.getAttributeLocalName( i ) +
-              "] is not a known HTML attribute." );
-        }
-        return attr;
+        return HTML.ATTRIBUTES.get( sr.getAttributeLocalName( i ) );
     }
 }
