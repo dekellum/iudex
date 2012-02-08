@@ -40,8 +40,9 @@ class HTMLPerfTest
   end
 
   def create_tests
-    html = IO.read( File.join( File.dirname( __FILE__ ),
-                               '../test/reddit.xhtml' ) )
+    input = ARGV.first ||
+      File.join( File.dirname( __FILE__ ), '../test/reddit.xhtml' )
+    html = IO.read( input )
 
     [ BlockTestFactory.new( 'neko' ) do
         source = HTMLUtils::source( html.to_java_bytes, 'UTF-8' )
