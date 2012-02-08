@@ -48,8 +48,7 @@ class HTMLPerfTest
         HTMLUtils::parse( source ).children.length
       end,
       BlockTestFactory.new( 'stax' ) do
-        source = HTMLStAXUtils.staxInput( html.to_java_bytes )
-        HTMLStAXUtils.staxParse( source ).children.length
+        Iudex::HTML::Tree.parse( html ).children.length
       end
     ]
   end
