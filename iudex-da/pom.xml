@@ -51,9 +51,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql-jdbc4</artifactId>
-      <version>[8.4.702,9.0.9999]</version>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.0-801.jdbc4</version>
       <scope>test</scope>
     </dependency>
 
