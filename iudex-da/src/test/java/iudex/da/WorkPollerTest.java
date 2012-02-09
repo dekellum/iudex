@@ -68,6 +68,6 @@ public class WorkPollerTest
             _log.info( w.toString() );
         }
     }
-    public final Logger _log = LoggerFactory.getLogger( getClass() );
 
+    public final Logger _log = LoggerFactory.getLogger( getClass() );
 }
