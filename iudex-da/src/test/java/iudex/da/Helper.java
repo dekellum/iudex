@@ -29,7 +29,7 @@ import java.util.Date;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.QueryRunner;
-import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import com.gravitext.htmap.UniMap;
@@ -40,18 +40,13 @@ public class Helper
     public static void setup() throws SQLException
     {
         _dataSource = DataSourceFactory.create();
+    }
+
+    @Before
+    public void clear() throws SQLException
+    {
         QueryRunner runner = new QueryRunner( _dataSource );
         runner.update( "DELETE from urls;" );
-    }
-
-    @AfterClass
-    public static void close()
-    {
-    }
-
-    public void testEmpty()
-    {
-        // make mvn/junit happy.
     }
 
     protected static DataSource dataSource()
