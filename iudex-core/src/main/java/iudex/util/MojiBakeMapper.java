@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.gravitext.util.ResizableCharBuffer;
+
 public class MojiBakeMapper
 {
     public MojiBakeMapper( String regex,
@@ -30,25 +32,26 @@ public class MojiBakeMapper
         _mojis = new HashMap<String,String>( mojis );
     }
 
-    public CharSequence recover( CharSequence in )
+    public CharSequence recover( final CharSequence in )
     {
-        Matcher m = _mojiPattern.matcher( in );
-        StringBuilder out = new StringBuilder( in.length() );
+        final Matcher m = _mojiPattern.matcher( in );
+        ResizableCharBuffer out = null;
         int last = 0;
         while( m.find() ) {
+            if( out == null ) out = new ResizableCharBuffer( in.length() );
             out.append( in, last, m.start() );
             String moji = in.subSequence( m.start(), m.end() ).toString();
             out.append( _mojis.get( moji ) );
             last = m.end();
         }
-        out.append( in, last, in.length() );
-
-        if( out.length() < in.length() ) {
-            return recover( out );
+        if( out != null ) {
+            out.append( in, last, in.length() );
+            if( out.position() < in.length() ) {
+                return recover( out.flipAsCharBuffer() );
+            }
+            return out.flipAsCharBuffer();
         }
-        else {
-            return out;
-        }
+        return in;
     }
 
     private final Pattern _mojiPattern;
