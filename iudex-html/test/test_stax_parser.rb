@@ -23,6 +23,8 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 class TestStAXParser < MiniTest::Unit::TestCase
   include HTMLTestHelper
 
+  import 'javax.xml.stream.XMLStreamException'
+
   HTML_FULL = <<HTML
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>
@@ -58,7 +60,15 @@ HTML
     assert_fragment( html[ :out ], tree )
   end
 
-  import 'iudex.html.tree.HTMLStAXUtils'
+  def test_invalid_error
+    assert_raises( XMLStreamException ) do
+      Iudex::HTML::Tree.parse( "" )
+    end
+
+    assert_raises( XMLStreamException ) do
+      Iudex::HTML::Tree.parse( "<doc><open></doc>" )
+    end
+  end
 
   # Helper overrrides
   def parse( html, charset = "UTF-8" )
