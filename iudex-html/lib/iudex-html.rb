@@ -41,7 +41,10 @@ module Iudex
       import 'iudex.html.tree.HTMLTreeKeys'
       import 'iudex.html.tree.TreeFilterChain'
       import 'iudex.html.tree.HTMLStAXConsumer'
+      import 'javax.xml.stream.XMLStreamException'
 
+      # Parse the input String using HTMLStAXConsumer, HTMLTag.
+      # Raises XMLStreamException on parse error
       def self.parse( input )
         Gravitext::XMLProd::XMLHelper.
           stax_parse_string( input, HTMLStAXConsumer.new )

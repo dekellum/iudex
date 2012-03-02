@@ -43,14 +43,28 @@ public class HTMLStAXConsumer extends StAXConsumer
 
         if( tag == null ) {
             tag = new HTMLTag( sr.getLocalName(),
-                               new Namespace( sr.getPrefix(),
-                                              sr.getNamespaceURI() ),
+                               namespace( sr ),
                                Collections.EMPTY_LIST,
                                HTMLTag.Flag.BANNED );
         }
         Element element = new Element( tag );
 
         return element;
+    }
+
+    private Namespace namespace( XMLStreamReader sr )
+    {
+        String iri = sr.getNamespaceURI();
+        if( ( iri == null ) || ( iri.isEmpty() ) ) {
+            return HTML.NS_XHTML;
+        }
+
+        String prefix = sr.getPrefix();
+        if( ( prefix == null ) || prefix.isEmpty() ) {
+            prefix = Namespace.DEFAULT;
+        }
+
+        return new Namespace( prefix, iri );
     }
 
     @Override
