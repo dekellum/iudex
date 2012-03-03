@@ -105,7 +105,11 @@ class TestVisitURL < MiniTest::Unit::TestCase
       begin
         flunk "[#{raw}] normalized to [#{VisitURL.normalize( raw )}]"
       rescue NativeException => e
-        pass if e.cause.is_a?( VisitURL::SyntaxException )
+        if e.cause.is_a?( VisitURL::SyntaxException )
+          pass
+        else
+          raise e
+        end
       end
     end
 
