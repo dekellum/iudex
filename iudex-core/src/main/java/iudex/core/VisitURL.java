@@ -28,8 +28,8 @@ import java.security.NoSuchAlgorithmException;
 import com.gravitext.util.URL64;
 
 /**
- * Immutable URL representation encapsulates URL/URI parsing, normalization,
- * and hashing.
+ * Immutable URL representation encapsulates URL/URI parsing,
+ * normalization, and hashing.
  */
 public final class VisitURL
     implements Comparable<VisitURL>
@@ -40,6 +40,11 @@ public final class VisitURL
         public SyntaxException( Throwable cause )
         {
             super( cause );
+        }
+
+        public SyntaxException( String message )
+        {
+            super( message );
         }
 
         private static final long serialVersionUID = 1L;
@@ -70,9 +75,10 @@ public final class VisitURL
     }
 
     /**
-     * Return VisitURL from normalizing rawURL as from an untrusted source
-     * (i.e. the web).
-     * @throws SyntaxException if rawURL can not be salvaged/parsed as a URL.
+     * Return VisitURL from normalizing rawURL as from an untrusted
+     * source (i.e. the web).
+     * @throws SyntaxException if rawURL can not be salvaged/parsed as
+     *         a valid HTTP URL.
      */
     public static VisitURL normalize( CharSequence rawURL )
         throws SyntaxException
@@ -209,7 +215,7 @@ public final class VisitURL
         return cbuff;
     }
 
-    static URI normalize( URI uri ) throws URISyntaxException
+    static URI normalize( URI uri ) throws URISyntaxException, SyntaxException
     {
         //FIXME: See also http://en.wikipedia.org/wiki/URL_normalization
 
@@ -219,15 +225,29 @@ public final class VisitURL
 
         // Lower case the scheme
         String scheme = uri.getScheme();
-        if( scheme != null ) scheme = scheme.toLowerCase();
+        if( scheme == null ) {
+            throw new SyntaxException( "No URI scheme for [" + uri + "]" );
+        }
+        scheme = scheme.toLowerCase();
+        if( !( "http".equals( scheme ) || "https".equals( scheme ) ) ) {
+            throw new SyntaxException( "Non-HTTP scheme [" + uri + "]" );
+        }
 
         // Lower case the host
         String host = uri.getHost();
         //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
-        if( host != null ) host = Domains.normalize( host );
+        if( host == null ) {
+            throw new SyntaxException( "No host in [" + uri + "]" );
+        }
+        host = Domains.normalize( host );
+
+        int port = uri.getPort();
+        if( port == 0 || port > 65535 ) {
+            throw new SyntaxException(
+                "Invalid port " + port + " in [" + uri + "]" );
+        }
 
         // Drop superfluous port assignments
-        int port = uri.getPort();
         if( ( "http".equals(  scheme ) && port ==  80 ) ||
             ( "https".equals( scheme ) && port == 443 ) ) {
             port = -1;

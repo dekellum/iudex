@@ -40,6 +40,11 @@ class TestVisitURL < MiniTest::Unit::TestCase
 
              %w[ http://h.c/    http://h.c ],
 
+             %w[ http://127.0.0.1/ http://127.0.0.1:80 ],
+
+             %w[ https://h.c/   httpS://h.c:443/
+                                httpS://h.c:443 ],
+
              %w[ http://h.c/?x=a%26b http://h.c/?x=a%26b ],
 
              [ "http://h.c/foo", " \thttp://h.c/foo\n\r\t" ],
@@ -67,6 +72,43 @@ class TestVisitURL < MiniTest::Unit::TestCase
         assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
+  end
+
+  def test_bad_urls
+    bads =   [ '',
+               ' ',
+               '.',
+               ':',
+               '\\',
+               '\/' ] +
+           %w[ bogus
+               bogus:
+               bogus:/
+               bogus:/bar
+               http
+               http:
+               http:/
+               http://
+               http:///
+               http:///path/
+               http://\[h/
+               http://h\]/
+               http://::/
+               http://[:]/
+               http://wonkie\biz
+               http://wonkie/biz\ness
+               https://h.c:-33/
+               https://h.c:0/
+               https://h.c:65537/ ]
+
+    bads.each do |raw|
+      begin
+        flunk "[#{raw}] normalized to [#{VisitURL.normalize( raw )}]"
+      rescue NativeException => e
+        pass if e.cause.is_a?( VisitURL::SyntaxException )
+      end
+    end
+
   end
 
   def test_normalize_escape_case
