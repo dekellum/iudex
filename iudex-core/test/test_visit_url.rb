@@ -50,9 +50,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
                                          "http://h.c/foo?q=a\t b#anchor\t" ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -62,9 +62,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
     sets = [ %w[ http://h.c/f%C5%8Do HTTP://h.c/fōo ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -79,9 +79,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
              %w[ http://h.c/a%5Bb%5D http://h.c/a[b] ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -92,9 +92,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
     sets = [ %w[ http://xn--bcher-kva.ch/ http://Bücher.ch ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -138,11 +138,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
              %w[ http://h.c/foo/bar?q=1 http://h.c/foo/   ./bar?q=1 ] ]
 
     sets.each do |e,b,r|
-      expected = VisitURL.normalize( e )
       base = VisitURL.normalize( b )
       resolved = base.resolve( r )
-
-      assert_equal( expected.to_s, resolved.to_s, [ e,b,r ].inspect )
+      assert_equal( e, resolved.to_s, [ e,b,r ].inspect )
     end
 
   end
