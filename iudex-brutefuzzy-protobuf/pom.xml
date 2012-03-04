@@ -3,7 +3,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-brutefuzzy-protobuf</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0</version>
+  <version>1.2.b.0</version>
   <name>Iudex BruteFuzzy Service Protocol Buffers</name>
 
   <parent>

@@ -26,14 +26,14 @@ PATH
 PATH
   remote: iudex-brutefuzzy-protobuf
   specs:
-    iudex-brutefuzzy-protobuf (1.0.0-java)
+    iudex-brutefuzzy-protobuf (1.2.b.0-java)
       rjack-protobuf (~> 2.4.1)
 
 PATH
   remote: iudex-brutefuzzy-service
   specs:
-    iudex-brutefuzzy-service (1.0.0-java)
-      iudex-brutefuzzy-protobuf (~> 1.0.0)
+    iudex-brutefuzzy-service (1.2.b.0-java)
+      iudex-brutefuzzy-protobuf (~> 1.2.b)
       iudex-core (~> 1.2.b)
       iudex-simhash (~> 1.2.b)
       rjack-jms (~> 1.1.0)

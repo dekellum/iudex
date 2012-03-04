@@ -3,7 +3,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-brutefuzzy-service</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0</version>
+  <version>1.2.b.0</version>
   <name>Iudex BruteFuzzy Service</name>
 
   <parent>
@@ -24,7 +24,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-brutefuzzy-protobuf</artifactId>
-      <version>[1.0,1.1)</version>
+      <version>[1.2,1.2.9999)</version>
     </dependency>
 
     <dependency>
