@@ -3,6 +3,7 @@ PATH
   specs:
     iudex (1.2.b.0-java)
       iudex-async-httpclient (~> 1.2.b)
+      iudex-brutefuzzy-service (~> 1.2.b)
       iudex-httpclient-3 (~> 1.2.b)
       iudex-jetty-httpclient (~> 1.2.b)
       iudex-worker (~> 1.2.b)

@@ -14,6 +14,7 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-httpclient-3',     '~> 1.2.b'
   s.depend 'iudex-jetty-httpclient', '~> 1.2.b'
   s.depend 'iudex-async-httpclient', '~> 1.2.b'
+  s.depend 'iudex-brutefuzzy-service', '~> 1.2.b'
 
   s.platform = :java
 end
