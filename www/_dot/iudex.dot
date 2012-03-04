@@ -14,6 +14,8 @@ digraph "iudex-gems" {
   rome        [ label=<iudex<br/>rome> ];
   simhash     [ label=<iudex<br/>simhash> ];
   worker      [ label=<iudex<br/>worker> ];
+  bf_protobuf [ label=<iudex<br/>brutefuzzy<br/>protobuf> ];
+  bf_service  [ label=<iudex<br/>brutefuzzy<br/>service> ];
 
   http             [ label=<iudex<br/>http> ];
   httpclient_3     [ label=<iudex<br/>httpclient-3<br/>> ];
@@ -49,6 +51,9 @@ digraph "iudex-gems" {
   worker      -> rome
   worker      -> simhash
 #  worker      -> core
+
+  bf_service  -> simhash
+  bf_service  -> bf_protobuf
 
 #  char_detect -> filter
 #  core        -> simhash
