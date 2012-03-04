@@ -21,7 +21,8 @@ import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
 
-import java.util.concurrent.Semaphore;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
@@ -108,9 +109,8 @@ public class Client implements SessionStateFactory<Client.State>
         {
             super( context, connection );
 
-            Destination requestQ =
-                context.lookupDestination( "iudex-brutefuzzy-request" );
-            _producer = session().createProducer( requestQ );
+            _requestQ = context.lookupDestination( "iudex-brutefuzzy-request" );
+            _producer = session().createProducer( _requestQ );
 
             Destination responseQ =
                 context.lookupDestination( "iudex-brutefuzzy-listener" );
@@ -144,9 +144,6 @@ public class Client implements SessionStateFactory<Client.State>
                 if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
                 else _log.error( "onMessage: {}", x.toString() );
             }
-            finally {
-                _semaphore.release();
-            }
         }
 
         private void onResponse( Response response )
@@ -165,16 +162,65 @@ public class Client implements SessionStateFactory<Client.State>
             BytesMessage response = session().createBytesMessage();
             response.writeBytes( bldr.build().toByteArray() );
 
-            //FIXME: Replace with proper flow control?
-            _semaphore.tryAcquire( 1, TimeUnit.SECONDS );
+            send( response );
+        }
+
+        private void send( BytesMessage response )
+            throws JMSException, InterruptedException
+        {
+            while( _depth < 0 || _depth >= _highDepth ) {
+                _depth = checkDepth();
+                if( _depth >= _highDepth ) {
+                    _log.info( "Sleeping {}ms until depth {} < {}",
+                                new Object[] { _waitTime, _depth, _highDepth } );
+                    Thread.sleep( _waitTime );
+                }
+            }
 
             _producer.send( response );
+            ++_depth;
+        }
+
+        private long checkDepth() throws JMSException
+        {
+            // QPID implements int getQueueDepth( Destination ) but
+            // we don't want the QPID java dependency here, so call via
+            // reflection. Would have been seamless in jruby.
+            try {
+                Method m = session().getClass().
+                           getMethod( "getQueueDepth",
+                                      _requestQ.getClass().getSuperclass() );
+                return (Long) m.invoke( session(), _requestQ );
+            }
+            catch( NoSuchMethodException e ) {
+                throw new RuntimeException( e );
+            }
+            catch( SecurityException e ) {
+                throw new RuntimeException( e );
+            }
+            catch( IllegalAccessException e ) {
+                throw new RuntimeException( e );
+            }
+            catch( IllegalArgumentException e ) {
+                throw new RuntimeException( e );
+            }
+            catch( InvocationTargetException e ) {
+                if( e.getCause() instanceof JMSException ) {
+                    throw (JMSException) e.getCause();
+                }
+                else {
+                    throw new RuntimeException( e );
+                }
+            }
         }
 
         private final MessageProducer _producer;
-        private final Semaphore _semaphore = new Semaphore( 10000 );
+        private Destination _requestQ;
+        private long _depth = -1;
+        private int _waitTime = 100; //ms
     }
 
     private final SessionExecutor<State> _executor;
+    private final int _highDepth = 2000;
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
