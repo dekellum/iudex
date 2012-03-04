@@ -15,7 +15,6 @@ digraph "iudex-gems" {
   simhash     [ label=<iudex<br/>simhash> ];
   worker      [ label=<iudex<br/>worker> ];
 
-# subgraph cluster_http { style=invis };
   http             [ label=<iudex<br/>http> ];
   httpclient_3     [ label=<iudex<br/>httpclient-3<br/>> ];
   jetty_httpclient [ label=<iudex<br/>jetty-httpclient<br/>> ];
@@ -51,22 +50,10 @@ digraph "iudex-gems" {
   worker      -> simhash
 #  worker      -> core
 
-#  barc        -> "gravitext-util"
-#  barc        -> "rjack-slf4j"
 #  char_detect -> filter
-#  core        -> "gravitext-util"
-#  core        -> "rjack-logback"
-#  core        -> "rjack-slf4j"
 #  core        -> simhash
-#  da          -> "gravitext-util"
-#  da          -> "rjack-slf4j"
 #  da          -> filter
-#  filter      -> "gravitext-util"
-#  filter      -> "rjack-logback"
-#  filter      -> "rjack-slf4j"
 #  html        -> filter
-#  http        -> "gravitext-util"
-#  http        -> "rjack-slf4j"
 #  simhash     -> filter
 #  worker      -> core
 
