@@ -21,8 +21,6 @@ import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
@@ -43,6 +41,10 @@ import rjack.jms.SessionExecutor;
 import rjack.jms.SessionState;
 import rjack.jms.SessionStateFactory;
 import rjack.jms.SessionTask;
+
+import org.apache.qpid.AMQException;
+import org.apache.qpid.client.AMQDestination;
+import org.apache.qpid.client.AMQSession;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -171,8 +173,8 @@ public class Client implements SessionStateFactory<Client.State>
             while( _depth < 0 || _depth >= _highDepth ) {
                 _depth = checkDepth();
                 if( _depth >= _highDepth ) {
-                    _log.info( "Sleeping {}ms until depth {} < {}",
-                                new Object[] { _waitTime, _depth, _highDepth } );
+                    _log.debug( "Sleeping {}ms until depth {} < {}",
+                                new Object[] {_waitTime, _depth, _highDepth} );
                     Thread.sleep( _waitTime );
                 }
             }
@@ -183,34 +185,13 @@ public class Client implements SessionStateFactory<Client.State>
 
         private long checkDepth() throws JMSException
         {
-            // QPID implements int getQueueDepth( Destination ) but
-            // we don't want the QPID java dependency here, so call via
-            // reflection. Would have been seamless in jruby.
+            // QPid specific getQueueDepth method.
             try {
-                Method m = session().getClass().
-                           getMethod( "getQueueDepth",
-                                      _requestQ.getClass().getSuperclass() );
-                return (Long) m.invoke( session(), _requestQ );
+                return ((AMQSession) session()).
+                    getQueueDepth( (AMQDestination) _requestQ );
             }
-            catch( NoSuchMethodException e ) {
-                throw new RuntimeException( e );
-            }
-            catch( SecurityException e ) {
-                throw new RuntimeException( e );
-            }
-            catch( IllegalAccessException e ) {
-                throw new RuntimeException( e );
-            }
-            catch( IllegalArgumentException e ) {
-                throw new RuntimeException( e );
-            }
-            catch( InvocationTargetException e ) {
-                if( e.getCause() instanceof JMSException ) {
-                    throw (JMSException) e.getCause();
-                }
-                else {
-                    throw new RuntimeException( e );
-                }
+            catch( AMQException e ) {
+                throw new JMSException( e.toString() );
             }
         }
 

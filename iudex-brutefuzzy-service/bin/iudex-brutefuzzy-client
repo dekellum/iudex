@@ -141,7 +141,7 @@ BANNER
     keys.each do |k|
       @client.check( k, true )
       @cnt += 1
-      @log.info( "Sent: #{ @cnt }" ) if ( @cnt % 100_000 ) == 0
+      @log.info( "Sent: #{ @cnt }" ) if ( @cnt % 50_000 ) == 0
     end
   end
 
