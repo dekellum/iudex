@@ -162,13 +162,13 @@ public class Client implements SessionStateFactory<Client.State>
             bldr.setAction( doAdd ? RequestAction.ADD :
                                     RequestAction.CHECK_ONLY );
 
-            BytesMessage response = session().createBytesMessage();
-            response.writeBytes( bldr.build().toByteArray() );
+            BytesMessage msg = session().createBytesMessage();
+            msg.writeBytes( bldr.build().toByteArray() );
 
-            send( response );
+            send( msg );
         }
 
-        private void send( BytesMessage response )
+        private void send( BytesMessage msg )
             throws JMSException, InterruptedException
         {
             while( _depth < 0 || _depth >= _highDepth ) {
@@ -180,7 +180,7 @@ public class Client implements SessionStateFactory<Client.State>
                 }
             }
 
-            _producer.send( response );
+            _producer.send( msg );
             ++_depth;
         }
 
