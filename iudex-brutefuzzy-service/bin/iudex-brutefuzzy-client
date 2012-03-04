@@ -106,8 +106,11 @@ BANNER
       with_client do
         if ( n = options[ :add_random_keys ] )
           random_keys( n ) { |keys| check_batch( keys ) }
-        else
+        elsif ! ARGV.empty?
           keys_from_files( ARGV ) { |keys| check_batch( keys ) }
+        else # client (response listener) only
+          @client.check( 0, false ) # Hack to initialize
+          sleep # until interrupted
         end
       end
     end
