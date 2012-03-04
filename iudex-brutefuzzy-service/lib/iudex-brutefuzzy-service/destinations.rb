@@ -29,7 +29,7 @@ module Iudex::BruteFuzzy::Service
           :type       => :queue,
           'x-declare' => {
             :arguments => {
-              'qpid.max_size'    => 200_000,
+              'qpid.max_size'    => 500_000,
               'qpid.policy_type' => :reject,
             }
           }
@@ -59,7 +59,7 @@ module Iudex::BruteFuzzy::Service
           'x-declare'  => {
             'auto-delete' => true,
             :arguments    => {
-              'qpid.max_size'    => 200_000,
+              'qpid.max_size'    => 500_000,
               'qpid.policy_type' => :ring,
             }
           }
