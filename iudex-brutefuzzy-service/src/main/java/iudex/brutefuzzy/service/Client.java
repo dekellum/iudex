@@ -125,7 +125,6 @@ public class Client implements SessionStateFactory<Client.State>
         public void onMessage( Message msg )
         {
             try {
-                msg.acknowledge();
                 if( msg instanceof BytesMessage ) {
                     BytesMessage bmsg = (BytesMessage) msg;
                     byte[] body = new byte[ (int) bmsg.getBodyLength() ];

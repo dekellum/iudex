@@ -84,7 +84,6 @@ public class Service
                 _log.error( "Received invalid message type: {}",
                             msg.getClass().getName() );
             }
-            msg.acknowledge();
         }
         catch( JMSException x ) {
             if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
