@@ -59,10 +59,10 @@ public class Service
         _session = context.createSession( connection );
 
         Destination requestQueue =
-            context.lookupDestination( "iudex-brutefuzzy-request" );
+            context.lookupDestination( "brutefuzzy-request" );
 
         Destination responseDest =
-            context.lookupDestination( "iudex-brutefuzzy-response" );
+            context.lookupDestination( "brutefuzzy-response-ex" );
 
         _producer = _session.createProducer( responseDest );
 

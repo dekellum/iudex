@@ -18,13 +18,24 @@ module Iudex::BruteFuzzy::Service
 
   module Destinations
 
-    # http://apache-qpid-users.2158936.n2.nabble.com/JMS-Dyname-Ring-Queues-td5813023.html
-
     def self.apply( ctx )
 
-      ctx.destinations[ 'iudex-brutefuzzy-request' ] = {
-        :assert => :receiver,
-        :create => :receiver,
+      ctx.destinations[ 'brutefuzzy-response-ex' ] = {
+        :assert => :sender,
+        :create => :sender,
+        :node   => {
+          :type       => :topic,
+          'x-declare' => {
+            :type     => :fanout,
+          }
+        }
+      }
+
+      # Direct request writes are are needed for querying depth
+      # (explicit flow control). Thus no exchange here.
+      ctx.destinations[ 'brutefuzzy-request' ] = {
+        :assert => :always,
+        :create => :always,
         :node   => {
           :type       => :queue,
           'x-declare' => {
@@ -36,26 +47,14 @@ module Iudex::BruteFuzzy::Service
         }
       }
 
-      ctx.destinations[ 'iudex-brutefuzzy-response' ] = {
-        :assert => :sender,
-        :create => :sender,
-        :node   => {
-          :type       => :topic,
-          'x-declare' => {
-            :type     => :fanout,
-            :exchange => 'iudex-brutefuzzy-response'
-          }
-        }
-      }
-
-      ctx.destinations[ 'iudex-brutefuzzy-listener' ] = {
-        :address => ctx.address_per_process( 'iudex-brutefuzzy-listener' ),
+      ctx.destinations[ 'brutefuzzy-client' ] = {
+        :address => ctx.address_per_process( 'brutefuzzy-client' ),
         :assert  => :receiver,
         :create  => :receiver,
-        :delete  => :receiver, #FIXME: No-Op?
+        :delete  => :receiver,
         :node    => {
           :type        => :queue,
-          'x-bindings' => [ { :exchange => 'iudex-brutefuzzy-response' } ],
+          'x-bindings' => [ { :exchange => 'brutefuzzy-response-ex' } ],
           'x-declare'  => {
             'auto-delete' => true,
             :arguments    => {

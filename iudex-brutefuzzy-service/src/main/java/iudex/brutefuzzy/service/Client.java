@@ -66,7 +66,7 @@ public class Client implements SessionStateFactory<Client.State>
     {
         _executor.shutdown();
         try {
-            _executor.awaitTermination( 10, TimeUnit.SECONDS );
+            _executor.awaitTermination( 60, TimeUnit.SECONDS );
         }
         catch( InterruptedException e ) {
             Thread.currentThread().interrupt();
@@ -111,11 +111,12 @@ public class Client implements SessionStateFactory<Client.State>
         {
             super( context, connection );
 
-            _requestQ = context.lookupDestination( "iudex-brutefuzzy-request" );
+            // Direct request (not through exchange) needed for depth control
+            _requestQ = context.lookupDestination( "brutefuzzy-request" );
             _producer = session().createProducer( _requestQ );
 
             Destination responseQ =
-                context.lookupDestination( "iudex-brutefuzzy-listener" );
+                context.lookupDestination( "brutefuzzy-client" );
 
             session().createConsumer( responseQ ).setMessageListener( this );
         }
