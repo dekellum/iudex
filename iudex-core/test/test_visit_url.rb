@@ -40,6 +40,11 @@ class TestVisitURL < MiniTest::Unit::TestCase
 
              %w[ http://h.c/    http://h.c ],
 
+             %w[ http://127.0.0.1/ http://127.0.0.1:80 ],
+
+             %w[ https://h.c/   httpS://h.c:443/
+                                httpS://h.c:443 ],
+
              %w[ http://h.c/?x=a%26b http://h.c/?x=a%26b ],
 
              [ "http://h.c/foo", " \thttp://h.c/foo\n\r\t" ],
@@ -50,9 +55,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
                                          "http://h.c/foo?q=a\t b#anchor\t" ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -62,11 +67,80 @@ class TestVisitURL < MiniTest::Unit::TestCase
     sets = [ %w[ http://h.c/f%C5%8Do HTTP://h.c/fōo ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
+  end
+
+  def test_bad_urls
+    bads =   [ '',
+               ' ',
+               '.',
+               ':',
+               '\\',
+               '\/' ] +
+           %w[ bogus
+               bogus:
+               bogus:/
+               bogus:/bar
+               http
+               http:
+               http:/
+               http://
+               http:///
+               http:///path/
+               http://\[h/
+               http://h\]/
+               http://::/
+               http://[:]/
+               http://wonkie\biz
+               http://wonkie/biz\ness
+               https://h.c:-33/
+               https://h.c:0/
+               https://h.c:65537/ ]
+
+    bads.each do |raw|
+      begin
+        flunk "[#{raw}] normalized to [#{VisitURL.normalize( raw )}]"
+      rescue NativeException => e
+        if e.cause.is_a?( VisitURL::SyntaxException )
+          pass
+        else
+          raise e
+        end
+      end
+    end
+
+  end
+
+  def test_ipv6
+    # Demonstrate validity from a URI perspective, but likely want to
+    # post-filter these.
+    # http://www.ietf.org/rfc/rfc2732.txt
+    sets = [
+      %w[ http://[fedc:ba98:7654:3210:fedc:ba98:7654:3210]/index.html
+          http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80/index.html ],
+      %w[ http://[1080:0:0:0:8:800:200c:417a]/index.html ],
+      %w[ http://[3ffe:2a00:100:7031::1]/
+          http://[3ffe:2a00:100:7031::1] ],
+      %w[ http://[1080::8:800:200c:417a]/foo ],
+      %w[ http://[::]/ ], #FIXME: Unspecified or multicast
+      %w[ http://[::192.9.5.5]/ipng ],
+      %w[ http://[::ffff:129.144.52.38]/index.html
+          http://[::FFFF:129.144.52.38]:80/index.html ],
+      %w[ http://[2010:836b:4179::836b:4179]/
+          http://[2010:836B:4179::836B:4179] ] ]
+
+    sets.each do |tset|
+      expected = tset.shift
+      tset = [ expected ] if tset.empty? #identity test
+      tset.each do |raw|
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
+      end
+    end
+
   end
 
   def test_normalize_escape_case
@@ -79,9 +153,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
              %w[ http://h.c/a%5Bb%5D http://h.c/a[b] ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -92,9 +166,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
     sets = [ %w[ http://xn--bcher-kva.ch/ http://Bücher.ch ] ]
 
     sets.each do |tset|
-      expected = VisitURL.normalize( tset.shift )
+      expected = tset.shift
       tset.each do |raw|
-        assert_equal( expected.to_s, VisitURL.normalize( raw ).to_s )
+        assert_equal( expected, VisitURL.normalize( raw ).to_s )
       end
     end
   end
@@ -138,11 +212,9 @@ class TestVisitURL < MiniTest::Unit::TestCase
              %w[ http://h.c/foo/bar?q=1 http://h.c/foo/   ./bar?q=1 ] ]
 
     sets.each do |e,b,r|
-      expected = VisitURL.normalize( e )
       base = VisitURL.normalize( b )
       resolved = base.resolve( r )
-
-      assert_equal( expected.to_s, resolved.to_s, [ e,b,r ].inspect )
+      assert_equal( e, resolved.to_s, [ e,b,r ].inspect )
     end
 
   end
