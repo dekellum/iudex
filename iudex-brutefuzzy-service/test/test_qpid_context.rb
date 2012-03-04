@@ -32,8 +32,9 @@ class TestQpidContext < MiniTest::Unit::TestCase
     Destinations.apply( ctx )
 
     assert( con = ctx.create_connection )
-    assert( ctx.lookup_destination( 'iudex-brutefuzzy-request' ) )
-    assert( ctx.lookup_destination( 'iudex-brutefuzzy-listener' ) )
+    assert( ctx.lookup_destination( 'brutefuzzy-request' ) )
+    assert( ctx.lookup_destination( 'brutefuzzy-response-ex' ) )
+    assert( ctx.lookup_destination( 'brutefuzzy-client' ) )
   ensure
     ctx.close if ctx
     con.close if con

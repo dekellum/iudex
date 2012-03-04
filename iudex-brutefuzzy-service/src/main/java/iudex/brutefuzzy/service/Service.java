@@ -59,10 +59,10 @@ public class Service
         _session = context.createSession( connection );
 
         Destination requestQueue =
-            context.lookupDestination( "iudex-brutefuzzy-request" );
+            context.lookupDestination( "brutefuzzy-request" );
 
         Destination responseDest =
-            context.lookupDestination( "iudex-brutefuzzy-response" );
+            context.lookupDestination( "brutefuzzy-response-ex" );
 
         _producer = _session.createProducer( responseDest );
 
@@ -84,7 +84,6 @@ public class Service
                 _log.error( "Received invalid message type: {}",
                             msg.getClass().getName() );
             }
-            msg.acknowledge();
         }
         catch( JMSException x ) {
             if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
@@ -111,7 +110,9 @@ public class Service
             TreeSet<Long> matches = new TreeSet<Long>();
             if( ! _fuzzySet.addFindAll( simhash, matches ) ) ++_count;
             _found += matches.size();
-            sendResponse( msg, simhash, matches );
+            if( _sendNoMatchResponse || ( matches.size() > 0 ) ) {
+                sendResponse( msg, simhash, matches );
+            }
             break;
         }
 
@@ -119,7 +120,9 @@ public class Service
             TreeSet<Long> matches = new TreeSet<Long>();
             _fuzzySet.findAll( simhash, matches );
             _found += matches.size();
-            sendResponse( msg, simhash, matches );
+            if( _sendNoMatchResponse || ( matches.size() > 0 ) ) {
+                sendResponse( msg, simhash, matches );
+            }
             break;
         }
 
@@ -187,6 +190,7 @@ public class Service
     }
 
     private final FuzzySet64 _fuzzySet;
+    private final boolean _sendNoMatchResponse = false;
     private final Logger _log = LoggerFactory.getLogger( getClass() );
     private Session _session = null;
     private MessageProducer _producer;

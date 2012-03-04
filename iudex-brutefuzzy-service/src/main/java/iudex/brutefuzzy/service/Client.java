@@ -21,7 +21,6 @@ import iudex.brutefuzzy.protobuf.ProtocolBuffers.Request.Builder;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.RequestAction;
 import iudex.brutefuzzy.protobuf.ProtocolBuffers.Response;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
@@ -43,6 +42,10 @@ import rjack.jms.SessionState;
 import rjack.jms.SessionStateFactory;
 import rjack.jms.SessionTask;
 
+import org.apache.qpid.AMQException;
+import org.apache.qpid.client.AMQDestination;
+import org.apache.qpid.client.AMQSession;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class Client implements SessionStateFactory<Client.State>
@@ -63,7 +66,7 @@ public class Client implements SessionStateFactory<Client.State>
     {
         _executor.shutdown();
         try {
-            _executor.awaitTermination( 10, TimeUnit.SECONDS );
+            _executor.awaitTermination( 60, TimeUnit.SECONDS );
         }
         catch( InterruptedException e ) {
             Thread.currentThread().interrupt();
@@ -108,12 +111,12 @@ public class Client implements SessionStateFactory<Client.State>
         {
             super( context, connection );
 
-            Destination requestQ =
-                context.lookupDestination( "iudex-brutefuzzy-request" );
-            _producer = session().createProducer( requestQ );
+            // Direct request (not through exchange) needed for depth control
+            _requestQ = context.lookupDestination( "brutefuzzy-request" );
+            _producer = session().createProducer( _requestQ );
 
             Destination responseQ =
-                context.lookupDestination( "iudex-brutefuzzy-listener" );
+                context.lookupDestination( "brutefuzzy-client" );
 
             session().createConsumer( responseQ ).setMessageListener( this );
         }
@@ -122,7 +125,6 @@ public class Client implements SessionStateFactory<Client.State>
         public void onMessage( Message msg )
         {
             try {
-                msg.acknowledge();
                 if( msg instanceof BytesMessage ) {
                     BytesMessage bmsg = (BytesMessage) msg;
                     byte[] body = new byte[ (int) bmsg.getBodyLength() ];
@@ -144,9 +146,6 @@ public class Client implements SessionStateFactory<Client.State>
                 if( _log.isDebugEnabled() ) _log.error( "onMessage:", x );
                 else _log.error( "onMessage: {}", x.toString() );
             }
-            finally {
-                _semaphore.release();
-            }
         }
 
         private void onResponse( Response response )
@@ -162,19 +161,47 @@ public class Client implements SessionStateFactory<Client.State>
             bldr.setAction( doAdd ? RequestAction.ADD :
                                     RequestAction.CHECK_ONLY );
 
-            BytesMessage response = session().createBytesMessage();
-            response.writeBytes( bldr.build().toByteArray() );
+            BytesMessage msg = session().createBytesMessage();
+            msg.writeBytes( bldr.build().toByteArray() );
 
-            //FIXME: Replace with proper flow control?
-            _semaphore.tryAcquire( 1, TimeUnit.SECONDS );
+            send( msg );
+        }
 
-            _producer.send( response );
+        private void send( BytesMessage msg )
+            throws JMSException, InterruptedException
+        {
+            while( _depth < 0 || _depth >= _highDepth ) {
+                _depth = checkDepth();
+                if( _depth >= _highDepth ) {
+                    _log.debug( "Sleeping {}ms until depth {} < {}",
+                                new Object[] {_waitTime, _depth, _highDepth} );
+                    Thread.sleep( _waitTime );
+                }
+            }
+
+            _producer.send( msg );
+            ++_depth;
+        }
+
+        private long checkDepth() throws JMSException
+        {
+            // QPid specific getQueueDepth method.
+            try {
+                return ((AMQSession) session()).
+                    getQueueDepth( (AMQDestination) _requestQ );
+            }
+            catch( AMQException e ) {
+                throw new JMSException( e.toString() );
+            }
         }
 
         private final MessageProducer _producer;
-        private final Semaphore _semaphore = new Semaphore( 10000 );
+        private Destination _requestQ;
+        private long _depth = -1;
+        private int _waitTime = 100; //ms
     }
 
     private final SessionExecutor<State> _executor;
+    private final int _highDepth = 2000;
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
