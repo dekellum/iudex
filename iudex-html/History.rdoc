@@ -1,4 +1,5 @@
 === 1.2.b.0 (TBD)
+* Upgrade to gravitext-xmlprod ~> 1.5.b
 * Fix duplicate attributes from Neko, last value wins.
 * Use Element.to_xml( :implied_ns ) from xmlprod 1.5.b.2 in tests.
 * Add StAX-based HTMLStAXConsumer for faster parsing of pre-cleaned,
@@ -6,6 +7,7 @@
   constructed as BANNED.
 * Add iudex-html-perftest (neko vs stax)
 * Add basic iudex-html-clean utility for ad hoc testing
+* Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 
 === 1.1.0 (2011-11-13)
 * Update to iudex-core ~> 1.1.0

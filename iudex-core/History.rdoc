@@ -1,4 +1,9 @@
 === 1.2.b.0 (TBD)
+* VisitURL now throws SyntaxException on missing scheme, host, bad
+  ports and some other URL malformations.
+* MojiBakeMapper optimization, no copy when nothing found.
+* Upgrade to gravitext-util ~> 1.6.b (beta)
+* Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 
 === 1.1.0 (2011-11-13)
 * Update to iudex-filter,http,barc ~> 1.1.0

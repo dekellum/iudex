@@ -1,4 +1,5 @@
 === 1.2.b.0 (TBD)
+* Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 
 === 1.1.0 (2011-11-13)
 * Add dependencies for iudex-worker ~> 1.1.0 and optional httpclients.

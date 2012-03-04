@@ -4,6 +4,7 @@
 * Fix order dependency issue in junit WorkPollerTest.
 * Latest postgresql jar is now available in maven central, so the
   java.net repo is no longer needed.
+* Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 
 === 1.1.1 (2011-11-17)
 * Fix manifest to include domain migration.

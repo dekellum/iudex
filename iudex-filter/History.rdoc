@@ -1,4 +1,6 @@
 === 1.2.b.0 (TBD)
+* Upgrade to gravitext-util ~> 1.6.b (beta)
+* Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 
 === 1.1.0 (2011-11-13)
 * Filter chain factory ergonomics:
