@@ -111,7 +111,9 @@ public class Service
             TreeSet<Long> matches = new TreeSet<Long>();
             if( ! _fuzzySet.addFindAll( simhash, matches ) ) ++_count;
             _found += matches.size();
-            sendResponse( msg, simhash, matches );
+            if( _sendNoMatchResponse || ( matches.size() > 0 ) ) {
+                sendResponse( msg, simhash, matches );
+            }
             break;
         }
 
@@ -119,7 +121,9 @@ public class Service
             TreeSet<Long> matches = new TreeSet<Long>();
             _fuzzySet.findAll( simhash, matches );
             _found += matches.size();
-            sendResponse( msg, simhash, matches );
+            if( _sendNoMatchResponse || ( matches.size() > 0 ) ) {
+                sendResponse( msg, simhash, matches );
+            }
             break;
         }
 
@@ -187,6 +191,7 @@ public class Service
     }
 
     private final FuzzySet64 _fuzzySet;
+    private final boolean _sendNoMatchResponse = false;
     private final Logger _log = LoggerFactory.getLogger( getClass() );
     private Session _session = null;
     private MessageProducer _producer;
