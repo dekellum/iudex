@@ -1,4 +1,4 @@
-=== 1.2.b.0 (TBD)
+=== 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-xmlprod ~> 1.5.b
 * Fix duplicate attributes from Neko, last value wins.
 * Use Element.to_xml( :implied_ns ) from xmlprod 1.5.b.2 in tests.

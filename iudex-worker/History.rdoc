@@ -1,4 +1,4 @@
-=== 1.2.b.0 (TBD)
+=== 1.2.b.0 (2012-3-4)
 * Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
 * Fix agent http tests by checking deeper than package name loaded via
   bundler/gemspecs
