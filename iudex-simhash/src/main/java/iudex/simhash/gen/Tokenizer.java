@@ -123,6 +123,10 @@ public final class Tokenizer
         case 0x2014: // [ — ]
         case 0x2015: // [ ― ]
 
+        // Also include common Unicode extended space characters
+        // (beyond isHTMLWS)
+        case 0x2003: // EM SPACE
+
             return true;
         }
 
