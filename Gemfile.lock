@@ -128,7 +128,7 @@ PATH
 PATH
   remote: iudex-simhash
   specs:
-    iudex-simhash (1.2.b.0-java)
+    iudex-simhash (1.2.b.1-java)
       iudex-core (~> 1.2.b)
       iudex-html (~> 1.2.b)
 

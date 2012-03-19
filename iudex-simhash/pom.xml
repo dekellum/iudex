@@ -3,7 +3,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-simhash</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.b.0</version>
+  <version>1.2.b.1</version>
   <name>Iudex simhash production and searching</name>
 
   <parent>
