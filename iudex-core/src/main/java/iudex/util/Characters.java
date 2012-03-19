@@ -220,16 +220,16 @@ public final class Characters
         case 0x180E: // MONGOLIAN VOWEL SEPARATOR
 
         case 0x2000: // EN QUAD
-        case 0x2001:
-        case 0x2002:
-        case 0x2003:
-        case 0x2004:
-        case 0x2005:
-        case 0x2006:
-        case 0x2007:
-        case 0x2008:
-        case 0x2009:
-        case 0x200A:
+        case 0x2001: // EM QUAD
+        case 0x2002: // EN SPACE
+        case 0x2003: // EM SPACE
+        case 0x2004: // THREE-PER-EM SPACE
+        case 0x2005: // FOUR-PER-EM SPACE
+        case 0x2006: // SIX-PER-EM SPACE
+        case 0x2007: // FIGURE SPACE
+        case 0x2008: // PUNCTUATION SPACE
+        case 0x2009: // THIN SPACE
+        case 0x200A: // HAIR SPACE
         case 0x200B: // ZERO WIDTH SPACE
             //FIXME: Zero widths, joiner, etc. should be removed instead of
             //replaced?
