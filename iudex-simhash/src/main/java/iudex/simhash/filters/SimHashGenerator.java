@@ -17,7 +17,7 @@
 package iudex.simhash.filters;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.gravitext.htmap.Key;
@@ -84,6 +84,11 @@ public class SimHashGenerator implements Filter, Described
         _stopWords = stopWords;
     }
 
+    public void setPreFilters( List<TreeFilter> preFilters )
+    {
+        _preFilters = new ArrayList<TreeFilter>( preFilters );
+    }
+
     @Override
     public List<?> describe()
     {
@@ -105,9 +110,7 @@ public class SimHashGenerator implements Filter, Described
                 if( root != null ) {
                     float minW = minWordiness( root, in.wordyRatio );
                     TokenWalker walker = new TokenWalker( counter, minW );
-                    TreeFilterChain chain =
-                        new TreeFilterChain( Arrays.asList( new MetaSkipFilter(),
-                                                            walker ) );
+                    TreeFilterChain chain = createFilterChain( walker );
                     TreeWalker.walkBreadthFirst( chain, root );
                 }
             }
@@ -117,6 +120,16 @@ public class SimHashGenerator implements Filter, Described
         content.set( SimHashKeys.SIMHASH, counter.simhash() );
 
         return true;
+    }
+
+    private TreeFilterChain createFilterChain( TokenWalker walker )
+    {
+        ArrayList<TreeFilter> filters =
+            new ArrayList<TreeFilter>( _preFilters.size() + 1 );
+        filters.addAll( _preFilters );
+        filters.add( walker );
+
+        return new TreeFilterChain( filters );
     }
 
     private float minWordiness( Element root, float wordyRatio )
@@ -154,6 +167,9 @@ public class SimHashGenerator implements Filter, Described
         private final TokenCounter _counter;
         private final float _minWordiness;
     }
+
+    private List<TreeFilter> _preFilters =
+        Collections.singletonList( (TreeFilter) new MetaSkipFilter() );
 
     private static final float WORDY_STEP = 2.0f;
 
