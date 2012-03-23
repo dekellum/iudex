@@ -1,4 +1,6 @@
 === 1.2.b.1 (TBD)
+* Add EM SPACE awareness to Tokenizer
+* Add SimHashGenerator.setPreFilters
 
 === 1.2.b.0 (2012-3-4)
 * Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
