@@ -20,7 +20,7 @@ PATH
   remote: iudex-barc
   specs:
     iudex-barc (1.2.b.1-java)
-      gravitext-util (~> 1.6.b)
+      gravitext-util (~> 1.6.1)
       iudex-http (~> 1.2.b)
       rjack-slf4j (~> 1.6.1)
 
@@ -52,7 +52,7 @@ PATH
   remote: iudex-core
   specs:
     iudex-core (1.2.b.0-java)
-      gravitext-util (~> 1.6.b)
+      gravitext-util (~> 1.6.1)
       hooker (~> 1.0.0)
       iudex-barc (~> 1.2.b)
       iudex-filter (~> 1.2.b)
@@ -74,7 +74,7 @@ PATH
   remote: iudex-filter
   specs:
     iudex-filter (1.2.b.0-java)
-      gravitext-util (~> 1.6.b)
+      gravitext-util (~> 1.6.1)
       rjack-slf4j (~> 1.6.1)
 
 PATH
@@ -89,7 +89,7 @@ PATH
   remote: iudex-http
   specs:
     iudex-http (1.2.b.0-java)
-      gravitext-util (~> 1.6.b)
+      gravitext-util (~> 1.6.1)
       rjack-slf4j (~> 1.6.1)
 
 PATH
