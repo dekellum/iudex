@@ -12,7 +12,7 @@ RJack::TarPit.specify do |s|
 
   s.depend 'iudex-core',            '~> 1.2.b'
   s.depend 'rjack-nekohtml',        '~> 1.9.14'
-  s.depend 'gravitext-xmlprod',     '~> 1.5.b'
+  s.depend 'gravitext-xmlprod',     '~> 1.5.1'
 
   s.depend 'minitest',              '~> 2.3',       :dev
   s.depend 'rjack-logback',         '~> 1.0',       :dev
