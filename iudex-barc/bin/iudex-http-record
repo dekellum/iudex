@@ -19,33 +19,97 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-require 'rjack-logback'
-RJack::Logback.config_console
+require 'optparse'
 
-#RJack::Logback[ "org.apache.commons.httpclient" ].level = RJack::Logback::INFO
-#RJack::Logback[ "iudex" ].level = RJack::Logback::DEBUG
+module IudexBinScript
 
-require 'iudex-barc'
-require 'iudex-httpclient-3' #FIXME: Unspecified dependency
+  require 'rjack-logback'
+  include RJack
 
-import 'iudex.httpclient3.HTTPClient3'
-import 'iudex.barc.http.BARCResponseHandler'
-import 'iudex.barc.BARCFile'
+  Logback.config_console( :stderr => true )
 
-hmanager = RJack::HTTPClient3::ManagerFacade.new
-hmanager.start
+  #FIXME: Add debug flags
+  #RJack::Logback[ "org.apache.commons.httpclient" ].level = RJack::Logback::INFO
+  #RJack::Logback[ "iudex" ].level = RJack::Logback::DEBUG
 
-hclient = HTTPClient3.new( hmanager.client )
+  require 'iudex-barc'
 
-barc_file = BARCFile.new( java.io.File.new( './record.barc' ) ) #FIXME: param
-barc_file.truncate #FIXME: Optional
+  require 'iudex-httpclient-3' #FIXME: Unspecified dependency
 
-handler = BARCResponseHandler.new( barc_file )
-handler.do_compress = false #FIXME: Option
+  class BARCRecorder
+    import 'iudex.httpclient3.HTTPClient3'
+    import 'iudex.barc.http.BARCResponseHandler'
 
-hsession = hclient.createSession;
-hsession.url = 'http://gravitext.com/blog' #FIXME: param
+    def initialize
+      @req_headers = { 'User-Agent' => http_user_agent,
+                       'Accept'     => accept_types }
+    end
 
-hclient.request( hsession, handler )
+    def run( args = ARGV )
+      urls = parse_args( args )
 
-hmanager.shutdown
+      mgr = Iudex::HTTPClient3.create_manager
+      mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 8 )
+      mgr.start
+
+      hclient = HTTPClient3.new( mgr.client )
+
+      barc_file = Iudex::BARC::BARCFile.new( java.io.File.new( @barc_name ) )
+      barc_file.truncate if @barc_name == './record.barc'
+
+      handler = BARCResponseHandler.new( barc_file )
+      handler.do_compress = false
+
+      urls.each do |url|
+        hsession = hclient.createSession;
+        hsession.url = url
+        headers = @req_headers.map { |h,v| Iudex::HTTP::Header.new( h, v ) }
+        hsession.add_request_headers( headers  )
+        hclient.request( hsession, handler )
+      end
+
+    ensure
+      mgr.shutdown if mgr
+      barc_file.close if barc_file
+    end
+
+    def parse_args( args = ARGV )
+      parser = OptionParser.new do |opts|
+        opts.banner = ( "Usage: iudex-http-record [options] URL... " +
+                        "[BARCFile]\n" +
+                        "Options:\n" )
+
+        opts.on( "-v", "--version", "Display version and exit" ) do
+          puts "iudex-barc: #{BARC::VERSION}"
+          exit 1
+        end
+
+        opts.on( "-A", "--User-Agent UA", String, "Set alt User-Agent" ) do |s|
+          @req_headers[ 'User-Agent' ] = s
+        end
+
+      end
+
+      args = parser.parse( args )
+      @barc_name = './record.barc'
+      if args.last =~ /.barc$/
+        @barc_name = args.pop
+      end
+
+      args #urls
+    end
+
+    def http_user_agent
+      ( "Mozilla/5.0 (compatible; " +
+        "Iudex #{Iudex::HTTPClient3::VERSION}; " +
+        "+http://gravitext.com/iudex)" )
+    end
+
+    def accept_types
+      "application/xhtml+xml,text/html,application/xml;q=0.9,text/*;q=0.8"
+    end
+
+  end
+
+  BARCRecorder.new.run
+end
