@@ -53,6 +53,7 @@ public class BARCResponseHandler extends BaseResponseHandler
             Record rec = _barcFile.append();
             try {
                 rec.setCompressed( _doCompress );
+                rec.setType( 'H' ); //(H)TML or more generally, from web.
                 rec.writeMetaHeaders( Arrays.asList(
                     new Header( "url", session.url() ) ) );
                 rec.writeRequestHeaders( session.requestHeaders() );
