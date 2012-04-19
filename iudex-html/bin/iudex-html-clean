@@ -19,40 +19,127 @@
 $LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'rubygems'
-require 'rjack-logback'
 
-require 'iudex-html'
-require 'iudex-filter/key_helper'
+module IudexBinScript
+  require 'rjack-logback'
+  include RJack
 
-require 'gravitext-xmlprod/extensions'
+  Logback.config_console( :stderr => true )
 
-require 'java'
+  require 'iudex-html'
+  require 'iudex-filter/key_helper'
 
-class HTMLCleaner
-  include Iudex::HTML
-  include Iudex::HTML::Tree
-  include Iudex::HTML::Filters
-  include Iudex::HTML::Tree::Filters
+  require 'gravitext-xmlprod/extensions'
 
-  import 'iudex.html.HTMLUtils'
-  import 'iudex.html.tree.TreeWalker'
+  require 'java'
 
-  def run( input = ARGV.first )
-    source = HTMLUtils::source( IO.read( input ).to_java_bytes, "UTF-8" )
-    tree = HTMLUtils::parse( source )
+  class HTMLCleaner
+    include Gravitext::XMLProd
+    include Iudex::Core
+    include Iudex::HTML
+    include Iudex::HTML::Tree
+    include Iudex::HTML::Filters
+    include Iudex::HTML::Tree::Filters
 
-    tfc = TreeFilterChain.new( [ XmpToPreConverter.new,
-                                 CSSDisplayFilter.new,
-                                 AttributeCleaner.new,
-                                 MojiBakeCleaner.new,
-                                 CharactersNormalizer.new,
-                                 EmptyInlineRemover.new ] )
+    import 'iudex.html.HTMLUtils'
+    import 'iudex.html.neko.NekoHTMLParser'
+    import 'iudex.html.tree.TreeWalker'
+    import 'iudex.http.Headers'
+    import 'iudex.util.Charsets'
 
-    TreeWalker.walk_depth_first( tfc, tree )
+    def initialize
+      @default_encoding = "UTF-8"
+      @trim_non_displayed = false
+      @indentor = Indentor::PRETTY
+    end
 
-    puts tree.to_xml
+    def run( args = ARGV )
+      files = parse_args( args )
+
+      files.each do |f|
+        if f =~ /\.barc$/
+          process_barc( f )
+        else
+          process_file( f )
+        end
+      end
+
+    end
+
+    def process_file( fname )
+
+      input = if fname == '-'
+                $stdin.read
+              else
+                IO.read( fname )
+              end
+
+      source = HTMLUtils::source( input.to_java_bytes, @default_encoding )
+      process( source )
+    end
+
+    def process_barc( bname )
+      require 'iudex-barc' #FIXME: Undeclared
+      barc_file = Iudex::BARC::BARCFile.new( java.io.File.new( bname ) )
+      barc_reader = barc_file.reader
+      while( rec = barc_reader.next )
+        next unless rec.type.chr == 'H'
+        source = ContentSource.new( rec.body_input_stream )
+        ctype = Headers.content_type( rec.response_headers )
+        if ctype && ctype.charset
+          enc = Charsets.lookup( ctype.charset )
+          source.set_default_encoding( enc ) if enc
+        end
+        process( source )
+      end
+    end
+
+    def process( source )
+      parser = NekoHTMLParser.new
+      parser.skip_banned = @trim_non_displayed
+
+      tree = parser.parse( source )
+
+      filters = [ XmpToPreConverter.new,
+                  ( [ CSSDisplayFilter.new,
+                      AttributeCleaner.new ] if @trim_non_displayed ),
+                  MojiBakeCleaner.new,
+                  CharactersNormalizer.new,
+                  EmptyInlineRemover.new ].flatten.compact
+
+      TreeWalker.walk_depth_first( TreeFilterChain.new( filters ),
+                                   tree )
+
+      puts tree.to_xml( :indentor => @indentor )
+    end
+
+    def parse_args( args = ARGV )
+      parser = OptionParser.new do |opts|
+        opts.banner =
+          "Usage: iudex-html-clean [options] (FILE|barc)...\n" +
+          "Options:\n"
+
+        opts.on( "-v", "--version", "Display version and exit" ) do
+          puts "iudex-html: #{Iudex::HTML::VERSION}"
+          exit 1
+        end
+
+        opts.on( "-t", "--trim-non-display",
+                 "Trim banned/non-displayed elements from output" ) do
+          @trim_non_displayed = true
+        end
+
+        opts.on( "-i", "--indentor NAME",
+                 "Trim banned/non-displayed elements from output" ) do |name|
+          @indentor = Indentor.const_get( name.upcase.to_sym )
+        end
+
+      end
+
+      parser.parse( args )
+    end
+
   end
 
+  HTMLCleaner.new.run
 end
-
-HTMLCleaner.new.run
