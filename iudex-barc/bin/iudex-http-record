@@ -80,7 +80,7 @@ module IudexBinScript
                         "Options:\n" )
 
         opts.on( "-v", "--version", "Display version and exit" ) do
-          puts "iudex-barc: #{BARC::VERSION}"
+          puts "iudex-barc: #{Iudex::BARC::VERSION}"
           exit 1
         end
 
