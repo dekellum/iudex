@@ -130,7 +130,8 @@ module IudexBinScript
         end
 
         opts.on( "-i", "--indentor NAME",
-                 "Trim banned/non-displayed elements from output" ) do |name|
+                 "Specify indentor to use for output: " +
+                 "PRETTY (default), COMPACT" ) do |name|
           @indentor = Indentor.const_get( name.upcase.to_sym )
         end
 
