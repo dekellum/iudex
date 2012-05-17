@@ -288,10 +288,16 @@ public class NekoHTMLParser
                 = new ArrayList<AttributeValue>( end );
 
             for( int i = 0; i < end; ++i ) {
-                final Attribute attr =
+                Attribute attr =
                     HTML.ATTRIBUTES.get( attributes.getLocalName( i ) );
-                if( attr != null ) {
 
+                // If unknown attribute, but not skipping banned, then add it
+                // anyway.
+                if( attr == null && !_skipBanned ) {
+                    attr = new Attribute( attributes.getLocalName( i ) );
+                }
+
+                if( attr != null ) {
                     AttributeValue av =
                         new AttributeValue( attr, attributes.getValue( i ) );
 
@@ -299,7 +305,7 @@ public class NekoHTMLParser
                     // wins.
                     int j = 0;
                     while( j < atts.size() ) {
-                        if( atts.get( j ).attribute() == attr ) {
+                        if( attr.equals( atts.get( j ).attribute() ) ) {
                             atts.set( j, av );
                             break;
                         }
@@ -307,6 +313,7 @@ public class NekoHTMLParser
                     }
                     if( j == atts.size() ) atts.add( av );
                 }
+
             }
 
             element.setAttributes( atts );
