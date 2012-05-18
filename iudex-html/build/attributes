@@ -21,6 +21,7 @@
 # Sources
 #  http://www.w3.org/TR/xhtml11/
 #  http://www.w3.org/TR/html4/
+#  http://dev.w3.org/html5/spec/
 #  http://www.w3schools.com/tags/ref_standardattributes.asp
 #  http://xhtml.com
 
@@ -28,6 +29,7 @@ CORE :: ALL except: base head html meta param script style title
 class       ,*CORE
 id          ,*CORE
 style       ,*CORE
+hidden      ,*CORE, hidden element
 title       ,CORE, extra title
 
 LANG :: ALL except: base br frame frameset hr iframe param
@@ -40,17 +42,17 @@ content     ,meta, text
 scheme      ,meta, format URI
 
 # Anchor and link attributes
-charset     ,a link, char_encoding of link
+charset     ,a link meta, char_encoding of link or (meta) document
 coords      ,*a, coordinates; i.e. image map
 hreflang    ,link, language_code of referent
 href        ,a base link, URL
-media       ,link
+media       ,a area link
 name        ,a, section_name anchor
 rel         ,a link
 rev         ,a link
 shape       ,*a
 target      ,*a *base *link
-type        ,link
+type        ,a link
 
 # Image and some frame attributes
 src         ,frame img
