@@ -169,7 +169,7 @@ GEM
       rack (~> 1.4.1)
       rjack-jetty (>= 7.5.4, < 7.7)
       rjack-slf4j (~> 1.6.1)
-    gravitext-util (1.6.b.1-java)
+    gravitext-util (1.6.1-java)
       rjack-logback (~> 1.0)
       rjack-slf4j (~> 1.6.1)
     gravitext-xmlprod (1.5.1-java)
