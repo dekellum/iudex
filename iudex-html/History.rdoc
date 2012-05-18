@@ -1,3 +1,5 @@
+=== 1.2.b.1 (TBD)
+
 === 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-xmlprod ~> 1.5.b
 * Fix duplicate attributes from Neko, last value wins.

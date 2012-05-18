@@ -80,7 +80,7 @@ PATH
 PATH
   remote: iudex-html
   specs:
-    iudex-html (1.2.b.0-java)
+    iudex-html (1.2.b.1-java)
       gravitext-xmlprod (~> 1.5.1)
       iudex-core (~> 1.2.b)
       rjack-nekohtml (~> 1.9.14)
