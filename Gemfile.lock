@@ -19,7 +19,7 @@ PATH
 PATH
   remote: iudex-barc
   specs:
-    iudex-barc (1.2.b.0-java)
+    iudex-barc (1.2.b.1-java)
       gravitext-util (~> 1.6.b)
       iudex-http (~> 1.2.b)
       rjack-slf4j (~> 1.6.1)

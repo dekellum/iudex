@@ -1,3 +1,5 @@
+=== 1.2.b.1 (TBD)
+
 === 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-util ~> 1.6.b (beta)
 * Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
