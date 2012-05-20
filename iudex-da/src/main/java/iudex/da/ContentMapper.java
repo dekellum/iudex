@@ -131,8 +131,9 @@ public final class ContentMapper
     public void update( ResultSet rset, UniMap out )
         throws SQLException
     {
-        for( Key<?> key : _fields ) {
-            update( rset, key, out );
+        final int end = _fields.size();
+        for( int i = 0; i < end; ++i ) {
+            update( rset, i, out );
         }
     }
 
@@ -153,13 +154,32 @@ public final class ContentMapper
         }
     }
 
+    protected void update( ResultSet rset, int fi, UniMap out )
+        throws SQLException
+    {
+        final Key<?> key = _fields.get( fi );
+
+        if( ( key == URL ) || ( key == UHASH ) || ( key == DOMAIN ) ) {
+            rset.updateString( fi + 1, convertURL( key, out.get( URL ) ) );
+        }
+        else if( ( key == REFERER ) || ( key == REFERENT ) ) {
+            UniMap ref = (UniMap) out.get( key );
+            rset.updateString( fi + 1, hashOrNull( ref ) );
+        }
+        else {
+            rset.updateObject( fi + 1, convert( key, out.get( key ) ) );
+            // NULL ok, at least with PostgreSQL
+        }
+    }
+
     public boolean update( ResultSet rs, UniMap in, UniMap out )
         throws SQLException
     {
         boolean change = false;
-        for( Key<?> key : _fields ) {
-            if( key.space() != LOGICAL_KEYS ) {
-                if( update( rs, key, in, out ) ) change = true;
+        final int end = _fields.size();
+        for( int i = 0; i < end; ++i ) {
+            if( _fields.get( i ).space() != LOGICAL_KEYS ) {
+                if( update( rs, i, in, out ) ) change = true;
             }
         }
         return change;
@@ -170,6 +190,17 @@ public final class ContentMapper
     {
         if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
             update( rs, key, out );
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean update( ResultSet rs, int fi, UniMap in, UniMap out )
+        throws SQLException
+    {
+        final Key<?> key = _fields.get( fi );
+        if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
+            update( rs, fi, out );
             return true;
         }
         return false;
