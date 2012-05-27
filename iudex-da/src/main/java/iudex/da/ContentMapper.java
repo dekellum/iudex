@@ -129,31 +129,6 @@ public final class ContentMapper
         return content;
     }
 
-    public void update( ResultSet rset, UniMap out )
-        throws SQLException
-    {
-        for( Key<?> key : _fields ) {
-            update( rset, key, out );
-        }
-    }
-
-    public void update( ResultSet rset, Key<?> key, UniMap out )
-        throws SQLException
-    {
-        final String name = key.name();
-        if( ( key == URL ) || ( key == UHASH ) || ( key == DOMAIN ) ) {
-            rset.updateString( name, convertURL( key, out.get( URL ) ) );
-        }
-        else if( ( key == REFERER ) || ( key == REFERENT ) ) {
-            UniMap ref = (UniMap) out.get( key );
-            rset.updateString( name, hashOrNull( ref ) );
-        }
-        else {
-            rset.updateObject( name, convert( key, out.get( key ) ) );
-            // NULL ok, at least with PostgreSQL
-        }
-    }
-
     public List<Key> findUpdateDiffs( UniMap in, UniMap out )
     {
         ArrayList<Key> diffs = new ArrayList<Key>( _fields.size() );
@@ -166,28 +141,6 @@ public final class ContentMapper
             }
         }
         return diffs;
-    }
-
-    public boolean update( ResultSet rs, UniMap in, UniMap out )
-        throws SQLException
-    {
-        boolean change = false;
-        for( Key<?> key : _fields ) {
-            if( key.space() != LOGICAL_KEYS ) {
-                if( update( rs, key, in, out ) ) change = true;
-            }
-        }
-        return change;
-    }
-
-    public boolean update( ResultSet rs, Key<?> key, UniMap in, UniMap out )
-        throws SQLException
-    {
-        if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
-            update( rs, key, out );
-            return true;
-        }
-        return false;
     }
 
     public void toStatement( UniMap content, PreparedStatement stmt )
