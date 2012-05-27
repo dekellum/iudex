@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -153,6 +154,20 @@ public final class ContentMapper
         }
     }
 
+    public List<Key> findUpdateDiffs( UniMap in, UniMap out )
+    {
+        ArrayList<Key> diffs = new ArrayList<Key>( _fields.size() );
+
+        for( Key<?> key : _fields ) {
+            if( key.space() != LOGICAL_KEYS ) {
+                if( ! equalOrNull( in.get( key ), out.get( key ) ) ) {
+                    diffs.add( key );
+                }
+            }
+        }
+        return diffs;
+    }
+
     public boolean update( ResultSet rs, UniMap in, UniMap out )
         throws SQLException
     {
@@ -178,8 +193,16 @@ public final class ContentMapper
     public void toStatement( UniMap content, PreparedStatement stmt )
         throws SQLException
     {
+        toStatement( content, stmt, _fields );
+    }
+
+    public void toStatement( UniMap content,
+                             PreparedStatement stmt,
+                             List<Key> fields )
+        throws SQLException
+    {
         int i = 1;
-        for( Key<?> key : _fields ) {
+        for( Key<?> key : fields ) {
             if( ( key == URL ) || ( key == UHASH ) || ( key == DOMAIN ) ) {
                 stmt.setString( i, convertURL( key, content.get( URL ) ) );
             }
