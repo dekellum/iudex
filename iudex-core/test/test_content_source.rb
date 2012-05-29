@@ -25,9 +25,10 @@ class TestContentSource < MiniTest::Unit::TestCase
 
   import 'java.nio.ByteBuffer'
   import 'java.nio.charset.Charset'
+  import 'iudex.util.Charsets'
 
   def self.charset( name )
-    Charset::lookup( name )
+    Charsets::lookup( name )
   end
 
   UTF8 = charset( "UTF-8" )
