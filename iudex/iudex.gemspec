@@ -1,8 +1,9 @@
 # -*- ruby -*-
 
 gem 'rjack-tarpit', '~> 2.0'
-require 'rjack-tarpit/spec'
 
+spec = Gem::Specification.find_by_name("rjack-tarpit")
+require spec.gem_dir + '/lib/rjack-tarpit/spec'
 RJack::TarPit.specify do |s|
   require 'iudex/base'
 
