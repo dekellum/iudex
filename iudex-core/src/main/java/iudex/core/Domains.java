@@ -16,6 +16,8 @@
 
 package iudex.core;
 
+import java.net.IDN;
+
 public final class Domains
 {
 
@@ -57,6 +59,12 @@ public final class Domains
                 else {
                     name = name.substring( 0, name.length() - 1 );
                 }
+            }
+            
+            if( name != null)
+            {
+                // International domain names are translated to ASCII
+                name = IDN.toASCII(name);
             }
         }
         return name;

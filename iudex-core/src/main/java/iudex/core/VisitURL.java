@@ -221,8 +221,6 @@ public final class VisitURL
 
         uri = uri.parseServerAuthority();
 
-        // FIXME: Use java.net.IDN (for unicode to ascii host conversion)?
-
         // Lower case the scheme
         String scheme = uri.getScheme();
         if( scheme == null ) {
