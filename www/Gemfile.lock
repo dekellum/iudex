@@ -28,6 +28,7 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   directory_watcher (~> 1.4.1)
