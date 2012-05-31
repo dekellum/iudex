@@ -19,6 +19,7 @@ import static com.gravitext.util.Charsets.UTF_8;
 import iudex.util.Characters;
 
 import java.io.IOException;
+import java.net.IDN;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.CharBuffer;
@@ -231,9 +232,8 @@ public final class VisitURL
             throw new SyntaxException( "Non-HTTP scheme [" + uri + "]" );
         }
 
-        // Lower case the host
+        // Lower case and normalize the host
         String host = uri.getHost();
-        //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
         if( host == null ) {
             throw new SyntaxException( "No host in [" + uri + "]" );
         }

@@ -161,9 +161,7 @@ class TestVisitURL < MiniTest::Unit::TestCase
   end
 
   def test_normalize_idn
-    skip( "IDN normalization not implemented" )
-
-    sets = [ %w[ http://xn--bcher-kva.ch/ http://Bücher.ch ] ]
+    sets = [ %w[ http://xn--bcher-kva.com/ http://bücher.com ] ]
 
     sets.each do |tset|
       expected = tset.shift
