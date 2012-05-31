@@ -1,0 +1,112 @@
+2950 [main] INFO  iudex () - Loading file config.rb.
+3016 [main] INFO  iudex.da.PoolDataSourceFactory () - Init properties: {:adapter=>"jdbcpostgresql", :host=>"localhost", :database=>"crawl", :pool=>10, :password=>"sic-semper-tyrannosaurus-rex", :port=>5432, :ds_pool=>{:max_active=>2, :max_idle=>1}, :loglevel=>1, :user=>"crawler"}
+3557 [main] INFO  iudex.worker.Agent () - Setting up HTTPClient3
+-------> New filter added
+4362 [main] INFO  i.w.FilterChainFactory.agent () - << i.c.f.UHashMDCSetter
+4362 [main] INFO  i.w.FilterChainFactory.agent () - << i.c.f.DefaultFilter
+4363 [main] INFO  i.w.FilterChainFactory.agent () - << i.f.c.Switch
+4369 [main] INFO  i.w.FilterChainFactory.agent () - <<   i.f.c.Switch$Proposition
+4371 [main] INFO  i.w.FilterChainFactory.agent () - <<     i.f.c.Selector-type-FEED
+4371 [main] INFO  i.w.FilterChainFactory.agent () - <<     i.f.c.FilterChain-feed
+4378 [main] INFO  i.w.FilterChainFactory.agent () - <<       i.c.f.ContentFetcher
+4378 [main] INFO  i.w.FilterChainFactory.agent () - <<         i.f.c.FilterChain-feed-receiver
+4379 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.RedirectHandler
+4379 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.Revisitor
+4379 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.r.RomeFeedParser
+4380 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.DefaultFilter#2
+4381 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.DateChangeFilter-false
+4381 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.d.f.UpdateFilter
+4382 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.c.FilterChain-feed-ref-update
+4383 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.UHashMDCSetter#2
+4384 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.DateChangeFilter-true
+4384 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-title-title_tree
+4384 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-title_tree-DEPTH_FIRST
+4385 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-summary-summary_tree
+4385 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-summary_tree-DEPTH_FIRST
+4385 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-content-content_tree
+4386 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-content_tree-DEPTH_FIRST
+4387 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-summary_tree-summary
+4387 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-content_tree-content
+4387 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.TextCtrlWSFilter-title
+4388 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.FutureDateFilter-pub_date
+4388 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.w.Prioritizer-feed-ref-update-10.0-0.0
+4389 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.c.FilterChain-feed-ref-new
+4389 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.UHashMDCSetter#3
+4390 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-title-title_tree#2
+4390 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-title_tree-DEPTH_FIRST#2
+4390 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-summary-summary_tree#2
+4391 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-summary_tree-DEPTH_FIRST#2
+4391 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-content-content_tree#2
+4391 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-content_tree-DEPTH_FIRST#2
+4392 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-summary_tree-summary#2
+4392 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-content_tree-content#2
+4393 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.TextCtrlWSFilter-title#2
+4394 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.FutureDateFilter-pub_date#2
+4395 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.w.Prioritizer-feed-ref-new-50.0-0.0
+4395 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.c.FilterChain-feed-post
+4396 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.UHashMDCSetter#4
+4396 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-title-title_tree#3
+4396 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-title_tree-DEPTH_FIRST#3
+4397 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-summary-summary_tree#3
+4400 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-summary_tree-DEPTH_FIRST#3
+4400 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLParseFilter-content-content_tree#3
+4402 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLTreeFilter-content_tree-DEPTH_FIRST#3
+4403 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-summary_tree-summary#3
+4403 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.h.f.HTMLWriteFilter-content_tree-content#3
+4403 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.TextCtrlWSFilter-title#3
+4404 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.FutureDateFilter-pub_date#3
+4404 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.w.Prioritizer-feed-post-30.0-600.0
+4404 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.f.c.Copier-visit_start-last_visit-true
+4405 [main] INFO  i.w.FilterChainFactory.agent () - <<   i.f.c.Switch$Proposition#2
+4405 [main] INFO  i.w.FilterChainFactory.agent () - <<     i.f.c.Selector-type-PAGE
+4405 [main] INFO  i.w.FilterChainFactory.agent () - <<     i.f.c.FilterChain-page
+4405 [main] INFO  i.w.FilterChainFactory.agent () - <<       i.c.f.ContentFetcher#2
+4406 [main] INFO  i.w.FilterChainFactory.agent () - <<         i.f.c.FilterChain-page-receiver
+4406 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.RedirectHandler#2
+4406 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.f.Revisitor#2
+4407 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.c.CharDetectFilter
+4407 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.h.f.HTMLParseFilter-source-source_tree
+4407 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.h.f.HTMLTreeFilter-source_tree-DEPTH_FIRST
+4407 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.s.f.SimHashGenerator-title-source_tree
+4407 [main] INFO  i.w.FilterChainFactory.agent () - <<           i.d.f.UpdateFilter#2
+4408 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.NoOpFilter
+4410 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.NoOpFilter#2
+4410 [main] INFO  i.w.FilterChainFactory.agent () - <<             i.f.c.FilterChain-page-post
+4411 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.UHashMDCSetter#5
+4411 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.c.f.BARCWriter
+4412 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.w.Prioritizer-page-post-0.0-1800.0
+4412 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.f.c.Copier-visit_start-last_visit-true#2
+4412 [main] INFO  i.w.FilterChainFactory.agent () - <<               i.f.FilterBase
+5107 [manager] INFO  iudex.da.WorkPoller () - Polled 1 orders in 1 hosts; (592.9ms)
+35125 [manager] INFO  iudex.da.WorkPoller () - Polled 22 orders in 1 hosts; (4.608ms)
+35127 [pool-2-thread-2] INFO  o.a.c.h.HttpMethodDirector (XwbUGbV_LdsNwVGTQ4g5sF4) - I/O exception (org.apache.commons.httpclient.NoHttpResponseException) caught when processing request: The server mzsanford.com failed to respond
+35127 [pool-2-thread-2] INFO  o.a.c.h.HttpMethodDirector (XwbUGbV_LdsNwVGTQ4g5sF4) - Retrying request
+Processed Url: http://mzsanford.com/blog/hobbies-on-the-resume
+36929 [pool-2-thread-2] INFO  i.f.core.SummaryReporter.agent (XwbUGbV_LdsNwVGTQ4g5sF4) - T:      2 61.52m/s A:      2 100% 61.52m/s R:      0 F:      0
+Processed Url: http://mzsanford.com/blog/i-hate-running
+Processed Url: http://mzsanford.com/blog/agile-patent-reform
+Processed Url: http://mzsanford.com/blog/thoughts-on-node
+Processed Url: http://mzsanford.com/blog/introducing-libcld
+Processed Url: http://mzsanford.com/blog/dvds-to-apple-tv
+Processed Url: http://mzsanford.com/blog/vespa-et4-fender-replacement
+Processed Url: http://mzsanford.com/blog/sufferin-safari-version-quirks
+Processed Url: http://mzsanford.com/blog/r2rb-mirroring-css-direction
+Processed Url: http://mzsanford.com/blog/crowdsourcing-vs-community
+Processed Url: http://mzsanford.com/blog/content-creation-evolution
+Processed Url: http://mzsanford.com/blog/mysql-and-unicode
+Processed Url: http://mzsanford.com/blog/mc-hammer-showed-me-the-future-of-twitter
+Processed Url: http://mzsanford.com/blog/grease-monkey-for-newtwitter
+Processed Url: http://mzsanford.com/blog/my-life-in-the-start-up-arc
+Processed Url: http://mzsanford.com/blog/the-honest-omnivore
+Processed Url: http://mzsanford.com/blog/unicode-security
+Processed Url: http://mzsanford.com/blog/on-heroism-a-rocky-analogy
+Processed Url: http://mzsanford.com/blog/unicode-with-ruby-regular-expressions
+Processed Url: http://mzsanford.com/blog/tokens-are-not-just-for-chuck-e-cheese
+Processed Url: http://mzsanford.com/blog/character-direction
+Processed Url: http://mzsanford.com/blog/language-detection-geekery
+65138 [manager] INFO  iudex.da.WorkPoller () - Polled 22 orders in 1 hosts; (6.460ms)
+65139 [pool-2-thread-3] INFO  o.a.c.h.HttpMethodDirector (XwbUGbV_LdsNwVGTQ4g5sF4) - I/O exception (org.apache.commons.httpclient.NoHttpResponseException) caught when processing request: The server mzsanford.com failed to respond
+65139 [pool-2-thread-3] INFO  o.a.c.h.HttpMethodDirector (XwbUGbV_LdsNwVGTQ4g5sF4) - Retrying request
+Processed Url: http://mzsanford.com/blog/hobbies-on-the-resume
+Processed Url: http://mzsanford.com/blog/i-hate-running
+Processed Url: http://mzsanford.com/blog/agile-patent-reform
