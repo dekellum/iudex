@@ -3,13 +3,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-brutefuzzy-service</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.b.0</version>
+  <version>1.2.1</version>
   <name>Iudex BruteFuzzy Service</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.2.b.0</version>
+    <version>1.2.1</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -18,19 +18,19 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-core</artifactId>
-      <version>[1.2,1.2.9999)</version>
+      <version>[1.2.1,1.2.999)</version>
     </dependency>
 
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-brutefuzzy-protobuf</artifactId>
-      <version>[1.2,1.2.9999)</version>
+      <version>[1.2.1,1.2.999)</version>
     </dependency>
 
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-simhash</artifactId>
-      <version>[1.2,1.2.9999)</version>
+      <version>[1.2.1,1.2.999)</version>
     </dependency>
 
     <dependency>

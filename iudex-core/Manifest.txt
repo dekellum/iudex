@@ -23,4 +23,4 @@ test/test_redirect_handler.rb
 test/test_visit_manager.rb
 test/test_visit_queue.rb
 test/test_visit_url.rb
-lib/iudex-core/iudex-core-1.2.b.0.jar
+lib/iudex-core/iudex-core-1.2.1.jar

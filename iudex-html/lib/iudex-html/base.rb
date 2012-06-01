@@ -16,6 +16,6 @@
 
 module Iudex
   module HTML
-    VERSION = '1.2.b.1'
+    VERSION = '1.2.1'
   end
 end

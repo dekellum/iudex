@@ -14,4 +14,4 @@ lib/iudex-brutefuzzy-service/destinations.rb
 test/setup.rb
 test/test_agent.rb
 test/test_qpid_context.rb
-lib/iudex-brutefuzzy-service/iudex-brutefuzzy-service-1.2.b.0.jar
+lib/iudex-brutefuzzy-service/iudex-brutefuzzy-service-1.2.1.jar
