@@ -1,4 +1,8 @@
 === 1.2.b.1 (TBD)
+* Add support for HTML 5 (draft) tags, attributes
+* Neko parser support for HTML 5 <meta charset>
+* Neko parser keeps non-HTML attributes when skipBanned = false
+* Add options, barc read support to iudex-html-clean
 
 === 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-xmlprod ~> 1.5.b

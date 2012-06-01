@@ -1,4 +1,7 @@
 === 1.2.b.1 (TBD)
+* Improve usability of iudex-http-record CLI
+* Output (H) default type in BARCResponseHandler (as used by
+  iudex-http-record)
 
 === 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-util ~> 1.6.b (beta)
