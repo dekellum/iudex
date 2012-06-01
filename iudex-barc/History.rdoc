@@ -1,4 +1,4 @@
-=== 1.2.b.1 (TBD)
+=== 1.2.b.1 (2012-5-31)
 * Improve usability of iudex-http-record CLI
 * Output (H) default type in BARCResponseHandler (as used by
   iudex-http-record)
