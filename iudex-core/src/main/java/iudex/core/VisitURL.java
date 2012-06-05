@@ -19,8 +19,11 @@ import static com.gravitext.util.Charsets.UTF_8;
 import iudex.util.Characters;
 
 import java.io.IOException;
+import java.net.IDN;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -85,7 +88,7 @@ public final class VisitURL
     {
         try {
             String raw = preEncode( rawURL );
-            return new VisitURL( normalize( new URI( raw ) ) );
+            return new VisitURL( normalizeStringURI( raw ) );
         }
         catch( URISyntaxException x ) {
             throw new SyntaxException( x );
@@ -214,35 +217,50 @@ public final class VisitURL
         cbuff.limit( 6 );
         return cbuff;
     }
+    
+    static URI normalize( URI resolvedUri ) throws URISyntaxException, SyntaxException
+    {
+        // This inefficiently stringifys a URI only to re-parse. Needed to sort out
+        // IDN domains not allowed in java.net.URI
+        return normalizeStringURI( resolvedUri.toASCIIString() );
+    }
 
-    static URI normalize( URI uri ) throws URISyntaxException, SyntaxException
+    static URI normalizeStringURI( String rawUri ) throws URISyntaxException, SyntaxException
     {
         //FIXME: See also http://en.wikipedia.org/wiki/URL_normalization
-
-        uri = uri.parseServerAuthority();
+        
+        // Use URL instead of URI since it allows IDN
+        URL someURL;
+        try {
+            someURL = new URL( rawUri );
+        } catch (MalformedURLException e) {
+            throw new URISyntaxException(rawUri, e.getMessage());
+        }
 
         // Lower case the scheme
-        String scheme = uri.getScheme();
+        String scheme = someURL.getProtocol();
         if( scheme == null ) {
-            throw new SyntaxException( "No URI scheme for [" + uri + "]" );
+            throw new SyntaxException( "No URI scheme for [" + someURL + "]" );
         }
         scheme = scheme.toLowerCase();
         if( !( "http".equals( scheme ) || "https".equals( scheme ) ) ) {
-            throw new SyntaxException( "Non-HTTP scheme [" + uri + "]" );
+            throw new SyntaxException( "Non-HTTP scheme [" + someURL + "]" );
         }
 
-        // Lower case the host
-        String host = uri.getHost();
-        //FIXME: if( host != null ) host = IDN.toASCII( host, 0 );
-        if( host == null ) {
-            throw new SyntaxException( "No host in [" + uri + "]" );
-        }
+        // Lower case and normalize the host
+        String host = someURL.getHost();
+        // Domains#normalize accepts null and can return null in
+        // other cases as well. Check after normalize
         host = Domains.normalize( host );
+        if( host == null ) {
+            throw new SyntaxException( "No host in [" + someURL + "]" );
+        }
+        
 
-        int port = uri.getPort();
+        int port = someURL.getPort();
         if( port == 0 || port > 65535 ) {
             throw new SyntaxException(
-                "Invalid port " + port + " in [" + uri + "]" );
+                "Invalid port " + port + " in [" + someURL + "]" );
         }
 
         // Drop superfluous port assignments
@@ -252,33 +270,21 @@ public final class VisitURL
         }
 
         // Drop empty '?' query string.
-        String query = uri.getRawQuery();
+        String query = someURL.getQuery();
         if( query != null && query.isEmpty() ) query = null;
 
         // Add '/' with bare http://host -> http://host/.
-        String path = uri.getRawPath();
+        String path = someURL.getPath();
         if( path == null || path.isEmpty() ) path = "/";
 
-        StringBuilder b = new StringBuilder();
-        b.append( scheme ).append( "://" );
-        b.append(  host );
-        if( port != -1 ) b.append( ':' ).append( port );
-        b.append( path );
-        if( query != null ) b.append( '?' ).append( query );
+        StringBuilder uriBuilder = new StringBuilder();
+        uriBuilder.append( scheme ).append( "://" );
+        uriBuilder.append(  host );
+        if( port != -1 ) uriBuilder.append( ':' ).append( port );
+        uriBuilder.append( path );
+        if( query != null ) uriBuilder.append( '?' ).append( query );
 
-        uri = new URI( b.toString() );
-
-        /* FIXME: Encode path (good) but encode query is wrong,
-         * so can't use this:
-        uri = new URI( scheme,
-                       null, // Drop userInfo
-                       host,
-                       port,
-                       path,
-                       query,
-                       null ); // Drop fragment (anchor)
-        */
-
+        URI uri = new URI( uriBuilder.toString() );
         uri = new URI( uri.normalize().toASCIIString() );
 
         return uri;
