@@ -47,7 +47,7 @@ module Iudex::Core
     private
 
     def self.jstring( cps )
-      cs = cps.map { |cp| cp.hex }.to_java( :char )
+      cs = Array( cps ).map { |cp| cp.hex }.to_java( :char )
       Java::java.lang.String.new( cs )
     end
 

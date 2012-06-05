@@ -8,14 +8,6 @@ Iudex is a general purpose web crawler and feed processor in
 ruby/java. The iudex-brutefuzzy-service provides a fuzzy simhash
 lookup index as a distributed service.
 
-== Dependencies
-
-* Java 1.5+
-
-For tests:
-
-* JRuby 1.3+
-
 == License
 
 Copyright (c) 2008-2012 David Kellum

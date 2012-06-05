@@ -44,7 +44,7 @@ header itself is 36 bytes long
 Component | Description
 :--------:| ------------------------------------------------------
 rlength   | Length of record in hexadecimal bytes (not including header).
-tt        | Type and compresssion bytes (see below).
+tt        | Type and compression bytes (see below).
 meta      | Length of meta header block in hexadecimal bytes
 rqst      | Length of request header block in hexadecimal bytes
 resp      | Length of response header block in hexadecimal bytes
