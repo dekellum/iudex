@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 public class ContentUpdater
@@ -102,12 +103,28 @@ public class ContentUpdater
 
         UpdateQueryRunner runner = new UpdateQueryRunner();
         int update = runner.query( conn, qb.toString(),
-                                   new OneUpdateHandler( content ),
+                                   new OneUpdateHandler( content, conn ),
                                    content.get( ContentKeys.URL ).uhash() );
 
         if( update == 0 ) {
             UniMap out = _transformer.transformContent( content, null );
             if( out != null ) write( out, conn );
+        }
+    }
+
+    protected void update( UniMap content, List<Key> diff, Connection conn )
+        throws SQLException
+    {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement( formatUpdate( diff ) );
+            mapper().toStatement( content, stmt, diff );
+            stmt.setString( diff.size() + 1,
+                            content.get( ContentKeys.URL ).uhash() );
+            stmt.executeUpdate();
+        }
+        finally {
+            if( stmt != null ) stmt.close();
         }
     }
 
@@ -118,7 +135,7 @@ public class ContentUpdater
             new HashMap<String,UniMap>( references.size() );
         final String qry = formatSelect( references, uhashes );
         final UpdateQueryRunner runner = new UpdateQueryRunner();
-        runner.query( conn, qry, new RefUpdateHandler( uhashes ) );
+        runner.query( conn, qry, new RefUpdateHandler( uhashes, conn ) );
 
         final ArrayList<UniMap> remains =
             new ArrayList<UniMap>( uhashes.size() );
@@ -153,12 +170,28 @@ public class ContentUpdater
         return qb.toString();
     }
 
+    private String formatUpdate( List<Key> fields )
+    {
+        StringBuilder sql = new StringBuilder(128);
+        boolean first = true;
+        sql.append( "UPDATE urls SET " );
+        for( Key<?> key : fields ) {
+            if( first ) first = false;
+            else sql.append( ", " );
+            sql.append( key.name() ).append( " = ?" );
+        }
+        sql.append( " WHERE uhash = ?;" );
+        return sql.toString();
+    }
+
     private final class RefUpdateHandler
         implements ResultSetHandler<Object>
     {
-        public RefUpdateHandler( HashMap<String, UniMap> hashes )
+        public RefUpdateHandler( HashMap<String, UniMap> hashes,
+                                 Connection connection )
         {
             _hashes = hashes;
+            _connection = connection;
         }
 
         @Override
@@ -169,23 +202,28 @@ public class ContentUpdater
                 final UniMap ref = _hashes.remove( rs.getString( "uhash" ) );
 
                 UniMap out = _transformer.transformReference( ref, in );
-
-                if( ( out != null ) && mapper().update( rs, in, out ) ) {
-                    rs.updateRow();
+                if( out != null ) {
+                    List<Key> diff = mapper().findUpdateDiffs( in, out );
+                    if( diff.size() > 0 ) {
+                        update( out, diff, _connection );
+                    }
                 }
             }
             return null;
         }
 
+        private Connection _connection;
         private HashMap<String, UniMap> _hashes;
     }
 
     private final class OneUpdateHandler
         implements ResultSetHandler<Integer>
     {
-        public OneUpdateHandler( UniMap content )
+        public OneUpdateHandler( UniMap content,
+                                 Connection connection )
         {
             _content = content;
+            _connection = connection;
         }
 
         @Override
@@ -196,9 +234,13 @@ public class ContentUpdater
 
                 UniMap out = _transformer.transformContent( _content, in );
 
-                if( ( out != null ) && mapper().update( rs, in, out ) ) {
-                    rs.updateRow();
+                if( out != null ) {
+                    List<Key> diff = mapper().findUpdateDiffs( in, out );
+                    if( diff.size() > 0 ) {
+                        update( out, diff, _connection );
+                    }
                 }
+
                 return 1;
             }
             if( rs.next() ) {
@@ -208,7 +250,7 @@ public class ContentUpdater
             }
             return 0;
         }
-
+        private Connection _connection;
         private UniMap _content;
     }
 

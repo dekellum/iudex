@@ -1,4 +1,4 @@
-# -*- ruby -*- coding: utf-8 -*-
+# -*- mode: ruby; coding: utf-8 -*-
 
 gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
            iudex-core iudex-httpclient-3 iudex-jetty-httpclient

@@ -198,14 +198,21 @@ public class NekoHTMLParser
 
             HTMLTag tag = HTML.TAGS.get( localName );
 
-            if( ( tag == HTML.META ) &&
-                ( _current.tag() == HTML.HEAD ) &&
-                "Content-Type".equalsIgnoreCase(
-                    attributes.getValue( "http-equiv" ) ) ) {
+            if( ( tag == HTML.META ) && ( _current.tag() == HTML.HEAD ) ) {
+                if( "Content-Type".equalsIgnoreCase(
+                        attributes.getValue( "http-equiv" ) ) ) {
 
-                String ctype = attributes.getValue( "content" );
-                if( ctype != null ) {
-                    throwOnCharsetChange( ctype );
+                    String ctype = attributes.getValue( "content" );
+                    if( ctype != null ) {
+                        throwOnContentTypeChange( ctype );
+                    }
+                }
+                else {
+                    // Check for HTML5 style <meta charset="">
+                    String charset = attributes.getValue( "charset" );
+                    if( charset != null ) {
+                        throwOnCharsetChange( charset.trim() );
+                    }
                 }
             }
 
@@ -225,10 +232,15 @@ public class NekoHTMLParser
             }
         }
 
-        private void throwOnCharsetChange( String type )
+        private void throwOnContentTypeChange( String type )
         {
             ContentType ctype = ContentType.parse( type );
-            Charset newEnc = Charsets.lookup( ctype.charset() );
+            throwOnCharsetChange( ctype.charset() );
+        }
+
+        private void throwOnCharsetChange( String charset )
+        {
+            Charset newEnc = Charsets.lookup( charset );
             if( newEnc != null ) {
                 newEnc = Charsets.expand( newEnc );
 
@@ -288,10 +300,16 @@ public class NekoHTMLParser
                 = new ArrayList<AttributeValue>( end );
 
             for( int i = 0; i < end; ++i ) {
-                final Attribute attr =
+                Attribute attr =
                     HTML.ATTRIBUTES.get( attributes.getLocalName( i ) );
-                if( attr != null ) {
 
+                // If unknown attribute, but not skipping banned, then add it
+                // anyway.
+                if( attr == null && !_skipBanned ) {
+                    attr = new Attribute( attributes.getLocalName( i ) );
+                }
+
+                if( attr != null ) {
                     AttributeValue av =
                         new AttributeValue( attr, attributes.getValue( i ) );
 
@@ -299,7 +317,7 @@ public class NekoHTMLParser
                     // wins.
                     int j = 0;
                     while( j < atts.size() ) {
-                        if( atts.get( j ).attribute() == attr ) {
+                        if( attr.equals( atts.get( j ).attribute() ) ) {
                             atts.set( j, av );
                             break;
                         }
@@ -307,6 +325,7 @@ public class NekoHTMLParser
                     }
                     if( j == atts.size() ) atts.add( av );
                 }
+
             }
 
             element.setAttributes( atts );

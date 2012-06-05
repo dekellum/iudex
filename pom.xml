@@ -5,7 +5,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.2.b.0</version>
+  <version>1.2.1</version>
   <name>Iudex Parent</name>
 
   <properties>
@@ -60,7 +60,7 @@
       <dependency>
         <groupId>com.gravitext</groupId>
         <artifactId>gravitext-util</artifactId>
-        <version>[1.6,1.6.9999)</version>
+        <version>[1.6.1,1.6.9999)</version>
         <scope>compile</scope>
       </dependency>
 

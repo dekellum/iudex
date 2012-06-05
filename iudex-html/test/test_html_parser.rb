@@ -48,6 +48,11 @@ HTML
     assert_doc( alt, parse( alt, "UTF-8" ) )
   end
 
+  def test_meta_charset_rerun
+    alt = HTML_META.sub( /<meta .*\/>/, '<meta charset="utf-8"/>' )
+    assert_doc( alt, parse( alt, "ISO-8859-1" ) )
+  end
+
   HTML_SKIP_TAGS = <<HTML
 <html xmlns="http://www.w3.org/1999/xhtml">
  <head>

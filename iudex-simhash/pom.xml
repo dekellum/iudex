@@ -3,13 +3,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-simhash</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.b.1</version>
+  <version>1.2.1</version>
   <name>Iudex simhash production and searching</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.2.b.0</version>
+    <version>1.2.1</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-html</artifactId>
-      <version>[1.2,1.2.9999)</version>
+      <version>[1.2.1,1.2.999)</version>
     </dependency>
 
     <dependency>
