@@ -65,6 +65,8 @@ public class DomainTest
     {
         assertEquals( "foo.bar", Domains.normalize( "FOO.bAr" ) );
         assertEquals( "foo.bar", Domains.normalize( "FOO.bAr." ) );
+        assertEquals( "xn--bcher-kva.com", Domains.normalize( "bücher.com" ) );
+        assertEquals( "xn--ggblala6cyf.xn--wgbh1c", Domains.normalize("استفتاء.مصر") );
         assertEquals( null,      Domains.normalize( "." ) );
         assertEquals( null,      Domains.normalize( "" ) );
         assertEquals( null,      Domains.normalize( null ) );
