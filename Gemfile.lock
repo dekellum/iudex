@@ -113,7 +113,7 @@ PATH
 PATH
   remote: iudex-jetty-httpclient
   specs:
-    iudex-jetty-httpclient (1.2.b.0-java)
+    iudex-jetty-httpclient (1.2.b.1-java)
       hooker (~> 1.0.0)
       iudex-http (~> 1.2.b)
       rjack-jetty (>= 7.5.4, < 7.7)
