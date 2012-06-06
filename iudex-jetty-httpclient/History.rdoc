@@ -1,4 +1,5 @@
 === 1.2.b.1 (TBD)
+* Add getter to underlying Jetty HttpClient
 
 === 1.2.b.0 (2012-3-4)
 * Upgrade/expand to rjack-jetty >= 7.5.4, <7.7
