@@ -3,7 +3,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-html</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.b.1</version>
+  <version>1.2.b.2</version>
   <name>Iudex HTML parsing/filtering and text extraction</name>
 
   <parent>

@@ -1,3 +1,5 @@
+=== 1.2.b.2 (TBD)
+
 === 1.2.b.1 (2012-5-31)
 * Add support for HTML 5 (draft) tags, attributes
 * Neko parser support for HTML 5 <meta charset>
