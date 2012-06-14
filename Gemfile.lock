@@ -81,7 +81,7 @@ PATH
   remote: iudex-html
   specs:
     iudex-html (1.2.b.2-java)
-      gravitext-xmlprod (~> 1.5.1)
+      gravitext-xmlprod (>= 1.5.1, < 1.7)
       iudex-core (~> 1.2.b)
       rjack-nekohtml (~> 1.9.14)
 
@@ -172,7 +172,7 @@ GEM
     gravitext-util (1.6.1-java)
       rjack-logback (~> 1.0)
       rjack-slf4j (~> 1.6.1)
-    gravitext-xmlprod (1.5.1-java)
+    gravitext-xmlprod (1.6.0-java)
       gravitext-util (~> 1.6.1)
     hooker (1.0.0)
     i18n (0.6.0)
