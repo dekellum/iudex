@@ -108,6 +108,10 @@ public class UpdateFilter implements FilterContainer
             try {
                 ++tries;
                 update( content );
+                if( tries > 1 ) {
+                    _log.info( "Update succeeded only after {} attempts",
+                               tries );
+                }
                 return true;
             }
             catch( SQLException x ) {
@@ -120,8 +124,9 @@ public class UpdateFilter implements FilterContainer
                         if( ( state != null ) &&
                             ( state.equals( "23505" ) ||
                               state.startsWith( "40" ) ) ) {
-                            _log.warn( "Retry {} after: {}",
-                                       tries, s.getMessage() );
+                            _log.debug( "Retry {} after: ({}) {}",
+                                        new Object[] {
+                                            tries, state, s.getMessage() } );
                             continue retry;
                         }
                         s = s.getNextException();
@@ -130,7 +135,9 @@ public class UpdateFilter implements FilterContainer
 
                 SQLException s = x;
                 while( s != null ) {
-                    _log.error( s.getMessage() );
+                    _log.error( "Last try {}: ({}) {}",
+                                new Object[] {
+                                    tries, s.getSQLState(), s.getMessage() } );
                     s = s.getNextException();
                 }
                 break retry; //Unhandled error for retry purposes
@@ -199,7 +206,7 @@ public class UpdateFilter implements FilterContainer
     private final DataSource _dsource;
     private final ContentMapper _mapper;
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
-    private int _retryCount = 1;
+    private int _retryCount = 3;
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();
