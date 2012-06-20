@@ -86,6 +86,11 @@ public class UpdateFilter implements FilterContainer
         return _isolationLevel;
     }
 
+    public void setRetryCount( int count )
+    {
+        _retryCount = count;
+    }
+
     public void update( UniMap content ) throws SQLException
     {
         ContentUpdater updater =
@@ -98,20 +103,41 @@ public class UpdateFilter implements FilterContainer
     @Override
     public boolean filter( UniMap content )
     {
-        try {
-            update( content );
-        }
-        catch( SQLException x ) {
-            SQLException s = x;
-            while( s != null ) {
-                _log.error( s.getMessage() );
-                s = s.getNextException();
+        int tries = 0;
+        retry: while( true ) {
+            try {
+                ++tries;
+                update( content );
+                return true;
             }
-            // FIXME: Really want to treat this as fatal?
-            throw new RuntimeException( x );
+            catch( SQLException x ) {
+                if( tries <= _retryCount ) {
+                    SQLException s = x;
+                    while( s != null ) {
+                        String state = s.getSQLState();
+                        // PostgreSQL Unique Key (i.e. uhash) violation or
+                        // any Transaction Rollback should be retried
+                        if( ( state != null ) &&
+                            ( state.equals( "23505" ) ||
+                              state.startsWith( "40" ) ) ) {
+                            _log.warn( "Retry {} after: {}",
+                                       tries, s.getMessage() );
+                            continue retry;
+                        }
+                        s = s.getNextException();
+                    }
+                }
+
+                SQLException s = x;
+                while( s != null ) {
+                    _log.error( s.getMessage() );
+                    s = s.getNextException();
+                }
+                break retry; //Unhandled error for retry purposes
+            }
         }
 
-        return true;
+        return false;
     }
 
     private final class UpdateTransformer extends BaseTransformer
@@ -173,6 +199,7 @@ public class UpdateFilter implements FilterContainer
     private final DataSource _dsource;
     private final ContentMapper _mapper;
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+    private int _retryCount = 1;
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();
