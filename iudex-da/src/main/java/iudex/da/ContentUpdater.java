@@ -54,8 +54,7 @@ public class ContentUpdater
         Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
-            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            //FIXME: Correct isolation?
+            conn.setTransactionIsolation( isolationLevel() );
 
             List<UniMap> refs = content.get( ContentKeys.REFERENCES );
             if( refs != null ) {
@@ -82,7 +81,7 @@ public class ContentUpdater
         Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
-            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            conn.setTransactionIsolation( isolationLevel() );
 
             update( references, conn );
 
