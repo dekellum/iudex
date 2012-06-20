@@ -1,3 +1,5 @@
+=== 1.2.b.2 (TBD)
+
 === 1.2.b.1 (2012-5-31)
 * Use explicit UPDATE statements. This is ~10x faster than cursor
   updateRow, at least with latest updates.
