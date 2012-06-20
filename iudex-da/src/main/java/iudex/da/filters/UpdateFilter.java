@@ -16,6 +16,7 @@
 
 package iudex.da.filters;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -75,10 +76,21 @@ public class UpdateFilter implements FilterContainer
         _contentFilter = contentFilter;
     }
 
+    public void setIsolationLevel( int isolationLevel )
+    {
+        _isolationLevel = isolationLevel;
+    }
+
+    public int isolationLevel()
+    {
+        return _isolationLevel;
+    }
+
     public void update( UniMap content ) throws SQLException
     {
         ContentUpdater updater =
             new ContentUpdater( _dsource, _mapper, new UpdateTransformer() );
+        updater.setIsolationLevel( _isolationLevel );
 
         updater.update( content );
     }
@@ -158,8 +170,9 @@ public class UpdateFilter implements FilterContainer
     private static final List<Key> REQUIRED_KEYS =
         Arrays.asList( new Key[] { UHASH } );
 
-    private DataSource _dsource;
-    private ContentMapper _mapper;
+    private final DataSource _dsource;
+    private final ContentMapper _mapper;
+    private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();
