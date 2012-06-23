@@ -217,7 +217,7 @@ public final class VisitURL
         cbuff.limit( 6 );
         return cbuff;
     }
-    
+
     static URI normalize( URI resolvedUri ) throws URISyntaxException, SyntaxException
     {
         // This inefficiently stringifys a URI only to re-parse. Needed to sort out
@@ -228,7 +228,7 @@ public final class VisitURL
     static URI normalizeStringURI( String rawUri ) throws URISyntaxException, SyntaxException
     {
         //FIXME: See also http://en.wikipedia.org/wiki/URL_normalization
-        
+
         // Use URL instead of URI since it allows IDN
         URL someURL;
         try {
@@ -255,7 +255,6 @@ public final class VisitURL
         if( host == null ) {
             throw new SyntaxException( "No host in [" + someURL + "]" );
         }
-        
 
         int port = someURL.getPort();
         if( port == 0 || port > 65535 ) {
