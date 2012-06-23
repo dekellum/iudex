@@ -19,11 +19,11 @@
 #++
 
 require File.join( File.dirname( __FILE__ ), "setup" )
-require 'iudex-core/mojibake'
+require 'iudex-core'
 
 class TestCharsets < MiniTest::Unit::TestCase
   include Gravitext::HTMap
-  
+
   import 'iudex.util.Charsets'
 
   UniMap.define_accessors
@@ -31,7 +31,7 @@ class TestCharsets < MiniTest::Unit::TestCase
   def test_default
     assert_equal( Charsets::WINDOWS_1252, Charsets.default_charset )
   end
-  
+
   # Test all mappings from the whatwg guidelines that are supported by the JVM.
   #
   # @see http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#character-encodings-0

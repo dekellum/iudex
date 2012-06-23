@@ -37,7 +37,7 @@ public class Charsets extends com.gravitext.util.Charsets
             Charset.forName( "ISO-8859-9" );
     public static final Charset ISO_8859_11 =
             Charset.forName( "ISO-8859-11" );
-    
+
     // Local charsets
     public static final Charset KS_C_5601_1987 =
             Charset.forName( "KS_C_5601-1987" );
@@ -56,7 +56,7 @@ public class Charsets extends com.gravitext.util.Charsets
      * Expand provided encoding to a super-set encoding if possible, to maximize
      * character mappings. Note that some mappings are excluded because the destination
      * encodings are not supported by the JVM.
-     * 
+     *
      * @see http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#character-encodings-0
      */
     public static Charset expand( final Charset in ) {
