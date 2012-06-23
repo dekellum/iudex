@@ -84,6 +84,11 @@ public class Client
         _maxContentLength = length;
     }
 
+    public HttpClient jettyClient()
+    {
+        return _client;
+    }
+
     public void start() throws RuntimeException
     {
         try {
