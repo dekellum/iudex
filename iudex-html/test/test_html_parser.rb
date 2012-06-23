@@ -150,4 +150,20 @@ HTML
     assert_fragment( html[ :out ], tree )
   end
 
+  import 'iudex.html.neko.NekoHTMLParser'
+
+  # Neko yields attributes with empty localName, given this invalid
+  # input (#8)
+  def test_invalid_attribute
+    html = { :in  => '<div><img alt=""wns : next class="artwork" /></div>',
+             :out => '<div><img alt="" wns="" next="" class="artwork"/></div>' }
+
+    parser = NekoHTMLParser.new
+    parser.parse_as_fragment = true
+    parser.skip_banned = false # required to reproduce empty localName
+
+    tree = inner( parser.parse( source( html[ :in ], "UTF-8" ) ) )
+    assert_fragment( html[ :out ], tree )
+  end
+
 end

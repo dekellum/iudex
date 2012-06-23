@@ -300,13 +300,18 @@ public class NekoHTMLParser
                 = new ArrayList<AttributeValue>( end );
 
             for( int i = 0; i < end; ++i ) {
-                Attribute attr =
-                    HTML.ATTRIBUTES.get( attributes.getLocalName( i ) );
+                // Neko can yield empty localName attribute with exotic
+                // malformed input, even with (default) namespace processing
+                // enabled. (#8)
+                String lname = attributes.getLocalName( i );
+                if( lname.isEmpty() ) lname = null;
+
+                Attribute attr = HTML.ATTRIBUTES.get( lname );
 
                 // If unknown attribute, but not skipping banned, then add it
                 // anyway.
-                if( attr == null && !_skipBanned ) {
-                    attr = new Attribute( attributes.getLocalName( i ) );
+                if( attr == null && lname != null && !_skipBanned ) {
+                    attr = new Attribute( lname );
                 }
 
                 if( attr != null ) {
