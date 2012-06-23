@@ -1,4 +1,4 @@
-=== 1.2.b.2 (TBD)
+=== 1.2.b.2 (2012-6-23)
 * Add configurable transaction isolation level to ContentWriter,
   ContentUpdater, and UpdateFilter. Change default level from
   READ_COMMITED to REPEATABLE_READ where updater SELECT FOR UPDATE
