@@ -16,6 +16,7 @@
 
 package iudex.da.filters;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -75,10 +76,26 @@ public class UpdateFilter implements FilterContainer
         _contentFilter = contentFilter;
     }
 
+    public void setIsolationLevel( int isolationLevel )
+    {
+        _isolationLevel = isolationLevel;
+    }
+
+    public int isolationLevel()
+    {
+        return _isolationLevel;
+    }
+
+    public void setRetryCount( int count )
+    {
+        _retryCount = count;
+    }
+
     public void update( UniMap content ) throws SQLException
     {
         ContentUpdater updater =
             new ContentUpdater( _dsource, _mapper, new UpdateTransformer() );
+        updater.setIsolationLevel( _isolationLevel );
 
         updater.update( content );
     }
@@ -86,20 +103,48 @@ public class UpdateFilter implements FilterContainer
     @Override
     public boolean filter( UniMap content )
     {
-        try {
-            update( content );
-        }
-        catch( SQLException x ) {
-            SQLException s = x;
-            while( s != null ) {
-                _log.error( s.getMessage() );
-                s = s.getNextException();
+        int tries = 0;
+        retry: while( true ) {
+            try {
+                ++tries;
+                update( content );
+                if( tries > 1 ) {
+                    _log.info( "Update succeeded only after {} attempts",
+                               tries );
+                }
+                return true;
             }
-            // FIXME: Really want to treat this as fatal?
-            throw new RuntimeException( x );
+            catch( SQLException x ) {
+                if( tries <= _retryCount ) {
+                    SQLException s = x;
+                    while( s != null ) {
+                        String state = s.getSQLState();
+                        // PostgreSQL Unique Key (i.e. uhash) violation or
+                        // any Transaction Rollback should be retried
+                        if( ( state != null ) &&
+                            ( state.equals( "23505" ) ||
+                              state.startsWith( "40" ) ) ) {
+                            _log.debug( "Retry {} after: ({}) {}",
+                                        new Object[] {
+                                            tries, state, s.getMessage() } );
+                            continue retry;
+                        }
+                        s = s.getNextException();
+                    }
+                }
+
+                SQLException s = x;
+                while( s != null ) {
+                    _log.error( "Last try {}: ({}) {}",
+                                new Object[] {
+                                    tries, s.getSQLState(), s.getMessage() } );
+                    s = s.getNextException();
+                }
+                break retry; //Unhandled error for retry purposes
+            }
         }
 
-        return true;
+        return false;
     }
 
     private final class UpdateTransformer extends BaseTransformer
@@ -158,8 +203,10 @@ public class UpdateFilter implements FilterContainer
     private static final List<Key> REQUIRED_KEYS =
         Arrays.asList( new Key[] { UHASH } );
 
-    private DataSource _dsource;
-    private ContentMapper _mapper;
+    private final DataSource _dsource;
+    private final ContentMapper _mapper;
+    private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+    private int _retryCount = 3;
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();

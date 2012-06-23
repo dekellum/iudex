@@ -59,11 +59,23 @@ public class ContentWriter
         return _dataSource;
     }
 
+    public void setIsolationLevel( int isolationLevel )
+    {
+        _isolationLevel = isolationLevel;
+    }
+
+    public int isolationLevel()
+    {
+        return _isolationLevel;
+    }
+
     public int write( Iterable<UniMap> contents ) throws SQLException
     {
         Connection conn = _dataSource.getConnection();
         try {
             conn.setAutoCommit( false );
+            conn.setTransactionIsolation( isolationLevel() );
+
             int count = write( contents, conn );
             conn.commit();
             return count;
@@ -82,6 +94,8 @@ public class ContentWriter
         Connection conn = _dataSource.getConnection();
         try {
             conn.setAutoCommit( false );
+            conn.setTransactionIsolation( isolationLevel() );
+
             return write( content, conn );
         }
         catch( SQLException orig ) {
@@ -161,4 +175,6 @@ public class ContentWriter
 
     private final DataSource _dataSource;
     private final ContentMapper _mapper;
+
+    private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
 }
