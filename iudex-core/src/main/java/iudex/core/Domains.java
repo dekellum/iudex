@@ -60,7 +60,7 @@ public final class Domains
                     name = name.substring( 0, name.length() - 1 );
                 }
             }
-            
+
             if( name != null)
             {
                 // International domain names are translated to ASCII
