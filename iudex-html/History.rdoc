@@ -1,5 +1,8 @@
 === 1.2.1 (TBD)
-* Upgrade/narrow to gravitext-xmlprod ~> 1.5.1
+
+==== 1.2.b.2 (2012-6-23)
+* Fix #8: Add Neko parser check for empty (malformed) attribute names.
+* Extend/upgrade to gravitext-xmlprod [1.5.1,1.7)
 
 ==== 1.2.b.1 (2012-5-31)
 * Add support for HTML 5 (draft) tags, attributes

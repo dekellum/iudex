@@ -1,5 +1,17 @@
 === 1.2.1 (TBD)
 
+==== 1.2.b.2 (2012-6-23)
+* Add configurable transaction isolation level to ContentWriter,
+  ContentUpdater, and UpdateFilter. Change default level from
+  READ_COMMITED to REPEATABLE_READ where updater SELECT FOR UPDATE
+  locking works as intended, by delaying or rolling back overlapping
+  transactions as with PostgreSQL "could not serialize access due to
+  concurrent update" or "deadlock detected."
+* Add retry loop to UpdateFilter with configurable retryCount (default
+  3) and logging. Warning: It is now possible for UpdateFilter
+  sub-chains to be executed repeatedly, though not at least in the most
+  common rollback/retry case.
+
 ==== 1.2.b.1 (2012-5-31)
 * Use explicit UPDATE statements. This is ~10x faster than cursor
   updateRow, at least with latest updates.

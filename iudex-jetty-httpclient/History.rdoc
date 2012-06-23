@@ -1,5 +1,8 @@
 === 1.2.1 (TBD)
 
+==== 1.2.b.1 (2012-6-23)
+* Add getter to underlying Jetty HttpClient
+
 ==== 1.2.b.0 (2012-3-4)
 * Upgrade/expand to rjack-jetty >= 7.5.4, <7.7
 * Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
