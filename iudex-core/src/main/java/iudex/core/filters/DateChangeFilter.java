@@ -30,8 +30,8 @@ import com.gravitext.htmap.UniMap;
 /**
  * Filter to reject content that has a publication date less than
  * changeCutoff milliseconds after the existing publication date.
- * 
- * As a side-effect the filter methods sets the REF_PUB_DELTA key
+ *
+ * As a side-effect the filter method sets the REF_PUB_DELTA key
  * to the delta.
  */
 public class DateChangeFilter implements Filter, Described
@@ -40,7 +40,7 @@ public class DateChangeFilter implements Filter, Described
     {
         _doFilter = doFilter;
     }
-    
+
     public void setChangeCutoff( long changeCutoff ) throws IllegalArgumentException
     {
         if(changeCutoff <= 0L)

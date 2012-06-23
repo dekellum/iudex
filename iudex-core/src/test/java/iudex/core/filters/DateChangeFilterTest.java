@@ -33,13 +33,13 @@ public class DateChangeFilterTest {
         DateChangeFilter filter = new DateChangeFilter(true);
         filter.setChangeCutoff(100L);
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testSetChangeCutoffNegative() {
         DateChangeFilter filter = new DateChangeFilter(true);
         filter.setChangeCutoff(-100L);
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testSetChangeCutoffZero() {
         DateChangeFilter filter = new DateChangeFilter(true);
@@ -53,12 +53,12 @@ public class DateChangeFilterTest {
         priorInfo.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.REF_PUB_DATE, new Date(System.currentTimeMillis()));
         content.put( ContentKeys.CURRENT, priorInfo );
-        
+
         DateChangeFilter filter = new DateChangeFilter(false);
         boolean accept = filter.filter(content);
         assertEquals( true, accept );
     }
-    
+
     @Test
     public void testFilterEnabled() {
         UniMap content = new UniMap();
@@ -66,13 +66,13 @@ public class DateChangeFilterTest {
         priorInfo.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.REF_PUB_DATE, new Date(System.currentTimeMillis()));
         content.put( ContentKeys.CURRENT, priorInfo );
-        
+
         DateChangeFilter filter = new DateChangeFilter(false);
         boolean accept = filter.filter(content);
         assertEquals( true, accept );
         assertNotNull( "REF_PUB_DELTA should be set", content.get( ContentKeys.REF_PUB_DELTA ) );
     }
-    
+
     @Test
     public void testFilterEnabledNoDiff() {
         UniMap content = new UniMap();
@@ -80,7 +80,7 @@ public class DateChangeFilterTest {
         priorInfo.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.CURRENT, priorInfo );
-        
+
         DateChangeFilter filter = new DateChangeFilter(false);
         boolean accept = filter.filter(content);
         Float delta = content.get( ContentKeys.REF_PUB_DELTA );
@@ -89,34 +89,33 @@ public class DateChangeFilterTest {
         assertNotNull( "REF_PUB_DELTA should be set", delta );
         assertEquals( "Expected a zero difference", 0.0f, delta.floatValue(), 0.0001f );
     }
-    
+
     @Test
     public void testFilterEnabledNoPriorDate() {
         UniMap content = new UniMap();
         UniMap priorInfo = new UniMap();
         content.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.CURRENT, priorInfo );
-        
+
         DateChangeFilter filter = new DateChangeFilter(false);
         boolean accept = filter.filter(content);
 
         assertEquals( "Should accept content not explicitly failing the filter criteria",  true, accept );
         assertNull( "REF_PUB_DELTA should not be set", content.get( ContentKeys.REF_PUB_DELTA ) );
     }
-    
+
     @Test
     public void testFilterEnabledNoNewDate() {
         UniMap content = new UniMap();
         UniMap priorInfo = new UniMap();
         priorInfo.put( ContentKeys.REF_PUB_DATE, new Date(0));
         content.put( ContentKeys.CURRENT, priorInfo );
-        
+
         DateChangeFilter filter = new DateChangeFilter(false);
         boolean accept = filter.filter(content);
 
         assertEquals( "Should accept content not explicitly failing the filter criteria",  true, accept );
         assertNull( "REF_PUB_DELTA should not be set", content.get( ContentKeys.REF_PUB_DELTA ) );
     }
-    
 
 }
