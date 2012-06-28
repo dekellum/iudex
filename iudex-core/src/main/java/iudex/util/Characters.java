@@ -161,23 +161,30 @@ public final class Characters
         case 0x0006:
         case 0x0007: // BEL
         case 0x0008: // BS
-
         case 0x0009: // HT
         case 0x000A: // LF
         case 0x000B: // VT
         case 0x000C: // FF
         case 0x000D: // CR
-
         case 0x000E: // SO
         case 0x000F: // SI
         case 0x0010: // DLE
-        case 0x001B: // ES
-
-        case 0x001C:
-        case 0x001D:
-        case 0x001E:
-        case 0x001F:
-        case 0x0020:
+        case 0x0011: // DC1
+        case 0x0012: // DC2
+        case 0x0013: // DC3
+        case 0x0014: // DC4
+        case 0x0015: // NAK
+        case 0x0016: // SYN
+        case 0x0017: // ETB
+        case 0x0018: // CAN
+        case 0x0019: // EM
+        case 0x001A: // SUB
+        case 0x001B: // ESC
+        case 0x001C: // FS
+        case 0x001D: // GS
+        case 0x001E: // RS
+        case 0x001F: // US
+        case 0x0020: // SPACE
 
         case 0x007F: // DEL
 
@@ -216,6 +223,7 @@ public final class Characters
         case 0x009F:
 
         case 0x00A0: // NBSP
+
         case 0x1680: // OGHAM SPACE MARK
         case 0x180E: // MONGOLIAN VOWEL SEPARATOR
 
