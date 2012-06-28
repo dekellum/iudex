@@ -51,7 +51,7 @@ PATH
 PATH
   remote: iudex-core
   specs:
-    iudex-core (1.2.b.0-java)
+    iudex-core (1.2.b.1-java)
       gravitext-util (~> 1.6.b)
       hooker (~> 1.0.0)
       iudex-barc (~> 1.2.b)
