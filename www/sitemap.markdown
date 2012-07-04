@@ -7,7 +7,7 @@ layout: sub
 
 The [sitemap protocol] provides similar meta-data to feed formats:
 
-{% highlight xml %}
+~~~~
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>http://www.example.com/</loc>
@@ -16,7 +16,9 @@ The [sitemap protocol] provides similar meta-data to feed formats:
       <priority>0.8</priority>
    </url>
 </urlset>
-{% endhighlight %}
+~~~~
+{:lang="xml"}
+
 
 Provide a SiteMapParser implementing ContentParser with, input:
 

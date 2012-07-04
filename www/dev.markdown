@@ -35,7 +35,7 @@ scan to PDF and email) before merging any contributions:
   IudexBinScript</code> to contain any required <code>include</code>'s. This may seem
   a bit strange, but is valid and purposeful:
 
-{% highlight ruby %}
+~~~~
 module IudexBinScript
 
   require 'rjack-logback'
@@ -46,7 +46,8 @@ module IudexBinScript
 
   #...
 end
-{% endhighlight %}
+~~~~
+{:lang="ruby"}
 
 ### Ruby Style
 
@@ -63,7 +64,7 @@ end
   empty line between the comment block and the def.
 * Use empty lines to break up a long method into logical paragraphs.
 
-{% highlight ruby %}
+~~~~
   def adjust( map )
 
     priority = @factors.inject( @constant ) do | p, (w,func) |
@@ -78,7 +79,8 @@ end
 
     [ priority, delta ]
   end
-{% endhighlight %}
+~~~~
+{:lang="ruby"}
 
 ## Java Code
 

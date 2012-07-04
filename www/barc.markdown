@@ -32,11 +32,9 @@ features/advantages:
 A Human/machine readable header used for first record (offset zero)
 and each subsequent record:
 
-{% highlight: text %}
-Magic  rlength tt meta rqst resp
-BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
-CRLF
-{% endhighlight %}
+    Magic  rlength tt meta rqst resp
+    BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
+    CRLF
 
 All lengths are in hexadecimal bytes, zero-padded and fixed width. The
 header itself is 36 bytes long
