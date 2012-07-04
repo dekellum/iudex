@@ -1,11 +1,10 @@
 ---
-title: BARC
+title: Basic Archive (BARC)
 layout: sub
 ---
 
-# Basic Archive
-
-![LARC LX]({{ page.root }}/img/BARC-LARC-XV-2-c.jpg)[^cc]
+* toc
+{:toc}
 
 The Iūdex BARC container format supports efficient block storage of
 raw downloaded or post-processed content. The format was inspired by
@@ -18,14 +17,13 @@ features/advantages:
 * Efficient random access channel IO.
 * Minimal dependencies for read/write access.
 
+![LARC LX]({{ page.root }}/img/BARC-LARC-XV-2-c.jpg)[^cc]
+
 [^cc]: From [Wikipedia: BARC-LARC-XV-2.jpeg](http://en.wikipedia.org/wiki/File:BARC-LARC-XV-2.jpeg)
        (public domain)
 
 [ARC]:  http://crawler.archive.org/articles/developer_manual/arcs.html
 [WARC]: http://www.digitalpreservation.gov/formats/fdd/fdd000236.shtml
-
-* toc
-{:toc}
 
 ## BARC Format
 

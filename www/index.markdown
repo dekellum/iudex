@@ -13,7 +13,7 @@ Notable features:
 
 * [Prioritization](prioritization.html)
 * [Redirect Handling](redirects.html)
-* [BARC](barc.html)
+* [Basic Archive](barc.html) (BARC)
 * [Data Access](da/index.html) (DA)
 * [Scalability and Fault Tolerance](distribution.html)
 

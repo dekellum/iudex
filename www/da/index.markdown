@@ -1,9 +1,7 @@
 ---
-title: DA
+title: Data Access (DA)
 layout: sub
 ---
-
-# Data Access
 
 Iūdex maintains state on all content to be processed in persisent
 storage. This includes all [prioritization] data. The current
