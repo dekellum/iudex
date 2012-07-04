@@ -19,7 +19,6 @@ The [sitemap protocol] provides similar meta-data to feed formats:
 ~~~~
 {:lang="xml"}
 
-
 Provide a SiteMapParser implementing ContentParser with, input:
 
 * CONTENT_SOURCE
