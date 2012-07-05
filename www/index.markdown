@@ -9,13 +9,18 @@ web crawling facilities.  It is pronounced as the Latin
 [/ˈjuː.deks/][wiki-ogg][^wik], meaning: judge or umpire, in reference
 to its novel prioritization and filtering features.
 
-Notable features:
+Features:
 
+* Filters
 * [Prioritization](prioritization.html)
-* [Redirect Handling](redirects.html)
-* [Basic Archive](barc.html) (BARC)
 * [Data Access](da/index.html) (DA)
+* [HTTP](http/index.html) abstraction and implementations
+* [Redirect Handling](redirects.html)
 * [Scalability and Fault Tolerance](distribution.html)
+* [Basic Archive](barc.html) (BARC)
+* Simhash Near Duplicate Detection
+* HTML processing
+* Feed processing
 
 See also:
 
