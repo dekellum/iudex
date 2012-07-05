@@ -1,5 +1,7 @@
 ---
 layout: home
+title: Home
+keywords: Iudex Iūdex crawler feeds content processor
 ---
 
 # Iūdex
