@@ -40,7 +40,7 @@ task :server => [ :dot ] do
   load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 
-DEST="/home/david/public_html/iudex"
+DEST = "pica:~/public_html/iudex/"
 
 task :diff => [ :gen ]  do
   sh "rsync -n -rc -i _site/ #{DEST}"
