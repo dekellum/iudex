@@ -67,6 +67,8 @@ changes:
 Similarly, the `Revisitor` finds no `REDIRECT_ORDER` and passes. Note
 that:
 
-* The redirect path can be walked in reverse by following `LAST` references.
-* `REFERER` always points to the beginning (first redirect) of the series.
+* The redirect path can be walked in reverse order by following `LAST`
+  references.
+* `REFERER` always points to the beginning (first redirect) of the
+  series.
 * `REFERENT` always points to the end of the series.
