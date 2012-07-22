@@ -15,7 +15,7 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-simhash',             '~> 1.2.1'
   s.depend 'iudex-brutefuzzy-protobuf', '~> 1.2.1'
   s.depend 'rjack-jms',                 '~> 1.1.0'
-  s.depend 'rjack-qpid-client',         '~> 0.14.0'
+  s.depend 'rjack-qpid-client',         '~> 0.16.0'
 
   s.depend 'minitest',                  '~> 2.3',       :dev
 
