@@ -5,7 +5,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-da</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.b.2</version>
+  <version>1.2.b.3</version>
   <name>Iudex Data Access</name>
 
   <parent>
