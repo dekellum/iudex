@@ -17,8 +17,8 @@ digraph "iudex-gems" {
   bf_protobuf [ label=<iudex<br/>brutefuzzy<br/>protobuf> ];
   bf_service  [ label=<iudex<br/>brutefuzzy<br/>service> ];
 
-  http             [ label=<iudex<br/>http> ];
-  httpclient_3     [ label=<iudex<br/>httpclient-3<br/>> ];
+  http             [ label=<iudex<br/>http>, target=_parent, URL="../http/index.html" ];
+  httpclient_3     [ label=<iudex<br/>httpclient-3> ];
   jetty_httpclient [ label=<iudex<br/>jetty-httpclient<br/>> ];
   async_httpclient [ label=<iudex<br/>async-httpclient<br/>> ];
   http_test        [ label=<iudex<br/>http-test> ];
