@@ -86,65 +86,48 @@ public class UpdateFilter implements FilterContainer
         return _isolationLevel;
     }
 
-    public void setRetryCount( int count )
+    /**
+     * Set max number of retries, not including the initial try.
+     * Default: 3
+     */
+    public void setMaxRetries( int count )
     {
-        _retryCount = count;
-    }
-
-    public void update( UniMap content ) throws SQLException
-    {
-        ContentUpdater updater =
-            new ContentUpdater( _dsource, _mapper, new UpdateTransformer() );
-        updater.setIsolationLevel( _isolationLevel );
-
-        updater.update( content );
+        _maxRetries = count;
     }
 
     @Override
     public boolean filter( UniMap content )
     {
-        int tries = 0;
-        retry: while( true ) {
-            try {
-                ++tries;
-                update( content );
-                if( tries > 1 ) {
-                    _log.info( "Update succeeded only after {} attempts",
-                               tries );
-                }
-                return true;
-            }
-            catch( SQLException x ) {
-                if( tries <= _retryCount ) {
-                    SQLException s = x;
-                    while( s != null ) {
-                        String state = s.getSQLState();
-                        // PostgreSQL Unique Key (i.e. uhash) violation or
-                        // any Transaction Rollback should be retried
-                        if( ( state != null ) &&
-                            ( state.equals( "23505" ) ||
-                              state.startsWith( "40" ) ) ) {
-                            _log.debug( "Retry {} after: ({}) {}",
-                                        new Object[] {
-                                            tries, state, s.getMessage() } );
-                            continue retry;
-                        }
-                        s = s.getNextException();
-                    }
-                }
+        try {
+            update( content );
+            return true;
+        }
+        catch( SQLException x ) {
+            // Already logged by ContentUpdater (ContentWriter's logger)
+            return false;
+        }
+    }
 
-                SQLException s = x;
-                while( s != null ) {
-                    _log.error( "Last try {}: ({}) {}",
-                                new Object[] {
-                                    tries, s.getSQLState(), s.getMessage() } );
-                    s = s.getNextException();
-                }
-                break retry; //Unhandled error for retry purposes
-            }
+    public void update( UniMap content ) throws SQLException
+    {
+        new Updater().update( content );
+    }
+
+    private final class Updater extends ContentUpdater
+    {
+        Updater() {
+            super( _dsource, _mapper, new UpdateTransformer() );
+            setIsolationLevel( _isolationLevel );
+            setMaxRetries( _maxRetries );
         }
 
-        return false;
+        @Override
+        protected boolean handleError( int tries, SQLException x )
+        {
+            boolean retry = super.handleError( tries, x );
+            if( retry ) ( (UpdateTransformer) transformer() ).reset();
+            return retry;
+        }
     }
 
     private final class UpdateTransformer extends BaseTransformer
@@ -182,6 +165,11 @@ public class UpdateFilter implements FilterContainer
             return out;
         }
 
+        void reset() {
+            _newReferences = 0;
+            _updatedReferences = 0;
+        }
+
         private int _newReferences = 0;
         private int _updatedReferences = 0;
     }
@@ -206,7 +194,7 @@ public class UpdateFilter implements FilterContainer
     private final DataSource _dsource;
     private final ContentMapper _mapper;
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
-    private int _retryCount = 3;
+    private int _maxRetries = 3;
 
     private FilterContainer _updateRefFilter = new NoOpFilter();
     private FilterContainer _newRefFilter    = new NoOpFilter();

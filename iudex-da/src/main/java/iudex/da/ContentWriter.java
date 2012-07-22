@@ -168,7 +168,7 @@ public class ContentWriter
     }
 
     protected static final Logger _log =
-        LoggerFactory.getLogger( ContentWriter.class  );
+        LoggerFactory.getLogger( ContentWriter.class );
 
     private static final List<Key> REQUIRED_KEYS =
         Arrays.asList( new Key[] { URL, UHASH, DOMAIN, TYPE } );
