@@ -1,4 +1,5 @@
 === 1.2.b.1 (TBD)
+* Add missing C0 controls to Characters.isCtrlWS
 
 === 1.2.b.0 (2012-3-4)
 * VisitURL now throws SyntaxException on missing scheme, host, bad

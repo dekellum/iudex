@@ -1,4 +1,7 @@
 === 1.2.b.3 (TBD)
+* Move retry loop from UpdateFilter to ContentUpdater, supporting the
+  same retry logic via the importer as well. Importing on a live
+  system may similarly produce transaction conflicts.
 
 === 1.2.b.2 (2012-6-23)
 * Add configurable transaction isolation level to ContentWriter,
