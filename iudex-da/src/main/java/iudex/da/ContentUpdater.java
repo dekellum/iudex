@@ -46,30 +46,65 @@ public class ContentUpdater
     }
 
     /**
-     * Update first any content REFERENCES and then the content itself.
+     * Set max number of retries, not including the initial try.
+     * Default: 3
      */
-    public void update( UniMap content )
-        throws SQLException
+    public void setMaxRetries( int count )
+    {
+        _maxRetries = count;
+    }
+
+    /**
+     * Update content REFERENCES, REFERER, and then the content itself.
+     *
+     * Any SQLExceptions that returns true from
+     * {@link #handleError(int, SQLException)} will result in retries up to
+     * maxRetries. When not (including when maxRetries is exceeded) the last
+     * SQLException is re-thrown to indicate the failure. In all cases these
+     * exceptions are logged here.
+     *
+     * @throws SQLException when not handled or out of retries.
+     */
+    public void update( UniMap content ) throws SQLException
     {
         Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
             conn.setTransactionIsolation( isolationLevel() );
 
-            List<UniMap> refs = content.get( ContentKeys.REFERENCES );
-            if( refs != null ) {
-                update( refs, conn );
+            int tries = 0;
+            retry: while( true ) {
+                try {
+                    ++tries;
+
+                    List<UniMap> refs = content.get( ContentKeys.REFERENCES );
+                    if( refs != null ) {
+                        update( refs, conn );
+                    }
+
+                    UniMap referer = content.get( ContentKeys.REFERER );
+                    if( referer != null ) {
+                        update( referer, conn );
+                    }
+
+                    update( content, conn );
+
+                    conn.commit();
+
+                    break retry;
+                }
+                catch( SQLException x ) {
+                    if( handleError( tries, x ) ) {
+                        conn.rollback();
+                        continue retry;
+                    }
+                    throw x;
+                }
             }
 
-            UniMap referer = content.get( ContentKeys.REFERER );
-            if( referer != null ) {
-                //FIXME: Really sufficient as same path as content?
-                update( referer, conn );
+            if( tries > 1 ) {
+                _log.info( "Update succeeded only after {} attempts", tries );
             }
-
-            update( content, conn );
-
-            conn.commit();
         }
         finally {
             if( conn != null ) conn.close();
@@ -83,13 +118,74 @@ public class ContentUpdater
             conn.setAutoCommit( false );
             conn.setTransactionIsolation( isolationLevel() );
 
-            update( references, conn );
+            int tries = 0;
+            retry: while( true ) {
+                try {
+                    ++tries;
 
-            conn.commit();
+                    update( references, conn );
+
+                    conn.commit();
+
+                    break retry;
+                }
+                catch( SQLException x ) {
+                    if( handleError( tries, x ) ) {
+                        conn.rollback();
+                        continue retry;
+                    }
+                    throw x;
+                }
+            }
+
+            if( tries > 1 ) {
+                _log.info( "Update succeeded only after {} attempts", tries );
+            }
         }
         finally {
             if( conn != null ) conn.close();
         }
+    }
+
+    protected Transformer transformer()
+    {
+        return _transformer;
+    }
+
+    /**
+     * Return true if a retry should be made, by inspection of the SQLException
+     * and number of tries already attempted. Log accordingly. Override to reset
+     * any state before a retry.
+     */
+    protected boolean handleError( int tries, SQLException x )
+    {
+        if( tries <= _maxRetries ) {
+            SQLException s = x;
+            while( s != null ) {
+                String state = s.getSQLState();
+                // Retry PostgreSQL Unique Key (i.e. uhash) violation or any
+                // Transaction Rollback
+                if( ( state != null ) &&
+                    ( state.equals( "23505" ) ||
+                      state.startsWith( "40" ) ) ) {
+                    _log.debug( "Retry {} after: ({}) {}",
+                                new Object[] {
+                                    tries, state, s.getMessage() } );
+                    return true;
+                }
+                s = s.getNextException();
+            }
+        }
+
+        SQLException s = x;
+        while( s != null ) {
+            _log.error( "Last try {}: ({}) {}",
+                        new Object[] {
+                            tries, s.getSQLState(), s.getMessage() } );
+            s = s.getNextException();
+        }
+
+        return false;
     }
 
     protected void update( UniMap content, Connection conn )
@@ -265,5 +361,7 @@ public class ContentUpdater
                                           ResultSet.CONCUR_UPDATABLE );
         }
     }
+
     private final Transformer _transformer;
+    private int _maxRetries = 3;
 }
