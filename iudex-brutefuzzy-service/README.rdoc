@@ -1,5 +1,6 @@
 = iudex-brutefuzzy-service
 
+* http://iudex.gravitext.com
 * http://github.com/dekellum/iudex
 
 == Description
