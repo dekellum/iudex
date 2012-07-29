@@ -1,3 +1,5 @@
+=== 1.2.b.4 (TBD)
+
 === 1.2.b.3 (2012-7-22)
 * Move retry loop from UpdateFilter to ContentUpdater, supporting the
   same retry logic via the importer as well. Importing on a live
