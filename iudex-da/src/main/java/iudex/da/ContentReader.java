@@ -16,6 +16,7 @@
 
 package iudex.da;
 
+import iudex.core.ContentKeys;
 import iudex.core.VisitURL;
 
 import java.sql.ResultSet;
@@ -46,6 +47,15 @@ public class ContentReader
     public DataSource dataSource()
     {
         return _dsource;
+    }
+
+    /**
+     * Read map's URL and update map.
+     */
+    public void read( UniMap map ) throws SQLException
+    {
+        UniMap update = read( map.get( ContentKeys.URL ) );
+        map.putAll( update );
     }
 
     public UniMap read( VisitURL url ) throws SQLException
