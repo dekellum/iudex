@@ -34,6 +34,7 @@ module Iudex
 
     module Filters
       import 'iudex.da.filters.UpdateFilter'
+      import 'iudex.da.filters.ReadFilter'
     end
 
   end

@@ -33,17 +33,25 @@ module Iudex
 
         # Create UpdateFilter given fields and filter list factory
         # methods
-        def create_update_filter( fields = [],
+        def create_update_filter( fields,
                                   post_sym = nil,
                                   update_sym = nil,
                                   new_sym = nil )
-          fields = ( keys( :uhash ) + fields ).uniq
 
-          f = UpdateFilter.new( data_source, ContentMapper.new( fields ) )
+          f = UpdateFilter.new( data_source, field_mapper( fields ) )
           create_chain( update_sym ) { |c| f.update_ref_filter = c }
           create_chain( new_sym )    { |c| f.new_ref_filter    = c }
           create_chain( post_sym )   { |c| f.content_filter    = c }
           f
+        end
+
+        def create_read_filter( fields = [] )
+          f = ReadFilter.new( data_source, field_mapper( fields ) )
+        end
+
+        def field_mapper( fields )
+          fields = keys( ( [ :uhash ] + fields ).flatten.compact )
+          ContentMapper.new( fields )
         end
 
       end
