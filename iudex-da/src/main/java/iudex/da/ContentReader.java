@@ -50,12 +50,14 @@ public class ContentReader
     }
 
     /**
-     * Read map's URL and update map.
+     * Read map's URL and update map if found.
      */
     public void read( UniMap map ) throws SQLException
     {
         UniMap update = read( map.get( ContentKeys.URL ) );
-        map.putAll( update );
+        if( update != null ) {
+            map.putAll( update );
+        }
     }
 
     public UniMap read( VisitURL url ) throws SQLException
@@ -95,7 +97,6 @@ public class ContentReader
             }
             return contents;
         }
-
     }
 
     private final DataSource _dsource;

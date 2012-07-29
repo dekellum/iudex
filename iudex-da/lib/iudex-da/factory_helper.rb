@@ -46,8 +46,7 @@ module Iudex
         end
 
         def create_read_filter( fields = [] )
-          f = UpdateFilter.new( data_source,
-                                field_mapper( fields ) )
+          f = ReadFilter.new( data_source, field_mapper( fields ) )
         end
 
         def field_mapper( fields )
