@@ -1,5 +1,12 @@
 === 1.2.1 (TBD)
 
+==== 1.2.b.4 (2012-8-1)
+* Add ReadFilter (and FactoryHelper.create_read_filter) to get current
+  database state of orders that are synthesized or handled in session,
+  instead of being polled.
+* Allow migration profile extensions to include absolute/external
+  directory paths.
+
 ==== 1.2.b.3 (2012-7-22)
 * Move retry loop from UpdateFilter to ContentUpdater, supporting the
   same retry logic via the importer as well. Importing on a live
