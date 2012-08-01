@@ -34,12 +34,26 @@ module Iudex::DA
 
   def migrate( target_version = nil )
     base = File.join( LIB_DIR, '..', '..', 'db' )
+    paths = [ base ]
 
     profiles = Hooker.apply( [ :iudex, :migration_profiles ], [] )
 
-    ext = profiles.compact.map { |p| "/#{p}" }.join(',')
-    base += "{#{ext},}" unless ext.empty?
-    ActiveRecord::Migrator.migrate( base, target_version )
+    paths += profiles.compact.map do |p|
+      p = p.to_s
+      if p =~ %r{^/}
+        p
+      else
+        File.join( base, p )
+      end
+    end
+
+    pattern = if paths.size > 1
+                '{' + paths.join( ',' ) + '}'
+              else
+                paths.first
+              end
+
+    ActiveRecord::Migrator.migrate( pattern, target_version )
   end
 
   module_function :migrate
