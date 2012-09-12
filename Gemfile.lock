@@ -14,7 +14,7 @@ PATH
     iudex-async-httpclient (1.2.1-java)
       hooker (~> 1.0.0)
       iudex-http (~> 1.2.1)
-      rjack-async-httpclient (~> 1.6.5)
+      rjack-async-httpclient (~> 1.7.6)
 
 PATH
   remote: iudex-barc
@@ -192,7 +192,7 @@ GEM
     rake (0.9.2.2)
     rdoc (3.12)
       json (~> 1.4)
-    rjack-async-httpclient (1.6.5.0-java)
+    rjack-async-httpclient (1.7.6.0-java)
       rjack-slf4j (~> 1.6.1)
     rjack-commons-codec (1.6.0-java)
     rjack-commons-dbcp (1.4.0.1-java)
