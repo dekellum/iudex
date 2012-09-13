@@ -10,7 +10,7 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'rjack-slf4j',           '~> 1.6.1'
+  s.depend 'rjack-slf4j',           '>= 1.6.5', '< 1.8'
   s.depend 'hooker',                '~> 1.0.0'
   s.depend 'gravitext-util',        '~> 1.6.1'
   s.depend 'iudex-filter',          '~> 1.2.1'
@@ -18,7 +18,7 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-barc',            '~> 1.2.1'
 
   s.depend 'minitest',              '~> 2.3',       :dev
-  s.depend 'rjack-logback',         '~> 1.0',       :dev
+  s.depend 'rjack-logback',         '~> 1.2',       :dev
 
   s.maven_strategy = :no_assembly
 end
