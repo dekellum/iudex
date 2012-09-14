@@ -1,5 +1,5 @@
 === 1.2.1 (TBD)
-* Update to qpid-client ~> 0.16.0
+* Upgrade/narrow to qpid-client [0.14.1,0.19)
 * Upgrade to logback ~> 1.2
 
 ==== 1.2.b.0 (2012-3-4)
