@@ -1,4 +1,5 @@
 === 1.2.1 (TBD)
+* Upgrade to logback ~> 1.2 (dev)
 
 ==== 1.2.b.1 (2012-3-23)
 * Add EM SPACE awareness to Tokenizer

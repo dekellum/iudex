@@ -1,6 +1,7 @@
 === 1.2.1 (TBD)
 * Drop redundant keys() calls in FilterChainFactory,
   create_update_filter.
+* Upgrade to logback ~> 1.2
 
 ==== 1.2.b.0 (2012-3-4)
 * Upgrade to tarpit ~> 2.0, bundler Gemfile, gemspec (dev)
