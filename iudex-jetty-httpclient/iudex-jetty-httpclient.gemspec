@@ -16,7 +16,7 @@ RJack::TarPit.specify do |s|
 
   s.depend 'minitest',              '~> 2.3',       :dev
   s.depend 'iudex-http-test',       '~> 1.2.1',     :dev
-  s.depend 'rjack-logback',         '~> 1.0',       :dev
+  s.depend 'rjack-logback',         '~> 1.2',       :dev
 
   s.maven_strategy = :no_assembly
 end
