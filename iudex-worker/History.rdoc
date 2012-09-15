@@ -1,4 +1,4 @@
-=== 1.2.1 (TBD)
+=== 1.2.1 (2012-9-15)
 * Drop redundant keys() calls in FilterChainFactory,
   create_update_filter.
 * Upgrade to logback ~> 1.2

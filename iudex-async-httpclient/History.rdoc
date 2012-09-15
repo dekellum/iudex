@@ -1,4 +1,4 @@
-=== 1.2.1 (TBD)
+=== 1.2.1 (2012-9-15)
 * Upgrade to async-httpclient ~> 1.7.6
 * Upgrade to logback ~> 1.2 (dev)
 
