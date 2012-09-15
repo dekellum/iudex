@@ -1,7 +1,15 @@
-=== 1.2.b.1 (2012-7-22)
+=== 1.2.1 (TBD)
+* Upgrade/narrow to gravitext-util ~> 1.6.1
+* Upgrade to slf4j [1.6.5,1.8), logback ~> 1.2 (dev)
+* Add DateChangeFilter.setChangeCutoff (Matt Sanford)
+* Update TLDSets based on upstream 102932f46b8a 2012-09-14
+* Expand the iudex.util.Charsets mappings per whatwg. (Matt Sanford)
+* Fix Ruby 1.9 compatibility issues
+
+==== 1.2.b.1 (2012-7-22)
 * Add missing C0 controls to Characters.isCtrlWS
 
-=== 1.2.b.0 (2012-3-4)
+==== 1.2.b.0 (2012-3-4)
 * VisitURL now throws SyntaxException on missing scheme, host, bad
   ports and some other URL malformations.
 * MojiBakeMapper optimization, no copy when nothing found.

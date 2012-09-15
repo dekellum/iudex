@@ -1,2 +1,6 @@
-=== 1.2.b.0 (2012-3-4)
+=== 1.2.1 (TBD)
+* Broaden to qpid-client [0.14,0.19)
+* Upgrade to logback ~> 1.2
+
+==== 1.2.b.0 (2012-3-4)
 * Initial release.

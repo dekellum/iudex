@@ -1,5 +1,6 @@
 = iudex-simhash
 
+* http://iudex.gravitext.com
 * http://github.com/dekellum/iudex
 
 == Description
@@ -7,14 +8,6 @@
 Iudex is a general purpose web crawler and feed processor in
 ruby/java. The iudex-simhash gem contains support for generation and
 searching over simhash fingerprints
-
-== Dependencies
-
-* Java 1.5+
-
-For tests:
-
-* JRuby 1.3+
 
 == License
 

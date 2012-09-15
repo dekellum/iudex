@@ -1,13 +1,14 @@
 destination: ./_site
-exclude    : [ "Rakefile", "Gemfile", "Gemfile.lock" ]
+exclude    : [ 'Rakefile', 'Gemfile', 'Gemfile.lock' ]
 auto:        false
 lsi:         false
 server_port: 4000
-pygments:    true
+pygments:    false
 markdown:    kramdown
 permalink:   date
-maruku:
-  use_tex:    false
-  use_divs:   false
-  png_dir:    images/latex
-  png_url:    /images/latex
+kramdown:
+# toc_levels: 2..2
+  use_coderay: true
+  coderay:
+    coderay_line_numbers:
+    coderay_css: class

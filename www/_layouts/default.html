@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
 <head>
    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-   <title>Iūdex {{ page.title }}</title>
+   <title>Iūdex : {{ page.title }}</title>
    <link rel="start" href="/" />
   {% if page.keywords %}
   <meta name="keywords" content="{{ page.keywords }}">
@@ -28,7 +28,7 @@
   <div id="footer">
   <address>
     <span class="copyright">
-      Copyright &copy; 2008-{{ 'now' | date: "%Y" }}
+      Copyright &copy; 2008-{% year %}
       <a href="http://gravitext.com/">David Kellum</a>
     </span>
     <span class="engine">

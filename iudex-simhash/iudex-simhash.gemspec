@@ -10,11 +10,11 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',            '~> 1.2.b'
-  s.depend 'iudex-html',            '~> 1.2.b'
+  s.depend 'iudex-core',            '~> 1.2.1'
+  s.depend 'iudex-html',            '~> 1.2.1'
 
   s.depend 'minitest',              '~> 2.3',       :dev
-  s.depend 'rjack-logback',         '~> 1.0',       :dev
+  s.depend 'rjack-logback',         '~> 1.2',       :dev
 
   s.maven_strategy = :no_assembly
 end

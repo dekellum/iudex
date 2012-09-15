@@ -106,7 +106,7 @@ module Iudex
       end
 
       def feed_updater
-        create_update_filter( keys( feed_update_keys ),
+        create_update_filter( feed_update_keys,
                               :feed_post, :feed_ref_update, :feed_ref_new )
       end
 
@@ -185,7 +185,7 @@ module Iudex
       end
 
       def page_updater
-        create_update_filter( keys( page_update_keys ), :page_post )
+        create_update_filter( page_update_keys, :page_post )
       end
 
       # Filters to apply during page update

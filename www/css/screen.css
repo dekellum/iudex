@@ -1,62 +1,88 @@
-body {
-    font-family: 'Luxi Sans', sans-serif;
-    background-color: #F5F5F5;
-    font-size: 10.5pt;
+@font-face {
+  font-family: PTSansWF;
+  font-style: normal;
+  font-weight: 400;
+  src: url('http://rs.gravitext.com/fonts/pt_sans_400.ttf') format('truetype'),
+       url('http://rs.gravitext.com/fonts/pt_sans_400.woff') format('woff');
+}
+@font-face {
+  font-family: PTSansWF;
+  font-style: italic;
+  font-weight: 400;
+  src: url('http://rs.gravitext.com/fonts/pt_sans_400italic.ttf') format('truetype'),
+       url('http://rs.gravitext.com/fonts/pt_sans_400italic.woff') format('woff');
+}
+@font-face {
+  font-family: PTSansWF;
+  font-style: normal;
+  font-weight: 700;
+  src: url('http://rs.gravitext.com/fonts/pt_sans_700.ttf') format('truetype'),
+       url('http://rs.gravitext.com/fonts/pt_sans_700.woff') format('woff');
+}
+@font-face {
+  font-family: PTCapBWF;
+  font-style: normal;
+  font-weight: 700;
+  src: url('http://rs.gravitext.com/fonts/pt_sans_caption_700.ttf') format('truetype'),
+       url('http://rs.gravitext.com/fonts/pt_sans_caption_700.woff') format('woff');
 }
 
-p { margin: 0 0 1.5em 0; text-align: justify; }
+body {
+    font-family: PTSansWF, sans-serif;
+    font-size: 12pt;
+    background-color: white;
+}
+
+p { margin: 0 0 1.5em 0;
+    text-align: justify;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+}
+
+li p { margin: 0 0 0.75em 0; }
 
 a { text-decoration: none; color: #33a; }
 a:hover { text-decoration: underline; color: #33f; }
 a.pdf:before {
     margin-right: 1em;
-    content: url(/files/css/icon_pdf.gif); }
+    content: url(/files/css/icon_pdf.gif);
+}
+
+#site h1 {
+    margin-top: 1em;
+}
 
 h1,h2,h3,h4 {
-    margin-top: 2em;
+    font-family: PTCapBWF, sans-serif;
+    font-weight: normal;
+    margin-top: 1.5em;
     clear: left;
 }
 h1 { margin-bottom: 0.5em; }
 
-#sub h1 {
-    margin-top: 1em;
-}
-
-h2 {
-    font-size: 120%;
-    margin-top: 1.5em !important;
-    padding-top: 0.5em;
-    border-top: 4px solid #AAA;
-}
+h2 { font-size: 120% }
 
 hr {
-    background-color: #BBB;
-    height: 4px;
-    border: none;
+    border-top: 1px solid silver;
+    border-bottom: none;
     padding: 0;
-    margin: 1.5em 0 0 0;
+    margin: 1.46em 0 0 0;
 }
 
 sup { line-height: 1ex; }
 
 #site {
-    max-width: 59em;
+    max-width: 715px;
     margin: 1.5em auto 3em auto;
     line-height:1.5em;
 }
 
 #page-first { display: none }
+#page-first-light { display: none }
 
 #page-first + p { padding-top: 1em; clear: right }
-
-#page-first + p:first-letter, p.emphfirst:first-letter {
-    font-size: 320%;
-    padding: 0 0.15em 0 0;
-    margin:  0.05em 0 -0.15em 0;
-    line-height: 1em;
-    float: left;
-    text-shadow: #aaa 3px 3px 4px;
-}
+#page-first-light + p { padding-top: 1em; }
 
 .right { float: right; clear: left; }
 .left { float: left; clear: right; }
@@ -88,19 +114,18 @@ blockquote {
 }
 
 table {
-    margin: 1.0em auto 1.5em auto;
-    table-layout: auto;
-    border-spacing: 0;  /* No gap in borders */
+    width: 80%;
+    margin: 1.5em auto 1.5em auto;
 }
-table tr {
-    text-align: center;
-}
+table tr { text-align: center; }
 table th {
-    border-bottom: 1px solid #999;
+    font-family: PTCapBWF, sans-serif;
+    font-weight: normal;
+    border-bottom: 1px solid #BBBBBB;
     padding: 0.2em 1em;
 }
 table td {
-    border-bottom: 1px solid #BBB;
+    border-bottom: 1px solid #DDDDDD;
     padding: 0.2em 1em;
 }
 table th.title {
@@ -116,22 +141,57 @@ caption {
     margin: 0.875em auto 0 auto;
     line-height: 1.14em;
     text-align: justify;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
 }
 
-#header {
-    font-size: 120%;
+.vblog a { color: black; }
+.vblog a:hover { text-decoration: none; }
+
+#header .vblog a { color: #fffffa; }
+#header .vblog a:hover { color: black; }
+
+#header .ptitle {
+    font-family: PTCapBWF, sans-serif;
+    font-size: 200%;
+}
+#header .date {
+    font-size: 87.5%;
+}
+#header .nlink {
+    font-family: PTCapBWF, sans-serif;
+    font-size: 200%;
+}
+
+.vblog {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 22pt;
+    word-spacing: -0.33em;
+    letter-spacing: -0.08em;
+    text-shadow: #aaa 3px 3px 4px;
+    margin-top:    0em;
+}
+
+#header .vblog {
+    float: right;
     margin-bottom: 0.5em;
 }
-.ptitle {
-    font-weight: bold;
-}
 
-.footnotes li {
+div.footnotes {
+    margin-top: 2em;
+    padding-right: 1em;
+    border-left: 2px solid grey;
+}
+.footnotes { color: grey; }
+.footnotes:hover { color: black; }
+.footnotes ol li {
+    list-style-type: decimal;
     font-size: 75%;
+    line-height: 1.5em;
 }
-.footnotes p {
-    margin: 0
-}
+.footnotes ol li > a { display: none; }
 
 .section {
     font-size: 87.5%;
@@ -141,6 +201,7 @@ caption {
     margin-left: 7.5em;
 }
 .section h1 {
+    font-family: PTCapBWF, sans-serif;
     font-size: 100%;
     line-height: 1.43em;
     position: absolute;
@@ -148,23 +209,25 @@ caption {
     max-width: 6em;
     margin-left: -7.5em;
     margin-top: 0em;
-    font-weight: bold;
-    font-variant: small-caps;
 }
+
 .section p { margin-bottom: 1.43em; }
 
 dd {
     margin-left: 7.5em;
 }
 dt {
-    position: absolute;
-    width: 6em;
+    float: left;
     max-width: 6em;
 }
 
 .section p { margin-bottom: 1.43em; }
 
-.list .title { font-weight: bold; }
+.list .title {
+    font-family: PTCapBWF, sans-serif;
+    font-size: 120%
+}
+
 p.line { position: relative; margin: 0; }
 
 .comments { font-size: smaller; position: absolute; color: silver; right: 0; top: 0; }
@@ -199,11 +262,11 @@ p.line { position: relative; margin: 0; }
 /* Code: */
 pre {
     margin: 1em 0 1.5em 0;
-    font-size: 87.5%;
+    font-size: 10pt;
     line-height: 1.5em;
     color: #111;
-    background: #fffff0;
-    border: 1px solid #ddc;
+    background: #f8f8ff;
+    border: 1px solid #dedede;
     padding: 0.5em 1em;
     overflow: hidden;
 
@@ -217,11 +280,16 @@ pre:hover {
 }
 
 code {
-    background-color: #fffff0;
-    border: 1px solid #ddc;
+    font-size: 10pt;
+    background-color: #f8f8ff;
+    border: 1px solid #dedede;
+    padding: 0.1em 0.2em;
+    white-space: nowrap;
 }
+
 pre code {
     border: none;
+    white-space: inherit;
 }
 
 /* Footer: */
@@ -266,6 +334,9 @@ dl.figure dd {
     margin: 0.875em auto 0 auto;
     line-height: 1.14em;
     text-align: justify;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
     width: 85%;
 }
 
@@ -275,12 +346,18 @@ div.maruku-equation img.maruku-png { position: relative; top: -0.75em;}
 span.maruku-inline { }
 img.maruku-png { }
 
+#home-photo {
+    float: right;
+    padding-left: 1em;
+}
+
 #home-photo h1 {
     position: absolute;
-    color: white;
-    margin-left: 20px;
-    font-size: 140%;
-    margin-top: 160px;
+    color: #add8e6;
+    font-weight: normal;
+    font-size: 130%;
+    margin-left: 72px;
+    margin-top: 275px;
 }
 
 #home-photo img {
@@ -296,11 +373,6 @@ body#home #site {
 
 div.image {
     text-align: center
-}
-p img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 div.svg-object {

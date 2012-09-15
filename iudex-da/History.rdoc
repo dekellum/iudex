@@ -1,16 +1,19 @@
-=== 1.2.b.4 (2012-8-1)
+=== 1.2.1 (TBD)
+* Upgrade to logback ~> 1.2 (dev)
+
+==== 1.2.b.4 (2012-8-1)
 * Add ReadFilter (and FactoryHelper.create_read_filter) to get current
   database state of orders that are synthesized or handled in session,
   instead of being polled.
 * Allow migration profile extensions to include absolute/external
   directory paths.
 
-=== 1.2.b.3 (2012-7-22)
+==== 1.2.b.3 (2012-7-22)
 * Move retry loop from UpdateFilter to ContentUpdater, supporting the
   same retry logic via the importer as well. Importing on a live
   system may similarly produce transaction conflicts.
 
-=== 1.2.b.2 (2012-6-23)
+==== 1.2.b.2 (2012-6-23)
 * Add configurable transaction isolation level to ContentWriter,
   ContentUpdater, and UpdateFilter. Change default level from
   READ_COMMITED to REPEATABLE_READ where updater SELECT FOR UPDATE
@@ -22,11 +25,11 @@
   sub-chains to be executed repeatedly, though not at least in the most
   common rollback/retry case.
 
-=== 1.2.b.1 (2012-5-31)
+==== 1.2.b.1 (2012-5-31)
 * Use explicit UPDATE statements. This is ~10x faster than cursor
   updateRow, at least with latest updates.
 
-=== 1.2.b.0 (2012-3-4)
+==== 1.2.b.0 (2012-3-4)
 * Upgrade to activerecord ~> 3.1.3, adapter ~> 1.2.2, pg ~> 9.1.901,
   dbutils ~> 1.4.0.
 * Fix order dependency issue in junit WorkPollerTest.

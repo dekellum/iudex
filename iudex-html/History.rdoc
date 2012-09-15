@@ -1,14 +1,17 @@
-=== 1.2.b.2 (2012-6-23)
+=== 1.2.1 (TBD)
+* Upgrade to logback ~> 1.2 (dev)
+
+==== 1.2.b.2 (2012-6-23)
 * Fix #8: Add Neko parser check for empty (malformed) attribute names.
 * Extend/upgrade to gravitext-xmlprod [1.5.1,1.7)
 
-=== 1.2.b.1 (2012-5-31)
+==== 1.2.b.1 (2012-5-31)
 * Add support for HTML 5 (draft) tags, attributes
 * Neko parser support for HTML 5 <meta charset>
 * Neko parser keeps non-HTML attributes when skipBanned = false
 * Add options, barc read support to iudex-html-clean
 
-=== 1.2.b.0 (2012-3-4)
+==== 1.2.b.0 (2012-3-4)
 * Upgrade to gravitext-xmlprod ~> 1.5.b
 * Fix duplicate attributes from Neko, last value wins.
 * Use Element.to_xml( :implied_ns ) from xmlprod 1.5.b.2 in tests.

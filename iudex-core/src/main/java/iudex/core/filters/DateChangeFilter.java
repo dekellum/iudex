@@ -27,11 +27,27 @@ import iudex.filter.Filter;
 
 import com.gravitext.htmap.UniMap;
 
+/**
+ * Filter to reject content that has a publication date less than
+ * changeCutoff milliseconds after the existing publication date.
+ *
+ * As a side-effect the filter method sets the REF_PUB_DELTA key
+ * to the delta.
+ */
 public class DateChangeFilter implements Filter, Described
 {
     public DateChangeFilter( boolean doFilter )
     {
         _doFilter = doFilter;
+    }
+
+    public void setChangeCutoff( long changeCutoff ) throws IllegalArgumentException
+    {
+        if(changeCutoff <= 0L)
+        {
+            throw new IllegalArgumentException("Invalid changeCutoff value");
+        }
+        _changeCutoff = changeCutoff;
     }
 
     @Override
@@ -48,8 +64,7 @@ public class DateChangeFilter implements Filter, Described
                 long diffMs = update.getTime() - prior.getTime();
                 content.set( REF_PUB_DELTA, (float) diffMs );
 
-                return ( !_doFilter || ( diffMs >= 1000L ) );
-                //FIXME: Make difference cutoff (1000ms) a property.
+                return ( !_doFilter || ( diffMs >= _changeCutoff ) );
             }
         }
         return true;
@@ -62,4 +77,5 @@ public class DateChangeFilter implements Filter, Described
     }
 
     private final boolean _doFilter;
+    private long _changeCutoff = 1000L; // milliseconds
 }

@@ -15,6 +15,7 @@ lib/iudex-core.rb
 lib/iudex-core/config.rb
 lib/iudex-core/mojibake.rb
 test/setup.rb
+test/test_charsets.rb
 test/test_content_fetcher.rb
 test/test_content_source.rb
 test/test_log_writer.rb
