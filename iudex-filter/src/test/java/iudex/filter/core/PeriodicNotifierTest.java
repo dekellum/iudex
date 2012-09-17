@@ -45,11 +45,10 @@ public class PeriodicNotifierTest
         long count = TestExecutor.run( new TickGenerator(), ticks, 3 );
 
         _log.debug( "{} ticks, total wait: {}s, notified: {}, dev: {}s",
-                    new Object[] {
-                        ticks,
-                        Metric.format( count / 1e6d ),
-                        _notifier.count(),
-                        Metric.format( _notifier.dev() ) } );
+                    ticks,
+                    Metric.format( count / 1e6d ),
+                    _notifier.count(),
+                    Metric.format( _notifier.dev() ) );
 
         assertTrue( _notifier.count() > 0 );
     }
