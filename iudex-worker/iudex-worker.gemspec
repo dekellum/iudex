@@ -17,7 +17,7 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-simhash',          '~> 1.3.0'
   s.depend 'iudex-char-detector',    '~> 1.3.0'
 
-  s.depend 'rjack-logback',          '~> 1.2'
+  s.depend 'rjack-logback',          '~> 1.5'
 
   s.depend 'minitest',               '~> 2.3',       :dev
   s.depend 'iudex-httpclient-3',     '~> 1.3.0',     :dev

@@ -15,7 +15,7 @@ RJack::TarPit.specify do |s|
   s.depend 'gravitext-xmlprod',     '>= 1.5.1', '<1.7'
 
   s.depend 'minitest',              '~> 2.3',       :dev
-  s.depend 'rjack-logback',         '~> 1.2',       :dev
+  s.depend 'rjack-logback',         '~> 1.5',       :dev
 
   s.maven_strategy = :no_assembly
 

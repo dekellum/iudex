@@ -22,7 +22,7 @@ PATH
     iudex-barc (1.3.0-java)
       gravitext-util (~> 1.6.1)
       iudex-http (~> 1.3.0)
-      rjack-slf4j (>= 1.6.5, < 1.8)
+      rjack-slf4j (~> 1.7.0)
 
 PATH
   remote: iudex-brutefuzzy-protobuf
@@ -38,7 +38,7 @@ PATH
       iudex-core (~> 1.3.0)
       iudex-simhash (~> 1.3.0)
       rjack-jms (~> 1.1.0)
-      rjack-logback (~> 1.2)
+      rjack-logback (~> 1.5)
       rjack-qpid-client (>= 0.14, < 0.19)
 
 PATH
@@ -57,7 +57,7 @@ PATH
       iudex-barc (~> 1.3.0)
       iudex-filter (~> 1.3.0)
       iudex-http (~> 1.3.0)
-      rjack-slf4j (>= 1.6.5, < 1.8)
+      rjack-slf4j (~> 1.7.0)
 
 PATH
   remote: iudex-da
@@ -75,7 +75,7 @@ PATH
   specs:
     iudex-filter (1.3.0-java)
       gravitext-util (~> 1.6.1)
-      rjack-slf4j (>= 1.6.5, < 1.8)
+      rjack-slf4j (~> 1.7.0)
 
 PATH
   remote: iudex-html
@@ -90,7 +90,7 @@ PATH
   specs:
     iudex-http (1.3.0-java)
       gravitext-util (~> 1.6.1)
-      rjack-slf4j (>= 1.6.5, < 1.8)
+      rjack-slf4j (~> 1.7.0)
 
 PATH
   remote: iudex-http-test
@@ -142,7 +142,7 @@ PATH
       iudex-html (~> 1.3.0)
       iudex-rome (~> 1.3.0)
       iudex-simhash (~> 1.3.0)
-      rjack-logback (~> 1.2)
+      rjack-logback (~> 1.5)
 
 GEM
   remote: http://rubygems.org/
@@ -257,5 +257,5 @@ DEPENDENCIES
   minitest (~> 2.3)
   rack (~> 1.4.1)
   rack-test (~> 0.6.0)
-  rjack-logback (~> 1.2)
+  rjack-logback (~> 1.5)
   rjack-tarpit (~> 2.0)
