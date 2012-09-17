@@ -13,9 +13,9 @@ RJack::TarPit.specify do |s|
   s.depend 'rjack-slf4j',           '>= 1.6.5', '< 1.8'
   s.depend 'hooker',                '~> 1.0.0'
   s.depend 'gravitext-util',        '~> 1.6.1'
-  s.depend 'iudex-filter',          '~> 1.2.1'
-  s.depend 'iudex-http',            '~> 1.2.1'
-  s.depend 'iudex-barc',            '~> 1.2.1'
+  s.depend 'iudex-filter',          '~> 1.3.0'
+  s.depend 'iudex-http',            '~> 1.3.0'
+  s.depend 'iudex-barc',            '~> 1.3.0'
 
   s.depend 'minitest',              '~> 2.3',       :dev
   s.depend 'rjack-logback',         '~> 1.2',       :dev

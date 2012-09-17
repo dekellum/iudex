@@ -13,4 +13,4 @@ test/setup.rb
 test/test_fuzzy_set.rb
 test/test_simhash_generator.rb
 test/html/gentest.html
-lib/iudex-simhash/iudex-simhash-1.2.1.jar
+lib/iudex-simhash/iudex-simhash-1.3.0.jar

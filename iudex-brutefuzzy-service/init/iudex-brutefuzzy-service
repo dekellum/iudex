@@ -25,7 +25,7 @@
 
 require 'rubygems'
 
-gem( "iudex-brutefuzzy-service", "= 1.2.1" )
+gem( "iudex-brutefuzzy-service", "= 1.3.0" )
 
 module IudexInitScript
 

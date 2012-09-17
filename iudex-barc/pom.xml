@@ -5,13 +5,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-barc</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
   <name>Iudex Basic ARChive Format</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.2.1</version>
+    <version>1.3.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -30,7 +30,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-http</artifactId>
-      <version>[1.2.1,1.2.999)</version>
+      <version>[1.3.0,1.3.999)</version>
     </dependency>
 
     <dependency>

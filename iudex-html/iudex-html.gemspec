@@ -10,7 +10,7 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',            '~> 1.2.1'
+  s.depend 'iudex-core',            '~> 1.3.0'
   s.depend 'rjack-nekohtml',        '~> 1.9.14'
   s.depend 'gravitext-xmlprod',     '>= 1.5.1', '<1.7'
 
