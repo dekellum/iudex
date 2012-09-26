@@ -92,7 +92,7 @@ class ChartDetectUtil
     map = UniMap.new
     bytes = ByteBuffer::wrap( fin.read.to_java_bytes )
     map.source = ContentSource.new( bytes )
-    map.source.set_default_encoding( Charset::lookup( @default_encode ) )
+    map.source.set_default_encoding( Charset::for_name( @default_encode ) )
 
     df = CharDetectFilter.new
     #FIXME: Option? df.max_detect_length =
