@@ -31,6 +31,7 @@ Sequel.migration do
       # Complete normalized url (exactly as used for uhash)
 
       String    :domain,           :null => false
+      # Registration level domain from url host
 
       String    :type,             :null => false
       # FEED, PAGE, ROBOTS, SITEMAP
