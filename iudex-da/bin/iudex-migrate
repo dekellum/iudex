@@ -56,7 +56,8 @@ END
       end
     end
     opts.on( "-d", "--debug" ) do
-      Logback[ 'iudex.da' ].level = Logback::DEBUG
+      Logback[ 'iudex.da' ].level = :debug
+      Hooker.add( [ :iudex, :connect_props ] ) { { :log => true } }
     end
     opts.on( "-v", "--version", "Display version and exit" ) do
       puts "iudex-da: #{DA::VERSION}"
@@ -65,8 +66,13 @@ END
     Hooker.register_config( opts )
   end.parse!
 
-  require 'iudex-da/ar'
+  require 'iudex-da/orm'
 
-  DA::migrate( ARGV[0] && ARGV[0].to_i )
+  DA::ORM.setup
+
+  target = ARGV[0] && ARGV[0].to_i
+  opts = {}
+  opts[ :target ] = target if target
+  DA::ORM::migrate( opts )
 
 end

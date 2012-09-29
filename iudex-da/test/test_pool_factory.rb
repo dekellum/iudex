@@ -19,18 +19,19 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-core'
-require 'iudex-da/ar'
 
 require 'iudex-da'
 require 'iudex-da/pool_data_source_factory'
 
 class TestPoolFactory < MiniTest::Unit::TestCase
   include Iudex::DA
+  include Iudex::Core
+
   import 'org.apache.commons.dbutils.ResultSetHandler'
   import 'org.apache.commons.dbutils.QueryRunner'
 
   def setup
-    @factory = PoolDataSourceFactory.new( :loglevel => 2 )
+    @factory = PoolDataSourceFactory.new( :loglevel => 4 )
     @data_source = @factory.create
   end
 
@@ -39,21 +40,30 @@ class TestPoolFactory < MiniTest::Unit::TestCase
     @data_source = nil
   end
 
-  class TestHandler
-    include ResultSetHandler
-    def handle( rs )
-      while rs.next
-        p [ rs.string( 'url' ) ]
-      end
-      nil
-    end
-  end
-
-  def test_query
-    refute( @data_source.nil? )
+  # Really just want to the factory, data_source but this makes a fine
+  # demonstration of dbutils query runner "just working" via ruby
+  def test_query_runner
+    assert( @data_source )
     qrun = QueryRunner.new( @data_source )
-    qrun.query( "SELECT url FROM urls WHERE uhash IN ('uRlU1h_YL-NvooSv2i98Rd3', 'notthere' );",
-                TestHandler.new )
+
+    url = VisitURL.normalize( "http://gravitext.com/test" )
+
+    qrun.update( "TRUNCATE urls;" )
+
+    c = qrun.update( "INSERT into urls (uhash, url, domain, type ) " +
+                     "VALUES (?,?,?,?);",
+                     url.uhash, url.url, url.domain, "PAGE" )
+    assert_equal( 1, c )
+
+    out_domain = nil
+    qrun.query( "SELECT * FROM urls WHERE uhash = ?", url.uhash ) do |rs|
+      while rs.next
+        out_domain = rs.string( 'domain' )
+      end
+    end
+    assert_equal( url.domain, out_domain )
+
+    assert_equal( 1, qrun.update( "DELETE from urls;" ) )
   end
 
 end

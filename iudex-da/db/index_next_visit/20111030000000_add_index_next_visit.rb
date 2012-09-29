@@ -1,4 +1,3 @@
-
 #--
 # Copyright (c) 2008-2012 David Kellum
 #
@@ -15,17 +14,10 @@
 # permissions and limitations under the License.
 #++
 
-module Iudex
-
-  module DA
-    # Default database connection configuration for both Sequel
-    # (migrations, testing) and JDBC PoolDataSourceFactory.
-    CONFIG = {
-      :adapter  => 'jdbc:postgresql',
-      :host     => 'localhost',
-      :database => 'iudex_test',
-      :username => 'iudex',
-      :pool     => 10 }
+Sequel.migration do
+  change do
+    alter_table( :urls ) do
+      add_index( :next_visit_after )
+    end
   end
-
 end

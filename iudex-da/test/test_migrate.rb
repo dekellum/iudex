@@ -20,24 +20,22 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-da'
-require 'iudex-da/ar'
+require 'iudex-da/orm'
 
 class TestMigrate < MiniTest::Unit::TestCase
   include Iudex::DA
   include RJack
 
-  VERBOSE = ! ( ARGV & %w[ -v --verbose ] ).empty?
+  ORM.setup
 
   def setup
-    unless VERBOSE
-      Logback[ 'iudex.da.ActiveRecord' ].level = Logback::WARN
-    end
+    Logback[ 'iudex.da.sequel' ].level = :warn unless TestSetup::VERBOSE
   end
 
   def teardown
     Hooker.send( :clear )
-    suppress_messages? { migrate }
-    Logback[ 'iudex.da.ActiveRecord' ].level = nil
+    ORM.migrate
+    Logback[ 'iudex.da.sequel' ].level = nil
   end
 
   def test_default
@@ -55,20 +53,10 @@ class TestMigrate < MiniTest::Unit::TestCase
   end
 
   def check_up_down
-    suppress_messages? do
-      migrate
-      pass
-      migrate( 0 )
-      pass
-    end
-  end
-
-  def suppress_messages?( &block )
-    if VERBOSE
-      block.call
-    else
-      ActiveRecord::Migration.suppress_messages( &block )
-    end
+    ORM.migrate
+    pass
+    ORM.migrate( 0 )
+    pass
   end
 
 end
