@@ -20,20 +20,20 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-core'
-require 'iudex-da/ar'
+require 'iudex-da/orm'
 
 class TestPollWork < MiniTest::Unit::TestCase
   include Iudex::DA
   import 'iudex.core.VisitURL'
 
   def setup
-    Url.delete_all
+    ORM::Url.delete
 
     domains = [ 'foo.org', 'other.net', 'gravitext.com', 'one.at' ]
     count = 0
     domains.each do |domain|
       (5..15).each do |val|
-        url = Url.create! do |u|
+        url = ORM::Url.create do |u|
           u.priority = ( val.to_f / 10.0 ) + (count.to_f / 50.0)
           vurl = VisitURL.normalize( "http://#{domain}/#{u.priority}" )
           u.type = "FEED"
@@ -48,7 +48,7 @@ class TestPollWork < MiniTest::Unit::TestCase
   end
 
   def teardown
-    Url.delete_all
+    ORM::Url.delete
   end
 
   # Query to get new work, with limits on work per domain, and total
@@ -63,16 +63,16 @@ FROM ( SELECT *, row_number() OVER ( ORDER BY priority DESC ) as ppos
               WHERE next_visit_after <= now() ) AS subh
        WHERE hpos <= ? ) AS subp
 WHERE ppos <= ?
-ORDER BY domain, priority DESC;
+ORDER BY domain, priority DESC
 END
-    res = Url.find_by_sql( [ query, 5, 18 ] )
+    res = ORM::Url.where( query, 5, 18 )
 
     def check_domain_subset( bydomain )
       assert( bydomain.length <= 5 )
       bydomain.each_cons(2) { |p,n| assert( p.priority >= n.priority ) }
     end
 
-    assert( res.length <= 18 )
+    assert( res.count <= 18 )
     bydomain = []
     res.each do |u|
       if bydomain.empty? || bydomain.last.domain == u.domain
@@ -88,16 +88,16 @@ END
 
   def test_insert
 
-    Url.transaction do
+    ORM.db.transaction do
       sql = <<END
 CREATE TEMPORARY TABLE mod_urls
   ( uhash text,
     url text,
-    domain text );
+    domain text )
 END
     # ON COMMIT DROP;
 
-      Url.connection.execute( sql ) #FIXME: auto-commit mode?
+      ORM.db.run( sql )
 
       # Url.set_table_name "mod_urls"
 
@@ -111,18 +111,18 @@ END
 
         sql = "INSERT into mod_urls VALUES ('%s','%s','%s')" %
           [ vurl.uhash, vurl.to_s, vurl.domain ]
-        Url.connection.execute( sql )
+        ORM.db.run( sql )
           # u.next_visit_after = Time.now
         count += 1
       end
       insert_query = <<END
 INSERT INTO urls (uhash,url,domain,type,priority)
   ( SELECT uhash,url,domain,'FEEDX',4.78 FROM mod_urls
-    WHERE uhash NOT IN ( SELECT uhash FROM urls ) );
+    WHERE uhash NOT IN ( SELECT uhash FROM urls ) )
 END
-      Url.connection.execute( insert_query )
+      ORM::db.run( insert_query )
 
-      Url.connection.execute( "DROP TABLE mod_urls;" )
+      ORM::db.run( "DROP TABLE mod_urls" )
 
       # Url.set_table_name "urls"
     end
