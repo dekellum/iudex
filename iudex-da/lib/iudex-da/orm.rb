@@ -92,7 +92,8 @@ module Iudex::DA
 
         if columns == [ :version ] # Old format AR schema_migrations
           db.transaction do
-            versions = db.from( :schema_migrations ).map { |r| r[ :version ].to_i }
+            versions = db.from( :schema_migrations ).
+              map { |r| r[ :version ].to_i }
 
             if ( versions & AR_REQUIRED ) != AR_REQUIRED
               missing = AR_REQUIRED - ( versions & AR_REQUIRED )
