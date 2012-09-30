@@ -20,41 +20,33 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-da'
-require 'iudex-da/orm'
+require 'iudex-da/models'
 
-class TestMigrate < MiniTest::Unit::TestCase
+class TestUrlModel < MiniTest::Unit::TestCase
   include Iudex::DA
-  include RJack
+  include Iudex::DA::ORM
 
   def setup
-    Logback[ 'iudex.da.sequel' ].level = :warn unless TestSetup::VERBOSE
+    Url.truncate
   end
 
-  def teardown
-    Hooker.send( :clear )
-    ORM.migrate
-    Logback[ 'iudex.da.sequel' ].level = nil
-  end
+  def test_round_trip
+    urls = [ "http://foo.gravitext.com/bar/1",
+             "http://gravitext.com/2",
+             "http://hometown.com/33" ]
 
-  def test_default
-    check_up_down
-  end
+    urls.each do | u, p |
+      Url.create( :visit_url => u, :type => "PAGE"  )
+    end
 
-  def test_simhash_profile
-    Hooker.add( [ :iudex, :migration_profiles ] ) { |p| p << :simhash }
-    check_up_down
-  end
+    assert_equal( 2, Url.where( :domain => 'gravitext.com' ).count )
+    assert_equal( 1, Url.where( :domain => 'hometown.com' ).count )
 
-  def test_next_visit_profile
-    Hooker.add( [ :iudex, :migration_profiles ] ) { |p| p << :index_next_visit }
-    check_up_down
-  end
+    sample = Url.find_by_url( urls[ 0 ] )
+    assert_equal( urls[ 0 ], sample.url )
+    assert_equal( 'PAGE', sample.type )
 
-  def check_up_down
-    ORM.migrate
-    pass
-    ORM.migrate( 0 )
-    pass
+    refute( Url.find_by_url( "http://spunk" ) )
   end
 
 end
