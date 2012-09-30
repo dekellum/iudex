@@ -42,7 +42,10 @@ class TestUrlModel < MiniTest::Unit::TestCase
     assert_equal( 2, Url.where( :domain => 'gravitext.com' ).count )
     assert_equal( 1, Url.where( :domain => 'hometown.com' ).count )
 
-    assert_equal( urls[ 0 ], Url.find_by_url( urls[ 0 ] ).url )
+    sample = Url.find_by_url( urls[ 0 ] )
+    assert_equal( urls[ 0 ], sample.url )
+    assert_equal( 'PAGE', sample.type )
+
     refute( Url.find_by_url( "http://spunk" ) )
   end
 

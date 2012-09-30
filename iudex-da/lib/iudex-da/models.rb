@@ -50,6 +50,17 @@ module Iudex::DA::ORM
       self[ vurl.uhash ]
     end
 
+    # Specifically include type accessors to avoid deprecation warnings for
+    # old ruby method.
+
+    def type
+      self[ :type ]
+    end
+
+    def type=( t )
+      self[ :type ] = t
+    end
+
   end
 
 end
