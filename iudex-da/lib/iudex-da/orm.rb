@@ -37,11 +37,6 @@ module Iudex::DA
       # Setup the ORM (Sequel) connection given CONFIG defaults, any
       # passed opts, and connect_props config hooks.
       def setup( opts = {} )
-        @ar_to_sequel_migrations = {
-           85 => '21500000000001_add_simhash_index.rb',
-          100 => '21500000000101_add_index_next_visit.rb'
-        }
-        @ar_required = [ 10, 20, 21, 30, 40, 50, 60, 70, 80, 81, 110 ]
 
         @db.disconnect if @db
 
@@ -82,8 +77,6 @@ module Iudex::DA
         pm.run
       end
 
-      ARNotComplete = Class.new(StandardError)
-
       # Migrate from a iudex [1.1.0,1.3) database managed by
       # activerecord to a 1.3.x database managed by Sequel. No-op if
       # already Sequel.
@@ -101,14 +94,14 @@ module Iudex::DA
           db.transaction do
             versions = db.from( :schema_migrations ).map { |r| r[ :version ].to_i }
 
-            if ( versions & @ar_required ) != @ar_required
-              missing = @ar_required - ( versions & @ar_required )
+            if ( versions & AR_REQUIRED ) != AR_REQUIRED
+              missing = AR_REQUIRED - ( versions & AR_REQUIRED )
               raise( ARNotComplete,
                      "Missing AR migrations #{missing.inspect}; " +
                      "Use 'iudex-migrate _1.2.1_' first" )
             end
 
-            migrations_map = @ar_to_sequel_migrations.
+            migrations_map = AR_TO_SEQUEL_MIGRATIONS.
               merge( opts[ :ar_to_sequel_migrations ] || {} )
 
             db.drop_table( :schema_migrations )
@@ -140,6 +133,14 @@ module Iudex::DA
       end
 
     end
+
+    AR_TO_SEQUEL_MIGRATIONS = {
+       85 => '21500000000001_add_simhash_index.rb',
+      100 => '21500000000101_add_index_next_visit.rb'
+    }
+    AR_REQUIRED = [ 10, 20, 21, 30, 40, 50, 60, 70, 80, 81, 110 ]
+
+    ARNotComplete = Class.new(StandardError)
 
     @db = nil
 
