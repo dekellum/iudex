@@ -9,8 +9,8 @@ bin/iudex-da-simhash-dump
 bin/iudex-migrate
 config/config.rb
 db/20111012173757_base.rb
-db/index_next_visit/20111030000000_add_index_next_visit.rb
-db/simhash/20111020000000_add_simhash_index.rb
+db/index_next_visit/21500000000101_add_index_next_visit.rb
+db/simhash/21500000000001_add_simhash_index.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
 lib/iudex-da/config.rb
