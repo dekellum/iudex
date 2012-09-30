@@ -30,6 +30,8 @@ module Iudex::DA
 
       attr_reader :db
 
+      # Setup the ORM (Sequel) connection given CONFIG defaults, any
+      # passed opts, and connect_props config hooks.
       def setup( opts = {} )
         @db.disconnect if @db
 
@@ -53,7 +55,7 @@ module Iudex::DA
 
       # Migrate the DB given opts, including :target version.  For
       # backward compatibility, opts may be a single Integer,
-      # intpreted as the :target verison.  Setup must be called
+      # intpreted as the :target version.  Setup must be called
       # beforehand.
       def migrate( opts = {} )
         opts = {} if opts.nil?
@@ -80,7 +82,10 @@ module Iudex::DA
 
     end
 
+    # Custom migrator handling "profile" directories (optional
+    # migrations)
     class ProfileMigrator < Sequel::TimestampMigrator
+
       def initialize( db, profiles, opts )
 
         base = File.join( LIB_DIR, '..', '..', 'db' )

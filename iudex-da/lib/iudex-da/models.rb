@@ -18,8 +18,34 @@ require 'iudex-da/orm'
 
 module Iudex::DA::ORM
 
+  # Url model (for urls table). Usage note: ORM::setup must be called
+  # before this can be loaded.
   class Url < ::Sequel::Model
-    set_primary_key [ :uhash ]
+
+    VisitURL = Iudex::Core::VisitURL
+
+    plugin :composition
+
+    composition( :visit_url,
+                 :composer => proc { VisitURL.trust( url ) },
+                 :decomposer => proc {
+                   if v = compositions[ :visit_url ]
+                     self.url    = v.url
+                     self.uhash  = v.uhash
+                     self.domain = v.domain
+                   end
+                 } )
+
+    def visit_url=( vurl )
+      vurl = VisitURL.normalize( vurl ) unless vurl.is_a?( VisitURL )
+      super( vurl )
+    end
+
+    def self.find_by_url( vurl )
+      vurl = VisitURL.normalize( vurl ) unless vurl.is_a?( VisitURL )
+      self[ vurl.uhash ]
+    end
+
   end
 
 end

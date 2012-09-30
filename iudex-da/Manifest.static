@@ -23,3 +23,5 @@ lib/iudex-da/pool_data_source_factory.rb
 test/setup.rb
 test/test_migrate.rb
 test/test_pool_factory.rb
+test/test_url_model.rb
+test/test_work_poller.rb
