@@ -26,8 +26,6 @@ class TestMigrate < MiniTest::Unit::TestCase
   include Iudex::DA
   include RJack
 
-  ORM.setup
-
   def setup
     Logback[ 'iudex.da.sequel' ].level = :warn unless TestSetup::VERBOSE
   end

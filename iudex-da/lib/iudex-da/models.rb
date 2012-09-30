@@ -16,6 +16,10 @@
 
 require 'iudex-da/orm'
 
+# Ensure setup has been run, as Sequel::Model needs the database
+# connected for schema at model class creation
+Iudex::DA::ORM.db
+
 module Iudex::DA::ORM
 
   # Url model (for urls table). Usage note: ORM::setup must be called

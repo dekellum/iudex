@@ -20,14 +20,11 @@
 require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-da'
-require 'iudex-da/orm'
+require 'iudex-da/models'
 
 class TestUrlModel < MiniTest::Unit::TestCase
   include Iudex::DA
   include Iudex::DA::ORM
-
-  ORM.setup
-  require 'iudex-da/models'
 
   def setup
     Url.truncate

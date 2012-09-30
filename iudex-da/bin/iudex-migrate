@@ -68,8 +68,6 @@ END
 
   require 'iudex-da/orm'
 
-  DA::ORM.setup
-
   target = ARGV[0] && ARGV[0].to_i
   opts = {}
   opts[ :target ] = target if target

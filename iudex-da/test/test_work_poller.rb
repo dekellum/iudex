@@ -21,18 +21,15 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-da'
 require 'iudex-da/key_helper'
-require 'iudex-da/orm'
 require 'iudex-da/pool_data_source_factory'
+require 'iudex-da/models'
 
 class TestWorkPoller < MiniTest::Unit::TestCase
   include Iudex::Filter::KeyHelper
   include Iudex::DA
   include Iudex::DA::ORM
 
-  ORM.setup
   Gravitext::HTMap::UniMap.define_accessors
-
-  require 'iudex-da/models'
 
   def setup
     Url.truncate

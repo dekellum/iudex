@@ -28,9 +28,11 @@ module Iudex::DA
 
     class << self
 
-      # The Sequel::Database instance, available after #setup is
-      # called.
-      attr_reader :db
+      # The Sequel::Database instance. #setup is called if necessary.
+      def db
+        setup unless @db
+        @db
+      end
 
       # Setup the ORM (Sequel) connection given CONFIG defaults, any
       # passed opts, and connect_props config hooks.
