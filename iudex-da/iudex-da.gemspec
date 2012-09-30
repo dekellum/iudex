@@ -10,7 +10,7 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',                          '~> 1.2.1'
+  s.depend 'iudex-core',                          '>= 1.2.1', '< 1.4'
   s.depend 'activerecord',                        '~> 3.1.3'
   s.depend 'jdbc-postgres',                       '~> 9.1.901'
   s.depend 'activerecord-jdbcpostgresql-adapter', '~> 1.2.2'
