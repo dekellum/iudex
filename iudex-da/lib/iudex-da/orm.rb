@@ -28,6 +28,8 @@ module Iudex::DA
 
     class << self
 
+      # The Sequel::Database instance, available after #setup is
+      # called.
       attr_reader :db
 
       # Setup the ORM (Sequel) connection given CONFIG defaults, any
@@ -81,6 +83,8 @@ module Iudex::DA
       end
 
     end
+
+    @db = nil
 
     # Custom migrator handling "profile" directories (optional
     # migrations)

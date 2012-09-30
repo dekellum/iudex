@@ -40,8 +40,9 @@ class TestPoolFactory < MiniTest::Unit::TestCase
     @data_source = nil
   end
 
-  # Really just want to the factory, data_source but this makes a fine
-  # demonstration of dbutils query runner "just working" via ruby
+  # Really just want to test the factory and data_source but this
+  # makes a fine demonstration of dbutils query runner "just working"
+  # via ruby.
   def test_query_runner
     assert( @data_source )
     qrun = QueryRunner.new( @data_source )
