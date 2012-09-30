@@ -65,18 +65,11 @@ task :javadoc do
   sh( "mvn javadoc:aggregate" )
 end
 
-desc "Lazy dependencies for (re)rdoc tasks"
-task :rdocdeps do
-  require 'rubygems'
-  require 'rdoc'
-end
-
-task :rdoc   => [ :rdocdeps ]
-task :rerdoc => [ :rdocdeps ]
-
+require 'rubygems'
+gem 'rdoc'
 require 'rdoc/task'
 
-Rake::RDocTask.new do |rd|
+RDoc::Task.new do |rd|
   rd.main = "README.rdoc"
   rd.rdoc_dir = "doc" # FIXME: www/_site/rdoc?
   rd.title = "Iūdex RDoc"
