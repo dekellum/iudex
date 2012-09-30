@@ -37,6 +37,12 @@ module Iudex::DA
       # Setup the ORM (Sequel) connection given CONFIG defaults, any
       # passed opts, and connect_props config hooks.
       def setup( opts = {} )
+        @ar_to_sequel_migrations = {
+           85 => '21500000000001_add_simhash_index.rb',
+          100 => '21500000000101_add_index_next_visit.rb'
+        }
+        @ar_required = [ 10, 20, 21, 30, 40, 50, 60, 70, 80, 81, 110 ]
+
         @db.disconnect if @db
 
         log = RJack::SLF4J[ "iudex.da.sequel" ]
@@ -55,12 +61,14 @@ module Iudex::DA
         log.debug { "Full Params: #{ conf.inspect }" }
 
         @db = Sequel.connect( cstr, conf )
+
       end
 
       # Migrate the DB given opts, including :target version.  For
       # backward compatibility, opts may be a single Integer,
-      # intpreted as the :target version.  Setup must be called
+      # interpreted as the :target version.  Setup must be called
       # beforehand.
+      # See also opts for #migrate_ar_to_sequel
       def migrate( opts = {} )
         opts = {} if opts.nil?
         opts = { :target => opts } if opts.is_a?( Integer )
@@ -68,8 +76,55 @@ module Iudex::DA
         profiles = Hooker.apply( [ :iudex, :migration_profiles ],
                                  opts[ :profiles ] || [] )
 
+        migrate_ar_to_sequel( opts )
+
         pm = ProfileMigrator.new( db, profiles, opts )
         pm.run
+      end
+
+      ARNotComplete = Class.new(StandardError)
+
+      # Migrate from a iudex [1.1.0,1.3) database managed by
+      # activerecord to a 1.3.x database managed by Sequel. No-op if
+      # already Sequel.
+      # === Options
+      # :ar_to_sequel_migrations:: Hash<Integer,String> AR migration
+      #                            number to sequel filename
+      #                            (timestamp) map for extensions
+      #                            supported externally to iudex-da.
+      def migrate_ar_to_sequel( opts )
+
+        columns = ( db.table_exists?( :schema_migrations ) &&
+                    db.schema( :schema_migrations ).map { |sr| sr[0] } )
+
+        if columns == [ :version ] # Old format AR schema_migrations
+          db.transaction do
+            versions = db.from( :schema_migrations ).map { |r| r[ :version ].to_i }
+
+            if ( versions & @ar_required ) != @ar_required
+              missing = @ar_required - ( versions & @ar_required )
+              raise( ARNotComplete,
+                     "Missing AR migrations #{missing.inspect}; " +
+                     "Use 'iudex-migrate _1.2.1_' first" )
+            end
+
+            migrations_map = @ar_to_sequel_migrations.
+              merge( opts[ :ar_to_sequel_migrations ] || {} )
+
+            db.drop_table( :schema_migrations )
+            db.create_table( :schema_migrations ) do
+              String :filename, :null => false
+              primary_key [ :filename ]
+            end
+
+            sm = db[:schema_migrations]
+            sm.insert( :filename => '20111012173757_base.rb' )
+
+            migrations_map.each do | version, filename |
+              sm.insert( :filename => filename ) if versions.include?( version )
+            end
+          end
+        end
       end
 
       def params( opts )
