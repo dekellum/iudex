@@ -27,7 +27,7 @@ module Iudex::DA
     import 'java.sql.SQLException'
     import 'java.lang.RuntimeException'
 
-    attr_accessor :host_depth_divisor
+    attr_accessor :domain_depth_divisor
     attr_accessor :max_priority_urls
     attr_accessor :max_domain_urls
     attr_accessor :max_urls
@@ -35,10 +35,13 @@ module Iudex::DA
     alias :max_host_urls  :max_domain_urls
     alias :max_host_urls= :max_domain_urls=
 
+    alias :host_depth_divisor  :domain_depth_divisor
+    alias :host_depth_divisor= :domain_depth_divisor=
+
     def initialize( data_source, mapper )
       super()
 
-      @host_depth_divisor =     8.0
+      @domain_depth_divisor = 8.0
 
       @max_priority_urls  = 500_000
       @max_domain_urls    =  10_000
@@ -71,36 +74,78 @@ module Iudex::DA
 
     def generate_query
       sql = <<-SQL
-    SELECT #{flds}
-    FROM ( SELECT #{flds_d}
-           FROM ( SELECT #{flds_d},
-                  ( priority - ( ( dpos - 1 ) / #{host_depth_divisor} ) ) AS adj_priority
-                  FROM ( SELECT #{flds_d},
-                                row_number() OVER ( PARTITION BY domain
-                                                    ORDER BY priority DESC ) AS dpos
-                         FROM ( SELECT #{flds_d}
-                                FROM urls
-                                WHERE next_visit_after <= now()
-                                ORDER BY priority DESC, next_visit_after DESC
-                                LIMIT #{max_priority_urls}
-                              ) AS subP
-                       ) AS subH
-                  WHERE dpos <= #{max_domain_urls}
-                ) AS subA
-          ORDER BY adj_priority DESC
-          LIMIT ? ) AS subF
-    ORDER BY domain, priority DESC;
+        SELECT #{flds_d}
+        FROM ( SELECT #{flds_d},
+               ( priority - ( ( dpos - 1 ) / #{domain_depth_divisor} ) ) AS adj_priority
+               FROM ( SELECT #{flds_d},
+                             row_number() OVER ( PARTITION BY domain
+                                                 ORDER BY priority DESC ) AS dpos
+                      FROM ( #{ filter_query( fields( :domain ) ) } ) AS subP
+                     ) AS subH
+                WHERE dpos <= #{max_domain_urls}
+              ) AS subA
+        ORDER BY adj_priority DESC
+        LIMIT ?
       SQL
+
+      sql = wrap_domain_group_query( fields, sql )
+      # FIXME: Make conditional, oft not needed
 
       sql.gsub( /\s+/, ' ').strip
     end
 
+    def filter_query( flds )
+      criteria = [ "next_visit_after <= now()" ]
+
+      # FIXME: uhash range criteria goes here
+      # FIXME: age adjusted priority goes here
+
+      sql = <<-SQL
+        SELECT #{clist flds}
+        FROM urls
+        WHERE #{and_list criteria}
+        ORDER BY priority DESC, next_visit_after DESC
+      SQL
+
+      # FIXME: DESC next_visit_after means take the youngest first, so
+      # starvation influencing (opposite of aged priority)
+
+      # FIXME: Order only if LIMITing?
+
+      sql += " LIMIT #{max_priority_urls}" if max_priority_urls
+
+      sql
+    end
+
+    def wrap_domain_group_query( flds, sub )
+      <<-SQL
+        SELECT #{clist flds}
+        FROM ( #{sub} ) as subDG
+        ORDER BY domain, priority DESC;
+      SQL
+    end
+
+
+    #FIXME: Replace with clist
     def flds
       @mapper.field_names
     end
 
+    #FIXME: Replace with clist
     def flds_d
-      ( @mapper.fields | [ :domain.to_k ] ).join( ', ' )
+      clist( fields( :domain ) )
+    end
+
+    def fields( *ksyms )
+      @mapper.fields | keys( *ksyms )
+    end
+
+    def clist( l )
+      l.compact.join( ', ' )
+    end
+
+    def and_list( l )
+      l.compact.join( " AND " )
     end
 
   end
