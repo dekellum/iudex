@@ -20,6 +20,7 @@ lib/iudex-da/key_helper.rb
 lib/iudex-da/models.rb
 lib/iudex-da/orm.rb
 lib/iudex-da/pool_data_source_factory.rb
+lib/iudex-da/work_poller.rb
 test/setup.rb
 test/test_migrate.rb
 test/test_pool_factory.rb
