@@ -177,6 +177,11 @@ public abstract class GenericWorkPollStrategy
         return ( ( (float) count ) / ( (float) highMark ) );
     }
 
+    protected Logger log()
+    {
+        return _log;
+    }
+
     private VisitQueueFactory _visitQueueFactory = new VisitQueueFactory();
 
     private long _minPollInterval  =      15 * 1000; //15sec
