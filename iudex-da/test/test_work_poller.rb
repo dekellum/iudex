@@ -31,13 +31,21 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   Gravitext::HTMap::UniMap.define_accessors
 
+  URLS = [ [ "http://foo.gravitext.com/bar/1", 11 ],
+           [ "http://hometown.com/33",         10 ],
+           [ "http://gravitext.com/2",         9  ] ]
+
   def setup
     Url.truncate
+
+    URLS.each do | u, p |
+      Url.create( :visit_url => u, :priority => p, :type => "PAGE"  )
+    end
+
     @factory = PoolDataSourceFactory.new( :loglevel => 4 )
     @data_source = @factory.create
     @mapper = ContentMapper.new( keys( :uhash, :domain, :url, :type,
                                        :priority, :next_visit_after ) )
-    @poller = WorkPoller.new( @data_source, @mapper )
   end
 
   def teardown
@@ -46,17 +54,11 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll
-    urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
-             [ "http://gravitext.com/2",         10 ],
-             [ "http://hometown.com/33",         10 ] ]
-
-    urls.each do | u, p |
-      Url.create( :visit_url => u, :priority => p, :type => "PAGE"  )
-    end
+    poller = WorkPoller.new( @data_source, @mapper )
 
     pos = 0
-    @poller.poll.each do |map|
-      assert_equal( urls[ pos ][ 0 ], map.url.url )
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
       pos += 1
     end
     assert_equal( 3, pos )
