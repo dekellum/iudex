@@ -44,8 +44,7 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
     @factory = PoolDataSourceFactory.new( :loglevel => 4 )
     @data_source = @factory.create
-    @mapper = ContentMapper.new( keys( :uhash, :domain, :url, :type,
-                                       :priority, :next_visit_after ) )
+    @mapper = ContentMapper.new( keys( :url, :type, :priority, :next_visit_after ) )
   end
 
   def teardown
@@ -53,12 +52,66 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     @date_source = nil
   end
 
-  def test_poll
+  def test_default_poll
     poller = WorkPoller.new( @data_source, @mapper )
 
     pos = 0
     poller.poll.each do |map|
       assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_max_priority_urls
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.max_priority_urls = 4
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.domain_depth_coef = 0.125
+    poller.max_priority_urls = 4
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth_only
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.domain_depth_coef = 0.125
+    poller.age_coef_1        = 0.0
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_group
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.do_domain_group = true
+
+    urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
+             [ "http://gravitext.com/2",         9  ],
+             [ "http://hometown.com/33",         10 ] ]
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( urls[ pos ][ 0 ], map.url.url, "pos #{pos}" )
       pos += 1
     end
     assert_equal( 3, pos )

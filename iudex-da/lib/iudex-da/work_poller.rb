@@ -20,36 +20,87 @@ require 'rjack-slf4j'
 
 module Iudex::DA
 
+  # A SQL based WorkPoller
   class WorkPoller < Java::iudex.core.GenericWorkPollStrategy
     include Iudex::Filter::KeyHelper
+    include Gravitext::HTMap
 
-    import 'iudex.da.ContentReader'
     import 'java.sql.SQLException'
-    import 'java.lang.RuntimeException'
 
-    attr_accessor :domain_depth_divisor
-    alias :host_depth_divisor  :domain_depth_divisor
-    alias :host_depth_divisor= :domain_depth_divisor=
+    # If set > 0.0 group by domain and reduce priority for subsequent
+    # urls within a common (registration level) domain (coefficient of
+    # depth).  This increases crawl throughput when many domains are
+    # available. (default: nil, off)
+    attr_accessor :domain_depth_coef
 
-    attr_accessor :max_priority_urls
+    def domain_depth?
+      domain_depth_coef && domain_depth_coef > 0.0
+    end
 
+    # Deprecated, use #domain_depth_coef (the reciprocal)
+    def host_depth_divisor
+      1.0 / domain_depth_coef
+    end
+
+    # Deprecated, use #domain_depth_coef= (reciprocal)
+    def host_depth_divisor=( dv )
+      @domain_depth_coef = 1.0 / dv
+    end
+
+    # If #domain_depth_coef is set, this sets maximum urls for
+    # any single (registration level) domain (default: 10_000)
     attr_accessor :max_domain_urls
+
+    # Deprecated, use #max_domain_urls
     alias :max_host_urls  :max_domain_urls
+
+    # Deprecated, use #max_domain_urls=
     alias :max_host_urls= :max_domain_urls=
 
+    # The limit of urls to obtain in a single poll (across all
+    # domains) (default: 50_000)
     attr_accessor :max_urls
 
-    attr_accessor :domain_group
+    # A secondary limit on the number of urls to consider, taking the
+    # N high basic priority urls. This is only ever applied when
+    # #domain_depth_coef is set. (default: nil, off)
+    attr_accessor :max_priority_urls
+
+    # If set true, provide the final work list ordered in domain ,priority
+    # order (default: false)
+    attr_writer :do_domain_group
+
+    def domain_group?
+      @do_domain_group
+    end
+
+    # First age coefficient If set > 0.0, adjust priority by the equation:
+    #
+    #   priority - age_coef_1 * sqrt( age_coef_2 * age )
+    #
+    # Where age is now - next_visit_after the (default: 0.2)
+    attr_accessor :age_coef_1
+
+    # Second age coefficient (default: 0.1)
+    attr_accessor :age_coef_2
+
+    def aged_priority?
+      ( age_coef_1 && age_coef_1 > 0.0 &&
+        age_coef_2 && age_coef_2 > 0.0 )
+    end
 
     def initialize( data_source, mapper )
       super()
 
-      @domain_depth_divisor = 8.0
-      @domain_group = false
+      @domain_depth_coef  = nil
+      @do_domain_group    = false
 
-      @max_priority_urls  = 500_000
-      @max_domain_urls    =  10_000
-      @max_urls           =  50_000
+      @max_priority_urls  =    nil
+      @max_domain_urls    = 10_000
+      @max_urls           = 50_000
+
+      @age_coef_1         = 0.2
+      @age_coef_2         = 0.1
 
       @log = RJack::SLF4J[ self.class ]
       #FIXME: Add accessor for log in GenericWorkPollStrategy
@@ -71,6 +122,8 @@ module Iudex::DA
       @log.error( "On poll: ", x )
     end
 
+    # Poll work and return as List<UniMap>
+    # Raises SQLException
     def poll
       query = generate_query
       @reader.select( query, max_urls )
@@ -78,58 +131,73 @@ module Iudex::DA
 
     def generate_query
 
-      q = filter_query( fields(
-            ( :domain if ( domain_depth_divisor || domain_group ) ) ) )
+      q = filter_query(
+            fields( ( :domain if domain_depth? || domain_group? ) ),
+            ( max_priority_urls if domain_depth? ) )
 
-      if domain_depth_divisor
-        q = wrap_domain_partition_query( :priority,
-                                         fields( ( :domain if domain_group ) ), q )
+      if domain_depth?
+        flds = fields( ( :domain if domain_group? ) )
+        pfld = aged_priority? ? :aged_priority : :priority
+        q = wrap_domain_partition_query( pfld, flds, q )
       end
 
-      q = wrap_domain_group_query( fields, q ) if domain_group
-      # FIXME: Make conditional, oft not needed
+      limit_priority = if domain_depth?
+                         :adj_priority
+                       else
+                         if domain_group?
+                           :aged_priority
+                         else
+                           :priority
+                         end
+                       end
+      q += <<-SQL
+        ORDER BY #{limit_priority} DESC
+        LIMIT ?
+      SQL
+
+      q = wrap_domain_group_query( fields, q ) if domain_group?
 
       q.gsub( /\s+/, ' ').strip
     end
 
-    def wrap_domain_partition_query( priority_field, fields, sub )
+    def wrap_domain_partition_query( pfld, flds, sub )
       <<-SQL
-        SELECT #{flds_d}
-        FROM ( SELECT #{flds_d},
-               ( #{priority_field} -
-                 ( ( dpos - 1 ) / #{domain_depth_divisor} ) ) AS d_adj_priority
-               FROM ( SELECT #{flds_d},
+        SELECT #{clist flds}
+        FROM ( SELECT #{clist flds},
+               ( #{pfld} - ( #{domain_depth_coef} * ( dpos - 1 ) ) ) AS adj_priority
+               FROM ( SELECT #{clist( flds | [ pfld ] )},
                              row_number() OVER (
                                 PARTITION BY domain
-                                ORDER BY priority DESC ) AS dpos
+                                ORDER BY #{pfld} DESC ) AS dpos
                       FROM ( #{ sub } ) AS subP
                      ) AS subH
                 WHERE dpos <= #{max_domain_urls}
               ) AS subA
-        ORDER BY d_adj_priority DESC
-        LIMIT ?
       SQL
     end
 
-    def filter_query( flds )
+    def filter_query( flds, max = nil )
       criteria = [ "next_visit_after <= now()" ]
 
       # FIXME: uhash range criteria goes here
-      # FIXME: age adjusted priority goes here
+
+      flds += [ <<-SQL ] if aged_priority?
+        ( priority +
+          #{age_coef_1} * SQRT( #{age_coef_2} *
+             EXTRACT( EPOCH FROM ( now() - next_visit_after ) ) )
+        ) as aged_priority
+      SQL
 
       sql = <<-SQL
         SELECT #{clist flds}
         FROM urls
         WHERE #{and_list criteria}
-        ORDER BY priority DESC, next_visit_after DESC
       SQL
 
-      # FIXME: DESC next_visit_after means take the youngest
-      # first, so starvation influencing (opposite of aged priority)
-
-      # FIXME: Order only if LIMITing?
-
-      sql += " LIMIT #{max_priority_urls}" if max_priority_urls
+      sql += <<-SQL if max
+        ORDER BY priority DESC
+        LIMIT #{max}
+      SQL
 
       sql
     end
@@ -142,18 +210,9 @@ module Iudex::DA
       SQL
     end
 
-    #FIXME: Replace with clist
-    def flds
-      @mapper.field_names
-    end
-
-    #FIXME: Replace with clist
-    def flds_d
-      clist( fields( :domain ) )
-    end
-
     def fields( *ksyms )
-      @mapper.fields | keys( *( ksyms.compact ) )
+      ( @mapper.fields.map { |k| k.name.to_sym } |
+        ksyms.flatten.compact.map { |s| s.to_sym } )
     end
 
     def clist( l )
