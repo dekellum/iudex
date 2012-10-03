@@ -33,7 +33,7 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   URLS = [ [ "http://foo.gravitext.com/bar/1", 11 ],
            [ "http://hometown.com/33",         10 ],
-           [ "http://gravitext.com/2",         9  ] ]
+           [ "http://gravitext.com/2",          9 ] ]
 
   def setup
     Url.truncate
@@ -107,7 +107,7 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     poller.do_domain_group = true
 
     urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
-             [ "http://gravitext.com/2",         9  ],
+             [ "http://gravitext.com/2",          9 ],
              [ "http://hometown.com/33",         10 ] ]
 
     pos = 0

@@ -47,8 +47,8 @@ module Iudex::DA
       @domain_depth_coef = 1.0 / dv
     end
 
-    # If #domain_depth_coef is set, this sets maximum urls for
-    # any single (registration level) domain (default: 10_000)
+    # If #domain_depth_coef is set, this sets maximum urls for any
+    # single (registration level) domain (default: 10_000)
     attr_accessor :max_domain_urls
 
     # Deprecated, use #max_domain_urls
@@ -66,23 +66,29 @@ module Iudex::DA
     # #domain_depth_coef is set. (default: nil, off)
     attr_accessor :max_priority_urls
 
-    # If set true, provide the final work list ordered in domain, priority
-    # order (default: false)
+    # If set true, provide the final work list ordered in domain,
+    # priority order (default: false)
     attr_writer :do_domain_group
 
     def domain_group?
       @do_domain_group
     end
 
-    # First age coefficient If set > 0.0, adjust priority by the equation:
+    # First age coefficient. If set > 0.0, adjust priority by the
+    # equation:
     #
-    #   priority - age_coef_1 * sqrt( age_coef_2 * age )
+    #   priority + age_coef_1 * sqrt( age_coef_2 * age )
     #
     # Where age is now - next_visit_after the (default: 0.2)
     attr_accessor :age_coef_1
 
     # Second age coefficient (default: 0.1)
     attr_accessor :age_coef_2
+
+    def aged_priority?
+      ( age_coef_1 && age_coef_1 > 0.0 &&
+        age_coef_2 && age_coef_2 > 0.0 )
+    end
 
     # An Array of [ domain, max_urls ] pairs where each domain is a
     # unique reqistration-level, normalized lower-case domain. A nil
@@ -99,11 +105,6 @@ module Iudex::DA
     # will be polled. Note that the uhash is indepedent of domain,
     # being a hash on the entire URL. (default: nil, off)
     attr_accessor :uhash_slice
-
-    def aged_priority?
-      ( age_coef_1 && age_coef_1 > 0.0 &&
-        age_coef_2 && age_coef_2 > 0.0 )
-    end
 
     def initialize( data_source, mapper )
       super()
@@ -273,22 +274,18 @@ module Iudex::DA
     # Given a zero-based position within some number of segments,
     # returns [ min, max ] bounds where min will be nil at pos=0, and
     # max will be nil at pos=segments-1. Non nil values are uhash
-    # prefixes that can be used as selection critiria.
+    # prefixes that can be used as selection criteria.
     def url64_range( pos, segments )
       unless pos >= 0 && segments > pos
         raise "Invalid url64_range: 0 <= #{pos} < #{segments}"
       end
 
-      period = ( 64 * 64 / segments.to_f)
-      low  = ( period * (pos  ) ).round if  pos > 0
+      period = ( 64 * 64 / segments.to_f )
+      low  = ( period *  pos    ).round if  pos > 0
       high = ( period * (pos+1) ).round if (pos+1) < segments
 
       [ low, high ].map do |i|
-        if i
-          j = i % 64
-          i /= 64
-          URL64_ORDER[i] + URL64_ORDER[j]
-        end
+        URL64_ORDER[ i / 64 ] + URL64_ORDER[ i % 64 ] if i
       end
     end
 
