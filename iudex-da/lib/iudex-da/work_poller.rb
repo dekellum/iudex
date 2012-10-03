@@ -140,11 +140,7 @@ module Iudex::DA
         q = wrap_domain_partition_query( flds, q )
       end
 
-      limit_priority = if domain_depth?
-                         :adj_priority
-                       else
-                         :priority
-                       end
+      limit_priority = domain_depth? ? :adj_priority : :priority
       q += <<-SQL
         ORDER BY #{limit_priority} DESC
         LIMIT ?
@@ -159,15 +155,16 @@ module Iudex::DA
       <<-SQL
         SELECT #{clist flds}
         FROM ( SELECT #{clist flds},
-               ( priority - ( #{domain_depth_coef} * ( dpos - 1 ) ) ) AS adj_priority
+               ( priority - ( #{domain_depth_coef}::REAL * ( dpos - 1 ) )
+               )::REAL AS adj_priority
                FROM ( SELECT #{clist flds},
                              row_number() OVER (
                                PARTITION BY domain
                                ORDER BY priority DESC ) AS dpos
                       FROM ( #{ sub } ) AS subP
-                     ) AS subH
-                WHERE dpos <= #{max_domain_urls}
-              ) AS subA
+                    ) AS subH
+               WHERE dpos <= #{max_domain_urls}
+             ) AS subA
       SQL
     end
 
@@ -181,9 +178,9 @@ module Iudex::DA
         i = flds.index( :priority ) || flds.size
         flds[ i ] = <<-SQL
           ( priority +
-            #{age_coef_1}::Real *
-                  SQRT( #{age_coef_2}::Real *
-                        EXTRACT( EPOCH FROM ( now() - next_visit_after ) ) )::Real
+            #{age_coef_1}::REAL *
+                  SQRT( #{age_coef_2}::REAL *
+                        EXTRACT( EPOCH FROM ( now() - next_visit_after ) ) )::REAL
           ) AS priority
         SQL
       end
