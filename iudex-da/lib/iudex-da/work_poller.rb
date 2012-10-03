@@ -66,7 +66,7 @@ module Iudex::DA
     # #domain_depth_coef is set. (default: nil, off)
     attr_accessor :max_priority_urls
 
-    # If set true, provide the final work list ordered in domain ,priority
+    # If set true, provide the final work list ordered in domain, priority
     # order (default: false)
     attr_writer :do_domain_group
 
@@ -83,6 +83,15 @@ module Iudex::DA
 
     # Second age coefficient (default: 0.1)
     attr_accessor :age_coef_2
+
+    # An Array of [ domain, max_urls ] pairs where each domain is a
+    # unique reqistration-level, normalized lower-case domain. A nil
+    # domain applies to all domains not covered by another
+    # row. Without a nil domain row, work is limited to the explicit
+    # domains listed. If provided these max_urls values are used
+    # instead of top level #max_urls.  (default: [], off) Domain depth
+    # should most likely be avoided if this feature is used.
+    attr_accessor :domain_union
 
     def aged_priority?
       ( age_coef_1 && age_coef_1 > 0.0 &&
@@ -101,6 +110,8 @@ module Iudex::DA
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
+
+      @domain_union       = []
 
       @log = RJack::SLF4J[ self.class ]
       #FIXME: Add accessor for log in GenericWorkPollStrategy
@@ -125,30 +136,67 @@ module Iudex::DA
     # Poll work and return as List<UniMap>
     # Raises SQLException
     def poll
-      query = generate_query
-      @reader.select( query, max_urls )
+      query, params = generate_query
+      @reader.select( query, *params )
     end
 
     def generate_query
+      criteria = [ "next_visit_after <= now()" ]
 
-      q = filter_query(
+      # FIXME: uhash range criteria goes here
+
+      params = []
+
+      if @domain_union.empty?
+        query = generate_query_inner( criteria )
+        params = [ max_urls ]
+      else
+        subqueries = []
+        @domain_union.each do | domain, dmax |
+          c = criteria.dup
+          if domain.nil?
+            c += @domain_union.map { |nd,_| nd }.
+                               compact.
+                               map { |nd| "domain != '#{nd}'" }
+          else
+            c << "domain = '#{domain}'"
+          end
+          subqueries << generate_query_inner( c )
+          params << dmax
+        end
+        if subqueries.size == 1
+          [ subqueries.first, params ]
+        else
+          query = "(" + subqueries.join( ") UNION (" ) + ")"
+        end
+      end
+
+      query = wrap_domain_group_query( fields, query ) if domain_group?
+
+      query = query.gsub( /\s+/, ' ').strip
+
+      [ query, params ]
+    end
+
+    def generate_query_inner( criteria )
+
+      query = filter_query(
             fields( ( :domain if domain_depth? || domain_group? ) ),
-            ( max_priority_urls if domain_depth? ) )
+            ( max_priority_urls if domain_depth? ),
+            criteria )
 
       if domain_depth?
         flds = fields( ( :domain if domain_group? ) )
-        q = wrap_domain_partition_query( flds, q )
+        query = wrap_domain_partition_query( flds, query )
       end
 
       limit_priority = domain_depth? ? :adj_priority : :priority
-      q += <<-SQL
+      query += <<-SQL
         ORDER BY #{limit_priority} DESC
         LIMIT ?
       SQL
 
-      q = wrap_domain_group_query( fields, q ) if domain_group?
-
-      q.gsub( /\s+/, ' ').strip
+      query
     end
 
     def wrap_domain_partition_query( flds, sub )
@@ -168,10 +216,7 @@ module Iudex::DA
       SQL
     end
 
-    def filter_query( flds, max = nil )
-      criteria = [ "next_visit_after <= now()" ]
-
-      # FIXME: uhash range criteria goes here
+    def filter_query( flds, max, criteria )
 
       if aged_priority?
         flds = flds.dup
@@ -203,7 +248,7 @@ module Iudex::DA
       <<-SQL
         SELECT #{clist flds}
         FROM ( #{sub} ) AS subDG
-        ORDER BY domain, priority DESC;
+        ORDER BY domain, priority DESC
       SQL
     end
 

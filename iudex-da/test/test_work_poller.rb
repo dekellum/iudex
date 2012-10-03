@@ -44,7 +44,8 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
     @factory = PoolDataSourceFactory.new( :loglevel => 4 )
     @data_source = @factory.create
-    @mapper = ContentMapper.new( keys( :url, :type, :priority, :next_visit_after ) )
+    @mapper = ContentMapper.new( keys( :url, :type, :priority,
+                                       :next_visit_after ) )
   end
 
   def teardown
@@ -115,6 +116,15 @@ class TestWorkPoller < MiniTest::Unit::TestCase
       pos += 1
     end
     assert_equal( 3, pos )
+  end
+
+  def test_poll_domain_union
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.domain_union = [ [ 'google.com', 15000 ],
+                            [ nil, 10000 ] ]
+
+    result = poller.poll
+    assert_equal( 3, result.size )
   end
 
 end
