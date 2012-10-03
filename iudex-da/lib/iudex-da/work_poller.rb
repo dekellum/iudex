@@ -137,18 +137,13 @@ module Iudex::DA
 
       if domain_depth?
         flds = fields( ( :domain if domain_group? ) )
-        pfld = aged_priority? ? :aged_priority : :priority
-        q = wrap_domain_partition_query( pfld, flds, q )
+        q = wrap_domain_partition_query( flds, q )
       end
 
       limit_priority = if domain_depth?
                          :adj_priority
                        else
-                         if domain_group?
-                           :aged_priority
-                         else
-                           :priority
-                         end
+                         :priority
                        end
       q += <<-SQL
         ORDER BY #{limit_priority} DESC
@@ -160,15 +155,15 @@ module Iudex::DA
       q.gsub( /\s+/, ' ').strip
     end
 
-    def wrap_domain_partition_query( pfld, flds, sub )
+    def wrap_domain_partition_query( flds, sub )
       <<-SQL
         SELECT #{clist flds}
         FROM ( SELECT #{clist flds},
-               ( #{pfld} - ( #{domain_depth_coef} * ( dpos - 1 ) ) ) AS adj_priority
-               FROM ( SELECT #{clist( flds | [ pfld ] )},
+               ( priority - ( #{domain_depth_coef} * ( dpos - 1 ) ) ) AS adj_priority
+               FROM ( SELECT #{clist flds},
                              row_number() OVER (
-                                PARTITION BY domain
-                                ORDER BY #{pfld} DESC ) AS dpos
+                               PARTITION BY domain
+                               ORDER BY priority DESC ) AS dpos
                       FROM ( #{ sub } ) AS subP
                      ) AS subH
                 WHERE dpos <= #{max_domain_urls}
@@ -181,12 +176,17 @@ module Iudex::DA
 
       # FIXME: uhash range criteria goes here
 
-      flds += [ <<-SQL ] if aged_priority?
-        ( priority +
-          #{age_coef_1} * SQRT( #{age_coef_2} *
-             EXTRACT( EPOCH FROM ( now() - next_visit_after ) ) )
-        ) as aged_priority
-      SQL
+      if aged_priority?
+        flds = flds.dup
+        i = flds.index( :priority ) || flds.size
+        flds[ i ] = <<-SQL
+          ( priority +
+            #{age_coef_1}::Real *
+                  SQRT( #{age_coef_2}::Real *
+                        EXTRACT( EPOCH FROM ( now() - next_visit_after ) ) )::Real
+          ) AS priority
+        SQL
+      end
 
       sql = <<-SQL
         SELECT #{clist flds}
@@ -205,7 +205,7 @@ module Iudex::DA
     def wrap_domain_group_query( flds, sub )
       <<-SQL
         SELECT #{clist flds}
-        FROM ( #{sub} ) as subDG
+        FROM ( #{sub} ) AS subDG
         ORDER BY domain, priority DESC;
       SQL
     end
