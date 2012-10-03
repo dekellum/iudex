@@ -46,16 +46,18 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     @data_source = @factory.create
     @mapper = ContentMapper.new( keys( :url, :type, :priority,
                                        :next_visit_after ) )
+    @poller = WorkPoller.new( @data_source, @mapper )
   end
 
   def teardown
     @factory.close
     @date_source = nil
+    @poller = nil
   end
 
-  def test_default_poll
-    poller = WorkPoller.new( @data_source, @mapper )
+  attr_reader :poller
 
+  def test_default_poll
     pos = 0
     poller.poll.each do |map|
       assert_equal( URLS[ pos ][ 0 ], map.url.url )
@@ -65,7 +67,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_with_max_priority_urls
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.max_priority_urls = 4
 
     pos = 0
@@ -77,7 +78,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_with_domain_depth
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.domain_depth_coef = 0.125
     poller.max_priority_urls = 4
 
@@ -90,7 +90,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_with_domain_depth_only
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.domain_depth_coef = 0.125
     poller.age_coef_1        = 0.0
 
@@ -103,7 +102,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_with_domain_group
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.do_domain_group = true
 
     urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
@@ -120,7 +118,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
 
   def test_poll_domain_union_1
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.domain_union = [ [ 'gravitext.com', 15000 ] ]
 
     result = poller.poll
@@ -128,7 +125,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_domain_union_2
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.domain_union = [ [ 'gravitext.com', 15000 ],
                             [ nil, 10000 ] ]
 
@@ -137,7 +133,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_domain_union_3
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.domain_union = [ [ 'gravitext.com', 1 ],
                             [ 'hometown.com', 1 ],
                             [ nil, 3 ] ]
@@ -147,7 +142,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_uhash_slice
-    poller = WorkPoller.new( @data_source, @mapper )
     poller.uhash_slice = [ 4, 5 ]
 
     urls = [ [ "http://hometown.com/33",         10 ] ]
