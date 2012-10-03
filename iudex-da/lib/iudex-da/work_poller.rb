@@ -180,9 +180,9 @@ module Iudex::DA
           params << dmax
         end
         if subqueries.size == 1
-          [ subqueries.first, params ]
+          query = subqueries.first
         else
-          query = "(" + subqueries.join( ") UNION (" ) + ")"
+          query = "(" + subqueries.join( ") UNION ALL (" ) + ")"
         end
       end
 

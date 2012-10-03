@@ -118,13 +118,32 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     assert_equal( 3, pos )
   end
 
-  def test_poll_domain_union
+
+  def test_poll_domain_union_1
     poller = WorkPoller.new( @data_source, @mapper )
-    poller.domain_union = [ [ 'google.com', 15000 ],
+    poller.domain_union = [ [ 'gravitext.com', 15000 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_domain_union_2
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.domain_union = [ [ 'gravitext.com', 15000 ],
                             [ nil, 10000 ] ]
 
     result = poller.poll
     assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_3
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.domain_union = [ [ 'gravitext.com', 1 ],
+                            [ 'hometown.com', 1 ],
+                            [ nil, 3 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
   end
 
   def test_poll_uhash_slice
