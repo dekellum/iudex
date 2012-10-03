@@ -89,9 +89,16 @@ module Iudex::DA
     # domain applies to all domains not covered by another
     # row. Without a nil domain row, work is limited to the explicit
     # domains listed. If provided these max_urls values are used
-    # instead of top level #max_urls.  (default: [], off) Domain depth
-    # should most likely be avoided if this feature is used.
+    # instead of top level #max_urls. Domain depth should most likely
+    # be avoided if this feature is used. (default: [], off)
     attr_accessor :domain_union
+
+    # An array containing a zero-based position and a total number of
+    # evenly divided segments within the range of possible uhash
+    # values. If set only work with uhashes in the designated range
+    # will be polled. Note that the uhash is indepedent of domain,
+    # being a hash on the entire URL. (default: nil, off)
+    attr_accessor :uhash_slice
 
     def aged_priority?
       ( age_coef_1 && age_coef_1 > 0.0 &&
@@ -112,6 +119,8 @@ module Iudex::DA
       @age_coef_2         = 0.1
 
       @domain_union       = []
+
+      @uhash_slice        = nil
 
       @log = RJack::SLF4J[ self.class ]
       #FIXME: Add accessor for log in GenericWorkPollStrategy
@@ -143,7 +152,11 @@ module Iudex::DA
     def generate_query
       criteria = [ "next_visit_after <= now()" ]
 
-      # FIXME: uhash range criteria goes here
+      if uhash_slice
+        min, max = url64_range( *uhash_slice )
+        criteria << "uhash > ( '#{min}' COLLATE \"C\" )" if min
+        criteria << "uhash < ( '#{max}' COLLATE \"C\" )" if max
+      end
 
       params = []
 
@@ -153,6 +166,7 @@ module Iudex::DA
       else
         subqueries = []
         @domain_union.each do | domain, dmax |
+          next if dmax == 0
           c = criteria.dup
           if domain.nil?
             c += @domain_union.map { |nd,_| nd }.
@@ -250,6 +264,32 @@ module Iudex::DA
         FROM ( #{sub} ) AS subDG
         ORDER BY domain, priority DESC
       SQL
+    end
+
+    # URL 64 lexicon, ASCII or "C" LOCALE ordered
+    URL64_ORDER = "-0123456789ABCDEFGHIJKLMNOPQRSTU" +
+                  "VWXYZ_abcdefghijklmnopqrstuvwxyz"
+
+    # Given a zero-based position within some number of segments,
+    # returns [ min, max ] bounds where min will be nil at pos=0, and
+    # max will be nil at pos=segments-1. Non nil values are uhash
+    # prefixes that can be used as selection critiria.
+    def url64_range( pos, segments )
+      unless pos >= 0 && segments > pos
+        raise "Invalid url64_range: 0 <= #{pos} < #{segments}"
+      end
+
+      period = ( 64 * 64 / segments.to_f)
+      low  = ( period * (pos  ) ).round if  pos > 0
+      high = ( period * (pos+1) ).round if (pos+1) < segments
+
+      [ low, high ].map do |i|
+        if i
+          j = i % 64
+          i /= 64
+          URL64_ORDER[i] + URL64_ORDER[j]
+        end
+      end
     end
 
     def fields( *ksyms )

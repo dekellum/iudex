@@ -127,4 +127,18 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     assert_equal( 3, result.size )
   end
 
+  def test_poll_uhash_slice
+    poller = WorkPoller.new( @data_source, @mapper )
+    poller.uhash_slice = [ 4, 5 ]
+
+    urls = [ [ "http://hometown.com/33",         10 ] ]
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( urls[ pos ][ 0 ], map.url.url, "pos #{pos}" )
+      pos += 1
+    end
+    assert_equal( 1, pos )
+  end
+
 end
