@@ -31,35 +31,127 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   Gravitext::HTMap::UniMap.define_accessors
 
+  URLS = [ [ "http://foo.gravitext.com/bar/1", 11 ],
+           [ "http://hometown.com/33",         10 ],
+           [ "http://gravitext.com/2",          9 ] ]
+
   def setup
     Url.truncate
+
+    URLS.each do | u, p |
+      Url.create( :visit_url => u, :priority => p, :type => "PAGE"  )
+    end
+
     @factory = PoolDataSourceFactory.new( :loglevel => 4 )
     @data_source = @factory.create
-    @mapper = ContentMapper.new( keys( :uhash, :domain, :url, :type,
-                                       :priority, :next_visit_after ) )
+    @mapper = ContentMapper.new( keys( :url, :type, :priority,
+                                       :next_visit_after ) )
     @poller = WorkPoller.new( @data_source, @mapper )
   end
 
   def teardown
     @factory.close
     @date_source = nil
+    @poller = nil
   end
 
-  def test_poll
-    urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
-             [ "http://gravitext.com/2",         10 ],
-             [ "http://hometown.com/33",         10 ] ]
+  attr_reader :poller
 
-    urls.each do | u, p |
-      Url.create( :visit_url => u, :priority => p, :type => "PAGE"  )
-    end
-
+  def test_default_poll
     pos = 0
-    @poller.poll.each do |map|
-      assert_equal( urls[ pos ][ 0 ], map.url.url )
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
       pos += 1
     end
     assert_equal( 3, pos )
+  end
+
+  def test_poll_with_max_priority_urls
+    poller.max_priority_urls = 4
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth
+    poller.domain_depth_coef = 0.125
+    poller.max_priority_urls = 4
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth_only
+    poller.domain_depth_coef = 0.125
+    poller.age_coef_1        = 0.0
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_group
+    poller.do_domain_group = true
+
+    urls = [ [ "http://foo.gravitext.com/bar/1", 11 ],
+             [ "http://gravitext.com/2",          9 ],
+             [ "http://hometown.com/33",         10 ] ]
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( urls[ pos ][ 0 ], map.url.url, "pos #{pos}" )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+  end
+
+
+  def test_poll_domain_union_1
+    poller.domain_union = [ [ 'gravitext.com', 15000 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_domain_union_2
+    poller.domain_union = [ [ 'gravitext.com', 15000 ],
+                            [ nil, 10000 ] ]
+
+    result = poller.poll
+    assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_3
+    poller.domain_union = [ [ 'gravitext.com', 1 ],
+                            [ 'hometown.com', 1 ],
+                            [ nil, 3 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_uhash_slice
+    poller.uhash_slice = [ 4, 5 ]
+
+    urls = [ [ "http://hometown.com/33",         10 ] ]
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( urls[ pos ][ 0 ], map.url.url, "pos #{pos}" )
+      pos += 1
+    end
+    assert_equal( 1, pos )
   end
 
 end
