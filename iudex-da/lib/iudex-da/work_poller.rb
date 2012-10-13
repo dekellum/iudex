@@ -133,7 +133,7 @@ module Iudex::DA
       end
 
       @mapper = mapper
-      @reader = ContentReader.new( data_source, mapper )
+      @data_source = data_source
     end
 
     # Override GenericWorkPollStrategy
@@ -147,7 +147,13 @@ module Iudex::DA
     # Raises SQLException
     def poll
       query, params = generate_query
-      @reader.select( query, *params )
+      reader.select( query, *params )
+    end
+
+    def reader
+      @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
+        r.priority_adjusted = aged_priority?
+      end
     end
 
     def generate_query

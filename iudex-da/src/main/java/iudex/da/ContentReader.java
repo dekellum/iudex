@@ -49,6 +49,11 @@ public class ContentReader
         return _dsource;
     }
 
+    public void setPriorityAdjusted( boolean isAdjusted )
+    {
+        _isPriorityAdjusted = isAdjusted;
+    }
+
     /**
      * Read map's URL and update map if found.
      */
@@ -88,12 +93,20 @@ public class ContentReader
     protected final class MapHandler
         implements ResultSetHandler<List<UniMap>>
     {
+
         @Override
         public List<UniMap> handle( ResultSet rset ) throws SQLException
         {
+            final boolean priorityAdjusted = _isPriorityAdjusted;
+
             ArrayList<UniMap> contents = new ArrayList<UniMap>( 128 );
             while( rset.next() ) {
-                contents.add( _mapper.fromResultSet( rset ) );
+                UniMap map = _mapper.fromResultSet( rset );
+                if( priorityAdjusted ) {
+                    map.set( DAKeys.PRIORITY_ADJUSTED, Boolean.TRUE );
+                }
+
+                contents.add( map );
             }
             return contents;
         }
@@ -101,4 +114,5 @@ public class ContentReader
 
     private final DataSource _dsource;
     private final ContentMapper _mapper;
+    private boolean _isPriorityAdjusted = false;
 }
