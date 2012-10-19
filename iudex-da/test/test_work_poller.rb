@@ -116,7 +116,6 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     assert_equal( 3, pos )
   end
 
-
   def test_poll_domain_union_1
     poller.domain_union = [ [ 'gravitext.com', 15000 ] ]
 
