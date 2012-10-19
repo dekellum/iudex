@@ -173,7 +173,8 @@ module Iudex::DA
       end
 
       def get_migration_files
-        Dir.glob( "#{@pattern}/[0-9]*_*.rb" )
+        files = Dir.glob( "#{@pattern}/[0-9]*_*.rb" )
+        files.sort_by { |p| File.basename( p ) }
       end
 
     end
