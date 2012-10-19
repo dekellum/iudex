@@ -69,6 +69,19 @@ class TestAgent < MiniTest::Unit::TestCase
     Iudex.send( :remove_const, :AsyncHTTPClient )
   end
 
+  def test_agent_graceful_shutdown_on_fcf_error
+    Hooker.add( [ :iudex, :filter_factory ] ) do |fcf|
+      def fcf.filters
+        super
+        raise "Test Badness in FCF"
+      end
+    end
+
+    agent = Agent.new
+    agent.run
+    pass # returns
+  end
+
   def assert_agent
 
     # Stub VisitManager.start to allow agent.run to return early.
