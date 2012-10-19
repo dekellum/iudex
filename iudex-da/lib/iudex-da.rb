@@ -29,6 +29,7 @@ module Iudex
 
     require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
 
+    import 'iudex.da.DAKeys'
     import 'iudex.da.ContentMapper'
     import 'iudex.da.ContentReader'
 

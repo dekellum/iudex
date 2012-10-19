@@ -22,7 +22,10 @@ import iudex.core.ContentKeys;
 
 public class DAKeys extends ContentKeys
 {
+    /**
+     * If set true, indicates that content came from WorkPoller with
+     * PRIORITY adjusted from the actual value.
+     */
     public static final Key<Boolean> PRIORITY_ADJUSTED =
         create( "priority_adjusted", Boolean.class );
-
 }
