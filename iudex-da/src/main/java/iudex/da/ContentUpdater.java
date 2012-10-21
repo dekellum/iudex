@@ -169,8 +169,7 @@ public class ContentUpdater
                     ( state.equals( "23505" ) ||
                       state.startsWith( "40" ) ) ) {
                     _log.debug( "Retry {} after: ({}) {}",
-                                new Object[] {
-                                    tries, state, s.getMessage() } );
+                                tries, state, s.getMessage() );
                     return true;
                 }
                 s = s.getNextException();
@@ -180,8 +179,7 @@ public class ContentUpdater
         SQLException s = x;
         while( s != null ) {
             _log.error( "Last try {}: ({}) {}",
-                        new Object[] {
-                            tries, s.getSQLState(), s.getMessage() } );
+                        tries, s.getSQLState(), s.getMessage() );
             s = s.getNextException();
         }
 

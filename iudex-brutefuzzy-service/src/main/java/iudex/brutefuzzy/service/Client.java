@@ -174,7 +174,7 @@ public class Client implements SessionStateFactory<Client.State>
                 _depth = checkDepth();
                 if( _depth >= _highDepth ) {
                     _log.debug( "Sleeping {}ms until depth {} < {}",
-                                new Object[] {_waitTime, _depth, _highDepth} );
+                                _waitTime, _depth, _highDepth );
                     Thread.sleep( _waitTime );
                 }
             }

@@ -187,9 +187,8 @@ public class ContentFetcher implements AsyncFilterContainer
             else if( ( session.statusCode() <  200 ) ||
                      ( session.statusCode() >  307 ) ) {
                 _log.warn( "Url: {}; Response: {} {}",
-                           new Object[] { session.url(),
-                                          session.statusCode(),
-                                          session.statusText() } );
+                           session.url(),
+                           session.statusCode(), session.statusText() );
             }
 
             List<Header> headers = _content.get( RESPONSE_HEADERS );

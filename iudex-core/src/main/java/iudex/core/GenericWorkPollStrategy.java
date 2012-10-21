@@ -117,8 +117,7 @@ public abstract class GenericWorkPollStrategy
         _highHostCount = vq.hostCount();
 
         _log.info( "Polled {} orders in {} hosts; ({})",
-                   new Object[] { _highOrderCount, _highHostCount,
-                                  sw.duration() } );
+                   _highOrderCount, _highHostCount, sw.duration() );
         return vq;
     }
 
@@ -160,13 +159,12 @@ public abstract class GenericWorkPollStrategy
         }
         if( ( wait > 0 ) && _log.isDebugEnabled() ) {
             _log.debug( "orders {} ({}), hosts {} ({}), acq {}; wait {}s",
-                        new Object[] { Metric.format( oCount ),
-                                       Metric.formatDifference( oRatio ),
-                                       Metric.format( hCount ),
-                                       Metric.formatDifference( hRatio ),
-                                       Metric.format( current.acquiredCount() ),
-                                       Metric.format( (double) wait /
-                                                      1000d ) } );
+                        Metric.format( oCount ),
+                        Metric.formatDifference( oRatio ),
+                        Metric.format( hCount ),
+                        Metric.formatDifference( hRatio ),
+                        Metric.format( current.acquiredCount() ),
+                        Metric.format( (double) wait / 1000d ) );
         }
 
         return wait;
