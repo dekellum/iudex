@@ -16,6 +16,8 @@
 
 package iudex.da;
 
+import iudex.core.ContentKeys;
+
 import com.gravitext.htmap.UniMap;
 
 public class BaseTransformer implements Transformer
@@ -49,6 +51,19 @@ public class BaseTransformer implements Transformer
         // Merge updated to clone of current
         UniMap t = current.clone();
         t.putAll( updated );
+
+        // Special case for priority: Since WorkPoller may adjust the
+        // priority, for example by age, prefer the current priority
+        // from the database if indicated. ContentUpdater filters
+        // still get a chance to update from the normal value.
+
+        Float priority = current.get( ContentKeys.PRIORITY );
+        Boolean adjusted = updated.get( DAKeys.PRIORITY_ADJUSTED );
+
+        if( priority != null && adjusted != null && adjusted ) {
+            t.set( ContentKeys.PRIORITY, priority );
+        }
+
         return t;
     }
 
