@@ -88,7 +88,7 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
     class << fcf
       attr_accessor :summary_reporter
       def filters
-        [ create_chain( :sub_filters, nil, :main ) ]
+        [ create_chain( :filters => :sub_filters, :listener => :main ) ]
       end
       def listeners
         super.tap do |ll|

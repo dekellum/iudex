@@ -67,7 +67,9 @@ module Iudex
           flts = filters.flatten.compact
           log_and_register( flts )
 
-          @chain = create_chain( @description, flts, :main )
+          @chain = create_chain( :desc     => @description,
+                                 :filters  => flts,
+                                 :listener => :main )
           @listener = ListenerChain.new( listeners )
 
           # Now replace the temp listener with the final listener
@@ -120,41 +122,74 @@ module Iudex
                             @main_by_filter_period )
         end
 
-        # Create, yield to optional block, and return FilterChain if
-        # flts is not empty. Otherwise return a NoOpFilter and don't
-        # yield. If passed a Symbol desc and nil flts, will use both
-        # as description and method to obtain flts array from.
-        def create_chain( desc, flts = nil, listener = nil )
+        # Create, yield to optional block, and returns FilterChain if
+        # provided filters is not empty. If empty returns a NoOpFilter
+        # and but does not yield.
+        #
+        # === Options
+        #
+        # A trailing Hash argument is interpreted as options with the
+        # following keys. Alternative positional parameters equivalent
+        # to ( :desc, :filters = nil, :listener = nil ) are
+        # deprecated.
+        #
+        # :desc:: ~>to_s Description of this chain.
+        # :filters:: Symbol method name to send for filters (and also
+        #            default description), or an Array of filters.
+        # :listener:: The :main symbol for this filter chains
+        #             listeners, or an alternative FilterListener
+        #             instance.
+        # :pass:: If truthy, the chain always returns true (pass) on
+        #         filter.
+        #
+        def create_chain( *args )
+          # ( desc, flts = nil, listener = nil )
 
-          if desc.is_a?( Symbol )
-            flts = send( desc ) unless flts
-            desc = desc.to_s.gsub( /_/, '-' )
+          opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
+          opts[ :listener ] ||= args[2] if args.length > 2
+          opts[ :filters ]  ||= args[1] if args.length > 1
+
+          if args[ 0 ].is_a?( Symbol )
+            opts[ :desc ] = args[ 0 ].to_s.gsub( /_/, '-' )
+            opts[ :filters ] = args[ 0 ]
+          else
+            opts[ :desc ] ||= args[ 0 ]
           end
 
-          flts = flts.flatten.compact if flts
+          if opts[ :filters ].is_a?( Symbol )
+            opts[ :filters ] = send( opts[ :filters ] )
+          end
 
-          if flts.nil? || flts.empty?
+          flts = Array( opts[ :filters ] ).flatten.compact
+
+          if flts.empty?
             NoOpFilter.new
           else
-            c = FilterChain.new( desc, flts )
-            if listener.nil?
-              c.listener = log_listener( desc )
-            elsif listener == :main
+            c = FilterChain.new( opts[ :desc ], flts )
+
+            if opts[ :listener ] == :main
               c.listener = @listener
+            elsif opts[ :listener ].nil?
+              c.listener = log_listener( opts[ :desc ] )
             else
-              c.listener = listener
+              c.listener = opts[ :listener ]
             end
+
+            c.always_pass = true if opts[ :pass ]
+
             yield c if block_given?
             c
           end
         end
 
         # Create a new Switch given selector key and map of values to
-        # filters, or values to [filters,listener]
+        # filters, or values to [ filters, listener ]
         def create_switch( key, value_filters_map )
           switch = Switch.new
           value_filters_map.each do |value, (filters, listener)|
-            create_chain( value.to_s.downcase, filters, listener ) do |chain|
+            create_chain( :desc     => value.to_s.downcase,
+                          :filters  => filters,
+                          :listener => listener ) do |chain|
               switch.add_proposition( Selector.new( key, value ), chain )
             end
           end
