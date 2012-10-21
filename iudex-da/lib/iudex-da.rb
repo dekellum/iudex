@@ -29,8 +29,8 @@ module Iudex
 
     require "#{LIB_DIR}/iudex-da-#{VERSION}.jar"
 
-    import 'iudex.da.WorkPoller'
     import 'iudex.da.ContentMapper'
+    import 'iudex.da.ContentReader'
 
     module Filters
       import 'iudex.da.filters.UpdateFilter'
@@ -39,3 +39,5 @@ module Iudex
 
   end
 end
+
+require 'iudex-da/work_poller.rb'
