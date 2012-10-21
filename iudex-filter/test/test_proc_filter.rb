@@ -29,16 +29,39 @@ class TestProcFilter < MiniTest::Unit::TestCase
   UniMap.create_key( 'mkey' )
   UniMap.define_accessors
 
-  def test_describe
+  def test_describe_proc
     assert_equal( [ 'test_proc_filter', __LINE__ ], fltr {}.describe )
     assert_equal( [ 'test_proc_filter', __LINE__ ], ProcFilter.new {}.describe )
     assert_equal( [ 'test_proc_filter', __LINE__ ], ProcFilter.new {}.describe )
   end
 
-  def test_name
+  def test_name_proc
     index = Core::FilterIndex.new
     name, line = index.register( fltr {} ), __LINE__
     assert_equal( "i.f.ProcFilter-test_proc_filter-#{line}", name )
+  end
+
+  def test_describe_method
+    assert_equal( [ :filter_m_reject ],
+                  fltr_method( :filter_m_reject ).describe )
+  end
+
+  def test_name_method
+    index = Core::FilterIndex.new
+    name = index.register( fltr_method( :filter_m_reject ) )
+    assert_equal( "i.f.ProcFilter-filter_m_reject", name )
+  end
+
+  def test_return_method
+    assert do_f( fltr_method :filter_m_happy )
+    refute do_f( fltr_method :filter_m_reject )
+  end
+
+  def filter_m_reject( map )
+    :reject
+  end
+
+  def filter_m_happy( map )
   end
 
   def test_return
