@@ -137,6 +137,9 @@ module Iudex::DA
     end
 
     # Override GenericWorkPollStrategy
+    attr_reader :log
+
+    # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
       visit_queue.add_all( poll )
     rescue SQLException => x
