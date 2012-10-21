@@ -83,6 +83,60 @@ class TestFilterChainFactory < MiniTest::Unit::TestCase
 
   end
 
+  def test_create_chain_noop
+    fcf = FilterChainFactory.new( "test" )
+    fc = fcf.create_chain() { |c| flunk( "NoOpFilter no yield" ) }
+    assert_kind_of( NoOpFilter, fc )
+  end
+
+  def test_create_chain_legacy_params
+    fcf = FilterChainFactory.new( "test" )
+    class << fcf
+      def filters_method
+        [ nil, [ RandomFilter.new ] ]
+      end
+    end
+
+    yielded = nil
+    fc = fcf.create_chain( :filters_method, nil, :main ) { |c| yielded = c }
+    assert_kind_of( FilterChain, fc )
+    assert_equal( fc, yielded )
+    assert_equal( 1, fc.children.length )
+    assert_equal( [ 'filters-method' ], Array( fc.describe ) )
+    assert_kind_of( RandomFilter, fc.children.first )
+
+    yielded = nil
+    fc = fcf.create_chain( :filters_method ) { |c| yielded = c }
+    assert_kind_of( FilterChain, fc )
+    assert_equal( fc, yielded )
+    assert_equal( [ 'filters-method' ], Array( fc.describe ) )
+    assert_equal( 1, fc.children.length )
+    assert_kind_of( RandomFilter, fc.children.first )
+    assert_kind_of( LogListener, fc.listener )
+  end
+
+  def test_create_chain_opts
+    fcf = FilterChainFactory.new( "test" )
+    class << fcf
+      def filters_method
+        [ nil, [ RandomFilter.new ] ]
+      end
+    end
+    yielded = nil
+    fc = fcf.create_chain( :desc     => 'described',
+                           :filters  => :filters_method,
+                           :listener => NoOpListener.new,
+                           :pass     => true ) do |c|
+      yielded = c
+    end
+    assert_kind_of( FilterChain, fc )
+    assert_equal( fc, yielded )
+    assert_equal( [ 'described' ], Array( fc.describe ) )
+    assert_equal( 1, fc.children.length )
+    assert_kind_of( RandomFilter, fc.children.first )
+    assert_kind_of( NoOpListener, fc.listener )
+  end
+
   def test_nested_reporting
     fcf = FilterChainFactory.new( "test" )
     class << fcf

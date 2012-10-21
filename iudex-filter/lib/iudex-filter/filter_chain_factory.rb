@@ -124,14 +124,16 @@ module Iudex
 
         # Create, yield to optional block, and returns FilterChain if
         # provided filters is not empty. If empty returns a NoOpFilter
-        # and but does not yield.
+        # but does not yield.
+        #
+        # A trailing Hash argument is interpreted as options, see
+        # below. Alternative positional parameters equivalent to
+        # either the following are deprecated:
+        #
+        # * filters (Symbol), nil, listener = nil
+        # * desc (~to_s), filters = nil, listener = nil
         #
         # === Options
-        #
-        # A trailing Hash argument is interpreted as options with the
-        # following keys. Alternative positional parameters equivalent
-        # to ( :desc, :filters = nil, :listener = nil ) are
-        # deprecated.
         #
         # :desc:: ~>to_s Description of this chain.
         # :filters:: Symbol method name to send for filters (and also
@@ -143,21 +145,23 @@ module Iudex
         #         filter.
         #
         def create_chain( *args )
-          # ( desc, flts = nil, listener = nil )
 
           opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
-          opts[ :listener ] ||= args[2] if args.length > 2
-          opts[ :filters ]  ||= args[1] if args.length > 1
 
-          if args[ 0 ].is_a?( Symbol )
-            opts[ :desc ] = args[ 0 ].to_s.gsub( /_/, '-' )
-            opts[ :filters ] = args[ 0 ]
+          # Fold in deprecated positional parameters
+          if args[ 0 ].is_a?( Symbol ) && args[ 1 ].nil?
+            opts[ :filters ]  ||= args[ 0 ]
           else
-            opts[ :desc ] ||= args[ 0 ]
+            opts[ :desc ]     ||= args[ 0 ]
+            opts[ :filters ]  ||= args[ 1 ]
           end
 
+          opts[ :listener ]   ||= args[ 2 ]
+
+          # Handle special case of symbol for :filters
           if opts[ :filters ].is_a?( Symbol )
-            opts[ :filters ] = send( opts[ :filters ] )
+            opts[ :desc ]     ||= opts[ :filters ].to_s.gsub( /_/, '-' )
+            opts[ :filters ]    = send( opts[ :filters ] )
           end
 
           flts = Array( opts[ :filters ] ).flatten.compact
@@ -165,20 +169,20 @@ module Iudex
           if flts.empty?
             NoOpFilter.new
           else
-            c = FilterChain.new( opts[ :desc ], flts )
+            chain = FilterChain.new( opts[ :desc ], flts )
 
             if opts[ :listener ] == :main
-              c.listener = @listener
+              chain.listener = @listener
             elsif opts[ :listener ].nil?
-              c.listener = log_listener( opts[ :desc ] )
+              chain.listener = log_listener( opts[ :desc ] )
             else
-              c.listener = opts[ :listener ]
+              chain.listener = opts[ :listener ]
             end
 
-            c.always_pass = true if opts[ :pass ]
+            chain.always_pass = true if opts[ :pass ]
 
-            yield c if block_given?
-            c
+            yield chain if block_given?
+            chain
           end
         end
 
