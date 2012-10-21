@@ -86,45 +86,48 @@ module Iudex
 
       def run
         Hooker.with( :iudex ) do
-          dsf = PoolDataSourceFactory.new
-          data_source = dsf.create
-
-          wpoller = work_poller( data_source )
-          vexec = visit_manager( wpoller )
-          vexec.start_executor
-
-          hclient = http_client( vexec.executor )
-
-          fcf = filter_chain_factory
-          fcf.http_client = hclient
-          fcf.data_source = data_source
-          fcf.visit_counter = vexec
-
-          # FilterChain's executor is the same executor, unless using
-          # HTTPClient3, where executor is best not used
-          fcf.executor = vexec.executor unless @http_manager
-
-          Hooker.apply( :filter_factory, fcf )
-
-          fcf.filter do |chain|
-            vexec.filter_chain = chain
-
-            Hooker.log_not_applied # All hooks should be used by now
-
-            vexec.start
-            vexec.join    #Run until interrupted
-          end # fcf closes
-
-          hclient.close if hclient.respond_to?( :close )
-          @http_manager.shutdown if @http_manager
-
-          dsf.close
+          run_safe
         end
+      end
+
+      def run_safe
+        dsf = PoolDataSourceFactory.new
+        data_source = dsf.create
+
+        wpoller = work_poller( data_source )
+        vexec = visit_manager( wpoller )
+        vexec.start_executor
+
+        hclient = http_client( vexec.executor )
+
+        fcf = filter_chain_factory
+        fcf.http_client = hclient
+        fcf.data_source = data_source
+        fcf.visit_counter = vexec
+
+        # FilterChain's executor is the same executor, unless using
+        # HTTPClient3, where executor is best not used
+        fcf.executor = vexec.executor unless @http_manager
+
+        Hooker.apply( [ :iudex, :filter_factory ], fcf )
+
+        fcf.filter do |chain|
+          vexec.filter_chain = chain
+
+          Hooker.log_not_applied # All hooks should be used by now
+
+          vexec.start
+          vexec.join # Run until interrupted
+        end # fcf closes
+
       rescue => e
         @log.error( "On run: ", e )
+      ensure
+        hclient.close if hclient && hclient.respond_to?( :close )
+        @http_manager.shutdown if @http_manager
+        dsf.close if dsf
       end
 
     end
-
   end
 end
