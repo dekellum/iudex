@@ -150,6 +150,7 @@ module Iudex::DA
     # Raises SQLException
     def poll
       query, params = generate_query
+      @log.debug { "Poll query: #{query}; #{params.inspect}" }
       reader.select( query, *params )
     end
 
