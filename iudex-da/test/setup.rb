@@ -28,17 +28,19 @@ module TestSetup
   include RJack
   Logback.config_console( :stderr => true, :thread => true )
 
-  if ( ARGV & %w[ -v --verbose --debug ] ).empty?
-    # Make test output logging compatible: no partial lines.
+  VERBOSE = ! ( ARGV & %w[ -v --verbose ] ).empty?
+
+  if VERBOSE
     class TestOut
       def print( *a ); $stdout.puts( *a ); end
       def puts( *a );  $stdout.puts( *a ); end
     end
     MiniTest::Unit.output = TestOut.new
-  else
-    Logback.root.level = Logback::DEBUG
-  end
 
-  ARGV.delete( '--debug' )
+    Logback.root.level = Logback::DEBUG
+  else
+    Logback[ 'iudex.da.sequel' ].level = :warn
+    Logback[ 'iudex.da.PoolDataSourceFactory' ].level = :warn
+  end
 
 end

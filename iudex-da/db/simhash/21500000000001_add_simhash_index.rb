@@ -14,20 +14,10 @@
 # permissions and limitations under the License.
 #++
 
-class AddSimhash < ActiveRecord::Migration
-
-  def self.up
-    add_column( 'urls', 'simhash', :integer, :limit => 8 )
-    # A simhash signature as a signed 8-byte long (should be
-    # compatible with java long).
-
-    add_index( 'urls', [ 'simhash' ] )
-    # And its index
+Sequel.migration do
+  change do
+    alter_table( :urls ) do
+      add_index( :simhash )
+    end
   end
-
-  def self.down
-    remove_index( 'urls', 'simhash'  )
-    remove_column( 'urls', 'simhash' )
-  end
-
 end

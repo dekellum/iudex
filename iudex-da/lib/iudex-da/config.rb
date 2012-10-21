@@ -18,10 +18,10 @@
 module Iudex
 
   module DA
-    # Default database connection configuration for both ActiveRecord
-    # (migrations, testing) and PoolDataSourceFactory.
+    # Default database connection configuration for both Sequel
+    # (migrations, testing) and JDBC PoolDataSourceFactory.
     CONFIG = {
-      :adapter  => 'jdbcpostgresql',
+      :adapter  => 'jdbc:postgresql',
       :host     => 'localhost',
       :database => 'iudex_test',
       :username => 'iudex',
