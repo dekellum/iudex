@@ -67,7 +67,9 @@ module Iudex
           flts = filters.flatten.compact
           log_and_register( flts )
 
-          @chain = create_chain( @description, flts, :main )
+          @chain = create_chain( :desc     => @description,
+                                 :filters  => flts,
+                                 :listener => :main )
           @listener = ListenerChain.new( listeners )
 
           # Now replace the temp listener with the final listener
@@ -120,41 +122,78 @@ module Iudex
                             @main_by_filter_period )
         end
 
-        # Create, yield to optional block, and return FilterChain if
-        # flts is not empty. Otherwise return a NoOpFilter and don't
-        # yield. If passed a Symbol desc and nil flts, will use both
-        # as description and method to obtain flts array from.
-        def create_chain( desc, flts = nil, listener = nil )
+        # Create, yield to optional block, and returns FilterChain if
+        # provided filters is not empty. If empty returns a NoOpFilter
+        # but does not yield.
+        #
+        # A trailing Hash argument is interpreted as options, see
+        # below. Alternative positional parameters equivalent to
+        # either the following are deprecated:
+        #
+        # * filters (Symbol), nil, listener = nil
+        # * desc (~to_s), filters = nil, listener = nil
+        #
+        # === Options
+        #
+        # :desc:: ~>to_s Description of this chain.
+        # :filters:: Symbol method name to send for filters (and also
+        #            default description), or an Array of filters.
+        # :listener:: The :main symbol for this filter chains
+        #             listeners, or an alternative FilterListener
+        #             instance.
+        # :pass:: If truthy, the chain always returns true (pass) on
+        #         filter.
+        #
+        def create_chain( *args )
 
-          if desc.is_a?( Symbol )
-            flts = send( desc ) unless flts
-            desc = desc.to_s.gsub( /_/, '-' )
+          opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
+
+          # Fold in deprecated positional parameters
+          if args[ 0 ].is_a?( Symbol ) && args[ 1 ].nil?
+            opts[ :filters ]  ||= args[ 0 ]
+          else
+            opts[ :desc ]     ||= args[ 0 ]
+            opts[ :filters ]  ||= args[ 1 ]
           end
 
-          flts = flts.flatten.compact if flts
+          opts[ :listener ]   ||= args[ 2 ]
 
-          if flts.nil? || flts.empty?
+          # Handle special case of symbol for :filters
+          if opts[ :filters ].is_a?( Symbol )
+            opts[ :desc ]     ||= opts[ :filters ].to_s.gsub( /_/, '-' )
+            opts[ :filters ]    = send( opts[ :filters ] )
+          end
+
+          flts = Array( opts[ :filters ] ).flatten.compact
+
+          if flts.empty?
             NoOpFilter.new
           else
-            c = FilterChain.new( desc, flts )
-            if listener.nil?
-              c.listener = log_listener( desc )
-            elsif listener == :main
-              c.listener = @listener
+            chain = FilterChain.new( opts[ :desc ], flts )
+
+            if opts[ :listener ] == :main
+              chain.listener = @listener
+            elsif opts[ :listener ].nil?
+              chain.listener = log_listener( opts[ :desc ] )
             else
-              c.listener = listener
+              chain.listener = opts[ :listener ]
             end
-            yield c if block_given?
-            c
+
+            chain.always_pass = true if opts[ :pass ]
+
+            yield chain if block_given?
+            chain
           end
         end
 
         # Create a new Switch given selector key and map of values to
-        # filters, or values to [filters,listener]
+        # filters, or values to [ filters, listener ]
         def create_switch( key, value_filters_map )
           switch = Switch.new
           value_filters_map.each do |value, (filters, listener)|
-            create_chain( value.to_s.downcase, filters, listener ) do |chain|
+            create_chain( :desc     => value.to_s.downcase,
+                          :filters  => filters,
+                          :listener => listener ) do |chain|
               switch.add_proposition( Selector.new( key, value ), chain )
             end
           end

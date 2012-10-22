@@ -68,6 +68,11 @@ public class FilterChain
         if( hasSameFilter( this ) ) _notifyPassed = false;
     }
 
+    public void setAlwaysPass( boolean alwaysPass )
+    {
+        _alwaysPass = alwaysPass;
+    }
+
     public FilterListener listener()
     {
         return _listener;
@@ -94,7 +99,7 @@ public class FilterChain
             _listener.failed( filter, in, x );
             passed = false;
         }
-        return passed;
+        return ( passed || _alwaysPass );
     }
 
     @Override
@@ -135,5 +140,6 @@ public class FilterChain
     private final List<String> _description;
     private final ArrayList<Filter> _filters;
     private boolean _notifyPassed;
+    private boolean _alwaysPass = false;
     private FilterListener _listener = new NoOpListener();
 }
