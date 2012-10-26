@@ -18,6 +18,7 @@ task :clean do
   rm_f 'src/main/java/iudex/core/TLDSets.java'
 end
 
+desc "Download and install latest effective_tld_name.dat"
 task :refresh_tld_dat do
   sh( "curl http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1" +
       " -o build/effective_tld_name.dat" )
