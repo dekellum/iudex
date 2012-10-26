@@ -47,9 +47,9 @@ module Iudex
 
       # Map Symbols to Keys
       def keys( *syms )
-        syms = syms[0] if ( syms[0] && syms[0].respond_to?( :each ) )
-        syms.map { |s| s.to_k }.uniq
+        syms.flatten.compact.map { |s| s.to_k }.uniq
       end
+
       module_function :keys
     end
   end
