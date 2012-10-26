@@ -39,7 +39,7 @@ PATH
       iudex-simhash (~> 1.3.0)
       rjack-jms (~> 1.1.0)
       rjack-logback (~> 1.5)
-      rjack-qpid-client (>= 0.14, < 0.19)
+      rjack-qpid-client (>= 0.14.1, < 0.19)
 
 PATH
   remote: iudex-char-detector
