@@ -1,4 +1,47 @@
-=== 1.3.0 (TBD)
+=== 1.3.3 (TBD)
+
+=== 1.3.2 (2012-10-25)
+* Add migration to make index_next_visit partial over non-null
+  next_visit_after rows. (Index rebuild may take a while.)
+* Fix 1.3.0 regression: TimestampMigrator expects sort ordered
+  get_migration_files (apparent with above addition).
+* Add (from 1.3.1) DAKeys to default imports
+
+=== 1.3.1 (2012-10-13)
+* Fix 1.3.0 regression, causing age adjusted priority to be written
+  back to the database as the normal priority value. Now
+  PRIORITY_ADJUSTED is set and BaseTransformer accounts for this by
+  prefering the DB current, unadjusted value.
+
+=== 1.3.0 (2012-10-4)
+* Expand to iudex-core [1.2.1,1.4)
+* Rewrite of WorkPoller:
+  * Now in Ruby, for ease of customization.
+  * max_priority_urls now defaults off for common cases
+  * do_domain_group now selectable (default off, commonly unneeded)
+  * domain_depth_coef (deprecated host_depth_divisor reciprocal) now
+    defaults nil (domain window partitioning off)
+  * Added new priority aging feature (priority increases with current
+    age of next_visit_after), on by default.
+  * Added new domain_union feature, which allows domain filtering,
+    independent size control, and faster polling, as compared with
+    general domain depth prioritization, when a limited set of domains
+    is used.
+  * Added new uhash_slice feature, which allows selecting a specific
+    segment of the overall uhash space, and scaling to multiple worker
+    instances (and IPs) with a shared database. This form of sharding
+    offers best pseudo-random balancing of URLs at the expense of
+    single-domain-instance politeness control.
+* Replace use of Activerecord (for migrations and tests) with Sequel:
+  * Smaller deps, faster load times (particularly under jruby)
+  * Better Primary Key, composite VisitURL, type field support (models
+    Url).
+  * Provide Activerecord -> Sequel migration support (from a complete
+    iudex-da 1.2.1 db); consolidate prior migrations to a single base
+    and profile migrations.
+* Add new (Sequel) migration to set "C" locale collate (aka ASCII sort
+  order) for uhash (required for uhash_slice, see above.) iudex-da now
+  depends on PostgreSQL 9.1 for COLLATE support.
 
 === 1.2.1 (2012-9-15)
 * Upgrade to logback ~> 1.2 (dev)

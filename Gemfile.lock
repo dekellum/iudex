@@ -62,7 +62,7 @@ PATH
 PATH
   remote: iudex-da
   specs:
-    iudex-da (1.3.0-java)
+    iudex-da (1.3.3-java)
       iudex-core (~> 1.3.0)
       jdbc-postgres (~> 9.1.901)
       rjack-commons-dbcp (~> 1.4.0)
@@ -134,7 +134,7 @@ PATH
 PATH
   remote: iudex-worker
   specs:
-    iudex-worker (1.3.0-java)
+    iudex-worker (1.3.2-java)
       iudex-char-detector (~> 1.3.0)
       iudex-core (~> 1.3.0)
       iudex-da (~> 1.3.0)
