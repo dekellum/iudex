@@ -137,7 +137,9 @@ module Iudex::DA
     end
 
     # Override GenericWorkPollStrategy
-    attr_reader :log
+    def log
+      @log.java_logger
+    end
 
     # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
