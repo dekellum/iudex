@@ -108,7 +108,7 @@ public final class ContentMapper
             if( key == URL ) {
                 content.set( URL, VisitURL.trust( rset.getString( i ) ) );
             }
-            else if(( key == UHASH ) || ( key == DOMAIN ) ) {
+            else if( ( key == UHASH ) || ( key == DOMAIN ) ) {
                 // ignore on input
             }
             else if( ( key == REFERER ) || ( key == REFERENT ) ) {
@@ -119,8 +119,10 @@ public final class ContentMapper
                     content.put( key, ref );
                 }
             }
+            else if( key == TYPE ) {
+                content.set( TYPE, rset.getString( i ).intern() );
+            }
             else {
-                // FIXME: intern type,status,reason strings? { "x".intern(); }
                 content.put( key, rset.getObject( i ) );
             }
             i++;
