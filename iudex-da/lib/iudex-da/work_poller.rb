@@ -90,19 +90,22 @@ module Iudex::DA
         age_coef_2 && age_coef_2 > 0.0 )
     end
 
-    # An Array of [ domain, max_urls ] pairs where each domain is a
-    # unique reqistration-level, normalized lower-case domain. A nil
-    # domain applies to all domains not covered by another
-    # row. Without a nil domain row, work is limited to the explicit
-    # domains listed. If provided these max_urls values are used
-    # instead of top level #max_urls. Domain depth should most likely
-    # be avoided if this feature is used. (default: [], off)
+    # A table of [ domain, max_urls ] or [ domain, TYPE, max_urls ]
+    # rows. Each domain should be a registration-level, normalized
+    # lower-case value. An (upper-case) TYPE value is AND'd with its
+    # domain or may appear on its own (nil domain). A nil domain or
+    # type applies to all domains/types not covered by another
+    # row. Without a both-nil row, work is limited to the explicit
+    # domains/types listed. If provided, max_urls values are used
+    # instead of the top level #max_urls. A zero max_urls value
+    # excludes this domain/type efficiently. Domain depth should most
+    # likely be avoided if this feature is used. (default: empty, off)
     attr_accessor :domain_union
 
     # An array containing a zero-based position and a total number of
     # evenly divided segments within the range of possible uhash
     # values. If set only work with uhashes in the designated range
-    # will be polled. Note that the uhash is indepedent of domain,
+    # will be polled. Note that the uhash is independent of domain,
     # being a hash on the entire URL. (default: nil, off)
     attr_accessor :uhash_slice
 
@@ -176,16 +179,36 @@ module Iudex::DA
         params = [ max_urls ]
       else
         subqueries = []
-        @domain_union.each do | domain, dmax |
+        @domain_union.each do | row |
+          if row.size < 3
+            domain, dmax = row
+          else
+            domain, type, dmax = row
+          end
+
           next if dmax == 0
+          dmax ||= @max_urls
+
           c = criteria.dup
           if domain.nil?
             c += @domain_union.map { |nd,_| nd }.
                                compact.
+                               uniq.
                                map { |nd| "domain != '#{nd}'" }
           else
             c << "domain = '#{domain}'"
           end
+
+          if type.nil?
+            c += @domain_union.select { |nd,_| nd == domain }. #nil incl.
+                               map { |r| r[1] if r.length == 3 }.
+                               compact.
+                               uniq.
+                               map { |nt| "type != '#{nt}'" }
+          elsif type
+            c << "type = '#{type}'"
+          end
+
           subqueries << generate_query_inner( c )
           params << dmax
         end

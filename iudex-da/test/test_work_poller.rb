@@ -33,13 +33,13 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   URLS = [ [ "http://foo.gravitext.com/bar/1", 11 ],
            [ "http://hometown.com/33",         10 ],
-           [ "http://gravitext.com/2",          9 ] ]
+           [ "http://gravitext.com/2",          9, "ALT" ] ]
 
   def setup
     Url.truncate
 
-    URLS.each do | u, p |
-      Url.create( :visit_url => u, :priority => p, :type => "PAGE"  )
+    URLS.each do | u, p, t |
+      Url.create( :visit_url => u, :priority => p, :type => t || "PAGE"  )
     end
 
     @factory = PoolDataSourceFactory.new( :loglevel => 4 )
@@ -133,8 +133,65 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   def test_poll_domain_union_3
     poller.domain_union = [ [ 'gravitext.com', 1 ],
-                            [ 'hometown.com', 1 ],
+                            [  'hometown.com', 1 ],
                             [ nil, 3 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_domain_union_type_1
+    poller.domain_union = [ [ 'gravitext.com', 'ALT', 15000 ] ]
+
+    result = poller.poll
+    assert_equal( 1, result.size )
+  end
+
+  def test_poll_domain_union_type_2
+    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
+                            [ 'gravitext.com', 1 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_domain_union_type_3
+    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
+                            [ 'gravitext.com', 'NOT', 1 ],
+                            [ 'gravitext.com', 1 ] ]
+
+    result = poller.poll
+    assert_equal( 2, result.size )
+  end
+
+  def test_poll_domain_union_type_4
+    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
+                            [ 'gravitext.com', 'NOT', 1 ],
+                            [ 'gravitext.com', 1 ],
+                            [  'hometown.com', 1 ] ]
+
+    result = poller.poll
+    assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_type_5
+    poller.domain_union = [ [ nil, 'ALT', 15000 ] ]
+
+    result = poller.poll
+    assert_equal( 1, result.size )
+  end
+
+  def test_poll_domain_union_type_6
+    poller.domain_union = [ [ nil, 'ALT', 2 ],
+                            [ nil, 3 ] ]
+
+    result = poller.poll
+    assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_type_7
+    poller.domain_union = [ [ nil, 'ALT', 2 ],
+                            [ nil, nil,   1 ] ] #extra nil is optional
 
     result = poller.poll
     assert_equal( 2, result.size )
