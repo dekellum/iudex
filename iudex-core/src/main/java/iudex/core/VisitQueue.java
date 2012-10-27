@@ -57,12 +57,12 @@ public class VisitQueue implements VisitCounter
                                             int minHostDelay,
                                             int maxAccessCount )
     {
-        String key = hostKey( host.trim() );
+        DomainKey key = orderKey( host );
         HostQueue hq = _hosts.get( key );
         if( hq != null ) {
             throw new IllegalStateException(
                 "configureHost on non empty VisitQueue or " +
-                hq.host() +
+                hq.key() +
                 " already configured." );
         }
 
@@ -90,7 +90,7 @@ public class VisitQueue implements VisitCounter
 
         //Very important to deep copy the host queues
         for( HostQueue hq : _hosts.values() ) {
-            newQ._hosts.put( hq.host(), hq.clone() );
+            newQ._hosts.put( hq.key(), hq.clone() );
         }
 
         return newQ;
@@ -147,7 +147,7 @@ public class VisitQueue implements VisitCounter
         UniMap job = null;
         HostQueue hq = take( maxWait );
         if( hq != null ) {
-            _log.debug( "Take: {}", hq.host() );
+            _log.debug( "Take: {}", hq.key() );
 
             if( ! hq.isAvailable() ) {
                 throw new IllegalStateException( "Unavailable host take!");
@@ -172,31 +172,33 @@ public class VisitQueue implements VisitCounter
             throw new NullPointerException( "Null release!" );
         }
 
-        String orderKey = orderKey( acquired );
-        HostQueue queue = _hosts.get( orderKey );
+        DomainKey key = orderKey( acquired );
+        HostQueue queue = _hosts.get( key );
 
         if( queue == null ) {
             throw new IllegalStateException( "Host order key [" +
-                                             orderKey + "] not found" );
+                                             key + "] not found" );
         }
 
-        _log.debug( "Release: {} {}", queue.host(), queue.size() );
+        _log.debug( "Release: {} {}", queue.key(), queue.size() );
 
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
 
         checkRemove( queue );
     }
 
-    protected String orderKey( UniMap order )
+    protected DomainKey orderKey( UniMap order )
     {
-        return order.get( ContentKeys.URL ).domain();
+        final String domain = order.get( ContentKeys.URL ).domain();
+
+        return new DomainKey( domain, null );
     }
 
-    protected String hostKey( String host )
+    protected DomainKey orderKey( String host )
     {
-        host = Domains.normalize( host );
+        host = Domains.normalize( host.trim() );
         String domain = Domains.registrationLevelDomain( host );
-        return ( domain != null ) ? domain : host;
+        return new DomainKey( ( domain != null ) ? domain : host, null );
     }
 
     synchronized String dump()
@@ -218,7 +220,7 @@ public class VisitQueue implements VisitCounter
 
             out.append( String.format(
                 "%20s size %4d, acq %1d, next %3dms, %c %c\n",
-                hq.host(),
+                hq.key(),
                 hq.size(),
                 hq.accessCount(),
                 hq.nextVisit() - now,
@@ -271,7 +273,7 @@ public class VisitQueue implements VisitCounter
             --_hostCount;
             if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
                 ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
-                _hosts.remove( queue.host() );
+                _hosts.remove( queue.key() );
             }
         }
     }
@@ -285,15 +287,15 @@ public class VisitQueue implements VisitCounter
 
     private void privAdd( UniMap order )
     {
-        String host = orderKey( order );
+        DomainKey key = orderKey( order );
 
-        HostQueue queue = _hosts.get( host );
+        HostQueue queue = _hosts.get( key );
         final boolean isNew = ( queue == null );
         if( isNew ) {
-              queue = new HostQueue( host,
+              queue = new HostQueue( key,
                                      _defaultMinHostDelay,
                                      _defaultMaxAccessPerHost );
-              _hosts.put( host, queue );
+              _hosts.put( key, queue );
         }
 
         queue.add( order );
@@ -311,7 +313,7 @@ public class VisitQueue implements VisitCounter
     private void addReady( HostQueue queue )
     {
         if( _log.isDebugEnabled() ) {
-            _log.debug( "addReady: {} {}", queue.host(), queue.size() );
+            _log.debug( "addReady: {} {}", queue.key(), queue.size() );
             checkAdd( queue );
         }
 
@@ -325,7 +327,7 @@ public class VisitQueue implements VisitCounter
     private void addSleep( HostQueue queue )
     {
         if( _log.isDebugEnabled() ) {
-            _log.debug( "addSleep: {} {}", queue.host(), queue.size() );
+            _log.debug( "addSleep: {} {}", queue.key(), queue.size() );
             checkAdd( queue );
         }
 
@@ -358,8 +360,8 @@ public class VisitQueue implements VisitCounter
     private int _acquiredCount = 0;
     private int _hostCount = 0;
 
-    private final Map<String, HostQueue> _hosts      =
-        new HashMap<String, HostQueue>( 2048 );
+    private final Map<DomainKey, HostQueue> _hosts      =
+        new HashMap<DomainKey, HostQueue>( 2048 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
         new PriorityQueue<HostQueue>( 1024, new HostQueue.TopOrderComparator());
