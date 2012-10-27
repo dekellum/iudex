@@ -285,7 +285,7 @@ module Iudex::DA
       high = ( period * (pos+1) ).round if (pos+1) < segments
 
       [ low, high ].map do |i|
-        URL64_ORDER[ i / 64 ] + URL64_ORDER[ i % 64 ] if i
+        URL64_ORDER[ i / 64 ].chr + URL64_ORDER[ i % 64 ].chr if i
       end
     end
 
