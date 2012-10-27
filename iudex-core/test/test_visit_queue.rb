@@ -125,6 +125,37 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     assert_queue_empty
   end
 
+  def test_configure_type
+    @visit_q.configure_host( 'h2.com',        75, 2 )
+    @visit_q.configure_host( 'h2.com', 'ALT', 50, 1 )
+
+    [ %w[   h2     a 2.2 ],
+      %w[ w.h2     b 2.1 ],
+      %w[   h2:ALT c 3.2 ],
+      %w[   h2:ALT d 3.1 ],
+      %w[   h1     a 1.2 ],
+      %w[   h1     b 1.1 ] ].each do |oinp|
+
+      @visit_q.add( order( oinp ) )
+
+    end
+    assert_equal( 3, @visit_q.host_count, "host count" )
+
+    expected = [ %w[   h2:ALT c 3.2 ],
+                 %w[   h2     a 2.2 ],
+                 %w[   h1     a 1.2 ],
+                 %w[   h2:ALT d 3.1 ],
+                 %w[   h1     b 1.1 ],
+                 %w[ w.h2     b 2.1 ] ]
+
+    p = 0
+    expected.each do |o|
+      assert_equal( o, acquire_order, p += 1 )
+    end
+
+    assert_queue_empty
+  end
+
   def test_multi_access_2
     @visit_q.default_max_access_per_host = 2
     add_common_orders
@@ -222,10 +253,13 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
   def order( args )
     host, c, p = args
+    host, t = host.split( ':' )
+
     UniMap.new.tap do |o|
       o.url = visit_url( "http://#{host}.com/#{c}" )
       o.priority = p.to_f
       o.vtest_input = args
+      o.type = t || 'PAGE'
     end
   end
 
