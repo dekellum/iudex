@@ -73,6 +73,11 @@ class TestVisitManager < MiniTest::Unit::TestCase
       self.max_check_interval = 21
       self.max_poll_interval = 130 #ms
       @batch = 0
+      @log = RJack::SLF4J[ self.class ]
+    end
+
+    def log
+      @log.java_logger
     end
 
     def pollWorkImpl( visit_q )

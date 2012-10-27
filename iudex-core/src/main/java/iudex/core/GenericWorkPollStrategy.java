@@ -116,8 +116,8 @@ public abstract class GenericWorkPollStrategy
         _highOrderCount = vq.orderCount();
         _highHostCount = vq.hostCount();
 
-        _log.info( "Polled {} orders in {} hosts; ({})",
-                   _highOrderCount, _highHostCount, sw.duration() );
+        log().info( "Polled {} orders in {} hosts; ({})",
+                    _highOrderCount, _highHostCount, sw.duration() );
         return vq;
     }
 
@@ -157,14 +157,14 @@ public abstract class GenericWorkPollStrategy
         else {
             wait = Math.min( _maxPollInterval - elapsed, _maxCheckInterval );
         }
-        if( ( wait > 0 ) && _log.isDebugEnabled() ) {
-            _log.debug( "orders {} ({}), hosts {} ({}), acq {}; wait {}s",
-                        Metric.format( oCount ),
-                        Metric.formatDifference( oRatio ),
-                        Metric.format( hCount ),
-                        Metric.formatDifference( hRatio ),
-                        Metric.format( current.acquiredCount() ),
-                        Metric.format( (double) wait / 1000d ) );
+        if( ( wait > 0 ) && log().isDebugEnabled() ) {
+            log().debug( "orders {} ({}), hosts {} ({}), acq {}; wait {}s",
+                         Metric.format( oCount ),
+                         Metric.formatDifference( oRatio ),
+                         Metric.format( hCount ),
+                         Metric.formatDifference( hRatio ),
+                         Metric.format( current.acquiredCount() ),
+                         Metric.format( (double) wait / 1000d ) );
         }
 
         return wait;
