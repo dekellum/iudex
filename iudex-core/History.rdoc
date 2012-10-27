@@ -1,4 +1,8 @@
 === 1.3.0 (TBD)
+* Upgrade to logback ~> 1.5 (dev)
+* Update TLDSets based on upstream c61f326ad19f 2012-10-25
+* Expose protected log() in GenericWorkPollStrategy
+* Misc java logging simplifications with slf4j 1.7 varargs
 
 === 1.2.1 (2012-9-15)
 * Upgrade/narrow to gravitext-util ~> 1.6.1

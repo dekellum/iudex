@@ -1,4 +1,10 @@
 === 1.3.0 (TBD)
+* Upgrade/narrow to slf4j ~> 1.7.0, logback ~> 1.5
+* Add FilterChain.alwaysPass option
+* Add alternative create_chain options Hash syntax
+* Add fltr_method and support,cleanup in ProcFilter
+* Simplify KeyHelper.keys
+* Misc java logging simplifications with slf4j 1.7 varargs
 
 === 1.2.1 (2012-9-15)
 * Upgrade/narrow to gravitext-util ~> 1.6.1
