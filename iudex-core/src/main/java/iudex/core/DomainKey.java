@@ -49,6 +49,8 @@ public final class DomainKey
     @Override
     public boolean equals( Object other )
     {
+        if( other == this ) return true;
+
         if( other instanceof DomainKey ) {
             DomainKey o = (DomainKey) other;
             return ( _domain.equals( o._domain ) &&

@@ -15,6 +15,7 @@
  */
 package iudex.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,15 @@ public class VisitQueue implements VisitCounter
                                             int minHostDelay,
                                             int maxAccessCount )
     {
-        DomainKey key = orderKey( host );
+        configureHost( host, null, minHostDelay, maxAccessCount );
+    }
+
+    public synchronized void configureHost( String host,
+                                            String type,
+                                            int minHostDelay,
+                                            int maxAccessCount )
+    {
+        DomainKey key = configKey( host, type );
         HostQueue hq = _hosts.get( key );
         if( hq != null ) {
             throw new IllegalStateException(
@@ -66,8 +75,7 @@ public class VisitQueue implements VisitCounter
                 " already configured." );
         }
 
-        _hosts.put( key,
-                    new HostQueue( key, minHostDelay, maxAccessCount ) );
+        _hosts.put( key, new HostQueue( key, minHostDelay, maxAccessCount ) );
     }
 
     /**
@@ -191,14 +199,41 @@ public class VisitQueue implements VisitCounter
     {
         final String domain = order.get( ContentKeys.URL ).domain();
 
+        List<DomainKey> typedKeys = _typedDomainKeys.get( domain );
+        if( typedKeys != null ) {
+            DomainKey key = new DomainKey( domain,
+                                           order.get( ContentKeys.TYPE ) );
+            for( DomainKey old : typedKeys ) {
+                if( old.equals( key ) ) return old;
+            }
+        }
+
         return new DomainKey( domain, null );
     }
 
-    protected DomainKey orderKey( String host )
+    protected DomainKey configKey( String host, String type )
     {
         host = Domains.normalize( host.trim() );
         String domain = Domains.registrationLevelDomain( host );
-        return new DomainKey( ( domain != null ) ? domain : host, null );
+        if( domain == null ) domain = host;
+
+        if( type != null ) type = type.intern();
+
+        DomainKey key = new DomainKey( domain, type );
+
+        if( type != null ) {
+            List<DomainKey> keys = _typedDomainKeys.get( domain );
+            if( keys == null ) {
+                keys = new ArrayList<DomainKey>();
+                _typedDomainKeys.put( domain, keys );
+            }
+            for( DomainKey old : keys ) {
+                if( old.equals( key ) ) return old;
+            }
+            keys.add( key );
+        }
+
+        return key;
     }
 
     synchronized String dump()
@@ -362,6 +397,9 @@ public class VisitQueue implements VisitCounter
 
     private final Map<DomainKey, HostQueue> _hosts      =
         new HashMap<DomainKey, HostQueue>( 2048 );
+
+    private final Map<String,List<DomainKey>> _typedDomainKeys =
+        new HashMap<String,List<DomainKey>>( 16 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
         new PriorityQueue<HostQueue>( 1024, new HostQueue.TopOrderComparator());
