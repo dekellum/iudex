@@ -34,7 +34,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
 
   def setup
     @visit_q = VisitQueue.new
-    @visit_q.default_min_host_delay = 50 #ms
+    @visit_q.config( :delay => 50 ) #ms
     @scheduler = Executors::new_scheduled_thread_pool( 2 )
   end
 
@@ -96,7 +96,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   end
 
   def test_configure
-    @visit_q.configure_host( 'h2.com', 75, 2 )
+    @visit_q.config( :domain => 'h2.com', :delay => 75, :cons => 2 )
 
     [ %w[   h2 a 2.2 ],
       %w[ w.h2 b 2.1 ],
@@ -126,8 +126,10 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   end
 
   def test_configure_type
-    @visit_q.configure_host( 'h2.com',        75, 2 )
-    @visit_q.configure_host( 'h2.com', 'ALT', 50, 1 )
+    @visit_q.config( :domain => 'h2.com',
+                     :delay => 75, :cons => 2 )
+    @visit_q.config( :domain => 'h2.com', :type => 'ALT',
+                     :delay => 50, :cons => 1 )
 
     [ %w[   h2     a 2.2 ],
       %w[ w.h2     b 2.1 ],
@@ -201,7 +203,7 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   def test_interleaved
     @visit_q.default_max_access_per_host = 2
     @visit_q.default_min_host_delay = 3 #ms
-    @visit_q.configure_host( 'h2.com', 1, 4 )
+    @visit_q.config( :domain => 'h2.com', :delay => 1, :cons => 4 )
 
     512.times do |i|
       @visit_q.add( order( [ %w[ h1 h2 ][rand( 2 )], i, 5 * rand ] ) )
