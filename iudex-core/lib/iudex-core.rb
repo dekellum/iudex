@@ -53,3 +53,4 @@ module Iudex
 end
 
 require 'iudex-core/mojibake'
+require 'iudex-core/visit_queue'

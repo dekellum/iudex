@@ -22,10 +22,8 @@ Iudex.configure do |c|
   end
 
   c.setup_visit_queue do |q|
-    q.default_min_host_delay = 100 #ms
-    q.default_max_access_per_host = 1
-
-    q.configure_host( "gravitext.com", 100, 2 ) # 100ms, 2 connections
+    q.config(                             :rate =>  5.0, :cons => 1 )
+    q.config( :domain => "gravitext.com", :rate => 10.0, :cons => 2 )
   end
 
   c.setup_work_poller do |wp|

@@ -39,9 +39,9 @@ public class HostQueue
         }
     }
 
-    public HostQueue( String host, int minHostDelay, int maxAccessCount )
+    public HostQueue( DomainKey key, int minHostDelay, int maxAccessCount )
     {
-        _host = host;
+        _key = key;
         _minHostDelay = minHostDelay;
         _maxAccess = maxAccessCount;
     }
@@ -54,12 +54,12 @@ public class HostQueue
                 "HostQueue can't be cloned with orders" );
         }
 
-        return new HostQueue( _host, _minHostDelay, _maxAccess );
+        return new HostQueue( _key, _minHostDelay, _maxAccess );
     }
 
-    public String host()
+    public DomainKey key()
     {
-        return _host;
+        return _key;
     }
 
     public int minHostDelay()
@@ -162,7 +162,7 @@ public class HostQueue
     private static final PriorityComparator PRIORITY_COMPARATOR =
         new PriorityComparator();
 
-    private final String _host;
+    private final DomainKey _key;
     private final int _minHostDelay;
     private final int _maxAccess;
 
