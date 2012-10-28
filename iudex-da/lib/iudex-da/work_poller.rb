@@ -90,16 +90,27 @@ module Iudex::DA
         age_coef_2 && age_coef_2 > 0.0 )
     end
 
-    # A table of [ domain, max_urls ] or [ domain, TYPE, max_urls ]
-    # rows. Each domain should be a registration-level, normalized
-    # lower-case value. An (upper-case) TYPE value is AND'd with its
-    # domain or may appear on its own (nil domain). A nil domain or
-    # type applies to all domains/types not covered by another
-    # row. Without a both-nil row, work is limited to the explicit
-    # domains/types listed. If provided, max_urls values are used
-    # instead of the top level #max_urls. A zero max_urls value
-    # excludes this domain/type efficiently. Domain depth should most
-    # likely be avoided if this feature is used. (default: empty, off)
+    # A table of option rows as defined below. A nil/unspecified
+    # domain and type row applies to all domains/types not covered by
+    # another row. Without such a row, work is limited to the explicit
+    # domains/types listed.
+    #
+    # ==== Options
+    #
+    # :domain:: The registration-level, normalized lower-case domain
+    #           value.
+    #
+    # :type:: An (upper-case) TYPE value to be AND'd with a domain
+    #         domain or may appear on its own, applying to all
+    #         unconfigured domains.
+    #
+    # :max:: The maximum number of visit urls to obtain in one poll
+    #        (instead of the top level #max_urls.) A zero max_urls
+    #        value excludes this domain/type (efficiently).
+    #
+    # Also a [ domain, max ] alternative syntax is currently supported
+    # but deprecated.
+    #
     attr_accessor :domain_union
 
     # An array containing a zero-based position and a total number of
@@ -163,6 +174,16 @@ module Iudex::DA
       end
     end
 
+    def domain_union=( table )
+      @domain_union = table.map do | *args |
+        args = args.flatten.dup
+        opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
+        opts[ :domain ] ||= args.shift
+        opts[ :max ]    ||= args.shift
+        opts
+      end
+    end
+
     def generate_query
       criteria = [ "next_visit_after <= now()" ]
 
@@ -179,38 +200,34 @@ module Iudex::DA
         params = [ max_urls ]
       else
         subqueries = []
-        @domain_union.each do | row |
-          if row.size < 3
-            domain, dmax = row
-          else
-            domain, type, dmax = row
-          end
+        @domain_union.each do | opts |
+          opts = opts.dup
+          opts[ :max ]    ||= @max_urls
 
-          next if dmax == 0
-          dmax ||= @max_urls
+          next if opts[ :max ] == 0
 
           c = criteria.dup
-          if domain.nil?
-            c += @domain_union.map { |nd,_| nd }.
+          if opts[ :domain ].nil?
+            c += @domain_union.map { |r| r[ :domain ] }.
                                compact.
                                uniq.
                                map { |nd| "domain != '#{nd}'" }
           else
-            c << "domain = '#{domain}'"
+            c << "domain = '#{opts[ :domain ]}'"
           end
 
-          if type.nil?
-            c += @domain_union.select { |nd,_| nd == domain }. #nil incl.
-                               map { |r| r[1] if r.length == 3 }.
+          if opts[ :type ].nil?
+            c += @domain_union.select { |r| r[ :domain ] == opts[ :domain ] }.
+                               map { |r| r[ :type ] }.
                                compact.
                                uniq.
                                map { |nt| "type != '#{nt}'" }
-          elsif type
-            c << "type = '#{type}'"
+          elsif opts[ :type ]
+            c << "type = '#{opts[ :type ]}'"
           end
 
           subqueries << generate_query_inner( c )
-          params << dmax
+          params << opts[ :max ]
         end
         if subqueries.size == 1
           query = subqueries.first

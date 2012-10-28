@@ -124,74 +124,78 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   end
 
   def test_poll_domain_union_2
-    poller.domain_union = [ [ 'gravitext.com', 15000 ],
-                            [ nil, 10000 ] ]
+    poller.domain_union = [ { :domain => 'gravitext.com', :max => 15000 },
+                            {                             :max => 10000 } ]
 
     result = poller.poll
     assert_equal( 3, result.size )
   end
 
   def test_poll_domain_union_3
-    poller.domain_union = [ [ 'gravitext.com', 1 ],
-                            [  'hometown.com', 1 ],
-                            [ nil, 3 ] ]
+    poller.domain_union = [ { :domain => 'gravitext.com', :max => 1 },
+                            { :domain => 'hometown.com',  :max => 1 },
+                            {                             :max => 3 } ]
 
     result = poller.poll
     assert_equal( 2, result.size )
   end
 
   def test_poll_domain_union_type_1
-    poller.domain_union = [ [ 'gravitext.com', 'ALT', 15000 ] ]
+    poller.domain_union = [
+      { :domain => 'gravitext.com', :type => 'ALT', :max => 15000 } ]
 
     result = poller.poll
     assert_equal( 1, result.size )
   end
 
   def test_poll_domain_union_type_2
-    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
-                            [ 'gravitext.com', 1 ] ]
+    poller.domain_union = [
+      { :domain => 'gravitext.com', :type => 'ALT', :max => 1 },
+      { :domain => 'gravitext.com',                 :max => 1 } ]
 
     result = poller.poll
     assert_equal( 2, result.size )
   end
 
   def test_poll_domain_union_type_3
-    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
-                            [ 'gravitext.com', 'NOT', 1 ],
-                            [ 'gravitext.com', 1 ] ]
+    poller.domain_union = [
+      { :domain => 'gravitext.com', :type => 'ALT', :max => 1 },
+      { :domain => 'gravitext.com', :type => 'NOT', :max => 1 },
+      { :domain => 'gravitext.com',                 :max => 1 } ]
 
     result = poller.poll
     assert_equal( 2, result.size )
   end
 
   def test_poll_domain_union_type_4
-    poller.domain_union = [ [ 'gravitext.com', 'ALT', 1 ],
-                            [ 'gravitext.com', 'NOT', 1 ],
-                            [ 'gravitext.com', 1 ],
-                            [  'hometown.com', 1 ] ]
+    poller.domain_union = [
+      { :domain => 'gravitext.com', :type => 'ALT', :max => 1 },
+      { :domain => 'gravitext.com', :type => 'NOT', :max => 1 },
+      { :domain => 'gravitext.com',                 :max => 1 },
+      { :domain =>  'hometown.com',                 :max => 1 } ]
 
     result = poller.poll
     assert_equal( 3, result.size )
   end
 
   def test_poll_domain_union_type_5
-    poller.domain_union = [ [ nil, 'ALT', 15000 ] ]
+    poller.domain_union = [ { :type => 'ALT', :max => 15000 } ]
 
     result = poller.poll
     assert_equal( 1, result.size )
   end
 
   def test_poll_domain_union_type_6
-    poller.domain_union = [ [ nil, 'ALT', 2 ],
-                            [ nil, 3 ] ]
+    poller.domain_union = [ { :type => 'ALT', :max => 2 },
+                            {                 :max => 3 } ]
 
     result = poller.poll
     assert_equal( 3, result.size )
   end
 
   def test_poll_domain_union_type_7
-    poller.domain_union = [ [ nil, 'ALT', 2 ],
-                            [ nil, nil,   1 ] ] #extra nil is optional
+    poller.domain_union = [ { :type => 'ALT', :max => 2 },
+                            {                 :max => 1 } ]
 
     result = poller.poll
     assert_equal( 2, result.size )
