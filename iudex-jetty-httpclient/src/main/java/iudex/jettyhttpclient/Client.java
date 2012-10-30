@@ -84,6 +84,11 @@ public class Client
         _maxContentLength = length;
     }
 
+    public void setCancelOnExpire( boolean doCancel )
+    {
+        _doCancelOnExpire = doCancel;
+    }
+
     public HttpClient jettyClient()
     {
         return _client;
@@ -364,7 +369,10 @@ public class Client
             @Override
             protected void onExpire()
             {
-                onException( new Expired() );
+                _statusCode = TIMEOUT;
+                setError( new Expired() );
+                if( _doCancelOnExpire ) cancel();
+                complete();
             }
 
             @Override
@@ -540,6 +548,7 @@ public class Client
 
     private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
+    private boolean _doCancelOnExpire = true;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
