@@ -89,11 +89,13 @@ module Iudex
       end
 
       def feed_fetcher
-        [ create_content_fetcher( feed_mime_types, :feed_receiver, :main ) ]
+        [ create_content_fetcher( :types => :feed_mime_types,
+                                  :filters => :feed_receiver ) ]
       end
 
       def page_fetcher
-        [ create_content_fetcher( page_mime_types, :page_receiver, :main ) ]
+        [ create_content_fetcher( :types => :page_mime_types,
+                                  :filters => :page_receiver ) ]
       end
 
       def feed_receiver
