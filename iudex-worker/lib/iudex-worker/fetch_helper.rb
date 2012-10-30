@@ -23,24 +23,72 @@ module Iudex
       include Iudex::HTTP
       include Iudex::Core::Filters
 
-      def create_content_fetcher( accept_types, receiver, listener = nil )
-        cf = ContentFetcher.new( http_client,
-                                 visit_counter,
-                                 create_chain( receiver, nil, listener ) )
+      # Create a ContentFetcher including a filter chain to receive
+      # the fetch result.
+      #
+      # === Options
+      #
+      # Options support literal values, or a Proc, Method, or a Symbol
+      # to self send unless otherwise noted.
+      #
+      # :types:: An Array or table of Mime types use Accept header in
+      #          default :request_headers and to restrict returned
+      #          results on. (Default: #page_mime_types)
+      #
+      # :client:: The Java::iudex.http.HTTPClient implementation to
+      #           use (Default: :http_client)
+      #
+      # :user_agent:: The HTTP User-Agent for default
+      #               :request_headers. Proc's will receive the
+      #               options Hash as parameter (Default: #http_user_agent)
+      #
+      # :visit_counter:: The Java::iudex.core.VisitCounter
+      #                  implementation. (Default: :visit_counter)
+      #
+      # :executor:: The java.util.concurrent.Executor to use for
+      #             running the receiver filter chain. (Default: :executor)
+      #
+      # :request_headers:: HTTP Request headers as Array<iudex.http.Header>
+      #                    (Default: #http_request_headers)
+      #
+      # All options (including the required :filters option) are also
+      # passed to self.create_chain for creating the receiver filter
+      # chain
+      def create_content_fetcher( *args )
+        opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
 
-        cf.executor = executor if executor
+        opts[ :types ]        ||= args.shift
+        opts[ :filters  ]     ||= args.shift
+        opts[ :listener ]     ||= args.shift
 
-        alist = accept_list( accept_types )
+        opts = { :types           => :page_mime_types,
+                 :listener        => :main,
+                 :client          => :http_client,
+                 :user_agent      => :http_user_agent,
+                 :visit_counter   => :visit_counter,
+                 :executor        => :executor,
+                 :request_headers => :http_request_headers
+               }.merge( opts )
+
+        cf = ContentFetcher.new( call_if( opts[ :client ] ),
+                                 call_if( opts[ :visit_counter ] ),
+                                 create_chain( opts ) )
+
+        cf.executor = call_if( opts[ :executor ] )
+
+        alist = accept_list( call_if( opts[ :types ] ) )
         unless alist.include?( '*/*' )
           cf.accepted_content_types = ContentTypeSet.new( alist )
         end
 
-        headers = [ [ 'User-Agent', http_user_agent ],
-                    [ 'Accept',     accept_header( accept_types ) ] ]
-
-        cf.request_headers = headers.map { |kv| Header.new( *kv ) }
-
+        cf.request_headers = call_if( opts[ :request_headers ], opts )
         cf
+      end
+
+      def http_request_headers( opts )
+        [ [ 'User-Agent', call_if( opts[ :user_agent ] ) ],
+          [ 'Accept',     accept_header( call_if( opts[ :types ] ) ) ]
+        ].map { |kv| Header.new( *kv ) }
       end
 
       def http_user_agent
@@ -77,6 +125,16 @@ module Iudex
 
       def accept_list( types )
         types.flatten
+      end
+
+      def call_if( v, *args )
+        if v.is_a?( Proc ) || v.is_a?( Method )
+          v.call( *args )
+        elsif v.is_a?( Symbol )
+          send( v, *args )
+        else
+          v
+        end
       end
 
     end
