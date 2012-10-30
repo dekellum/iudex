@@ -51,15 +51,20 @@ module Iudex
       # :request_headers:: HTTP Request headers as Array<iudex.http.Header>
       #                    (Default: #http_request_headers)
       #
-      # All options (including the required :filters option) are also
-      # passed to self.create_chain for creating the receiver filter
-      # chain
+      # All options (including the required :filters option, and
+      # :listener with default :main) are also passed to
+      # self.create_chain for creating the receiver filter chain
+      #
+      # The positional parameters equivalent to ( :types, :filters,
+      # :listener ) as defined above are also supported, but
+      # deprecated.
+      #
       def create_content_fetcher( *args )
         opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
 
-        opts[ :types ]        ||= args.shift
-        opts[ :filters  ]     ||= args.shift
-        opts[ :listener ]     ||= args.shift
+        opts[ :types ]    ||= args.shift
+        opts[ :filters  ] ||= args.shift
+        opts[ :listener ] ||= args.shift
 
         opts = { :types           => :page_mime_types,
                  :listener        => :main,
