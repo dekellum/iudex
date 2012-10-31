@@ -64,7 +64,7 @@ module Iudex
         #
         # === Filter options
         #
-        # Each of the on_* filter options define above may take a
+        # Each of the on_* filter options defined above may take a
         # value of a Filter, Array of filters or a Symbol value. The
         # following symbol values are special, all other Symbol values
         # are passed as the :filters option to create_chain, and is
