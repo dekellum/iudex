@@ -130,11 +130,6 @@ module Iudex
                            :min_next => 0.0 ) ]
       end
 
-      # Filters to apply for feed update.
-      #
-      # Note: if this is an update then these filters act on a *new*
-      # map, thus any changes made here will not be visible after exit
-      # from the update_filter.
       def feed_post
         [ UHashMDCSetter.new,
           ref_common_cleanup,
@@ -188,11 +183,6 @@ module Iudex
                               :on_referer => :page_post )
       end
 
-      # Filters to apply during page update
-      #
-      # Note: if this is an update then these filters act on a *new*
-      # map, thus any changes made here will not be visible after exit
-      # from the update_filter.
       def page_post
         [ UHashMDCSetter.new,
           barc_writer, # Not run in 302 referer case, since no SOURCE.
