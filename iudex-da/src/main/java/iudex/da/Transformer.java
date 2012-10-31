@@ -34,6 +34,15 @@ public interface Transformer
     UniMap transformContent( UniMap updated, UniMap current );
 
     /**
+     * Transform referer of content to be inserted/updated.
+     * @param updated referer of content to be written
+     * @param current from database copy or null if not found. Should not be
+     * modified.
+     * @return content to write/update
+     */
+    UniMap transformReferer( UniMap update, UniMap current );
+
+    /**
      * Transform a reference to be inserted/updated.
      * @param updated reference to be written
      * @param current from database copy or null if not found. Should not

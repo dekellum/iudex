@@ -44,6 +44,8 @@ import static iudex.da.ContentMapper.*;
  */
 public class UpdateFilter implements FilterContainer
 {
+    public static final NoOpFilter DEFAULT_MERGE = new NoOpFilter();
+
     public UpdateFilter( DataSource source, ContentMapper mapper )
     {
         for( Key req : REQUIRED_KEYS ) {
@@ -57,6 +59,28 @@ public class UpdateFilter implements FilterContainer
         _mapper = mapper;
     }
 
+    /**
+     * Set additional chained filters to run the original content once all
+     * references are processed but before a final content update is made.
+     * The default NoOpFilter does a simple merge from current (db) to
+     * updated (memory). Setting to null disables content updates entirely.
+     */
+    public void setContentFilter( FilterContainer contentFilter )
+    {
+        _contentFilter = contentFilter;
+    }
+
+    /**
+     * Set additional chained filters to run on the REFERER of content before
+     * the final update is made. The default NoOpFilter does a simple merge
+     * from current (db) to updated (memory).
+     * Setting to null disables referer updates entirely.
+     */
+    public void setRefererFilter( FilterContainer refererFilter )
+    {
+        _refererFilter = refererFilter;
+    }
+
     public void setUpdateRefFilter( FilterContainer updateRefFilter )
     {
         _updateRefFilter = updateRefFilter;
@@ -65,15 +89,6 @@ public class UpdateFilter implements FilterContainer
     public void setNewRefFilter( FilterContainer newRefFilter )
     {
         _newRefFilter = newRefFilter;
-    }
-
-    /**
-     * Set additional chained filters to run the original content once all
-     * references are processed but before a final content update is made.
-     */
-    public void setContentFilter( FilterContainer contentFilter )
-    {
-        _contentFilter = contentFilter;
     }
 
     public void setIsolationLevel( int isolationLevel )
@@ -119,6 +134,10 @@ public class UpdateFilter implements FilterContainer
             super( _dsource, _mapper, new UpdateTransformer() );
             setIsolationLevel( _isolationLevel );
             setMaxRetries( _maxRetries );
+            setUpdateReferences( _updateRefFilter != null &&
+                                 _newRefFilter != null );
+            setUpdateReferer( _refererFilter != null );
+            setUpdateContent( _contentFilter != null );
         }
 
         @Override
@@ -143,6 +162,20 @@ public class UpdateFilter implements FilterContainer
             out.set( UPDATED_REFERENCES, _updatedReferences );
 
             if( ! _contentFilter.filter( out ) ) out = null;
+
+            return out;
+        }
+
+        @Override
+        public UniMap transformReferer( UniMap updated, UniMap current )
+        {
+            UniMap out = merge( updated, current );
+
+            out.set( CURRENT, current );
+            out.set( NEW_REFERENCES,     _newReferences );
+            out.set( UPDATED_REFERENCES, _updatedReferences );
+
+            if( ! _refererFilter.filter( out ) ) out = null;
 
             return out;
         }
@@ -177,7 +210,8 @@ public class UpdateFilter implements FilterContainer
     @Override
     public List<FilterContainer> children()
     {
-        return Arrays.asList( _updateRefFilter, _newRefFilter, _contentFilter );
+        return Arrays.asList( _updateRefFilter, _newRefFilter,
+                              _contentFilter, _refererFilter );
     }
 
     @Override
@@ -186,6 +220,7 @@ public class UpdateFilter implements FilterContainer
         _updateRefFilter.close();
         _newRefFilter.close();
         _contentFilter.close();
+        _refererFilter.close();
     }
 
     private static final List<Key> REQUIRED_KEYS =
@@ -196,9 +231,10 @@ public class UpdateFilter implements FilterContainer
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
     private int _maxRetries = 3;
 
-    private FilterContainer _updateRefFilter = new NoOpFilter();
-    private FilterContainer _newRefFilter    = new NoOpFilter();
-    private FilterContainer _contentFilter   = new NoOpFilter();
+    private FilterContainer _updateRefFilter = DEFAULT_MERGE;
+    private FilterContainer _newRefFilter    = DEFAULT_MERGE;
+    private FilterContainer _contentFilter   = DEFAULT_MERGE;
+    private FilterContainer _refererFilter   = DEFAULT_MERGE;
 
     protected static final Logger _log =
         LoggerFactory.getLogger( UpdateFilter.class );

@@ -35,6 +35,15 @@ public class BaseTransformer implements Transformer
      * {@inheritDoc}
      * This implementation uses {@link #merge()}.
      */
+    public UniMap transformReferer( UniMap updated, UniMap current )
+    {
+        return merge( updated, current );
+    }
+
+    /**
+     * {@inheritDoc}
+     * This implementation uses {@link #merge()}.
+     */
     public UniMap transformReference( UniMap updated, UniMap current )
     {
         return merge( updated, current );
