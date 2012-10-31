@@ -106,8 +106,11 @@ module Iudex
       end
 
       def feed_updater
-        create_update_filter( feed_update_keys,
-                              :feed_post, :feed_ref_update, :feed_ref_new )
+        create_update_filter( :fields        => feed_update_keys,
+                              :on_content    => :feed_post,
+                              :on_referer    => :feed_post,
+                              :on_ref_update => :feed_ref_update,
+                              :on_ref_new    => :feed_ref_new )
       end
 
       def feed_ref_new
@@ -129,14 +132,9 @@ module Iudex
 
       # Filters to apply for feed update.
       #
-      # Notes:
-      #
-      # * This is run possibly twice, for both base content map and
-      #   referer map if present.
-      #
-      # * If this is an update then these filters act on a *new* map,
-      #   thus any changes made here will not be visible after exit
-      #   from the update_filter.
+      # Note: if this is an update then these filters act on a *new*
+      # map, thus any changes made here will not be visible after exit
+      # from the update_filter.
       def feed_post
         [ UHashMDCSetter.new,
           ref_common_cleanup,
@@ -185,19 +183,16 @@ module Iudex
       end
 
       def page_updater
-        create_update_filter( page_update_keys, :page_post )
+        create_update_filter( :fields     => page_update_keys,
+                              :on_content => :page_post,
+                              :on_referer => :page_post )
       end
 
       # Filters to apply during page update
       #
-      # Notes:
-      #
-      # * This is run possibly twice, for both base content map and
-      #   referer map if present.
-      #
-      # * If this is an update then these filters act on a *new* map,
-      #   thus any changes made here will not be visible after exit
-      #   from the update_filter.
+      # Note: if this is an update then these filters act on a *new*
+      # map, thus any changes made here will not be visible after exit
+      # from the update_filter.
       def page_post
         [ UHashMDCSetter.new,
           barc_writer, # Not run in 302 referer case, since no SOURCE.
