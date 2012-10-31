@@ -54,6 +54,21 @@ public class ContentUpdater
         _maxRetries = count;
     }
 
+    public void setUpdateContent( boolean doUpdateContent )
+    {
+        _doUpdateContent = doUpdateContent;
+    }
+
+    public void setUpdateReferer( boolean doUpdateReferer )
+    {
+        _doUpdateReferer = doUpdateReferer;
+    }
+
+    public void setUpdateReferences( boolean doUpdateReferences )
+    {
+        _doUpdateReferences = doUpdateReferences;
+    }
+
     /**
      * Update content REFERENCES, REFERER, and then the content itself.
      *
@@ -78,16 +93,18 @@ public class ContentUpdater
                     ++tries;
 
                     List<UniMap> refs = content.get( ContentKeys.REFERENCES );
-                    if( refs != null ) {
+                    if( refs != null && _doUpdateReferences ) {
                         update( refs, conn );
                     }
 
                     UniMap referer = content.get( ContentKeys.REFERER );
-                    if( referer != null ) {
-                        update( referer, conn );
+                    if( referer != null && _doUpdateReferer ) {
+                        update( referer, conn, true );
                     }
 
-                    update( content, conn );
+                    if( _doUpdateContent ) {
+                        update( content, conn, false );
+                    }
 
                     conn.commit();
 
@@ -189,18 +206,33 @@ public class ContentUpdater
     protected void update( UniMap content, Connection conn )
         throws SQLException
     {
+        update( content, conn, false );
+    }
+
+    protected void update( UniMap content, Connection conn, boolean isReferer )
+        throws SQLException
+    {
         final StringBuilder qb = new StringBuilder( 256 );
         qb.append( "SELECT " );
         mapper().appendFieldNames( qb );
         qb.append( " FROM urls WHERE uhash = ? FOR UPDATE;" );
 
         UpdateQueryRunner runner = new UpdateQueryRunner();
-        int update = runner.query( conn, qb.toString(),
-                                   new OneUpdateHandler( content, conn ),
-                                   content.get( ContentKeys.URL ).uhash() );
+        int update =
+            runner.query( conn, qb.toString(),
+                          new OneUpdateHandler( content, conn, isReferer ),
+                          content.get( ContentKeys.URL ).uhash() );
 
         if( update == 0 ) {
-            UniMap out = _transformer.transformContent( content, null );
+
+            UniMap out = null;
+            if( isReferer ) {
+                out = _transformer.transformReferer( content, null );
+            }
+            else {
+                out = _transformer.transformContent( content, null );
+            }
+
             if( out != null ) write( out, conn );
         }
     }
@@ -313,10 +345,12 @@ public class ContentUpdater
         implements ResultSetHandler<Integer>
     {
         public OneUpdateHandler( UniMap content,
-                                 Connection connection )
+                                 Connection connection,
+                                 boolean isReferer )
         {
             _content = content;
             _connection = connection;
+            _isReferer = isReferer;
         }
 
         @Override
@@ -325,8 +359,13 @@ public class ContentUpdater
             if( rs.next() ) {
                 final UniMap in = mapper().fromResultSet( rs );
 
-                UniMap out = _transformer.transformContent( _content, in );
-
+                UniMap out = null;
+                if( _isReferer ) {
+                    out = _transformer.transformReferer( _content, in );
+                }
+                else {
+                    out = _transformer.transformContent( _content, in );
+                }
                 if( out != null ) {
                     List<Key> diff = mapper().findUpdateDiffs( in, out );
                     if( diff.size() > 0 ) {
@@ -343,8 +382,9 @@ public class ContentUpdater
             }
             return 0;
         }
-        private Connection _connection;
-        private UniMap _content;
+        private final Connection _connection;
+        private final UniMap _content;
+        private final boolean _isReferer;
     }
 
     private static final class UpdateQueryRunner extends QueryRunner
@@ -362,4 +402,7 @@ public class ContentUpdater
 
     private final Transformer _transformer;
     private int _maxRetries = 3;
+    private boolean _doUpdateContent = true;
+    private boolean _doUpdateReferer = true;
+    private boolean _doUpdateReferences = true;
 }
