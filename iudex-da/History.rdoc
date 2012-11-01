@@ -1,4 +1,14 @@
 === 1.3.3 (TBD)
+* FactoryHelper.create_update_filter now prefers an options Hash
+  exposing greater control over what is updated and how. In
+  particular, :on_referer can be independently set.
+* Add (Base)Transformer, ContentUpdater, UpdateFilter support for a
+  distinct REFERER filter chain. Now content, referer, and references
+  updates are all optional.
+* BaseTransformer.merge now augments the updated map with the current
+  (database) contents instead of creating a temporary map on which
+  UpdateFilter chain mutations would be discarded.  This change makes
+  it consistent with either new or updated content.
 * Add new options Hash syntax and :type support to
   WorkPoller.domain_union
 * Fix WorkPoller uhash_slice range calculation for ruby 1.8

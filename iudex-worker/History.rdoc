@@ -1,5 +1,11 @@
 === 1.3.2 (TBD)
 * Upgrade/narrow to iudex-core, -da, -rome, -html, -simhash ~> 1.3.0
+* FetchHelper.create_content_fetcher now prefers an options Hash,
+  exposing settings for :types, :client, :user_agent,
+  :request_headers, etc. and passing additional options to
+  create_chain (:filters, etc.)
+* Various updates to FilterChainFactory and config sample using new
+  options, etc.
 * Upgrade to logback ~> 1.5
 
 === 1.3.1 (2012-10-25)
