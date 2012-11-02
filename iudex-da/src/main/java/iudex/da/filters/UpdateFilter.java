@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 import javax.sql.DataSource;
 
@@ -210,17 +211,23 @@ public class UpdateFilter implements FilterContainer
     @Override
     public List<FilterContainer> children()
     {
-        return Arrays.asList( _updateRefFilter, _newRefFilter,
-                              _contentFilter, _refererFilter );
+        List<FilterContainer> list = new ArrayList<FilterContainer>();
+
+        if( _updateRefFilter != null ) list.add( _updateRefFilter );
+        if( _newRefFilter    != null ) list.add( _newRefFilter  );
+        if( _contentFilter   != null ) list.add( _contentFilter );
+        if( _refererFilter   != null ) list.add( _refererFilter );
+
+        return list;
     }
 
     @Override
     public void close()
     {
-        _updateRefFilter.close();
-        _newRefFilter.close();
-        _contentFilter.close();
-        _refererFilter.close();
+        if( _updateRefFilter != null ) _updateRefFilter.close();
+        if( _newRefFilter    != null ) _newRefFilter.close();
+        if( _contentFilter   != null ) _contentFilter.close();
+        if( _refererFilter   != null ) _refererFilter.close();
     }
 
     private static final List<Key> REQUIRED_KEYS =
