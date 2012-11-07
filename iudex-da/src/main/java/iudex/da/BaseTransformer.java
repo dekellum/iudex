@@ -18,7 +18,6 @@ package iudex.da;
 
 import iudex.core.ContentKeys;
 
-import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 public class BaseTransformer implements Transformer
@@ -56,31 +55,21 @@ public class BaseTransformer implements Transformer
      */
     protected UniMap merge( final UniMap updated, final UniMap current )
     {
-        if( current != null ) augment( updated, current );
+        if( current != null ) {
+            updated.augment( current );
 
-        // FIXME: Use updated.augment( current ) when available.
+            // Special case for priority: Since WorkPoller may adjust the
+            // priority, for example by age, prefer the current priority
+            // from the database if indicated. ContentUpdater filters
+            // still get a chance to update from the normal value.
+
+            Float priority = current.get( ContentKeys.PRIORITY );
+            Boolean adjusted = updated.get( DAKeys.PRIORITY_ADJUSTED );
+            if( priority != null && adjusted != null && adjusted ) {
+                updated.set( ContentKeys.PRIORITY, priority );
+            }
+        }
 
         return updated;
-    }
-
-    @SuppressWarnings("unchecked")
-    private final void augment( UniMap updated, UniMap current )
-    {
-        Boolean adjustedObj = updated.get( DAKeys.PRIORITY_ADJUSTED );
-        final boolean adjusted = ( adjustedObj != null ) && adjustedObj;
-
-        // Special case for priority: Since WorkPoller may adjust the
-        // priority, for example by age, prefer the current priority
-        // from the database if indicated. ContentUpdater filters
-        // still get a chance to update from the normal value.
-
-        for( Key key : UniMap.KEY_SPACE.keys() ) {
-           Object value = current.get( key );
-           if( ( value != null ) &&
-               ( ( ( key == ContentKeys.PRIORITY ) && adjusted ) ||
-                 !updated.containsKey( key ) ) ) {
-               updated.set( key, value );
-           }
-        }
     }
 }
