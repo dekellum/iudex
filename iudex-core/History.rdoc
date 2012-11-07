@@ -4,6 +4,7 @@
 * Add VisitQueue.config( options ) extensions for cleaner
   configuration of HostQueue with type, rate, etc.
 * Update TLDSets based on upstream c61f326ad19f 2012-10-25
+* Upgrade to gravitext-util ~> 1.7.0
 * Upgrade to slf4j ~> 1.7.0, logback ~> 1.5 (dev)
 * Misc java logging simplifications with slf4j 1.7 varargs
 * Expose GenericWorkPollStrategy.log()
