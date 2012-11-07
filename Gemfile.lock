@@ -20,7 +20,7 @@ PATH
   remote: iudex-barc
   specs:
     iudex-barc (1.3.0-java)
-      gravitext-util (~> 1.6.1)
+      gravitext-util (~> 1.7.0)
       iudex-http (~> 1.3.0)
       rjack-slf4j (~> 1.7.0)
 
@@ -52,7 +52,7 @@ PATH
   remote: iudex-core
   specs:
     iudex-core (1.3.0-java)
-      gravitext-util (~> 1.6.1)
+      gravitext-util (~> 1.7.0)
       hooker (~> 1.0.0)
       iudex-barc (~> 1.3.0)
       iudex-filter (~> 1.3.0)
@@ -73,14 +73,14 @@ PATH
   remote: iudex-filter
   specs:
     iudex-filter (1.3.0-java)
-      gravitext-util (~> 1.6.1)
+      gravitext-util (~> 1.7.0)
       rjack-slf4j (~> 1.7.0)
 
 PATH
   remote: iudex-html
   specs:
     iudex-html (1.3.0-java)
-      gravitext-xmlprod (>= 1.5.1, < 1.7)
+      gravitext-xmlprod (~> 1.7.0)
       iudex-core (~> 1.3.0)
       rjack-nekohtml (~> 1.9.14)
 
@@ -88,7 +88,7 @@ PATH
   remote: iudex-http
   specs:
     iudex-http (1.3.0-java)
-      gravitext-util (~> 1.6.1)
+      gravitext-util (~> 1.7.0)
       rjack-slf4j (~> 1.7.0)
 
 PATH
@@ -152,10 +152,10 @@ GEM
       rack (~> 1.4.1)
       rjack-jetty (>= 7.5.4, < 7.7)
       rjack-slf4j (>= 1.6.5, < 1.8)
-    gravitext-util (1.6.2-java)
+    gravitext-util (1.7.0-java)
       rjack-slf4j (>= 1.6.5, < 1.8)
-    gravitext-xmlprod (1.6.0-java)
-      gravitext-util (~> 1.6.1)
+    gravitext-xmlprod (1.7.0-java)
+      gravitext-util (~> 1.7.0)
     hooker (1.0.1)
     jdbc-postgres (9.1.901)
     jruby-openssl (0.7.7)

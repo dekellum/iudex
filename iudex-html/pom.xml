@@ -24,7 +24,7 @@
     <dependency>
       <groupId>com.gravitext</groupId>
       <artifactId>gravitext-xmlprod</artifactId>
-      <version>[1.5.1,1.6.9999)</version>
+      <version>[1.7.0,1.7.999)</version>
     </dependency>
 
     <dependency>
