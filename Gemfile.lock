@@ -192,7 +192,7 @@ GEM
     rjack-logback (1.5.0-java)
       rjack-slf4j (>= 1.6.5, < 1.8)
     rjack-maven (3.0.4.0-java)
-    rjack-nekohtml (1.9.15.0-java)
+    rjack-nekohtml (1.9.17.0-java)
       rjack-xerces (~> 2.9.1)
     rjack-protobuf (2.4.1.0-java)
     rjack-qpid-client (0.18.0-java)
