@@ -14,7 +14,7 @@ RJack::TarPit.specify do |s|
   s.depend 'sequel',                              '~> 3.40.0'
   s.depend 'jdbc-postgres',                       '~> 9.1.901'
   s.depend 'rjack-commons-dbcp',                  '~> 1.4.0'
-  s.depend 'rjack-commons-dbutils',               '~> 1.4.0'
+  s.depend 'rjack-commons-dbutils',               '~> 1.5.0'
 
   s.depend 'minitest',                            '~> 2.3',       :dev
   s.depend 'rjack-logback',                       '~> 1.5',       :dev
