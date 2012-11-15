@@ -126,10 +126,18 @@ class TestVisitQueue < MiniTest::Unit::TestCase
   end
 
   def test_configure_type
+    @visit_q.config( :delay => 50, :cons => 1 )
     @visit_q.config( :domain => 'h2.com',
                      :delay => 75, :cons => 2 )
     @visit_q.config( :domain => 'h2.com', :type => 'ALT',
+                     :rate => 20, :cons => 1 )
+    @visit_q.config( :domain => 'h1.com',
                      :delay => 50, :cons => 1 )
+    @visit_q.config( :domain => 'h1.com', :type => 'ALT',
+                     :delay => 50, :cons => 1 )
+    @visit_q = @visit_q.clone
+
+    LOG.debug { "As configured:\n" + @visit_q.dump }
 
     [ %w[   h2     a 2.2 ],
       %w[ w.h2     b 2.1 ],
@@ -141,6 +149,9 @@ class TestVisitQueue < MiniTest::Unit::TestCase
       @visit_q.add( order( oinp ) )
 
     end
+
+    LOG.debug { "After add:\n" + @visit_q.dump }
+
     assert_equal( 3, @visit_q.host_count, "host count" )
 
     expected = [ %w[   h2:ALT c 3.2 ],
@@ -154,6 +165,8 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     expected.each do |o|
       assert_equal( o, acquire_order, p += 1 )
     end
+
+    LOG.debug { "After consumed:\n" + @visit_q.dump }
 
     assert_queue_empty
   end
