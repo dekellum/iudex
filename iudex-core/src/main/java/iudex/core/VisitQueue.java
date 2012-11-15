@@ -95,6 +95,7 @@ public class VisitQueue implements VisitCounter
         VisitQueue newQ = new VisitQueue();
         newQ._defaultMinHostDelay     = _defaultMinHostDelay;
         newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
+        newQ._typedDomainKeys         = _typedDomainKeys;
 
         //Very important to deep copy the host queues
         for( HostQueue hq : _hosts.values() ) {
@@ -399,7 +400,7 @@ public class VisitQueue implements VisitCounter
     private final Map<DomainKey, HostQueue> _hosts      =
         new HashMap<DomainKey, HostQueue>( 2048 );
 
-    private final Map<String,List<DomainKey>> _typedDomainKeys =
+    private Map<String,List<DomainKey>> _typedDomainKeys =
         new HashMap<String,List<DomainKey>>( 16 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
