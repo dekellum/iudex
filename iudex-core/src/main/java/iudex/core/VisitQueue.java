@@ -325,12 +325,11 @@ public class VisitQueue implements VisitCounter
         DomainKey key = orderKey( order );
 
         HostQueue queue = _hosts.get( key );
-        final boolean isNew = ( queue == null );
-        if( isNew ) {
-              queue = new HostQueue( key,
-                                     _defaultMinHostDelay,
-                                     _defaultMaxAccessPerHost );
-              _hosts.put( key, queue );
+        if( queue == null ) {
+            queue = new HostQueue( key,
+                                   _defaultMinHostDelay,
+                                   _defaultMaxAccessPerHost );
+            _hosts.put( key, queue );
         }
 
         queue.add( order );
