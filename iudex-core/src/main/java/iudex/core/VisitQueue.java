@@ -95,6 +95,7 @@ public class VisitQueue implements VisitCounter
         VisitQueue newQ = new VisitQueue();
         newQ._defaultMinHostDelay     = _defaultMinHostDelay;
         newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
+        newQ._typedDomainKeys         = _typedDomainKeys;
 
         //Very important to deep copy the host queues
         for( HostQueue hq : _hosts.values() ) {
@@ -254,10 +255,11 @@ public class VisitQueue implements VisitCounter
             boolean isSleep = _sleepHosts.contains( hq );
 
             out.append( String.format(
-                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                "%20s size %4d, acq %1d, delay %3dms, next %3dms, %c %c\n",
                 hq.key(),
                 hq.size(),
                 hq.accessCount(),
+                hq.minHostDelay(),
                 hq.nextVisit() - now,
                 ( isReady ? 'R' : ' ' ),
                 ( isSleep ? 'S' : ' ' ) ) );
@@ -306,7 +308,8 @@ public class VisitQueue implements VisitCounter
     {
         if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
             --_hostCount;
-            if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
+            if( ( queue.key().type() == null ) &&
+                ( queue.minHostDelay() == _defaultMinHostDelay ) &&
                 ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
                 _hosts.remove( queue.key() );
             }
@@ -325,12 +328,11 @@ public class VisitQueue implements VisitCounter
         DomainKey key = orderKey( order );
 
         HostQueue queue = _hosts.get( key );
-        final boolean isNew = ( queue == null );
-        if( isNew ) {
-              queue = new HostQueue( key,
-                                     _defaultMinHostDelay,
-                                     _defaultMaxAccessPerHost );
-              _hosts.put( key, queue );
+        if( queue == null ) {
+            queue = new HostQueue( key,
+                                   _defaultMinHostDelay,
+                                   _defaultMaxAccessPerHost );
+            _hosts.put( key, queue );
         }
 
         queue.add( order );
@@ -398,7 +400,7 @@ public class VisitQueue implements VisitCounter
     private final Map<DomainKey, HostQueue> _hosts      =
         new HashMap<DomainKey, HostQueue>( 2048 );
 
-    private final Map<String,List<DomainKey>> _typedDomainKeys =
+    private Map<String,List<DomainKey>> _typedDomainKeys =
         new HashMap<String,List<DomainKey>>( 16 );
 
     private PriorityQueue<HostQueue>     _readyHosts =
