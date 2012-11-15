@@ -254,10 +254,11 @@ public class VisitQueue implements VisitCounter
             boolean isSleep = _sleepHosts.contains( hq );
 
             out.append( String.format(
-                "%20s size %4d, acq %1d, next %3dms, %c %c\n",
+                "%20s size %4d, acq %1d, delay %3dms, next %3dms, %c %c\n",
                 hq.key(),
                 hq.size(),
                 hq.accessCount(),
+                hq.minHostDelay(),
                 hq.nextVisit() - now,
                 ( isReady ? 'R' : ' ' ),
                 ( isSleep ? 'S' : ' ' ) ) );
