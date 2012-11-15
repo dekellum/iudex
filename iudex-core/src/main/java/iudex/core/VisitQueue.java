@@ -307,7 +307,8 @@ public class VisitQueue implements VisitCounter
     {
         if( ( queue.accessCount() == 0 ) && ( queue.size() == 0 ) ) {
             --_hostCount;
-            if( ( queue.minHostDelay() == _defaultMinHostDelay ) &&
+            if( ( queue.key().type() == null ) &&
+                ( queue.minHostDelay() == _defaultMinHostDelay ) &&
                 ( queue.maxAccessCount() == _defaultMaxAccessPerHost ) ) {
                 _hosts.remove( queue.key() );
             }
