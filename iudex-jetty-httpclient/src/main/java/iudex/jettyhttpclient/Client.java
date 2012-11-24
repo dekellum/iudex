@@ -23,41 +23,40 @@ import iudex.http.Header;
 import iudex.http.Headers;
 import iudex.http.ResponseHandler;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.jetty.client.Address;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpDestination;
-import org.eclipse.jetty.client.HttpExchange;
-import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.http.HttpFields.Field;
-import org.eclipse.jetty.io.Buffer;
-import org.eclipse.jetty.io.Connection;
-import org.eclipse.jetty.io.EndPoint;
-import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+import org.eclipse.jetty.http.HttpMethod;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gravitext.util.Charsets;
 import com.gravitext.util.Closeable;
 import com.gravitext.util.ResizableByteBuffer;
 
 public class Client
     implements HTTPClient, Closeable
 {
+    public static class SessionAbort extends Exception
+    {
+        public SessionAbort( String msg )
+        {
+            super( msg );
+        }
+    }
+
     public Client( HttpClient client )
     {
         _client = client;
@@ -65,7 +64,7 @@ public class Client
 
     public void setExecutor( ExecutorService executor )
     {
-        _client.setThreadPool( new ExecutorThreadPool( executor ) );
+        _client.setExecutor( executor );
     }
 
     /**
@@ -155,7 +154,11 @@ public class Client
         }
     }
 
-    private class Session extends HTTPSession
+    private class Session
+        extends HTTPSession
+        implements Request.HeadersListener,
+                   Request.FailureListener,
+                   Response.Listener
     {
         public void addRequestHeader( Header header )
         {
@@ -164,8 +167,7 @@ public class Client
 
         public List<Header> requestHeaders()
         {
-            return _exchange.requestHeaders();
-            //FIXME: Give requestedHeaders before execute?
+            return _requestHeaders;
         }
 
         public int statusCode()
@@ -195,14 +197,6 @@ public class Client
             return null;
         }
 
-        public void abort()
-        {
-            _log.debug( "Aborting with statusCode: {}", _statusCode );
-            _body = null;
-            _exchange.onResponseComplete();
-            _exchange.cancel();
-        }
-
         public void close()
         {
             //No-op
@@ -212,336 +206,238 @@ public class Client
         {
             _handler = handler;
 
-            _exchange.setMethod( method().name() );
-            _exchange.setURL( url() );
-
-            for( Header h : _requestedHeaders ) {
-                _exchange.setRequestHeader(  h.name().toString(),
-                                             h.value().toString() );
+            Request req = _client.newRequest( url() );
+            switch( method() ) {
+            case GET:
+                req.method( HttpMethod.GET );
+                break;
+            case HEAD:
+                req.method( HttpMethod.HEAD );
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported: " + method());
             }
-
-            _exchange.onSend();
+            for( Header h : _requestedHeaders ) {
+                req.header(  h.name().toString(),
+                             h.value().toString() );
+            }
 
             try {
-                _client.send( _exchange );
+                req.send( this );
+                onSend();
             }
-            catch( IOException e ) {
-                _exchange.onException( e );
+            catch( UnresolvedAddressException x ) {
+                onException( x );
             }
         }
 
         private void complete()
         {
             ResponseHandler handler = _handler;
-            if( handler == null ) {
-                throw new IllegalStateException(
-                   "Handler already completed!" );
+            if( handler != null ) {
+                onComplete();
+                _handler = null;
+                handler.sessionCompleted( this );
+                _latch.countDown();
             }
-            _exchange.onComplete();
+            else {
+                _log.warn( "Redundant complete" );
+            }
+        }
 
-            _handler = null;
-            handler.sessionCompleted( this );
+        @Override
+        public void abort()
+        {
+            //FIXME: do nothing?
         }
 
         @SuppressWarnings("unused")
         public void waitForCompletion() throws InterruptedException
         {
-            if( _exchange != null ) _exchange.waitForDone();
+            _latch.await();
         }
 
-        private class Exchange extends HttpExchange
+        /**
+         * Called by session for tracking.
+         */
+        void onSend()
         {
-            /**
-             * Called by session for tracking.
-             */
-            void onSend()
-            {
-                _log.debug( "onSend Exchange {}", this );
+            _log.debug( "onSend Exchange {}", this );
+        }
+
+        @Override
+        public void onHeaders( Request request )
+        {
+            _log.debug( "onBegin: {}", request );
+
+            for( Field f : request.getHeaders() ) {
+                _requestHeaders.add(new Header(f.getName(), f.getValue()));
+            }
+            setUrl( request.getURI() ); //FIXME: May not be called on redirect
+        }
+
+        @Override
+        public void onBegin( Response response )
+        {
+            _log.debug( "onBegin: {}", response );
+
+        }
+
+        @Override
+        public void onHeaders( Response response )
+        {
+            for( Field f : response.getHeaders() ) {
+                _responseHeaders.add(new Header(f.getName(), f.getValue()));
             }
 
-            /**
-             * Called by session.complete() for tracking.
-             */
-            void onComplete()
-            {
-               _log.debug( "onComplete Exchange {}", this );
-            }
+            _statusCode = response.getStatus();
+            _statusText = response.getReason();
 
-            @Override
-            protected void onRequestComplete()
-            {
-                _log.debug( "onRequestComplete: {}", this );
-            }
+            _log.debug( "onHeaders, status: {} {}",
+                        _statusCode, _statusText );
 
-            @Override
-            protected void onResponseStatus( Buffer version,
-                                             int status,
-                                             Buffer reason )
-            {
-                _statusCode = status;
-                if( reason != null ) {
-                    _statusText = decode( reason ).toString();
-                }
-                else {
+            if( _statusCode == 200 ) {
+
+                //check Content-Type
+                ContentType ctype = Headers.contentType( _responseHeaders );
+
+                if( ! acceptedContentTypes().contains( ctype ) ) {
+                    _statusCode = NOT_ACCEPTED;
                     _statusText = null;
+                    response.abort( new SessionAbort( "NOT_ACCEPTED" ) );
                 }
-                _log.debug( "onResponseStatus: {} {}",
-                            _statusCode, _statusText );
-
-                try {
-                    String lastURL = lastURL();
-                    _log.debug( "onResponseStatus: url: {}", lastURL );
-                    Session.this.setUrl( lastURL );
-                }
-                catch( URISyntaxException e ) {
-                    onException( e );
-                    cancel();
-                }
-            }
-
-            @Override
-            public void onResponseHeader( Buffer name, Buffer value )
-            {
-                _responseHeaders.add( new Header( decode( name ),
-                                                  decode( value ) ) );
-            }
-
-            @Override
-            protected void onResponseHeaderComplete()
-            {
-                if( _statusCode == 200 ) {
-
-                    //check Content-Type
-                    ContentType ctype = Headers.contentType( _responseHeaders );
-
-                    if( ! acceptedContentTypes().contains( ctype ) ) {
-                        _statusCode = NOT_ACCEPTED;
+                else {
+                    int length = Headers.contentLength( _responseHeaders );
+                    if( length > maxContentLength() ) {
+                        _statusCode = TOO_LARGE_LENGTH;
                         _statusText = null;
-                        abort();
+                        response.abort( new SessionAbort( "TOO_LARGE_LENGTH" ) );
                     }
                     else {
-                        int length = Headers.contentLength( _responseHeaders );
-                        if( length > maxContentLength() ) {
-                            _statusCode = TOO_LARGE_LENGTH;
-                            _statusText = null;
-                            abort();
-                        }
-                        else {
-                            _body = new ResizableByteBuffer(
-                                        ( length >= 0 ) ? length : 16 * 1024 );
-                        }
+                        _body = new ResizableByteBuffer(
+                                    ( length >= 0 ) ? length : 16 * 1024 );
                     }
-                }
-            }
-
-            @Override
-            protected void onResponseContent( Buffer content )
-            {
-                if( _body != null ) {
-                    ByteBuffer chunk = wrap( content );
-                    if( ( _body.position() + chunk.remaining() ) >
-                        maxContentLength() ) {
-                        _statusCode = TOO_LARGE;
-                        _statusText = null;
-                        abort();
-                    }
-                    else {
-                        _body.put( chunk );
-                    }
-                }
-                else {
-                    _log.debug( "Ignoring onResponseContent" );
-                }
-            }
-
-            @Override
-            protected void onResponseComplete()
-            {
-                complete();
-            }
-
-            @Override
-            protected void onConnectionFailed( Throwable x )
-            {
-                onException( x );
-            }
-
-            @Override
-            protected void onExpire()
-            {
-                _statusCode = TIMEOUT;
-                setError( new Expired() );
-                if( _doCancelOnExpire ) cancel();
-                complete();
-            }
-
-            @Override
-            protected void onException( Throwable t ) throws Error
-            {
-                if( t instanceof Exception ) {
-
-                    if( _handler == null ) {
-                        _log.error( "On Exception (already handled): ", t );
-                    }
-
-                    if( ( t instanceof IllegalArgumentException ) &&
-                        ( t.getCause() instanceof URISyntaxException ) ) {
-                        t = t.getCause();
-                    }
-
-                    if( t instanceof Expired ) {
-                        _statusCode = TIMEOUT;
-                    }
-                    else if( t instanceof TimeoutException ) {
-                        _statusCode = TIMEOUT_CONNECT;
-                    }
-                    else if( t instanceof SocketTimeoutException ) {
-                        _statusCode = TIMEOUT_SOCKET;
-                    }
-                    else if( ( t instanceof UnresolvedAddressException ) ||
-                             ( t instanceof UnknownHostException ) ) {
-                        _statusCode = UNRESOLVED;
-                    }
-                    else if( t instanceof URISyntaxException ) {
-                        _statusCode = INVALID_REDIRECT_URL;
-                    }
-                    else {
-                        _statusCode = ERROR;
-                    }
-
-                    setError( (Exception) t );
-                    complete();
-                }
-                else {
-                    _log.error( "Session onException (Throwable): ", t );
-                    _statusCode = ERROR_CRITICAL;
-                    Session.this.abort();
-
-                    if( t instanceof Error) {
-                        throw (Error) t;
-                    }
-                    else {
-                        // Weird shit outside Exception or Error branches.
-                        throw new RuntimeException( t );
-                    }
-                }
-            }
-
-            @Override
-            protected void onRetry() throws IOException
-            {
-                super.onRetry();
-            }
-
-            @Override
-            protected Connection onSwitchProtocol( EndPoint endp )
-                throws IOException
-            {
-                _log.debug( "onSwitchProtocol: host {}",
-                            ( endp == null ) ? null : endp.getRemoteHost() );
-                return super.onSwitchProtocol( endp );
-            }
-
-            @Override
-            protected void expire( HttpDestination destination )
-            {
-                try {
-                    super.expire( destination );
-                }
-                catch( IllegalStateException x ) {
-                    _log.debug( "On expire: ", x );
-                    onException( x );
-                    cancel();
-                }
-            }
-
-            List<Header> requestHeaders()
-            {
-                HttpFields fields = getRequestFields();
-
-                List<Header> hs = new ArrayList<Header>( fields.size() + 1 );
-                hs.add( new Header("Request-Line", reconstructRequestLine()) );
-
-                final int end = fields.size();
-                for( int i = 0; i < end; ++i ) {
-                    Field field = fields.getField( i );
-                    hs.add( new Header( field.getName(), field.getValue() ) );
-                }
-                return hs;
-            }
-
-            private CharSequence reconstructRequestLine()
-            {
-                StringBuilder req = new StringBuilder( 128 );
-
-                return req.append( getMethod() ).
-                           append( ' ' ).
-                           append( getRequestURI() );
-            }
-
-            private String lastURL() throws URISyntaxException
-            {
-                try {
-                    Address adr = getAddress();
-                    String scheme = decode( getScheme() ).toString();
-                    int port = adr.getPort();
-                    if( ( scheme.equals( "http" ) && port == 80 ) ||
-                        ( scheme.equals( "https" ) && port == 443 ) ) {
-                        port = -1;
-                    }
-
-                    URI uri = new URI( scheme,
-                                       null,
-                                       adr.getHost(),
-                                       port,
-                                       null,
-                                       null,
-                                       null );
-
-                    uri = uri.resolve( getRequestURI() );
-                    return uri.toString();
-                }
-                // URI can also throw IllegalArgumentException wrapping
-                // a URISyntaxException. Unwrap it.
-                catch ( IllegalArgumentException x ) {
-                    Throwable cause = x.getCause();
-                    if( ( cause != null ) &&
-                        ( cause instanceof URISyntaxException ) ) {
-                        throw (URISyntaxException) cause;
-                    }
-                    else {
-                        throw x;
-                    }
-                }
-            }
-
-            private CharBuffer decode( Buffer b )
-            {
-                return Charsets.ISO_8859_1.decode( wrap( b ) );
-            }
-
-            private ByteBuffer wrap( Buffer b )
-            {
-                byte[] array = b.array();
-                if( array != null ) {
-                    return ByteBuffer.wrap( array, b.getIndex(), b.length() );
-                }
-                else {
-                    return ByteBuffer.wrap( b.asArray(), 0, b.length() );
                 }
             }
 
         }
 
-        private final Exchange _exchange = new Exchange();
+        @Override
+        public void onContent( Response response, ByteBuffer content )
+        {
+            if( _body != null ) {
+                if( ( _body.position() + content.remaining() ) >
+                    maxContentLength() ) {
+                    _statusCode = TOO_LARGE;
+                    _statusText = null;
+                    _body = null;
+                    response.abort( new SessionAbort( "TOO_LARGE" ) );
+                }
+                else {
+                    _body.put( content );
+                }
+            }
+            else {
+                //FIXME: Consume otherwise?
+                _log.debug( "Ignoring onResponseContent" );
+            }
+        }
+
+        @Override
+        public void onSuccess( Response response )
+        {
+           _log.debug( "onSuccess {}", response );
+        }
+
+        @Override
+        public void onFailure( Request request, Throwable failure )
+        {
+            if( !onException( failure ) ) {
+                request.abort( failure );
+            }
+        }
+
+        @Override
+        public void onFailure( Response response, Throwable failure )
+        {
+            if( !onException( failure ) ) {
+                response.abort( failure );
+            }
+        }
+
+        /**
+         * Called by session.complete() for tracking.
+         */
+        private void onComplete()
+        {
+           _log.debug( "onComplete Exchange {}", this );
+        }
+
+        @Override
+        public void onComplete( Result result )
+        {
+            complete();
+        }
+
+        private boolean onException( Throwable t ) throws Error
+        {
+            if( t instanceof Exception ) {
+
+                if( _handler == null ) {
+                    _log.error( "On Exception (already handled): ", t );
+                }
+
+                if( ( t instanceof IllegalArgumentException ) &&
+                    ( t.getCause() instanceof URISyntaxException ) ) {
+                    t = t.getCause();
+                }
+
+                if( t instanceof Expired ) {
+                    _statusCode = TIMEOUT;
+                }
+                else if( t instanceof TimeoutException ) {
+                    _statusCode = TIMEOUT_CONNECT;
+                }
+                else if( t instanceof SocketTimeoutException ) {
+                    _statusCode = TIMEOUT_SOCKET;
+                }
+                else if( ( t instanceof UnresolvedAddressException ) ||
+                         ( t instanceof UnknownHostException ) ) {
+                    _statusCode = UNRESOLVED;
+                }
+                else if( t instanceof URISyntaxException ) {
+                    _statusCode = INVALID_REDIRECT_URL;
+                }
+                else {
+                    _statusCode = ERROR;
+                }
+
+                setError( (Exception) t );
+                complete();
+                return true;
+            }
+            else {
+                _log.error( "Session onException (Throwable): ", t );
+                _statusCode = ERROR_CRITICAL;
+
+                if( t instanceof Error) {
+                    throw (Error) t;
+                }
+                else {
+                    // Weird shit outside Exception or Error branches.
+                    throw new RuntimeException( t );
+                }
+            }
+        }
+
         private ResponseHandler _handler = null;
-
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
-
         private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
-        private ArrayList<Header> _responseHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _requestHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _responseHeaders = new ArrayList<Header>( 8 );
         private ResizableByteBuffer _body = null;
+        private final CountDownLatch _latch = new CountDownLatch(1);
     }
 
     private final HttpClient _client;

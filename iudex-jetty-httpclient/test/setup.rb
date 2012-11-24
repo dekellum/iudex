@@ -38,7 +38,7 @@ module TestSetup
     Logback[ 'org.eclipse.jetty.http.ssl.SslContextFactory' ].level =
       Logback::WARN
   else
-    Logback.root.level = Logback::DEBUG
+    #Logback.root.level = Logback::DEBUG
   end
 
   ARGV.delete( '--debug' )

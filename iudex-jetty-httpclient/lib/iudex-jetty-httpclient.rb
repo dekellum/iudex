@@ -35,30 +35,20 @@ module Iudex
     include RJack::Jetty
 
     def self.create_jetty_client( opts = {} )
-      cfg = { :timeout                     => 6_000,
-              :so_timeout                  => 5_000,
-              :connect_timeout             => 3_000,
+      cfg = { :connect_timeout             => 3_000,
               :idle_timeout                => 6_000,
-              :max_retries                 => 1,
               :max_redirects               => 6,
               :max_connections_per_address => 2,
               :max_queue_size_per_address  => 100,
-              :connect_blocking            => false,
-              :handle_redirects_internal   => false }
+              :follow_redirects            => false }
 
       cfg = cfg.merge( opts )
       cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
 
       jclient = HttpClient.new
 
-      redir_listen = cfg.delete( :handle_redirects_internal )
-
       cfg.each do |key,value|
         jclient.__send__( "set_#{key}", value )
-      end
-
-      if redir_listen
-        jclient.register_listener( 'org.eclipse.jetty.client.RedirectListener' )
       end
 
       jclient
