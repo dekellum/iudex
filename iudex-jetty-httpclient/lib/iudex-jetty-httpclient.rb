@@ -37,10 +37,11 @@ module Iudex
     def self.create_jetty_client( opts = {} )
       cfg = { :connect_timeout             => 3_000,
               :idle_timeout                => 6_000,
-              :max_redirects               => 6,
               :max_connections_per_address => 2,
               :max_queue_size_per_address  => 100,
-              :follow_redirects            => false }
+              :dispatch_io                 => true,
+              :follow_redirects            => false,
+              :max_redirects               => 6 }
 
       cfg = cfg.merge( opts )
       cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
