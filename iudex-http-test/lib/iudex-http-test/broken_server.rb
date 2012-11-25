@@ -26,6 +26,7 @@ module Iudex::HTTP::Test
     def initialize
       @port = 19293
       @server = nil
+      @log = RJack::SLF4J[ self.class ]
     end
 
     def start
@@ -35,6 +36,8 @@ module Iudex::HTTP::Test
     def accept
       sock = @server.accept
       yield sock if block_given?
+    rescue Errno::EPIPE => x
+      @log.warn( "In accept:", x )
     end
 
     def stop
