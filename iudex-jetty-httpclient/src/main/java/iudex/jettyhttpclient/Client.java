@@ -137,7 +137,7 @@ public class Client
 
     public void dump()
     {
-        // Warning: Can deadlock jetty threads!
+        // Warning: Can deadlock jetty (7 at least)
         // Allow selective logging and only dump if debug logging enabled.
         Logger log = LoggerFactory.getLogger( "iudex.jettyhttpclient.Dumper" );
 
@@ -158,8 +158,10 @@ public class Client
     private class Session
         extends HTTPSession
         implements Request.HeadersListener,
-                   Request.FailureListener,
-                   Response.Listener
+                   Response.HeadersListener,
+                   Response.ContentListener,
+                   Response.CompleteListener
+
     {
         public void addRequestHeader( Header header )
         {
@@ -226,7 +228,6 @@ public class Client
 
             try {
                 req.onRequestHeaders( this );
-                req.onRequestFailure( this );
                 req.send( this );
                 _log.debug( "request sent" );
             }
@@ -287,13 +288,6 @@ public class Client
         }
 
         @Override
-        public void onBegin( Response response )
-        {
-            _log.debug( "onBegin: {}", response );
-
-        }
-
-        @Override
         public void onHeaders( Response response )
         {
             for( Field f : response.getHeaders() ) {
@@ -347,48 +341,21 @@ public class Client
                 }
             }
             else {
-                //FIXME: Consume otherwise?
+                content.position( content.limit() );
                 _log.debug( "Ignoring onResponseContent" );
             }
-        }
-
-        @Override
-        public void onFailure( Request request, Throwable failure )
-        {
-            if( _handler != null ) {
-                _log.debug( "onFailure, request: {}", failure.toString() );
-                onException( failure );
-            }
-            else {
-                _log.debug( "onFailure, request (already handled): {}",
-                            failure.toString() );
-            }
-        }
-
-        @Override
-        public void onFailure( Response response, Throwable failure )
-        {
-            if( _handler != null ) {
-                _log.debug( "onFailure, response: {}", failure.toString() );
-                onException( failure );
-            }
-            else {
-                _log.debug( "onFailure, response (already handled): {}",
-                            failure.toString() );
-            }
-        }
-
-        @Override
-        public void onSuccess( Response response )
-        {
-           _log.debug( "onSuccess {}", response );
-           complete();
         }
 
         @Override
         public void onComplete( Result result )
         {
             _log.debug( "onComplete {}", result );
+            if( result.getFailure() != null ) {
+                onException( result.getFailure() );
+            }
+            else {
+                complete();
+            }
         }
 
         private void onException( Throwable t ) throws Error
