@@ -27,6 +27,7 @@ import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -360,12 +361,16 @@ public class Client
 
         private void onException( Throwable t ) throws Error
         {
-            if( _handler == null ) {
-                _log.warn( "On Exception (already handled): {}", t.toString() );
-                return;
-            }
-
             if( t instanceof Exception ) {
+
+                if( _handler == null ) {
+                    if( ! (t instanceof AsynchronousCloseException ) ) {
+                        _log.warn( "Exception (already handled): {}",
+                                   t.toString() );
+                        _log.debug( "Exception (stack)", t );
+                    }
+                    return;
+                }
 
                 if( ( t instanceof IllegalArgumentException ) &&
                     ( t.getCause() instanceof URISyntaxException ) ) {
