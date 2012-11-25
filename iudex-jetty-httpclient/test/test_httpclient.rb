@@ -292,10 +292,10 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_too_many_redirects
-    with_new_client( :follow_redirects => true ) do |client|
-      #FIXME: One redirect off somewhere? 19 fails.
+    with_new_client( :follow_redirects => true,
+                     :max_redirects => 18 ) do |client|
       with_session_handler( client, "/redirects/multi/20" ) do |s,x|
-        assert_equal( 302, s.status_code, x )
+        assert_equal( HTTPSession::MAX_REDIRECTS_EXCEEDED, s.status_code )
       end
     end
   end

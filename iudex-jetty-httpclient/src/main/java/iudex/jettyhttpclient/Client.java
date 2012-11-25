@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.http.HttpFields.Field;
 import org.eclipse.jetty.http.HttpMethod;
@@ -409,6 +410,14 @@ public class Client
                 }
                 else if( t instanceof SessionAbort ) {
                     _statusText = null;
+                }
+                else if( t instanceof HttpResponseException ) {
+                    if( t.getMessage().startsWith( "Max redirects ") ) {
+                        _statusCode = MAX_REDIRECTS_EXCEEDED;
+                    }
+                    else {
+                        _statusCode = ERROR;
+                    }
                 }
                 else {
                     _statusCode = ERROR;
