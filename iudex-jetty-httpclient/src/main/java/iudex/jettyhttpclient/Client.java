@@ -85,6 +85,9 @@ public class Client
         _maxContentLength = length;
     }
 
+    /**
+     * @deprecate Currently a no-op.
+     */
     public void setCancelOnExpire( boolean doCancel )
     {
         _doCancelOnExpire = doCancel;
@@ -201,12 +204,6 @@ public class Client
             return null;
         }
 
-        @Override
-        public void close()
-        {
-            //No-op
-        }
-
         void execute( ResponseHandler handler )
         {
             _handler = handler;
@@ -233,22 +230,14 @@ public class Client
                 _log.debug( "request sent" );
             }
             catch( UnresolvedAddressException x ) {
-                onException( x );
+                handleException( x );
             }
         }
 
-        private void complete()
+        @Override
+        public void close()
         {
-            ResponseHandler handler = _handler;
-            if( handler != null ) {
-                _handler = null;
-                handler.sessionCompleted( this );
-                _log.debug( "after sessionCompleted, notifying" );
-                _latch.countDown();
-            }
-            else {
-                _log.warn( "Redundant complete" );
-            }
+            //No-op
         }
 
         @Override
@@ -279,15 +268,6 @@ public class Client
             setUrl( request.getURI() );
         }
 
-        private CharSequence reconstructRequestLine( Request request )
-        {
-            String method = request.getMethod().toString();
-            String path = request.getPath();
-            StringBuilder req = new StringBuilder( method.length() + 1 +
-                                                   path.length() );
-            return req.append( method ).append( ' ' ).append( path );
-        }
-
         @Override
         public void onHeaders( Response response )
         {
@@ -316,7 +296,7 @@ public class Client
                     if( length > maxContentLength() ) {
                         _statusCode = TOO_LARGE_LENGTH;
                         _statusText = null;
-                        response.abort( new SessionAbort( "TOO_LARGE_LENGTH" ) );
+                        response.abort( new SessionAbort("TOO_LARGE_LENGTH") );
                     }
                     else {
                         _body = new ResizableByteBuffer(
@@ -324,7 +304,6 @@ public class Client
                     }
                 }
             }
-
         }
 
         @Override
@@ -352,14 +331,28 @@ public class Client
         {
             _log.debug( "onComplete {}", result );
             if( result.getFailure() != null ) {
-                onException( result.getFailure() );
+                handleException( result.getFailure() );
             }
             else {
                 complete();
             }
         }
 
-        private void onException( Throwable t ) throws Error
+        private void complete()
+        {
+            ResponseHandler handler = _handler;
+            if( handler != null ) {
+                _handler = null;
+                handler.sessionCompleted( this );
+                _log.debug( "after sessionCompleted, notifying" );
+                _latch.countDown();
+            }
+            else {
+                _log.warn( "Redundant complete" );
+            }
+        }
+
+        private void handleException( Throwable t ) throws Error
         {
             if( t instanceof Exception ) {
 
@@ -425,6 +418,15 @@ public class Client
             }
         }
 
+        private CharSequence reconstructRequestLine( Request request )
+        {
+            String method = request.getMethod().toString();
+            String path = request.getPath();
+            StringBuilder req = new StringBuilder( method.length() + 1 +
+                                                   path.length() );
+            return req.append( method ).append( ' ' ).append( path );
+        }
+
         private ResponseHandler _handler = null;
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
         private int _statusCode = STATUS_UNKNOWN;
@@ -439,6 +441,8 @@ public class Client
 
     private int _maxContentLength = 1024 * 1024 - 1;
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;
+
+    @SuppressWarnings("unused")
     private boolean _doCancelOnExpire = true;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
