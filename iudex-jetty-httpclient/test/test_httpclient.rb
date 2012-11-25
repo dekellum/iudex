@@ -39,6 +39,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.io.IOException'
   import 'java.nio.channels.UnresolvedAddressException'
   import 'org.eclipse.jetty.client.HttpResponseException'
+  import 'iudex.jettyhttpclient.Client$SessionAbort'
 
   CustomUnit.register
 
@@ -457,7 +458,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_abort_when_too_large
     with_new_client do |client|
       with_session_handler( client, "/giant" ) do |s,x|
-        assert_nil( x )
+        assert_kind_of( SessionAbort, x )
         assert_equal( HTTPSession::TOO_LARGE, s.status_code )
       end
     end
@@ -467,7 +468,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       client.max_content_length = 1
       with_session_handler( client, "/atom.xml" ) do |s,x|
-        assert_nil( x )
+        assert_kind_of( SessionAbort, x )
         assert_equal( HTTPSession::TOO_LARGE_LENGTH, s.status_code )
       end
     end
@@ -477,7 +478,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client do |client|
       client.accepted_content_types = ContentTypeSet.new( [ "gold/*" ] )
       with_session_handler( client, "/giant" ) do |s,x|
-        assert_nil( x )
+        assert_kind_of( SessionAbort, x )
         assert_equal( HTTPSession::NOT_ACCEPTED, s.status_code )
       end
     end

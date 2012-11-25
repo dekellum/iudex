@@ -328,9 +328,8 @@ public class Client
             if( _body != null ) {
                 if( ( _body.position() + content.remaining() ) >
                     maxContentLength() ) {
-                    _statusCode = TOO_LARGE;
-                    _statusText = null;
                     _body = null;
+                    _statusCode = TOO_LARGE;
                     response.abort( new SessionAbort( "TOO_LARGE" ) );
                 }
                 else {
@@ -407,6 +406,9 @@ public class Client
                 }
                 else if( t instanceof URISyntaxException ) {
                     _statusCode = INVALID_REDIRECT_URL;
+                }
+                else if( t instanceof SessionAbort ) {
+                    _statusText = null;
                 }
                 else {
                     _statusCode = ERROR;
