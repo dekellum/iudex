@@ -224,6 +224,8 @@ public class Client
             }
 
             try {
+                req.onRequestHeaders( this );
+                req.onRequestFailure( this );
                 req.send( this );
                 onSend();
             }
@@ -269,12 +271,26 @@ public class Client
         @Override
         public void onHeaders( Request request )
         {
-            _log.debug( "onBegin: {}", request );
+            _log.debug( "onHeaders: {}", request );
 
+            _requestHeaders = new ArrayList<Header>( 8 );
+
+            _requestHeaders.add(
+                new Header("Request-Line", reconstructRequestLine( request )));
             for( Field f : request.getHeaders() ) {
                 _requestHeaders.add(new Header(f.getName(), f.getValue()));
             }
-            setUrl( request.getURI() ); //FIXME: May not be called on redirect
+
+            setUrl( request.getURI() );
+        }
+
+        private CharSequence reconstructRequestLine( Request request )
+        {
+            String method = request.getMethod().toString();
+            String path = request.getPath();
+            StringBuilder req = new StringBuilder( method.length() + 1 +
+                                                   path.length() );
+            return req.append( method ).append( ' ' ).append( path );
         }
 
         @Override
@@ -445,7 +461,7 @@ public class Client
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
         private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
-        private List<Header> _requestHeaders = new ArrayList<Header>( 8 );
+        private List<Header> _requestHeaders = null;
         private List<Header> _responseHeaders = new ArrayList<Header>( 8 );
         private ResizableByteBuffer _body = null;
         private final CountDownLatch _latch = new CountDownLatch(1);
