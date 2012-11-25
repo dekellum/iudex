@@ -198,6 +198,7 @@ public class Client
             return null;
         }
 
+        @Override
         public void close()
         {
             //No-op
@@ -227,7 +228,7 @@ public class Client
                 req.onRequestHeaders( this );
                 req.onRequestFailure( this );
                 req.send( this );
-                onSend();
+                _log.debug( "request sent" );
             }
             catch( UnresolvedAddressException x ) {
                 onException( x );
@@ -238,9 +239,9 @@ public class Client
         {
             ResponseHandler handler = _handler;
             if( handler != null ) {
-                onComplete();
                 _handler = null;
                 handler.sessionCompleted( this );
+                _log.debug( "after sessionCompleted, notifying" );
                 _latch.countDown();
             }
             else {
@@ -258,14 +259,6 @@ public class Client
         public void waitForCompletion() throws InterruptedException
         {
             _latch.await();
-        }
-
-        /**
-         * Called by session for tracking.
-         */
-        void onSend()
-        {
-            _log.debug( "onSend Exchange {}", this );
         }
 
         @Override
@@ -360,48 +353,52 @@ public class Client
         }
 
         @Override
-        public void onSuccess( Response response )
-        {
-           _log.debug( "onSuccess {}", response );
-        }
-
-        @Override
         public void onFailure( Request request, Throwable failure )
         {
-            if( !onException( failure ) ) {
-                request.abort( failure );
+            if( _handler != null ) {
+                _log.debug( "onFailure, request: {}", failure.toString() );
+                onException( failure );
+            }
+            else {
+                _log.debug( "onFailure, request (already handled): {}",
+                            failure.toString() );
             }
         }
 
         @Override
         public void onFailure( Response response, Throwable failure )
         {
-            if( !onException( failure ) ) {
-                response.abort( failure );
+            if( _handler != null ) {
+                _log.debug( "onFailure, response: {}", failure.toString() );
+                onException( failure );
+            }
+            else {
+                _log.debug( "onFailure, response (already handled): {}",
+                            failure.toString() );
             }
         }
 
-        /**
-         * Called by session.complete() for tracking.
-         */
-        private void onComplete()
+        @Override
+        public void onSuccess( Response response )
         {
-           _log.debug( "onComplete Exchange {}", this );
+           _log.debug( "onSuccess {}", response );
+           complete();
         }
 
         @Override
         public void onComplete( Result result )
         {
-            complete();
+            _log.debug( "onComplete {}", result );
         }
 
-        private boolean onException( Throwable t ) throws Error
+        private void onException( Throwable t ) throws Error
         {
-            if( t instanceof Exception ) {
+            if( _handler == null ) {
+                _log.warn( "On Exception (already handled): {}", t.toString() );
+                return;
+            }
 
-                if( _handler == null ) {
-                    _log.error( "On Exception (already handled): ", t );
-                }
+            if( t instanceof Exception ) {
 
                 if( ( t instanceof IllegalArgumentException ) &&
                     ( t.getCause() instanceof URISyntaxException ) ) {
@@ -441,7 +438,6 @@ public class Client
 
                 setError( (Exception) t );
                 complete();
-                return true;
             }
             else {
                 _log.error( "Session onException (Throwable): ", t );
