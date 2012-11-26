@@ -185,8 +185,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
         assert_kind_of( TimeoutException, x )
       end
     end
-    sleep 0.70 # FIXME: Account for test server delay. Should be
-               # joined instead.
   end
 
   def test_redirect
@@ -313,7 +311,6 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       with_session_handler( client, "/redirects/multi/3?sleep=0.40" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
-      sleep 0.80
     end
   end
 
