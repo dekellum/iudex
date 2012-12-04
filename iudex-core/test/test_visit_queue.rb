@@ -171,6 +171,48 @@ class TestVisitQueue < MiniTest::Unit::TestCase
     assert_queue_empty
   end
 
+  def test_configure_type_2
+    @visit_q.config( :delay => 50, :cons => 1 )
+    @visit_q.config( :domain => 'h2.com',
+                     :delay => 75, :cons => 2 )
+    @visit_q.config( :domain => 'h2.com', :type => 'ALT',
+                     :rate => 20, :cons => 1 )
+    @visit_q = @visit_q.clone
+
+    LOG.debug { "As configured:\n" + @visit_q.dump }
+
+    [ %w[   h2     a 2.2 ],
+      %w[ w.h2:AL2 b 2.1 ],
+      %w[   h2:ALT c 3.2 ],
+      %w[   h2:ALT d 3.1 ],
+      %w[   h1:AL2 a 1.2 ],
+      %w[   h1     b 1.1 ] ].each do |oinp|
+
+      @visit_q.add( order( oinp ) )
+
+    end
+
+    LOG.debug { "After add:\n" + @visit_q.dump }
+
+    assert_equal( 3, @visit_q.host_count, "host count" )
+
+    expected = [ %w[   h2:ALT c 3.2 ],
+                 %w[   h2     a 2.2 ],
+                 %w[   h1:AL2 a 1.2 ],
+                 %w[   h2:ALT d 3.1 ],
+                 %w[   h1     b 1.1 ],
+                 %w[ w.h2:AL2 b 2.1 ] ]
+
+    p = 0
+    expected.each do |o|
+      assert_equal( o, acquire_order, p += 1 )
+    end
+
+    LOG.debug { "After consumed:\n" + @visit_q.dump }
+
+    assert_queue_empty
+  end
+
   def test_multi_access_2
     @visit_q.default_max_access_per_host = 2
     add_common_orders
