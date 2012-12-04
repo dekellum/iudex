@@ -92,6 +92,7 @@ class TestAgent < MiniTest::Unit::TestCase
     end
 
     agent = Agent.new
+    agent.raise_on_run = true
     agent.run
     pass
 

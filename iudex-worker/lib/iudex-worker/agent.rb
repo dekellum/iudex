@@ -33,9 +33,12 @@ module Iudex
       include Iudex::Worker
       include Gravitext::HTMap
 
+      attr_accessor :raise_on_run
+
       def initialize
         @log = RJack::SLF4J[ self.class ]
         @http_manager = nil
+        @raise_on_run = false
         Hooker.apply( [ :iudex, :worker ], self )
       end
 
@@ -121,7 +124,11 @@ module Iudex
         end # fcf closes
 
       rescue => e
-        @log.error( "On run: ", e )
+        if @raise_on_run
+          raise e
+        else
+          @log.error( "On run: ", e )
+        end
       ensure
         hclient.close if hclient && hclient.respond_to?( :close )
         @http_manager.shutdown if @http_manager
