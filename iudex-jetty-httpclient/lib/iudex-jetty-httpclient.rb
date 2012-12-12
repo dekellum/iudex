@@ -31,6 +31,7 @@ module Iudex
     require "#{LIB_DIR}/iudex-jetty-httpclient-#{VERSION}.jar"
 
     import 'iudex.jettyhttpclient.Client'
+    import 'org.eclipse.jetty.util.ssl.SslContextFactory'
 
     include RJack::Jetty
 
@@ -41,12 +42,19 @@ module Iudex
               :max_queue_size_per_address  => 100,
               :dispatch_io                 => true,
               :follow_redirects            => false,
-              :max_redirects               => 6 }
+              :max_redirects               => 6,
+              :ssl_context => { :trust_all => true } }
 
       cfg = cfg.merge( opts )
       cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
 
-      jclient = HttpClient.new
+      ssl_factory = SslContextFactory.new
+      ctx_cfg = cfg.delete( :ssl_context )
+      ctx_cfg.each do |key,value|
+        ssl_factory.__send__( "set_#{key}", value )
+      end
+
+      jclient = HttpClient.new( ssl_factory )
 
       cfg.each do |key,value|
         jclient.__send__( "set_#{key}", value )
