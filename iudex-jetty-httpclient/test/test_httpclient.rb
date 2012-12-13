@@ -188,6 +188,15 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_slow_timeout
+    with_new_client( :short => true ) do |client|
+      with_session_handler( client, "/slow" ) do |s,x|
+        assert_equal( HTTPSession::TIMEOUT, s.status_code )
+        assert_kind_of( TimeoutException, x )
+      end
+    end
+  end
+
   def test_redirect
     skip "redirect url not accessible"
     with_new_client( :follow_redirects => true ) do |client|

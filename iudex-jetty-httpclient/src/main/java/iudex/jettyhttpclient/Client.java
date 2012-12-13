@@ -162,15 +162,6 @@ public class Client
         }
     }
 
-    public static class Expired
-        extends TimeoutException
-    {
-        public Expired()
-        {
-            super();
-        }
-    }
-
     private class Session
         extends HTTPSession
         implements Request.HeadersListener,
@@ -395,12 +386,13 @@ public class Client
                     ( t.getCause() instanceof URISyntaxException ) ) {
                     t = t.getCause();
                 }
-
-                if( t instanceof Expired ) {
-                    _statusCode = TIMEOUT;
-                }
                 else if( t instanceof TimeoutException ) {
-                    _statusCode = TIMEOUT_CONNECT;
+                    if( "Total timeout elapsed".equals( t.getMessage() ) ) {
+                        _statusCode = TIMEOUT;
+                    }
+                    else {
+                        _statusCode = TIMEOUT_CONNECT;
+                    }
                 }
                 else if( t instanceof SocketTimeoutException ) {
                     _statusCode = TIMEOUT_SOCKET;
