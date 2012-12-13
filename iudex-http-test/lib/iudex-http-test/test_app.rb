@@ -177,8 +177,29 @@ module Iudex::HTTP::Test
       end
     end
 
+    class SlowGenerator
+      def initialize( out )
+        @out = out
+      end
+
+      def each
+        count = 0
+        loop do
+          count += 1
+          yield "Line number #{count}\n"
+          @out.flush
+          sleep 0.100
+        end
+      end
+    end
+
     get '/giant' do
       [ 200, { 'Content-Type' => 'text/plain' }, GiantGenerator.new ]
+    end
+
+    get '/slow' do
+      out = request.env['rack.java.servlet.response'].output_stream
+      [ 200, { 'Content-Type' => 'text/plain' }, SlowGenerator.new( out ) ]
     end
 
     def common( params )
