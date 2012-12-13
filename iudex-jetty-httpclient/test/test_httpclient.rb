@@ -125,7 +125,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_unknown_host
-    with_new_client( :connect_timeout => 10_000,
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
                      :idle_timeout    => 10_000 ) do |client|
       with_session_handler( client,
                             "http://9xa9.a7v6a7lop-9m9q-w12.com" ) do |s,x|
@@ -418,7 +419,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_concurrent
-    with_new_client( :connect_timeout => 15_000,
+    with_new_client( :timeout         => 18_000,
+                     :connect_timeout => 15_000,
                      :idle_timeout    => 12_000,
                      :max_connections_per_address => 4 ) do |client|
 
@@ -440,7 +442,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_maximum_connections_per_address
-    with_new_client( :connect_timeout => 10_000,
+    with_new_client( :timeout         => 12_000,
+                     :connect_timeout => 10_000,
                      :idle_timeout    => 10_000,
                      :max_connections_per_address => 2 ) do |client|
 
@@ -524,10 +527,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def with_new_client( opts = {} )
     o = if opts.delete( :short )
-          { :connect_timeout  => 200,
+          { :timeout          => 400,
+            :connect_timeout  => 200,
             :idle_timeout     => 200 }
         else
-          { :connect_timeout  => 3000,
+          { :timeout          => 5000,
+            :connect_timeout  => 3000,
             :idle_timeout     => 2000 }
         end
 

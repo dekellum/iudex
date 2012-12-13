@@ -34,11 +34,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
+import org.eclipse.jetty.client.api.Response.CompleteListener;
+import org.eclipse.jetty.client.util.TimedResponseListener;
 import org.eclipse.jetty.http.HttpFields.Field;
 import org.eclipse.jetty.http.HttpMethod;
 
@@ -83,6 +86,15 @@ public class Client
     public void setMaxContentLength( int length )
     {
         _maxContentLength = length;
+    }
+
+    /**
+     * Set a general, global request timeout in milliseconds. Values <= 0
+     * disable this general timeout.
+     */
+    public void setTimeout( int milliseconds )
+    {
+        _timeout = milliseconds;
     }
 
     /**
@@ -226,7 +238,21 @@ public class Client
 
             try {
                 req.onRequestHeaders( this );
-                req.send( this );
+
+                CompleteListener listener = this;
+
+                // If (general, global) timeout is set; then use delegating
+                // TimeResponseListener.
+                if( _timeout > 0 ) {
+                    listener =
+                        new TimedResponseListener( _timeout,
+                                                   TimeUnit.MILLISECONDS,
+                                                   req,
+                                                   this );
+                }
+
+                req.send( listener );
+
                 _log.debug( "request sent" );
             }
             catch( UnresolvedAddressException x ) {
@@ -444,6 +470,8 @@ public class Client
 
     @SuppressWarnings("unused")
     private boolean _doCancelOnExpire = true;
+
+    private int _timeout = 0;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }

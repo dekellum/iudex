@@ -35,18 +35,7 @@ module Iudex
 
     include RJack::Jetty
 
-    def self.create_jetty_client( opts = {} )
-      cfg = { :connect_timeout             => 3_000,
-              :idle_timeout                => 6_000,
-              :max_connections_per_address => 2,
-              :max_queue_size_per_address  => 100,
-              :dispatch_io                 => true,
-              :follow_redirects            => false,
-              :max_redirects               => 6,
-              :ssl_context => { :trust_all => true } }
-
-      cfg = cfg.merge( opts )
-      cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
+    def self.create_jetty_client( cfg = {} )
 
       ssl_factory = SslContextFactory.new
       ctx_cfg = cfg.delete( :ssl_context )
@@ -64,7 +53,26 @@ module Iudex
     end
 
     def self.create_client( opts = {} )
-      Client.new( create_jetty_client( opts ) )
+      cfg = { :timeout                     => 6_000,
+              :connect_timeout             => 3_000,
+              :idle_timeout                => 6_000,
+              :max_connections_per_address => 2,
+              :max_queue_size_per_address  => 100,
+              :dispatch_io                 => true,
+              :follow_redirects            => false,
+              :max_redirects               => 6,
+              :ssl_context => { :trust_all => true } }
+
+      cfg = cfg.merge( opts )
+      cfg = Hooker.merge( [ :iudex, :jetty_httpclient ], cfg )
+
+      timeout = cfg.delete( :timeout )
+
+      client = Client.new( create_jetty_client( cfg ) )
+
+      client.timeout = timeout if timeout
+
+      client
     end
 
   end
