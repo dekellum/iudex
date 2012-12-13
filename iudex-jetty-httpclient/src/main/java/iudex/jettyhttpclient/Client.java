@@ -242,7 +242,7 @@ public class Client
                 CompleteListener listener = this;
 
                 // If (general, global) timeout is set; then use delegating
-                // TimeResponseListener.
+                // TimedResponseListener.
                 if( _timeout > 0 ) {
                     listener =
                         new TimedResponseListener( _timeout,
