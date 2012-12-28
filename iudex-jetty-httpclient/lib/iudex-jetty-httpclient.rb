@@ -31,6 +31,7 @@ module Iudex
     require "#{LIB_DIR}/iudex-jetty-httpclient-#{VERSION}.jar"
 
     import 'iudex.jettyhttpclient.Client'
+    import 'org.eclipse.jetty.util.HttpCookieStore'
     import 'org.eclipse.jetty.util.ssl.SslContextFactory'
 
     include RJack::Jetty
@@ -48,6 +49,8 @@ module Iudex
       cfg.each do |key,value|
         jclient.__send__( "set_#{key}", value )
       end
+
+      jclient.cookie_store = HttpCookieStore::Empty.new
 
       jclient
     end
