@@ -31,7 +31,6 @@ module Iudex
     require "#{LIB_DIR}/iudex-jetty-httpclient-#{VERSION}.jar"
 
     import 'iudex.jettyhttpclient.Client'
-    import 'iudex.jettyhttpclient.HttpClientWrapper'
     import 'org.eclipse.jetty.util.ssl.SslContextFactory'
 
     include RJack::Jetty
@@ -44,7 +43,7 @@ module Iudex
         ssl_factory.__send__( "set_#{key}", value )
       end
 
-      jclient = HttpClientWrapper.new( ssl_factory )
+      jclient = HttpClient.new( ssl_factory )
 
       cfg.each do |key,value|
         jclient.__send__( "set_#{key}", value )
