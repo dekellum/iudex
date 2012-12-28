@@ -282,7 +282,7 @@ public class Client
                 _requestHeaders.add(new Header(f.getName(), f.getValue()));
             }
 
-            setUrl( request.getURI() );
+            setUrl( request.getURI().toString() );
         }
 
         @Override
