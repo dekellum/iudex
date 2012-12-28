@@ -42,7 +42,7 @@ import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.client.api.Response.CompleteListener;
 import org.eclipse.jetty.client.util.TimedResponseListener;
-import org.eclipse.jetty.http.HttpFields.Field;
+import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 
 import org.slf4j.Logger;
@@ -278,7 +278,7 @@ public class Client
 
             _requestHeaders.add(
                 new Header("Request-Line", reconstructRequestLine( request )));
-            for( Field f : request.getHeaders() ) {
+            for( HttpField f : request.getHeaders() ) {
                 _requestHeaders.add(new Header(f.getName(), f.getValue()));
             }
 
@@ -288,7 +288,7 @@ public class Client
         @Override
         public void onHeaders( Response response )
         {
-            for( Field f : response.getHeaders() ) {
+            for( HttpField f : response.getHeaders() ) {
                 _responseHeaders.add(new Header(f.getName(), f.getValue()));
             }
 
