@@ -431,7 +431,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :timeout         => 18_000,
                      :connect_timeout => 15_000,
                      :idle_timeout    => 12_000,
-                     :max_connections_per_address => 4 ) do |client|
+                     :max_connections_per_destination => 4 ) do |client|
 
       resps = []
       sessions = (1..19).map do |i|
@@ -450,11 +450,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def test_maximum_connections_per_address
+  def test_maximum_connections_per_destination
     with_new_client( :timeout         => 12_000,
                      :connect_timeout => 10_000,
                      :idle_timeout    => 10_000,
-                     :max_connections_per_address => 2 ) do |client|
+                     :max_connections_per_destination => 2 ) do |client|
 
       resps = []
       sessions = (1..7).map do |i|
