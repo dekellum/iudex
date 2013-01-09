@@ -57,7 +57,9 @@ module Iudex
           end
         elsif defined?( AsyncHTTPClient.create_client )
           @log.info "Setting up AsyncHTTPClient"
-          AsyncHTTPClient.create_client( :executor_service => executor )
+          opts = {}
+          opts[ :executor_service ] = executor if executor
+          AsyncHTTPClient.create_client( opts )
         else
           gem     'iudex-httpclient-3', '~> 1.2.b'
           require 'iudex-httpclient-3'
