@@ -40,8 +40,6 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
-import org.eclipse.jetty.client.api.Response.CompleteListener;
-import org.eclipse.jetty.client.util.TimedResponseListener;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 
@@ -227,22 +225,14 @@ public class Client
                              h.value().toString() );
             }
 
+            req.onRequestHeaders( this );
+
+            if( _timeout > 0 ) {
+                req.timeout( _timeout, TimeUnit.MILLISECONDS );
+            }
+
             try {
-                req.onRequestHeaders( this );
-
-                CompleteListener listener = this;
-
-                // If (general, global) timeout is set; then use delegating
-                // TimedResponseListener.
-                if( _timeout > 0 ) {
-                    listener =
-                        new TimedResponseListener( _timeout,
-                                                   TimeUnit.MILLISECONDS,
-                                                   req,
-                                                   this );
-                }
-
-                req.send( listener );
+                req.send( this );
 
                 _log.debug( "request sent" );
             }
