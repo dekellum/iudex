@@ -144,7 +144,7 @@ PATH
       rjack-logback (~> 1.5)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     bouncy-castle-java (1.5.0146.1)
     builder (3.0.4)

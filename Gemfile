@@ -1,6 +1,6 @@
 # -*- ruby -*-
 
-source :rubygems
+source 'https://rubygems.org'
 
 gems = %w[ iudex-filter iudex-http iudex-http-test
            iudex-barc
