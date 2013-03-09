@@ -82,7 +82,7 @@ PATH
     iudex-html (1.4.0-java)
       gravitext-xmlprod (~> 1.7.0)
       iudex-core (~> 1.4.0)
-      rjack-nekohtml (~> 1.9.14)
+      rjack-nekohtml (~> 1.9.18)
 
 PATH
   remote: iudex-http
@@ -193,7 +193,7 @@ GEM
     rjack-logback (1.5.1-java)
       rjack-slf4j (>= 1.6.5, < 1.8)
     rjack-maven (3.0.4.0-java)
-    rjack-nekohtml (1.9.17.0-java)
+    rjack-nekohtml (1.9.18.0-java)
       rjack-xerces (~> 2.9.1)
     rjack-netty (3.6.3.0-java)
     rjack-protobuf (2.4.1.0-java)
