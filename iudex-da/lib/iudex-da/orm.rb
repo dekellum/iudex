@@ -17,7 +17,7 @@
 require 'rjack-slf4j'
 require 'iudex-da/config'
 require 'sequel'
-require 'jdbc/postgres'
+require 'rjack-jdbc-postgres'
 require 'hooker'
 
 Sequel.extension :migration

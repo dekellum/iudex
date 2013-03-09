@@ -17,7 +17,7 @@
 require 'iudex-da'
 require 'rjack-slf4j'
 require 'java'
-require 'jdbc/postgres'
+require 'rjack-jdbc-postgres'
 
 module Iudex::DA
 
