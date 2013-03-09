@@ -10,10 +10,10 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',                '~> 1.3.0'
+  s.depend 'iudex-core',                '~> 1.4.0'
   s.depend 'rjack-logback',             '~> 1.5'
-  s.depend 'iudex-simhash',             '~> 1.3.0'
-  s.depend 'iudex-brutefuzzy-protobuf', '~> 1.3.0'
+  s.depend 'iudex-simhash',             '~> 1.4.0'
+  s.depend 'iudex-brutefuzzy-protobuf', '~> 1.4.0'
   s.depend 'rjack-jms',                 '~> 1.1.0'
   s.depend 'rjack-qpid-client',         '>= 0.14.1', '< 0.19'
 

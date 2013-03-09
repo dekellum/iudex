@@ -3,13 +3,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-char-detector</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
   <name>Iudex charset detection support</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-core</artifactId>
-      <version>[1.3.0,1.3.999)</version>
+      <version>[1.4.0,1.4.999)</version>
     </dependency>
 
     <dependency>

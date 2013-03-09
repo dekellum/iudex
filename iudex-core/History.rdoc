@@ -1,3 +1,5 @@
+=== 1.4.0 (TBD)
+
 === 1.3.1 (2012-11-15)
 * Fix bugs in using/preserving configuration with explicit :type
   specified (new in 1.3.0)

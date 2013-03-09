@@ -10,19 +10,19 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',             '~> 1.3.0'
-  s.depend 'iudex-da',               '~> 1.3.0'
-  s.depend 'iudex-rome',             '~> 1.3.0'
-  s.depend 'iudex-html',             '~> 1.3.0'
-  s.depend 'iudex-simhash',          '~> 1.3.0'
-  s.depend 'iudex-char-detector',    '~> 1.3.0'
+  s.depend 'iudex-core',             '~> 1.4.0'
+  s.depend 'iudex-da',               '~> 1.4.0'
+  s.depend 'iudex-rome',             '~> 1.4.0'
+  s.depend 'iudex-html',             '~> 1.4.0'
+  s.depend 'iudex-simhash',          '~> 1.4.0'
+  s.depend 'iudex-char-detector',    '~> 1.4.0'
 
   s.depend 'rjack-logback',          '~> 1.5'
 
   s.depend 'minitest',               '~> 2.3',       :dev
-  s.depend 'iudex-httpclient-3',     '~> 1.3.0',     :dev
-  s.depend 'iudex-jetty-httpclient', '~> 1.3.0',     :dev
-  s.depend 'iudex-async-httpclient', '~> 1.3.0',     :dev
+  s.depend 'iudex-httpclient-3',     '~> 1.4.0',     :dev
+  s.depend 'iudex-jetty-httpclient', '~> 1.4.0',     :dev
+  s.depend 'iudex-async-httpclient', '~> 1.4.0',     :dev
 
   s.platform = :java
 end

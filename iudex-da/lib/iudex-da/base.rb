@@ -16,7 +16,7 @@
 
 module Iudex
   module DA
-    VERSION = '1.3.3'
+    VERSION = '1.4.0'
 
     LIB_DIR = File.dirname( __FILE__ ) # :nodoc:
   end

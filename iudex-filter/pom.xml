@@ -5,13 +5,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-filter</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
   <name>Iudex Filter</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <relativePath>..</relativePath>
   </parent>
 

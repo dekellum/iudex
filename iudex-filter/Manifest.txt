@@ -15,4 +15,4 @@ test/test_filter_base.rb
 test/test_filter_chain_factory.rb
 test/test_proc_filter.rb
 test/test_sublist_filter.rb
-lib/iudex-filter/iudex-filter-1.3.0.jar
+lib/iudex-filter/iudex-filter-1.4.0.jar
