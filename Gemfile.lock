@@ -98,7 +98,7 @@ PATH
       builder (~> 3.2.0)
       fishwife (~> 1.5.0)
       markaby (~> 0.7.2)
-      minitest (~> 2.3)
+      minitest (~> 4.6.2)
       sinatra (~> 1.3.5)
 
 PATH
@@ -163,7 +163,7 @@ GEM
     json (1.7.7-java)
     markaby (0.7.2)
       builder (>= 2.0.0)
-    minitest (2.12.1)
+    minitest (4.6.2)
     rack (1.5.2)
     rack-protection (1.4.0)
       rack
@@ -237,7 +237,7 @@ DEPENDENCIES
   iudex-rome!
   iudex-simhash!
   iudex-worker!
-  minitest (~> 2.3)
+  minitest (~> 4.6.2)
   rack-test (~> 0.6.2)
   rjack-logback (~> 1.5)
   rjack-tarpit (~> 2.0)

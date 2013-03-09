@@ -14,7 +14,7 @@ RJack::TarPit.specify do |s|
   s.depend 'rjack-jetty',           '>= 9.0.0.5', '< 9.1'
   s.depend 'hooker',                '~> 1.0.0'
 
-  s.depend 'minitest',              '~> 2.3',       :dev
+  s.depend 'minitest',              '~> 4.6.2',     :dev
   s.depend 'iudex-http-test',       '~> 1.4.0',     :dev
   s.depend 'rjack-logback',         '~> 1.5',       :dev
 

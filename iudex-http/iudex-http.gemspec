@@ -13,7 +13,7 @@ RJack::TarPit.specify do |s|
   s.depend 'rjack-slf4j',           '~> 1.7.0'
   s.depend 'gravitext-util',        '~> 1.7.0'
 
-  s.depend 'minitest',              '~> 2.3',       :dev
+  s.depend 'minitest',              '~> 4.6.2',     :dev
   s.depend 'rjack-logback',         '~> 1.5',       :dev
 
   s.maven_strategy = :no_assembly

@@ -14,7 +14,7 @@ RJack::TarPit.specify do |s|
   s.depend 'sinatra',               '~> 1.3.5'
   s.depend 'builder',               '~> 3.2.0' #constrain markaby
   s.depend 'markaby',               '~> 0.7.2'
-  s.depend 'minitest',              '~> 2.3'
+  s.depend 'minitest',              '~> 4.6.2'
 
   s.depend 'rack-test',             '~> 0.6.2',       :dev
   s.depend 'rjack-logback',         '~> 1.5',         :dev
