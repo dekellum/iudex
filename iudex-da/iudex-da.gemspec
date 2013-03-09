@@ -11,8 +11,8 @@ RJack::TarPit.specify do |s|
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
   s.depend 'iudex-core',                          '~> 1.4.0'
-  s.depend 'sequel',                              '~> 3.40.0'
-  s.depend 'jdbc-postgres',                       '~> 9.1.901'
+  s.depend 'sequel',                              '~> 3.45.0'
+  s.depend 'rjack-jdbc-postgres',                 '~> 9.2.1002'
   s.depend 'rjack-commons-dbcp',                  '~> 1.4.0'
   s.depend 'rjack-commons-dbutils',               '~> 1.5.0'
 
