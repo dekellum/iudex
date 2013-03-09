@@ -10,7 +10,7 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'fishwife',              '~> 1.3.0'
+  s.depend 'fishwife',              '~> 1.4.0'
   s.depend 'sinatra',               '~> 1.3.1'
   s.depend 'builder',               '~> 3.0.0' #constrain markaby
   s.depend 'markaby',               '~> 0.7.1'

@@ -11,7 +11,7 @@ RJack::TarPit.specify do |s|
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
   s.depend 'iudex-http',            '~> 1.3.0'
-  s.depend 'rjack-jetty',           '>= 7.5.4', '< 7.7'
+  s.depend 'rjack-jetty',           '>= 9.0.0.5', '< 9.1'
   s.depend 'hooker',                '~> 1.0.0'
 
   s.depend 'minitest',              '~> 2.3',       :dev
