@@ -11,7 +11,7 @@ RJack::TarPit.specify do |s|
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
   s.depend 'iudex-http',             '~> 1.4.0'
-  s.depend 'rjack-async-httpclient', '~> 1.7.9'
+  s.depend 'rjack-async-httpclient', '~> 1.7.11'
   s.depend 'hooker',                 '~> 1.0.0'
 
   s.depend 'minitest',              '~> 2.3',       :dev
