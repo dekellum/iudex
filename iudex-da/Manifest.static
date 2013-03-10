@@ -14,6 +14,7 @@ db/20130419090000_instance_column.rb
 db/20130419095500_reserved_column.rb
 db/index_next_visit/21500000000101_add_index_next_visit.rb
 db/index_next_visit/21500000000110_index_next_visit_partial.rb
+db/index_next_visit/21500000000120_index_next_visit_not_reserved.rb
 db/simhash/21500000000001_add_simhash_index.rb
 lib/iudex-da/base.rb
 lib/iudex-da.rb
