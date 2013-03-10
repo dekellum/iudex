@@ -207,6 +207,12 @@ module Iudex::DA
 
       params = []
 
+      # FIXME: PG 9.2 can't do UNION + SELECT FOR UPDATE for reserved,
+      # i.e: "ERROR: SELECT FOR UPDATE/SHARE is not allowed with
+      # UNION/INTERSECT/EXCEPT" Alternative: Pass array of queries to
+      # reader which does seperate SELECT FOR UPDATE transaction per
+      # domain_union row. Probably less conflict prone anyway.
+
       if @domain_union.empty?
         query = generate_query_inner( criteria )
         params = [ max_urls ]
@@ -241,11 +247,13 @@ module Iudex::DA
           subqueries << generate_query_inner( c )
           params << opts[ :max ]
         end
-        if subqueries.size == 1
-          query = subqueries.first
-        else
-          query = "(" + subqueries.join( ") UNION ALL (" ) + ")"
-        end
+        query = if subqueries.size == 1
+                  subqueries.first
+                elsif reserve?
+                  subqueries
+                else
+                  "(" + subqueries.join( ") UNION ALL (" ) + ")"
+                end
       end
 
       query = wrap_domain_group_query( fields, query ) if domain_group?
