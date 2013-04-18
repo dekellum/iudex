@@ -165,9 +165,9 @@ module Iudex::DA
     # Poll work and return as List<UniMap>
     # Raises SQLException
     def poll
-      query, params = generate_query
-      @log.debug { "Poll query: #{query}; #{params.inspect}" }
-      reader.select( query, *params )
+      query = generate_query
+      @log.debug { "Poll query: #{query}" }
+      reader.select( query )
     end
 
     def reader
@@ -195,11 +195,8 @@ module Iudex::DA
         criteria << "uhash < ( '#{max}' COLLATE \"C\" )" if max
       end
 
-      params = []
-
       if @domain_union.empty?
-        query = generate_query_inner( criteria )
-        params = [ max_urls ]
+        query = generate_query_inner( criteria, max_urls )
       else
         subqueries = []
         @domain_union.each do | opts |
@@ -228,8 +225,7 @@ module Iudex::DA
             c << "type = '#{opts[ :type ]}'"
           end
 
-          subqueries << generate_query_inner( c )
-          params << opts[ :max ]
+          subqueries << generate_query_inner( c, opts[ :max ] )
         end
         if subqueries.size == 1
           query = subqueries.first
@@ -242,10 +238,10 @@ module Iudex::DA
 
       query = query.gsub( /\s+/, ' ').strip
 
-      [ query, params ]
+      query
     end
 
-    def generate_query_inner( criteria )
+    def generate_query_inner( criteria, max_urls )
 
       query = filter_query(
             fields( ( :domain if domain_depth? || domain_group? ) ),
@@ -260,7 +256,7 @@ module Iudex::DA
       limit_priority = domain_depth? ? :adj_priority : :priority
       query += <<-SQL
         ORDER BY #{limit_priority} DESC
-        LIMIT ?
+        LIMIT #{max_urls}
       SQL
 
       query
