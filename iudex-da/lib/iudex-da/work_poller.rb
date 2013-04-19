@@ -70,8 +70,15 @@ module Iudex::DA
     # priority order (default: false)
     attr_writer :do_domain_group
 
+    # FIXME
+    attr_writer :do_reserve
+
     def domain_group?
       @do_domain_group
+    end
+
+    def reserve?
+      @do_reserve
     end
 
     # First age coefficient. If set > 0.0, adjust priority by the
@@ -125,6 +132,7 @@ module Iudex::DA
 
       @domain_depth_coef  = nil
       @do_domain_group    = false
+      @do_reserve         = false
 
       @max_priority_urls  =    nil
       @max_domain_urls    = 10_000
@@ -187,6 +195,8 @@ module Iudex::DA
 
     def generate_query
       criteria = [ "next_visit_after <= now()" ]
+
+      criteria << "reserved IS NULL" if reserve?
 
       if uhash_slice
         min, max = url64_range( *uhash_slice )
