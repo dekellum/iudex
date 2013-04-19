@@ -179,12 +179,13 @@ module Iudex::DA
     def poll
       query = generate_query
       @log.debug { "Poll query: #{query}" }
-      reader.select( query )
+      reader.select_with_retry( query )
     end
 
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
+        r.max_retries = 10
       end
     end
 
