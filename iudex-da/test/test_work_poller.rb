@@ -66,6 +66,18 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     assert_equal( 3, pos )
   end
 
+  def test_poll_with_reserve
+    poller.do_reserve = true
+    poller.instance = 'test'
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+    assert_equal( 0, poller.poll.size )
+  end
+
   def test_poll_with_max_priority_urls
     poller.max_priority_urls = 4
 
@@ -87,6 +99,20 @@ class TestWorkPoller < MiniTest::Unit::TestCase
       pos += 1
     end
     assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth_reserve
+    poller.domain_depth_coef = 0.125
+    poller.max_priority_urls = 4
+    poller.do_reserve = true
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+    assert_equal( 0, poller.poll.size )
   end
 
   def test_poll_with_domain_depth_only
@@ -129,6 +155,15 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
     result = poller.poll
     assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_2_reserve
+    poller.do_reserve = true
+    poller.domain_union = [ { :domain => 'gravitext.com', :max => 15000 },
+                            {                             :max => 10000 } ]
+
+    assert_equal( 3, poller.poll.size )
+    assert_equal( 0, poller.poll.size )
   end
 
   def test_poll_domain_union_3

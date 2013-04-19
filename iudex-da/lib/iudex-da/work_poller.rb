@@ -70,7 +70,7 @@ module Iudex::DA
     # priority order (default: false)
     attr_writer :do_domain_group
 
-    # FIXME
+    # If set true, UPDATE reserved date (and instance, if specified)
     attr_writer :do_reserve
 
     def domain_group?
@@ -80,6 +80,10 @@ module Iudex::DA
     def reserve?
       @do_reserve
     end
+
+    # String uniquely identifying this worker instance. Only used here
+    # with do_reserve.
+    attr_accessor :instance
 
     # First age coefficient. If set > 0.0, adjust priority by the
     # equation:
@@ -133,6 +137,7 @@ module Iudex::DA
       @domain_depth_coef  = nil
       @do_domain_group    = false
       @do_reserve         = false
+      @instance           = nil
 
       @max_priority_urls  =    nil
       @max_domain_urls    = 10_000
@@ -193,6 +198,10 @@ module Iudex::DA
       end
     end
 
+    def domain_union?
+      !@domain_union.empty?
+    end
+
     def generate_query
       criteria = [ "next_visit_after <= now()" ]
 
@@ -204,7 +213,7 @@ module Iudex::DA
         criteria << "uhash < ( '#{max}' COLLATE \"C\" )" if max
       end
 
-      if @domain_union.empty?
+      unless domain_union?
         query = generate_query_inner( criteria, max_urls )
       else
         subqueries = []
@@ -242,6 +251,8 @@ module Iudex::DA
           query = "(" + subqueries.join( ") UNION ALL (" ) + ")"
         end
       end
+
+      query = wrap_with_update( fields, query ) if reserve?
 
       query = wrap_domain_group_query( fields, query ) if domain_group?
 
@@ -314,6 +325,25 @@ module Iudex::DA
       SQL
 
       sql
+    end
+
+    def wrap_with_update( flds, sub )
+      sflds = [ "reserved = now()" ]
+      sflds << "instance = '#{instance}'" if instance
+
+      # Use ..FOR UPDATE unless not supported by query specific
+      # options with PostgreSQL <= 9.1
+      sub += " FOR UPDATE" unless domain_depth? || domain_union?
+
+      <<-SQL
+        WITH work AS ( #{sub} )
+        UPDATE urls
+        SET #{clist sflds}
+        WHERE uhash IN (SELECT uhash FROM work)
+        RETURNING #{clist flds}
+      SQL
+
+      # FIXME: Return base or aged priority?
     end
 
     def wrap_domain_group_query( flds, sub )
