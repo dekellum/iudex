@@ -284,7 +284,7 @@ module Iudex::DA
       if aged_priority?
         flds = flds.dup
         i = flds.index( :priority ) || flds.size
-        flds[ i ] = <<-SQL
+        flds[ i ] = <<-SQL.strip
           ( priority +
             #{age_coef_1}::REAL *
                   SQRT( #{age_coef_2}::REAL *
