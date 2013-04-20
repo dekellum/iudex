@@ -59,6 +59,11 @@ public class VisitManager
         _doWaitOnGeneration = doWaitOnGeneration;
     }
 
+    public void setDoShutdownHook( boolean doShutdownHook )
+    {
+        _doShutdownHook = doShutdownHook;
+    }
+
     public void setMaxGenerationsToShutdown( int generations )
     {
         _maxGenerationsToShutdown = generations;

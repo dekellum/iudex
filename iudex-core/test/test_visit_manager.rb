@@ -40,6 +40,7 @@ class TestVisitManager < MiniTest::Unit::TestCase
     @manager = VisitManager.new( TestWorkPoller.new )
     @manager.do_wait_on_generation = true
     @manager.max_shutdown_wait = 100
+    @manager.do_shutdown_hook = false
 
     @scheduler = Executors::new_scheduled_thread_pool( 1 )
 
