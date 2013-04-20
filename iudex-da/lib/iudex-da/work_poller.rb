@@ -138,7 +138,6 @@ module Iudex::DA
       @uhash_slice        = nil
 
       @log = RJack::SLF4J[ self.class ]
-      #FIXME: Add accessor for log in GenericWorkPollStrategy
 
       keys( :url, :priority, :next_visit_after ).each do |k|
         unless mapper.fields.include?( k )
