@@ -111,6 +111,7 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     poller.domain_depth_coef = 0.125
     poller.max_priority_urls = 4
     poller.do_reserve = true
+    poller.instance = 'test'
 
     pos = 0
     poller.poll.each do |map|
@@ -118,6 +119,10 @@ class TestWorkPoller < MiniTest::Unit::TestCase
       pos += 1
     end
     assert_equal( 3, pos )
+    RJack::Logback[ 'iudex.da.WorkPoller' ].with_level( :warn ) do
+      assert_equal( 3, poller.instance_unreserve )
+    end
+    assert_equal( 3, poller.poll.size )
     assert_equal( 0, poller.poll.size )
   end
 

@@ -196,6 +196,23 @@ module Iudex::DA
       @log.error( "On discard: ", x )
     end
 
+    # Unreserve any orders that are reserved by the current instance.
+    # No-op unless do_reserve and instance are set.
+    def instance_unreserve
+      if reserve? && instance
+        n = reader.update( <<-SQL )
+          UPDATE urls
+          SET reserved = NULL
+          WHERE reserved IS NOT NULL AND
+                instance = '#{instance}'
+        SQL
+        @log.info { "Unreserved #{n} orders for instance #{instance}" }
+        n
+      end
+    rescue SQLException => x
+      @log.error( "On instance_unreserve: ", x )
+    end
+
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
