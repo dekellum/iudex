@@ -105,9 +105,11 @@ public abstract class GenericWorkPollStrategy
     }
 
     @Override
-    public VisitQueue pollWork( VisitQueue current )
+    public VisitQueue pollWork( VisitQueue vq )
     {
-        VisitQueue vq = _visitQueueFactory.createVisitQueue();
+        if( ( vq == null ) || shouldReplaceQueue( vq ) ) {
+            vq = _visitQueueFactory.createVisitQueue();
+        }
 
         Stopwatch sw = new Stopwatch().start();
         pollWorkImpl( vq );
