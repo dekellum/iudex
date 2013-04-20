@@ -384,7 +384,7 @@ public class VisitManager
 
     private int  _maxThreads              = 10;
     private long _maxShutdownWait         = 19 * 1000; //19s
-    private boolean _doWaitOnGeneration   = false;
+    private boolean _doWaitOnGeneration   = true;
     private boolean _doShutdownHook       = true;
     private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
     private int   _maxGenerationsToShutdown = 0;
