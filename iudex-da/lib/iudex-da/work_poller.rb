@@ -73,12 +73,24 @@ module Iudex::DA
     # If set true, UPDATE reserved date (and instance, if specified)
     attr_writer :do_reserve
 
+    # If set true, discards old queue at every poll, even if
+    # do_reserve could make queue re-fill a safe operation.
+    attr_writer :do_discard
+
+    # The maximum ratio of current to max_urls where the old queue
+    # will be discarded as a safety to avoid starvation (Default: 0.667)
+    attr_accessor :max_discard_ratio
+
     def domain_group?
       @do_domain_group
     end
 
     def reserve?
       @do_reserve
+    end
+
+    def discard?
+      @do_discard
     end
 
     # String uniquely identifying this worker instance. Only used here
@@ -137,11 +149,13 @@ module Iudex::DA
       @domain_depth_coef  = nil
       @do_domain_group    = false
       @do_reserve         = false
+      @do_discard         = true
       @instance           = nil
 
       @max_priority_urls  =    nil
       @max_domain_urls    = 10_000
       @max_urls           = 50_000
+      @max_discard_ratio  = 2.0/3.0
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
@@ -169,15 +183,15 @@ module Iudex::DA
 
     # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
-      visit_queue.add_all( poll )
+      visit_queue.add_all( poll( visit_queue.order_count ) )
     rescue SQLException => x
       @log.error( "On poll: ", x )
     end
 
     # Poll work and return as List<UniMap>
     # Raises SQLException
-    def poll
-      query = generate_query
+    def poll( current_urls = 0 )
+      query = generate_query( current_urls )
       @log.debug { "Poll query: #{query}" }
       reader.select_with_retry( query )
     end
@@ -234,7 +248,7 @@ module Iudex::DA
       !@domain_union.empty?
     end
 
-    def generate_query
+    def generate_query( current_urls )
       criteria = [ "next_visit_after <= now()" ]
 
       criteria << "reserved IS NULL" if reserve?
@@ -246,12 +260,17 @@ module Iudex::DA
       end
 
       unless domain_union?
-        query = generate_query_inner( criteria, max_urls )
+        query = generate_query_inner( criteria, ( max_urls - current_urls ) )
       else
         subqueries = []
         @domain_union.each do | opts |
           opts = opts.dup
-          opts[ :max ]    ||= @max_urls
+          if opts[ :max ]
+            opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
+                             max_urls.to_f ).floor
+          else
+            opts[ :max ] = ( max_urls - current_urls )
+          end
 
           next if opts[ :max ] == 0
 
