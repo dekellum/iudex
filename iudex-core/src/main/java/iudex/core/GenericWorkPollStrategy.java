@@ -121,6 +121,12 @@ public abstract class GenericWorkPollStrategy
         return vq;
     }
 
+    @Override
+    public void discard( VisitQueue current )
+    {
+        log().info( "Discard of {} orders ignored", current.orderCount() );
+    }
+
     /**
      * The actual pollWorkImpl which should be implemented to fill the
      * provided out queue.

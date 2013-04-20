@@ -41,4 +41,10 @@ public interface WorkPollStrategy
      * @return existing or new VisitQueue
      */
     VisitQueue pollWork( VisitQueue current );
+
+    /**
+     * Called to give an oportunity for the work poller to cleanup unprocessed
+     * work, for example by un-reserving it.
+     */
+    void discard( VisitQueue current );
 }

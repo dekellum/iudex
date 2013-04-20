@@ -15,6 +15,7 @@
  */
 package iudex.core;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.PriorityQueue;
@@ -144,6 +145,11 @@ public class HostQueue
             throw new IllegalStateException( "Release below accessCount" );
         }
         return ( _accessCount-- == _maxAccess );
+    }
+
+    Collection<UniMap> orders()
+    {
+        return _work;
     }
 
     /**
