@@ -182,6 +182,20 @@ module Iudex::DA
       reader.select_with_retry( query )
     end
 
+    # Override GenericWorkPollStrategy to discard old VisitQueue
+    # contents when do_reserve is enabled.
+    def discard( visit_queue )
+      if reserve? && visit_queue.order_count > 0
+        orders = visit_queue.hosts.inject( [] ) do |a, hq|
+          a.concat( hq.orders.to_a )
+        end
+        n = reader.unreserve( orders )
+        @log.info { "Unreserved #{n} orders on discard" }
+      end
+    rescue SQLException => x
+      @log.error( "On discard: ", x )
+    end
+
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?

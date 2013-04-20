@@ -25,6 +25,7 @@ require 'iudex-da/pool_data_source_factory'
 require 'iudex-da/models'
 
 class TestWorkPoller < MiniTest::Unit::TestCase
+  include Iudex::Core
   include Iudex::Filter::KeyHelper
   include Iudex::DA
   include Iudex::DA::ORM
@@ -69,13 +70,18 @@ class TestWorkPoller < MiniTest::Unit::TestCase
   def test_poll_with_reserve
     poller.do_reserve = true
     poller.instance = 'test'
-    pos = 0
-    poller.poll.each do |map|
-      assert_equal( URLS[ pos ][ 0 ], map.url.url )
-      pos += 1
+    polled = poller.poll
+    polled.each_with_index do |map,i|
+      assert_equal( URLS[ i ][ 0 ], map.url.url )
     end
-    assert_equal( 3, pos )
+    assert_equal( 3, polled.size )
     assert_equal( 0, poller.poll.size )
+
+    RJack::Logback[ 'iudex.da.WorkPoller' ].with_level( :warn ) do
+      poller.discard( VisitQueue.new.tap { |q| q.add_all( polled ) } )
+    end
+
+    assert_equal( 3, poller.poll.size )
   end
 
   def test_poll_with_max_priority_urls

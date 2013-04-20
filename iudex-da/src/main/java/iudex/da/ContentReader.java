@@ -150,6 +150,54 @@ public class ContentReader
     }
 
     /**
+     * Unreserve the specified contents by url.uhash.  Note that while
+     * this is not strictly a read operation, it is closely associated to
+     * select with reserve and so included here.
+     * @return the number of updates.
+     */
+    public int unreserve( Iterable<UniMap> contents ) throws SQLException
+    {
+        return update( formatUnreserve( contents ) );
+    }
+
+    public int update( String query, Object... params )
+        throws SQLException
+    {
+        Connection conn = dataSource().getConnection();
+        try {
+            conn.setAutoCommit( false );
+            conn.setTransactionIsolation( isolationLevel() );
+
+            int count = 0;
+            int tries = 0;
+            retry: while( true ) {
+                try {
+                    ++tries;
+                    QueryRunner runner = new QueryRunner( _dsource );
+                    count = runner.update( query, params );
+                    conn.commit();
+                    break retry;
+                }
+                catch( SQLException x ) {
+                    if( handleError( tries, x ) ) {
+                        conn.rollback();
+                        continue retry;
+                    }
+                    throw x;
+                }
+            }
+
+            if( tries > 1 ) {
+                _log.info( "Update succeeded only after {} attempts", tries );
+            }
+            return count;
+        }
+        finally {
+            if( conn != null ) conn.close();
+        }
+    }
+
+    /**
      * Return true if a retry should be made, by inspection of the SQLException
      * and number of tries already attempted. Log accordingly. Override to reset
      * any state before a retry.
@@ -217,6 +265,28 @@ public class ContentReader
             }
             return contents;
         }
+    }
+
+    private String formatUnreserve( final Iterable<UniMap> contents )
+    {
+        final StringBuilder qb = new StringBuilder( 512 );
+        qb.append( "UPDATE urls" );
+        qb.append( " SET reserved = NULL" );
+        qb.append( " WHERE uhash IN (" );
+        boolean first = true;
+        for( UniMap r : contents ) {
+            if( first ) first = false;
+            else qb.append( ", " );
+
+            final String uhash = r.get( ContentKeys.URL ).uhash();
+
+            qb.append( '\'' );
+            qb.append( uhash );
+            qb.append( '\'' );
+        }
+        qb.append( ");" );
+
+        return qb.toString();
     }
 
     private final DataSource _dsource;
