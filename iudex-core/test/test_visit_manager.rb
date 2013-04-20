@@ -38,7 +38,8 @@ class TestVisitManager < MiniTest::Unit::TestCase
     @latch = CountDownLatch.new( 20 )
 
     @manager = VisitManager.new( TestWorkPoller.new )
-    @manager.do_wait_on_generation = false
+    @manager.do_wait_on_generation = true
+    @manager.max_shutdown_wait = 100
 
     @scheduler = Executors::new_scheduled_thread_pool( 1 )
 
@@ -61,8 +62,6 @@ class TestVisitManager < MiniTest::Unit::TestCase
     @manager.start
     pass
     assert( @latch.await( 5, TimeUnit::SECONDS ) )
-    @manager.shutdown
-    pass
   end
 
   class TestWorkPoller < GenericWorkPollStrategy
