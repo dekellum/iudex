@@ -224,10 +224,10 @@ public class VisitManager
 
             if( ( _visitQ == null ) || _poller.shouldReplaceQueue( _visitQ ) ) {
 
-                if( ( _visitQ != null ) && _doWaitOnGeneration ) {
-                    awaitExecutorEmpty();
-
+                if( ( _visitQ != null ) ) {
+                    if( _doWaitOnGeneration ) awaitExecutorEmpty();
                     _poller.discard( _visitQ );
+                    _visitQ = null;
                 }
 
                 if( ( _maxGenerationsToShutdown > 0 ) &&
@@ -333,11 +333,14 @@ public class VisitManager
         _executor.awaitTermination( _maxShutdownWait,
                                     TimeUnit.MILLISECONDS );
 
-        if( _visitQ != null ) {
-            _poller.discard( _visitQ );
+        synchronized( this ) {
+            if( _visitQ != null ) {
+                _poller.discard( _visitQ );
 
-            if( _log.isDebugEnabled() ) {
-                _log.debug( _visitQ.dump() );
+                if( _log.isDebugEnabled() ) {
+                    _log.debug( _visitQ.dump() );
+                }
+                _visitQ = null;
             }
         }
 
