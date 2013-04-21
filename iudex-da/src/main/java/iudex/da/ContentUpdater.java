@@ -45,15 +45,6 @@ public class ContentUpdater
         _transformer = transformer;
     }
 
-    /**
-     * Set max number of retries, not including the initial try.
-     * Default: 3
-     */
-    public void setMaxRetries( int count )
-    {
-        _maxRetries = count;
-    }
-
     public void setUpdateContent( boolean doUpdateContent )
     {
         _doUpdateContent = doUpdateContent;
@@ -120,7 +111,7 @@ public class ContentUpdater
             }
 
             if( tries > 1 ) {
-                _log.info( "Update succeeded only after {} attempts", tries );
+                log().info( "Update succeeded only after {} attempts", tries );
             }
         }
         finally {
@@ -156,7 +147,7 @@ public class ContentUpdater
             }
 
             if( tries > 1 ) {
-                _log.info( "Update succeeded only after {} attempts", tries );
+                log().info( "Update succeeded only after {} attempts", tries );
             }
         }
         finally {
@@ -167,40 +158,6 @@ public class ContentUpdater
     protected Transformer transformer()
     {
         return _transformer;
-    }
-
-    /**
-     * Return true if a retry should be made, by inspection of the SQLException
-     * and number of tries already attempted. Log accordingly. Override to reset
-     * any state before a retry.
-     */
-    protected boolean handleError( int tries, SQLException x )
-    {
-        if( tries <= _maxRetries ) {
-            SQLException s = x;
-            while( s != null ) {
-                String state = s.getSQLState();
-                // Retry PostgreSQL Unique Key (i.e. uhash) violation or any
-                // Transaction Rollback
-                if( ( state != null ) &&
-                    ( state.equals( "23505" ) ||
-                      state.startsWith( "40" ) ) ) {
-                    _log.debug( "Retry {} after: ({}) {}",
-                                tries, state, s.getMessage() );
-                    return true;
-                }
-                s = s.getNextException();
-            }
-        }
-
-        SQLException s = x;
-        while( s != null ) {
-            _log.error( "Last try {}: ({}) {}",
-                        tries, s.getSQLState(), s.getMessage() );
-            s = s.getNextException();
-        }
-
-        return false;
     }
 
     protected void update( UniMap content, Connection conn )
@@ -401,7 +358,6 @@ public class ContentUpdater
     }
 
     private final Transformer _transformer;
-    private int _maxRetries = 3;
     private boolean _doUpdateContent = true;
     private boolean _doUpdateReferer = true;
     private boolean _doUpdateReferences = true;

@@ -224,12 +224,10 @@ public class VisitManager
 
             if( ( _visitQ == null ) || _poller.shouldReplaceQueue( _visitQ ) ) {
 
-                if( ( _visitQ != null ) && _doWaitOnGeneration ) {
-                    awaitExecutorEmpty();
-
-                    if( _log.isDebugEnabled() ) {
-                        _log.debug( _visitQ.dump() );
-                    }
+                if( ( _visitQ != null ) ) {
+                    if( _doWaitOnGeneration ) awaitExecutorEmpty();
+                    _poller.discard( _visitQ );
+                    _visitQ = null;
                 }
 
                 if( ( _maxGenerationsToShutdown > 0 ) &&
@@ -335,8 +333,15 @@ public class VisitManager
         _executor.awaitTermination( _maxShutdownWait,
                                     TimeUnit.MILLISECONDS );
 
-        if( ( _visitQ != null ) && _log.isDebugEnabled() ) {
-            _log.debug( _visitQ.dump() );
+        synchronized( this ) {
+            if( _visitQ != null ) {
+                _poller.discard( _visitQ );
+
+                if( _log.isDebugEnabled() ) {
+                    _log.debug( _visitQ.dump() );
+                }
+                _visitQ = null;
+            }
         }
 
         if( !fromVM ) {
@@ -379,7 +384,7 @@ public class VisitManager
 
     private int  _maxThreads              = 10;
     private long _maxShutdownWait         = 19 * 1000; //19s
-    private boolean _doWaitOnGeneration   = false;
+    private boolean _doWaitOnGeneration   = true;
     private boolean _doShutdownHook       = true;
     private int   _maxExecQueueCapacity   = Integer.MAX_VALUE;
     private int   _maxGenerationsToShutdown = 0;

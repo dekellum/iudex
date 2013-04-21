@@ -70,9 +70,32 @@ module Iudex::DA
     # priority order (default: false)
     attr_writer :do_domain_group
 
+    # If set true, UPDATE reserved date (and instance, if specified)
+    attr_writer :do_reserve
+
+    # If set true, discards old queue at every poll, even if
+    # do_reserve could make queue re-fill a safe operation.
+    attr_writer :do_discard
+
+    # The maximum ratio of current to max_urls where the old queue
+    # will be discarded as a safety to avoid starvation (Default: 0.667)
+    attr_accessor :max_discard_ratio
+
     def domain_group?
       @do_domain_group
     end
+
+    def reserve?
+      @do_reserve
+    end
+
+    def discard?
+      @do_discard
+    end
+
+    # String uniquely identifying this worker instance. Only used here
+    # with do_reserve.
+    attr_accessor :instance
 
     # First age coefficient. If set > 0.0, adjust priority by the
     # equation:
@@ -125,10 +148,14 @@ module Iudex::DA
 
       @domain_depth_coef  = nil
       @do_domain_group    = false
+      @do_reserve         = false
+      @do_discard         = true
+      @instance           = nil
 
       @max_priority_urls  =    nil
       @max_domain_urls    = 10_000
       @max_urls           = 50_000
+      @max_discard_ratio  = 2.0/3.0
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
@@ -138,7 +165,6 @@ module Iudex::DA
       @uhash_slice        = nil
 
       @log = RJack::SLF4J[ self.class ]
-      #FIXME: Add accessor for log in GenericWorkPollStrategy
 
       keys( :url, :priority, :next_visit_after ).each do |k|
         unless mapper.fields.include?( k )
@@ -157,22 +183,54 @@ module Iudex::DA
 
     # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
-      visit_queue.add_all( poll )
+      visit_queue.add_all( poll( visit_queue.order_count ) )
     rescue SQLException => x
       @log.error( "On poll: ", x )
     end
 
     # Poll work and return as List<UniMap>
     # Raises SQLException
-    def poll
-      query = generate_query
+    def poll( current_urls = 0 )
+      query = generate_query( current_urls )
       @log.debug { "Poll query: #{query}" }
-      reader.select( query )
+      reader.select_with_retry( query )
+    end
+
+    # Override GenericWorkPollStrategy to discard old VisitQueue
+    # contents when do_reserve is enabled.
+    def discard( visit_queue )
+      if reserve? && visit_queue.order_count > 0
+        orders = visit_queue.hosts.inject( [] ) do |a, hq|
+          a.concat( hq.orders.to_a )
+        end
+        n = reader.unreserve( orders )
+        @log.info { "Unreserved #{n} orders on discard" }
+      end
+    rescue SQLException => x
+      @log.error( "On discard: ", x )
+    end
+
+    # Unreserve any orders that are reserved by the current instance.
+    # No-op unless do_reserve and instance are set.
+    def instance_unreserve
+      if reserve? && instance
+        n = reader.update( <<-SQL )
+          UPDATE urls
+          SET reserved = NULL
+          WHERE reserved IS NOT NULL AND
+                instance = '#{instance}'
+        SQL
+        @log.info { "Unreserved #{n} orders for instance #{instance}" }
+        n
+      end
+    rescue SQLException => x
+      @log.error( "On instance_unreserve: ", x )
     end
 
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
+        r.max_retries = 10
       end
     end
 
@@ -186,8 +244,14 @@ module Iudex::DA
       end
     end
 
-    def generate_query
+    def domain_union?
+      !@domain_union.empty?
+    end
+
+    def generate_query( current_urls )
       criteria = [ "next_visit_after <= now()" ]
+
+      criteria << "reserved IS NULL" if reserve?
 
       if uhash_slice
         min, max = url64_range( *uhash_slice )
@@ -195,13 +259,18 @@ module Iudex::DA
         criteria << "uhash < ( '#{max}' COLLATE \"C\" )" if max
       end
 
-      if @domain_union.empty?
-        query = generate_query_inner( criteria, max_urls )
+      unless domain_union?
+        query = generate_query_inner( criteria, ( max_urls - current_urls ) )
       else
         subqueries = []
         @domain_union.each do | opts |
           opts = opts.dup
-          opts[ :max ]    ||= @max_urls
+          if opts[ :max ]
+            opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
+                             max_urls.to_f ).floor
+          else
+            opts[ :max ] = ( max_urls - current_urls )
+          end
 
           next if opts[ :max ] == 0
 
@@ -234,6 +303,8 @@ module Iudex::DA
         end
       end
 
+      query = wrap_with_update( fields, query ) if reserve?
+
       query = wrap_domain_group_query( fields, query ) if domain_group?
 
       query = query.gsub( /\s+/, ' ').strip
@@ -244,7 +315,8 @@ module Iudex::DA
     def generate_query_inner( criteria, max_urls )
 
       query = filter_query(
-            fields( ( :domain if domain_depth? || domain_group? ) ),
+            fields( ( :domain if domain_depth? || domain_group? ),
+                    ( :uhash if reserve? ) ),
             ( max_priority_urls if domain_depth? ),
             criteria )
 
@@ -284,7 +356,7 @@ module Iudex::DA
       if aged_priority?
         flds = flds.dup
         i = flds.index( :priority ) || flds.size
-        flds[ i ] = <<-SQL
+        flds[ i ] = <<-SQL.strip
           ( priority +
             #{age_coef_1}::REAL *
                   SQRT( #{age_coef_2}::REAL *
@@ -305,6 +377,24 @@ module Iudex::DA
       SQL
 
       sql
+    end
+
+    def wrap_with_update( flds, sub )
+      sflds = [ "reserved = now()" ]
+      sflds << "instance = '#{instance}'" if instance
+
+      # Use ..FOR UPDATE unless not supported by query specific
+      # options with PostgreSQL <= 9.1
+      sub += " FOR UPDATE" unless domain_depth? || domain_union?
+
+      <<-SQL
+        WITH work AS ( #{sub} ),
+        reserve AS (
+          UPDATE urls
+          SET #{clist sflds}
+          WHERE uhash IN ( SELECT uhash FROM work ) )
+        SELECT #{clist flds} FROM work
+      SQL
     end
 
     def wrap_domain_group_query( flds, sub )

@@ -25,6 +25,7 @@ require 'iudex-da/pool_data_source_factory'
 require 'iudex-da/models'
 
 class TestWorkPoller < MiniTest::Unit::TestCase
+  include Iudex::Core
   include Iudex::Filter::KeyHelper
   include Iudex::DA
   include Iudex::DA::ORM
@@ -66,6 +67,31 @@ class TestWorkPoller < MiniTest::Unit::TestCase
     assert_equal( 3, pos )
   end
 
+  def test_poll_with_reserve
+    poller.do_reserve = true
+    poller.max_urls = 2
+    poller.instance = 'test'
+
+    polled = poller.poll
+    polled.each_with_index do |map,i|
+      assert_equal( URLS[ i ][ 0 ], map.url.url )
+    end
+    assert_equal( 2, polled.size )
+    reserved = polled
+
+    polled = poller.poll
+    assert_equal( 1, polled.size )
+    assert_equal( URLS[2][0], polled.first.url.url )
+    reserved += polled
+
+    RJack::Logback[ 'iudex.da.WorkPoller' ].with_level( :warn ) do
+      poller.discard( VisitQueue.new.tap { |q| q.add_all( reserved ) } )
+    end
+    poller.max_urls = 3
+
+    assert_equal( 3, poller.poll.size )
+  end
+
   def test_poll_with_max_priority_urls
     poller.max_priority_urls = 4
 
@@ -87,6 +113,25 @@ class TestWorkPoller < MiniTest::Unit::TestCase
       pos += 1
     end
     assert_equal( 3, pos )
+  end
+
+  def test_poll_with_domain_depth_reserve
+    poller.domain_depth_coef = 0.125
+    poller.max_priority_urls = 4
+    poller.do_reserve = true
+    poller.instance = 'test'
+
+    pos = 0
+    poller.poll.each do |map|
+      assert_equal( URLS[ pos ][ 0 ], map.url.url )
+      pos += 1
+    end
+    assert_equal( 3, pos )
+    RJack::Logback[ 'iudex.da.WorkPoller' ].with_level( :warn ) do
+      assert_equal( 3, poller.instance_unreserve )
+    end
+    assert_equal( 3, poller.poll.size )
+    assert_equal( 0, poller.poll.size )
   end
 
   def test_poll_with_domain_depth_only
@@ -129,6 +174,15 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
     result = poller.poll
     assert_equal( 3, result.size )
+  end
+
+  def test_poll_domain_union_2_reserve
+    poller.do_reserve = true
+    poller.domain_union = [ { :domain => 'gravitext.com', :max => 15000 },
+                            {                             :max => 10000 } ]
+
+    assert_equal( 3, poller.poll.size )
+    assert_equal( 0, poller.poll.size )
   end
 
   def test_poll_domain_union_3

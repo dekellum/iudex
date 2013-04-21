@@ -38,6 +38,9 @@ class TestVisitManager < MiniTest::Unit::TestCase
     @latch = CountDownLatch.new( 20 )
 
     @manager = VisitManager.new( TestWorkPoller.new )
+    @manager.do_wait_on_generation = false
+
+    @scheduler = Executors::new_scheduled_thread_pool( 1 )
 
     test_filter = fltr do |order|
       @scheduler.schedule( proc { @manager.release( order, nil ) },
@@ -47,7 +50,6 @@ class TestVisitManager < MiniTest::Unit::TestCase
 
     @manager.filter_chain = FilterChain.new( "test", [ test_filter ] )
 
-    @scheduler = Executors::new_scheduled_thread_pool( 1 )
   end
 
   def teardown

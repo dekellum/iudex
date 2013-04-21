@@ -27,17 +27,15 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gravitext.htmap.Key;
 import com.gravitext.htmap.UniMap;
 
 public class ContentWriter
+    extends ContentReader
 {
     public ContentWriter( DataSource source, ContentMapper mapper )
     {
-        _dataSource = source;
+        super( source, mapper );
 
         for( Key req : REQUIRED_KEYS ) {
             if( ! mapper.fields().contains( req ) ) {
@@ -45,33 +43,11 @@ public class ContentWriter
                    "ContentWriter needs mapper with " + req + " included." );
             }
         }
-
-        _mapper = mapper;
-    }
-
-    public ContentMapper mapper()
-    {
-        return _mapper;
-    }
-
-    public DataSource dataSource()
-    {
-        return _dataSource;
-    }
-
-    public void setIsolationLevel( int isolationLevel )
-    {
-        _isolationLevel = isolationLevel;
-    }
-
-    public int isolationLevel()
-    {
-        return _isolationLevel;
     }
 
     public int write( Iterable<UniMap> contents ) throws SQLException
     {
-        Connection conn = _dataSource.getConnection();
+        Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
             conn.setTransactionIsolation( isolationLevel() );
@@ -91,7 +67,7 @@ public class ContentWriter
 
     public int write( UniMap content ) throws SQLException
     {
-        Connection conn = _dataSource.getConnection();
+        Connection conn = dataSource().getConnection();
         try {
             conn.setAutoCommit( false );
             conn.setTransactionIsolation( isolationLevel() );
@@ -158,23 +134,6 @@ public class ContentWriter
         return sql.toString();
     }
 
-    private void logError( SQLException orig )
-    {
-        _log.error( "On write: " + orig.getMessage() );
-        SQLException x = orig;
-        while( ( x = x.getNextException() ) != null ) {
-            _log.error( x.getMessage() );
-        }
-    }
-
-    protected static final Logger _log =
-        LoggerFactory.getLogger( ContentWriter.class );
-
     private static final List<Key> REQUIRED_KEYS =
         Arrays.asList( new Key[] { URL, UHASH, DOMAIN, TYPE } );
-
-    private final DataSource _dataSource;
-    private final ContentMapper _mapper;
-
-    private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
 }

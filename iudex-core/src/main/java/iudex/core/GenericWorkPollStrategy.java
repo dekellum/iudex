@@ -105,9 +105,11 @@ public abstract class GenericWorkPollStrategy
     }
 
     @Override
-    public VisitQueue pollWork( VisitQueue current )
+    public VisitQueue pollWork( VisitQueue vq )
     {
-        VisitQueue vq = _visitQueueFactory.createVisitQueue();
+        if( ( vq == null ) || shouldReplaceQueue( vq ) ) {
+            vq = _visitQueueFactory.createVisitQueue();
+        }
 
         Stopwatch sw = new Stopwatch().start();
         pollWorkImpl( vq );
@@ -119,6 +121,12 @@ public abstract class GenericWorkPollStrategy
         log().info( "Polled {} orders in {} hosts; ({})",
                     _highOrderCount, _highHostCount, sw.duration() );
         return vq;
+    }
+
+    @Override
+    public void discard( VisitQueue current )
+    {
+        log().info( "Discard of {} orders ignored", current.orderCount() );
     }
 
     /**

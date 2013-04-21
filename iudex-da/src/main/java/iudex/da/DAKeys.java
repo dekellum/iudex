@@ -16,12 +16,27 @@
 
 package iudex.da;
 
+import java.util.Date;
+
 import com.gravitext.htmap.Key;
 
 import iudex.core.ContentKeys;
 
 public class DAKeys extends ContentKeys
 {
+    /**
+     * A unique identifier for the iudex worker instance that has reserved or
+     * last processed an order.
+     */
+    public static final Key<String> INSTANCE =
+        create( "instance", String.class );
+
+    /**
+     * The date at which time an order was reserved.
+     */
+    public static final Key<Date> RESERVED =
+        create( "reserved", Date.class );
+
     /**
      * If set true, indicates that content came from WorkPoller with
      * PRIORITY adjusted from the actual value.
