@@ -303,7 +303,7 @@ module Iudex::DA
         end
       end
 
-      query = wrap_with_update( query ) if reserve?
+      query = wrap_with_update( fields, query ) if reserve?
 
       query = wrap_domain_group_query( fields, query ) if domain_group?
 
@@ -315,7 +315,8 @@ module Iudex::DA
     def generate_query_inner( criteria, max_urls )
 
       query = filter_query(
-            fields( ( :domain if domain_depth? || domain_group? ) ),
+            fields( ( :domain if domain_depth? || domain_group? ),
+                    ( :uhash if reserve? ) ),
             ( max_priority_urls if domain_depth? ),
             criteria )
 
@@ -378,7 +379,7 @@ module Iudex::DA
       sql
     end
 
-    def wrap_with_update( sub )
+    def wrap_with_update( flds, sub )
       sflds = [ "reserved = now()" ]
       sflds << "instance = '#{instance}'" if instance
 
@@ -392,7 +393,7 @@ module Iudex::DA
           UPDATE urls
           SET #{clist sflds}
           WHERE uhash IN ( SELECT uhash FROM work ) )
-        SELECT * FROM work
+        SELECT #{clist flds} FROM work
       SQL
     end
 

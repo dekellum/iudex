@@ -69,17 +69,25 @@ class TestWorkPoller < MiniTest::Unit::TestCase
 
   def test_poll_with_reserve
     poller.do_reserve = true
+    poller.max_urls = 2
     poller.instance = 'test'
+
     polled = poller.poll
     polled.each_with_index do |map,i|
       assert_equal( URLS[ i ][ 0 ], map.url.url )
     end
-    assert_equal( 3, polled.size )
-    assert_equal( 0, poller.poll.size )
+    assert_equal( 2, polled.size )
+    reserved = polled
+
+    polled = poller.poll
+    assert_equal( 1, polled.size )
+    assert_equal( URLS[2][0], polled.first.url.url )
+    reserved += polled
 
     RJack::Logback[ 'iudex.da.WorkPoller' ].with_level( :warn ) do
-      poller.discard( VisitQueue.new.tap { |q| q.add_all( polled ) } )
+      poller.discard( VisitQueue.new.tap { |q| q.add_all( reserved ) } )
     end
+    poller.max_urls = 3
 
     assert_equal( 3, poller.poll.size )
   end
