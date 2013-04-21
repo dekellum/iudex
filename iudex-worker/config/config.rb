@@ -30,6 +30,9 @@ Iudex.configure do |c|
     wp.min_order_remaining_ratio = 0.30
     wp.max_check_interval = 100 #ms
     wp.min_poll_interval = 2_000 #ms
+    wp.do_reserve = true
+    wp.instance = 'solo'
+    wp.instance_unreserve
   end
 
   c.setup_filter_factory do |ff|
