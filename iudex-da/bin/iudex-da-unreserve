@@ -1,0 +1,110 @@
+#!/usr/bin/env jruby
+# -*- ruby -*-
+#--
+# Copyright (c) 2008-2013 David Kellum
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License.  You
+# may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.  See the License for the specific language governing
+# permissions and limitations under the License.
+#++
+
+$LOAD_PATH.unshift File.join( File.dirname(__FILE__), "..", "lib" )
+
+require 'rubygems'
+require 'optparse'
+
+module IudexBinScript
+
+  require 'rjack-logback'
+  include RJack
+  Logback.config_console
+
+  # Note: Avoid loading iudex-da with its jar dependency which would
+  # make it hard to boostrap the db from source alone.
+  # Instead load only nessary core, base, config, and ar (post config):
+  require 'iudex-core'
+  require 'iudex-da/base'
+  require 'iudex-da/config'
+  include Iudex
+
+  Hooker.log_with { |m| SLF4J[ 'iudex' ].info( m.rstrip ) }
+
+  interval = '60 minutes'
+
+  # Apply all config before including ar
+  OptionParser.new do |opts|
+    opts.banner = <<END
+Usage: iudex-da-unreserve [options]
+END
+    opts.on( "-s", "--set name=value", String,
+             "Set connect prop (ex: database=iudex)" ) do |nv|
+      name,value = nv.split('=').map { |t| t.strip }
+      Hooker.add( [ :iudex, :connect_props ] ) do
+        { name.to_sym => value }
+      end
+    end
+    opts.on( "-p", "--profile NAME", String,
+             "Add a migration profile (ex: simhash)" ) do |p|
+      Hooker.add( [ :iudex, :migration_profiles ] ) do |profiles|
+        profiles << p
+      end
+    end
+    opts.on( "-d", "--debug" ) do
+      Logback[ 'iudex.da' ].level = :debug
+      Hooker.add( [ :iudex, :connect_props ] ) { { :log => true } }
+    end
+    opts.on( "-v", "--version", "Display version and exit" ) do
+      puts "iudex-da: #{DA::VERSION}"
+      exit 1
+    end
+    opts.on( "-l", "--long",  "Log in long form, to STDERR" ) do
+      Logback.config_console( :full => true, :stderr => true )
+    end
+    opts.on( "-a", "--age AGE",
+             "Age to unreserve, in PG interval syntax " +
+             "(default: '60 minutes')" ) do |age|
+      interval = age
+    end
+    Hooker.register_config( opts )
+  end.parse!
+
+  require 'iudex-da/orm'
+
+  class Runner
+    include Iudex::DA
+
+    def unreserve( age )
+      ORM.db.transaction( :isolation => :repeatable,
+                          :retry_on => [ Sequel::SerializationFailure ] ) do
+        ds = ORM::db.fetch <<-SQL
+          WITH unreserve AS (
+            UPDATE urls
+            SET reserved = NULL
+            WHERE reserved < ( now() - interval '#{age}' )
+            RETURNING instance )
+          SELECT count(*),instance FROM unreserve
+          GROUP BY instance
+          ORDER BY count DESC
+        SQL
+
+        total = ds.inject( 0 ) do |m,row|
+          puts( "%30s %7d" % [ row[:instance], row[:count] ] )
+          m + row[:count]
+        end
+        puts( "%30s %7d" % [ 'TOTAL', total ] ) if total > 0
+
+      end
+    end
+
+  end
+
+  Runner.new.unreserve( interval )
+end
