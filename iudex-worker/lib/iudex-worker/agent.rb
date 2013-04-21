@@ -109,6 +109,7 @@ module Iudex
         fcf.http_client = hclient
         fcf.data_source = data_source
         fcf.visit_counter = vexec
+        fcf.work_poller = wpoller
 
         # FilterChain's executor is the same executor, unless using
         # HTTPClient3, where executor is best not used

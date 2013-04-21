@@ -58,6 +58,7 @@ module Iudex
       attr_accessor :data_source
       attr_accessor :visit_counter
       attr_accessor :executor
+      attr_accessor :work_poller
 
       def initialize( name )
         super
@@ -197,14 +198,20 @@ module Iudex
 
       def page_update_keys
         [ :uhash, :domain, :url, :type,
+          ( :reserved if work_poller && work_poller.reserve? ),
+          ( :instance if work_poller && work_poller.instance ),
           :ref_pub_date, :pub_date,
           :priority, :last_visit, :next_visit_after,
           :status, :etag, :reason, :referer, :referent,
-          :cache_file, :cache_file_offset, :simhash ]
+          :cache_file, :cache_file_offset, :simhash ].compact
       end
 
       def last_visit_setter
-        Copier.new( *keys( :visit_start, :last_visit ) )
+        resv = work_poller && work_poller.reserve?
+        inst = work_poller && work_poller.instance
+        [ Copier.new( *keys( :visit_start, :last_visit ) ),
+          ( Setter.new( :reserved.to_k, nil )  if resv ),
+          ( Setter.new( :instance.to_k, inst ) if inst ) ]
       end
 
     end
