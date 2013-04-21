@@ -1,4 +1,7 @@
 === 1.4.0 (TBD)
+* Upgrade to nekohtml ~> 1.9.18
+* Upgrade to iudex-* ~> 1.4.0 dependencies
+* Upgrade to minitest ~> 4.6.2 (dev)
 
 === 1.3.0 (2012-11-8)
 * Upgrade to gravitext-xmlprod ~> 1.7.0 (and gravitext-util ~> 1.7.0)

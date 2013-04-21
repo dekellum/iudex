@@ -1,4 +1,28 @@
 === 1.4.0 (TBD)
+* Add experimental WorkPoller.do_reserve support, which utilizes
+  PostgreSQL 9.1+ writable Common Table Expressions (CTEs) to
+  efficiently(?) set a reserved column and instance (identifier) on
+  poll that guards against polling by another or the same iudex-worker
+  process. This enables multiple workers to cover the same urls/orders
+  as well as concurrent polling. Previously only an instance unique,
+  uhash_slice single-tenant partitioning scheme was supported for
+  multi-worker distribution.
+* Add experimental support for concurrent (no discard) WorkPoller (in
+  collaboration with iudex-core 1.4.0 VisitManager), enabled if
+  do_reserve is set and do_discard is set false:
+  * When enabled, Polled max_urls is adjusted by current order_count
+    in this case.
+  * An additional max_discard_ratio will also force a discard if
+    order_count/max_urls passed this ratio.
+* Add iudex-da-unreserve utility for cleaning reservations left due to
+  failure, based on age.
+* Add DAKeys INSTANCE (String identifier) and RESERVED (date)
+* Add migrations for instance and reserved columns; removal of
+  reserved from index_next_visit (profile)
+* Upgrade to dbutils ~> 1.5.0, rjack-jdbc-postgres ~> 9.2.1002,
+  sequel ~> 3.46.0
+* Upgrade to iudex-* ~> 1.4.0 dependencies
+* Upgrade to minitest ~> 4.6.2 (dev)
 
 === 1.3.3 (2012-11-8)
 * FactoryHelper.create_update_filter now prefers an options Hash

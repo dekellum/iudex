@@ -1,4 +1,9 @@
 === 1.4.0 (TBD)
+* Add /slow streaming output test path
+* Add rescue, log of EPIPE from BrokenServer.accept
+* Upgrade to fishwife ~> 1.5.0 (supports jetty 9.0.x), sinatra ~>
+  1.3.5, markaby ~> 0.7.2, builder ~> 3.2.0, rack-test ~> 0.6.2
+* Upgrade to minitest ~> 4.6.2 (dev)
 
 === 1.3.0 (2012-11-8)
 * Upgrade to logback ~> 1.5 (dev)
