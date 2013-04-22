@@ -8,10 +8,10 @@
   uhash_slice single-tenant partitioning scheme was supported for
   multi-worker distribution.
 * Add experimental support for concurrent (no discard) WorkPoller (in
-  collaboration with iudex-core 1.4.0 VisitManager), enabled if
-  do_reserve is set and do_discard is set false:
-  * When enabled, Polled max_urls is adjusted by current order_count
-    in this case.
+  collaboration with iudex-core 1.4.0 VisitManager), enabled when set
+  do_reserve = true, do_discard = false.
+  * When enabled, polled max_urls is adjusted by current order_count
+    for subsequent polls.
   * An additional max_discard_ratio will also force a discard if
     order_count/max_urls passed this ratio.
 * Add iudex-da-unreserve utility for cleaning reservations left due to
