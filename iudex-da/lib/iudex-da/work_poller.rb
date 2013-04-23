@@ -203,8 +203,10 @@ module Iudex::DA
         orders = visit_queue.hosts.inject( [] ) do |a, hq|
           a.concat( hq.orders.to_a )
         end
-        n = reader.unreserve( orders )
-        @log.info { "Unreserved #{n} orders on discard" }
+        if orders.length > 0
+          n = reader.unreserve( orders )
+          @log.info { "Unreserved #{n} orders on discard" }
+        end
       end
     rescue SQLException => x
       @log.error( "On discard: ", x )
