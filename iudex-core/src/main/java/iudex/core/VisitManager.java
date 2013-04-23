@@ -190,6 +190,7 @@ public class VisitManager
                     now = System.currentTimeMillis();
                 }
             }
+            cleanupOnManagerExit();
         }
         catch( InterruptedException x ) {
             _log.warn( "Executor run loop: " + x );
@@ -306,6 +307,16 @@ public class VisitManager
     private void shutdown( boolean fromVM )
         throws InterruptedException
     {
+        if( !fromVM ) {
+            _log.debug( "Removing shutdown Hook" );
+            synchronized( this ) {
+                if( _shutdownHook != null ) {
+                    Runtime.getRuntime().removeShutdownHook( _shutdownHook );
+                    _shutdownHook = null;
+                }
+            }
+        }
+
         Thread manager = null;
 
         synchronized( this ) {
@@ -318,7 +329,8 @@ public class VisitManager
         }
 
         if( manager != null ) {
-            manager.join( _maxShutdownWait );
+            _log.debug( "Awaiting manager exit" );
+            manager.join( _maxShutdownWait + 5000 );
         }
 
         synchronized( this ) {
@@ -328,29 +340,28 @@ public class VisitManager
             }
         }
 
-        //Shutdown executor
+        _log.debug( "Shutdown and await executor" );
         _executor.shutdown();
-        _executor.awaitTermination( _maxShutdownWait,
-                                    TimeUnit.MILLISECONDS );
-
-        synchronized( this ) {
-            if( _visitQ != null ) {
-                _poller.discard( _visitQ );
-
-                if( _log.isDebugEnabled() ) {
-                    _log.debug( _visitQ.dump() );
-                }
-                _visitQ = null;
-            }
+        if( _executor.awaitTermination( _maxShutdownWait,
+                                        TimeUnit.MILLISECONDS ) ) {
+            _log.debug( "Executor shut down cleanly" );
         }
+        else {
+            _log.warn( "Executor did not shutdown cleanly" );
+        }
+    }
 
-        if( !fromVM ) {
-            synchronized( this ) {
-                if( _shutdownHook != null ) {
-                    Runtime.getRuntime().removeShutdownHook( _shutdownHook );
-                    _shutdownHook = null;
-                }
+    private synchronized void cleanupOnManagerExit()
+        throws InterruptedException
+    {
+        if( _visitQ != null ) {
+            _log.debug( "Visit Queue discard" );
+            _poller.discard( _visitQ );
+
+            if( _log.isDebugEnabled() ) {
+                _log.debug( _visitQ.dump() );
             }
+            _visitQ = null;
         }
     }
 
