@@ -279,13 +279,12 @@ public class VisitManager
 
     private synchronized void awaitExecutorEmpty() throws InterruptedException
     {
-        //FIXME: Or use custom task that notify's?
+        // FIXME:
+        // * Or use custom task that notify's?
         // * Or really shutdown, as empty queue does not guarantee completion?
         // * Shutdown only guaranteed if HTTPClient uses same pool?
-        // * Executor can't be restarted after, so implies new HTTPClient on
-        //   each generation?!?
-        //FIXME: Or support true asynchronous work polling by pre-filtering
-        // work by pending URL.
+        // * A Problem: Executor can't be restarted after, so implies
+        //   new HTTPClient on each generation.
 
         long now = System.currentTimeMillis();
         long end = now + _maxShutdownWait;
