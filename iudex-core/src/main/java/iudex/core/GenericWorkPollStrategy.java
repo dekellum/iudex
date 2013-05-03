@@ -107,8 +107,12 @@ public abstract class GenericWorkPollStrategy
     @Override
     public VisitQueue pollWork( VisitQueue vq )
     {
+        int oldOrders = 0;
         if( ( vq == null ) || shouldReplaceQueue( vq ) ) {
             vq = _visitQueueFactory.createVisitQueue();
+        }
+        else {
+            oldOrders = vq.orderCount();
         }
 
         Stopwatch sw = new Stopwatch().start();
@@ -118,8 +122,11 @@ public abstract class GenericWorkPollStrategy
         _highOrderCount = vq.orderCount();
         _highHostCount = vq.hostCount();
 
-        log().info( "Polled {} orders in {} hosts; ({})",
-                    _highOrderCount, _highHostCount, sw.duration() );
+        log().info( "Polled {} orders {} {} hosts; ({})",
+                    _highOrderCount - oldOrders,
+                    (oldOrders > 0) ? "in up to" : "in",
+                    _highHostCount,
+                    sw.duration() );
         return vq;
     }
 
