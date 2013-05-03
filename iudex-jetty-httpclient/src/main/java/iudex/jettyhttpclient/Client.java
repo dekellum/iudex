@@ -269,7 +269,9 @@ public class Client
             _requestHeaders.add(
                 new Header("Request-Line", reconstructRequestLine( request )));
             for( HttpField f : request.getHeaders() ) {
-                _requestHeaders.add(new Header(f.getName(), f.getValue()));
+                String value = f.getValue();
+                if( value == null ) value = NO_HEADER_VALUE;
+                _requestHeaders.add( new Header(f.getName(), value) );
             }
 
             setUrl( request.getURI().toString() );
@@ -279,7 +281,9 @@ public class Client
         public void onHeaders( Response response )
         {
             for( HttpField f : response.getHeaders() ) {
-                _responseHeaders.add(new Header(f.getName(), f.getValue()));
+                String value = f.getValue();
+                if( value == null ) value = NO_HEADER_VALUE;
+                _responseHeaders.add( new Header( f.getName(), value) );
             }
 
             _statusCode = response.getStatus();
@@ -444,6 +448,8 @@ public class Client
         private ResizableByteBuffer _body = null;
         private final CountDownLatch _latch = new CountDownLatch(1);
     }
+
+    private static final String NO_HEADER_VALUE = "";
 
     private final HttpClient _client;
 
