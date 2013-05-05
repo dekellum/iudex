@@ -29,7 +29,7 @@ module IudexBinScript
 
   # Note: Avoid loading iudex-da with its jar dependency which would
   # make it hard to boostrap the db from source alone.
-  # Instead load only nessary core, base, config, and ar (post config):
+  # Instead load only necessary core, base, config, and orm (post config):
   require 'iudex-core'
   require 'iudex-da/base'
   require 'iudex-da/config'
