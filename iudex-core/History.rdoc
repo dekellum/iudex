@@ -5,8 +5,9 @@
     replaced VisitQueue.
   * VisitManager and GenericWorkPollStrategy changes for discard and
     support of false shouldReplaceQueue
-* VisitManager.doWaitOnGeneration default true (for default discard
-  case)
+* VisitManager.doWaitOnGeneration default true for default no reserve,
+  mandatory discard case. Configuration suggestion: set false when
+  also setting (iudex-da 1.4) WorkPoller.do_reserve.
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 

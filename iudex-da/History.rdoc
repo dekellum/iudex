@@ -12,8 +12,10 @@
   do_reserve = true, do_discard = false.
   * When enabled, polled max_urls is adjusted by current order_count
     for subsequent polls.
-  * An additional max_discard_ratio will also force a discard if
-    order_count/max_urls passed this ratio.
+  * New max_reserved_time will force discard of possibly long reserved
+    tenure based on time since the queue was last empty.
+  * New max_discard_ratio will also force a discard if
+    order_count/max_urls exceeds this ratio.
 * Add iudex-da-unreserve utility for cleaning reservations left due to
   failure, based on age.
 * Add DAKeys INSTANCE (String identifier) and RESERVED (date)
