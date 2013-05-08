@@ -71,10 +71,12 @@ module Iudex::DA
     attr_writer :do_domain_group
 
     # If set true, UPDATE reserved date (and instance, if specified)
+    # (Default: false)
     attr_writer :do_reserve
 
     # If set true, discards old queue at every poll, even if
     # do_reserve could make queue re-fill a safe operation.
+    # (Default: true)
     attr_writer :do_discard
 
     # The maximum ratio of current to max_urls where the old queue
@@ -194,6 +196,12 @@ module Iudex::DA
       query = generate_query( current_urls )
       @log.debug { "Poll query: #{query}" }
       reader.select_with_retry( query )
+    end
+
+    # Override GenericWorkPollStrategy
+    def shouldReplaceQueue( visit_queue )
+      ( !reserve? || discard? ||
+        ( ( visit_queue.order_count.to_f / max_urls ) > max_discard_ratio ) )
     end
 
     # Override GenericWorkPollStrategy to discard old VisitQueue
