@@ -83,6 +83,24 @@ module Iudex::DA
     # will be discarded as a safety to avoid starvation (Default: 0.667)
     attr_accessor :max_discard_ratio
 
+    # The maximum amount of time in milliseconds that the oldest order
+    # can remain reserved before a discard is required. This is only
+    # relevant when do_reserve is true and do_discard is set false,
+    # and typically would be set as a multiple of max_poll_interval
+    # (ms). Note that max_poll_interval is interpreted as the worst
+    # case next discard opportunity for this purpose. The next poll
+    # made to an empty queue, either by prior discard or completion,
+    # resets the time tracking.  (Default: nil, off)
+    def max_reserved_time
+      @max_reserved_time_s && ( @max_reserved_time_s * 1000.0 ).round
+    end
+
+    def max_reserved_time=( ms )
+      @max_reserved_time_s = ms / 1000.0
+    end
+
+    attr_reader :max_reserved_time_s
+
     def domain_group?
       @do_domain_group
     end
@@ -158,6 +176,8 @@ module Iudex::DA
       @max_domain_urls    = 10_000
       @max_urls           = 50_000
       @max_discard_ratio  = 2.0/3.0
+      @max_reserved_time_s = nil
+      @last_none_reserved  = Time.now
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
@@ -193,6 +213,7 @@ module Iudex::DA
     # Poll work and return as List<UniMap>
     # Raises SQLException
     def poll( current_urls = 0 )
+      @last_none_reserved = Time.now if max_reserved_time_s && current_urls == 0
       query = generate_query( current_urls )
       @log.debug { "Poll query: #{query}" }
       reader.select_with_retry( query )
@@ -201,7 +222,12 @@ module Iudex::DA
     # Override GenericWorkPollStrategy
     def shouldReplaceQueue( visit_queue )
       ( !reserve? || discard? ||
-        ( ( visit_queue.order_count.to_f / max_urls ) > max_discard_ratio ) )
+        ( ( visit_queue.order_count.to_f / max_urls ) > max_discard_ratio ) ||
+        ( max_reserved_time_s && next_reserve_time > max_reserved_time_s ) )
+    end
+
+    def next_reserve_time( now = Time.now )
+      now - @last_none_reserved + ( max_poll_interval / 1000.0 )
     end
 
     # Override GenericWorkPollStrategy to discard old VisitQueue
