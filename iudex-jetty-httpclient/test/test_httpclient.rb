@@ -106,11 +106,11 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     req,rsp = nil
     with_new_client do |client|
       with_session_handler( client,
-                            "/echo/header/Accept?noop=3",
+                            "/echo/header/Accept?noop=3%267&o=9",
                             true,
                             { 'Accept' => 'text/plain;moo' } ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'GET /echo/header/Accept?noop=3',
+        assert_equal( 'GET /echo/header/Accept?noop=3%267&o=9',
                       find_header( s.request_headers, "Request-Line" ) )
         assert_equal( 'text/plain;moo',
                       find_header( s.request_headers, 'Accept' ) )
