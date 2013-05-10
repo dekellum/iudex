@@ -42,6 +42,7 @@ import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.util.Fields;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -433,10 +434,27 @@ public class Client
         private CharSequence reconstructRequestLine( Request request )
         {
             String method = request.getMethod().toString();
-            String path = request.getPath();
-            StringBuilder req = new StringBuilder( method.length() + 1 +
-                                                   path.length() );
-            return req.append( method ).append( ' ' ).append( path );
+            String path = request.getURI().getRawPath();
+            if( path == null || path.isEmpty() ) {
+                path = "/";
+            }
+            String query = request.getURI().getRawQuery();
+
+            int length = method.length() + 1;
+            length += path.length();
+            if( query != null ) {
+                length += query.length() + 1;
+            }
+            StringBuilder req = new StringBuilder( length );
+
+            req.append( method ).append( ' ' );
+            req.append( path );
+            if( query != null ) {
+                req.append( '?' );
+                req.append( query );
+            }
+
+            return req;
         }
 
         private ResponseHandler _handler = null;
