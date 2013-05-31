@@ -22,7 +22,7 @@
 * Add migrations for instance and reserved columns; removal of
   reserved from index_next_visit (profile)
 * Upgrade to dbutils ~> 1.5.0, rjack-jdbc-postgres ~> 9.2.1002,
-  sequel ~> 3.46.0
+  sequel ~> 3.46 (but not upcoming 4.x)
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 
