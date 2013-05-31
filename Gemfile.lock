@@ -67,7 +67,7 @@ PATH
       rjack-commons-dbcp (~> 1.4.0)
       rjack-commons-dbutils (~> 1.5.0)
       rjack-jdbc-postgres (~> 9.2.1002)
-      sequel (~> 3.46.0)
+      sequel (~> 3.46)
 
 PATH
   remote: iudex-filter
