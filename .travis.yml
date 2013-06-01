@@ -1,18 +1,13 @@
 language: ruby
 before_install: gem install rjack-tarpit -v=2.0.2
 rvm:
-  - jruby-1.6.8
-  - jruby-1.6.8 --1.9
   - jruby-19mode
 jdk:
-  - openjdk7
   - oraclejdk7
 matrix:
   include:
     - rvm: jruby-1.6.8
       jdk: openjdk7
     - rvm: jruby-1.6.8 --1.9
-      jdk: oraclejdk7
-    - rvm: jruby-19mode
       jdk: oraclejdk7
 script: bundle exec rake travis:run
