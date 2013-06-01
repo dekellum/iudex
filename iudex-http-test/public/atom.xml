@@ -705,7 +705,7 @@
 
 &lt;span class='n'&gt;task&lt;/span&gt; &lt;span class='ss'&gt;:tag&lt;/span&gt; &lt;span class='k'&gt;do&lt;/span&gt;
   &lt;span class='n'&gt;tag&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;jetty-&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='no'&gt;Jetty&lt;/span&gt;&lt;span class='o'&gt;::&lt;/span&gt;&lt;span class='no'&gt;VERSION&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;
-  &lt;span class='n'&gt;svn_base&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;svn://localhost/subversion.repo/src/gems&amp;#39;&lt;/span&gt;
+  &lt;span class='n'&gt;svn_base&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s1'&gt;&amp;#39;svn://127.0.0.1/subversion.repo/src/gems&amp;#39;&lt;/span&gt;
   &lt;span class='n'&gt;tag_url&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;svn_base&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;/tags/&lt;/span&gt;&lt;span class='si'&gt;#{&lt;/span&gt;&lt;span class='n'&gt;tag&lt;/span&gt;&lt;span class='si'&gt;}&lt;/span&gt;&lt;span class='s2'&gt;&amp;quot;&lt;/span&gt;
 
   &lt;span class='n'&gt;dname&lt;/span&gt; &lt;span class='o'&gt;=&lt;/span&gt; &lt;span class='no'&gt;File&lt;/span&gt;&lt;span class='o'&gt;.&lt;/span&gt;&lt;span class='n'&gt;dirname&lt;/span&gt;&lt;span class='p'&gt;(&lt;/span&gt; &lt;span class='bp'&gt;__FILE__&lt;/span&gt; &lt;span class='p'&gt;)&lt;/span&gt;

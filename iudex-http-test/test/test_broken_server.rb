@@ -48,7 +48,7 @@ class TestBrokenServer < MiniTest::Unit::TestCase
       end
     end
 
-    res = Net::HTTP.start( 'localhost', bs.port ) do |http|
+    res = Net::HTTP.start( '127.0.0.1', bs.port ) do |http|
       http.get( '/' )
     end
 

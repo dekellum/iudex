@@ -26,7 +26,7 @@ module Iudex::HTTP::Test
     DEFAULT_PORT = 9232
 
     def initialize( opts = {} )
-      opts = { :host => 'localhost',
+      opts = { :host => '127.0.0.1',
                :port => DEFAULT_PORT,
                :max_threads => 20 }.merge( opts )
       super( opts )

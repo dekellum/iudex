@@ -114,7 +114,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                       find_header( s.request_headers, "Request-Line" ) )
         assert_equal( 'text/plain;moo',
                       find_header( s.request_headers, 'Accept' ) )
-        assert_equal( 'localhost:9232',
+        assert_equal( '127.0.0.1:9232',
                       find_header( s.request_headers, 'Host' ) )
 
         assert_match( /^text\/plain/,
@@ -140,7 +140,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_local_connection_refused
     with_new_client do |client|
       with_session_handler( client,
-                            "http://localhost:54929/" ) do |s,x|
+                            "http://127.0.0.1:54929/" ) do |s,x|
         assert_instance_of( ConnectException, x )
       end
     end
@@ -153,7 +153,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     #FIXME: Looks like request_timeout is used as this timeout as well.
     with_new_client( :short => true ) do |client|
       with_session_handler( client,
-                            "http://localhost:9233/" ) do |s,x|
+                            "http://127.0.0.1:9233/" ) do |s,x|
         assert_includes( (-42..-40), s.status_code )
         assert_kind_of( TimeoutException, x )
       end
@@ -202,7 +202,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/" ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'http://localhost:9232/index', s.url )
+        assert_equal( 'http://127.0.0.1:9232/index', s.url )
       end
     end
   end
@@ -212,7 +212,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'http://localhost:9232/redirects/multi/1?sleep=0',
+        assert_equal( 'http://127.0.0.1:9232/redirects/multi/1?sleep=0',
                       s.url )
         assert_equal( 'GET /redirects/multi/1?sleep=0',
                       find_header( s.request_headers, "Request-Line" ) )
@@ -235,7 +235,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_redirect_multi_host_bad
     skip( "Error: -1 java.lang.NumberFormatException" )
     with_new_client( :follow_redirects => true ) do |client|
-      rurl = 'http://localhost:9232/index'
+      rurl = 'http://127.0.0.1:9232/index'
       url = "http://127.0.0.1:9232?redirect?loc=" + CGI.escape( rurl )
       # Note >?<redirect? above
       url = "/redirect?loc=" + CGI.escape( url )
@@ -250,7 +250,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def test_redirect_multi_host_3
     skip "redirect url not accessible"
     with_new_client( :follow_redirects => true ) do |client|
-      rurl = 'http://localhost:9232/index'
+      rurl = 'http://127.0.0.1:9232/index'
       url = "http://127.0.0.1:9232/redirect?loc=" + CGI.escape( rurl )
       url = "/redirect?loc=" + CGI.escape( url )
 
@@ -269,7 +269,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
       with_session_handler( client, url ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'http://localhost:9232' + rurl, s.url )
+        assert_equal( 'http://127.0.0.1:9232' + rurl, s.url )
       end
     end
   end
@@ -333,7 +333,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
 
     with_new_client do |client|
-      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
+      with_session_handler( client, "http://127.0.0.1:9233/" ) do |s,x|
         assert_match( /(EofException|bad response|ClosedChannelException)/i,
                       x.to_string )
         assert_equal( -1, s.status_code )
@@ -355,7 +355,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
 
     with_new_client do |client|
-      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
+      with_session_handler( client, "http://127.0.0.1:9233/" ) do |s,x|
         assert_match( /EofException|ClosedChannelException/i, x.class.name )
       end
     end
@@ -385,7 +385,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
 
     with_new_client do |client|
-      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
+      with_session_handler( client, "http://127.0.0.1:9233/" ) do |s,x|
         assert_match( /EofException|ClosedChannelException/i, x.class.name )
       end
     end
@@ -403,7 +403,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     sthread = Thread.new do
       bs.accept do |sock|
         sock.write "HTTP/1.1 302 Found\r\n"
-        sock.write "Location: http://localhost:54929/no-exist\r\n"
+        sock.write "Location: http://127.0.0.1:54929/no-exist\r\n"
         sock.write "Content-Type: text/plain\r\n"
         sock.write "Transfer-Encoding: chunked\r\n"
         sock.write "\r\n"
@@ -416,7 +416,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
 
     with_new_client do |client|
-      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
+      with_session_handler( client, "http://127.0.0.1:9233/" ) do |s,x|
         assert_match( /EofException|ClosedChannelException/i, x.class.name )
       end
     end
@@ -519,7 +519,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def with_session_handler( client, uri, wait = true, headers = {}, &block )
     session = client.create_session
-    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
+    uri = "http://127.0.0.1:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
