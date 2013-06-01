@@ -107,9 +107,8 @@ namespace :travis do
 
   task :setup_db do
     sh <<-SH
-      psql -U postgres -c "
-        CREATE USER iudex;
-        CREATE DATABASE iudex_test OWNER iudex;"
+      psql -U postgres -c "CREATE USER iudex;"
+      psql -U postgres -c "CREATE DATABASE iudex_test OWNER iudex;"
     SH
   end
 
