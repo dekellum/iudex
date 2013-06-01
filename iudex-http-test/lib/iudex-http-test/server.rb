@@ -23,7 +23,7 @@ module Iudex::HTTP::Test
 
   class Server < Fishwife::HttpServer
 
-    DEFAULT_PORT = 19292
+    DEFAULT_PORT = 9232
 
     def initialize( opts = {} )
       opts = { :host => 'localhost',

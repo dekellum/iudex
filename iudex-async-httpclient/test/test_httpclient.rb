@@ -109,7 +109,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
                       find_header( s.request_headers, "Request-Line" ) )
         assert_equal( 'text/plain;moo',
                       find_header( s.request_headers, 'Accept' ) )
-        assert_equal( 'localhost:19292',
+        assert_equal( 'localhost:9232',
                       find_header( s.request_headers, 'Host' ) )
 
         assert_match( /^text\/plain/,
@@ -145,7 +145,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :connection_timeout_in_ms => 100,
                      :request_timeout_in_ms    => 200 ) do |client|
       with_session_handler( client,
-                            "http://localhost:19293/" ) do |s,x|
+                            "http://localhost:9233/" ) do |s,x|
         assert_instance_of( TimeoutException, x )
       end
     end
@@ -184,7 +184,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/" ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'http://localhost:19292/index', s.url )
+        assert_equal( 'http://localhost:9232/index', s.url )
       end
     end
   end
@@ -193,7 +193,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     with_new_client( :follow_redirects => true ) do |client|
       with_session_handler( client, "/redirects/multi/2?sleep=0" ) do |s,x|
         assert_equal( 200, s.status_code )
-        assert_equal( 'http://localhost:19292/redirects/multi/1?sleep=0',
+        assert_equal( 'http://localhost:9232/redirects/multi/1?sleep=0',
                       s.url )
         assert_equal( 'GET /redirects/multi/1?sleep=0',
                       find_header( s.request_headers, "Request-Line" ) )
@@ -250,7 +250,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     #FIXME: IllegalArgumentException on bad HTTP response line?
     with_new_client do |client|
-      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
         assert_instance_of( Java::java.lang.IllegalArgumentException, x )
       end
     end
@@ -271,7 +271,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client( :connection_timeout_in_ms => 100,
                      :request_timeout_in_ms    => 100 ) do |client|
-      with_session_handler( client, "http://localhost:19293/" ) do |s,x|
+      with_session_handler( client, "http://localhost:9233/" ) do |s,x|
         assert_instance_of( IOException, x )
       end
     end

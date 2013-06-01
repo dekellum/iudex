@@ -24,7 +24,7 @@ module Iudex::HTTP::Test
     attr_accessor :port
 
     def initialize
-      @port = 19293
+      @port = 9233
       @server = nil
       @log = RJack::SLF4J[ self.class ]
     end
