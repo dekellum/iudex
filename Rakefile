@@ -100,3 +100,25 @@ RUBY
     end
   end
 end
+
+namespace :travis do
+  desc "Setup and run tests in Travis CI environment"
+  task :run => [ :setup_db, :migrate, :test ]
+
+  task :setup_db do
+    sh <<-SH
+      psql -U postgres -c "
+        CREATE USER iudex;
+        CREATE DATABASE iudex_test OWNER iudex;"
+    SH
+  end
+
+  task :migrate do
+    sh "bundle exec iudex-da/bin/iudex-migrate -d"
+  end
+
+  task :test do
+    gems.reject! { |g| g =~ /^iudex-brutefuzzy/ }
+    Rake::Task[ :multi ].invoke( 'test' )
+  end
+end
