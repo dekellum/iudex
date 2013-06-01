@@ -1,13 +1,17 @@
 # -*- mode: ruby; coding: utf-8 -*-
 
-gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
-           iudex-core iudex-httpclient-3 iudex-jetty-httpclient
-           iudex-async-httpclient
-           iudex-char-detector
-           iudex-html iudex-simhash iudex-rome iudex-da
-           iudex-worker
-           iudex-brutefuzzy-protobuf iudex-brutefuzzy-service
-           iudex ]
+gems_a = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
+             iudex-core iudex-httpclient-3 iudex-jetty-httpclient
+             iudex-async-httpclient
+             iudex-char-detector
+             iudex-html iudex-simhash iudex-rome ]
+
+gems_b = %w[ iudex-da iudex-worker ]
+
+gems_c = %w[ iudex-brutefuzzy-protobuf iudex-brutefuzzy-service
+             iudex ]
+
+gems = gems_a + gems_b + gems_c
 
 subtasks = %w[ clean install_deps test gem docs tag install push ]
 
@@ -103,7 +107,7 @@ end
 
 namespace :travis do
   desc "Setup and run tests in Travis CI environment"
-  task :run => [ :setup_db, :migrate, :test ]
+  task :run => [ :test_pre, :setup_db, :migrate, :test_post ]
 
   task :setup_db do
     sh <<-SH
@@ -116,8 +120,22 @@ namespace :travis do
     sh "bundle exec iudex-da/bin/iudex-migrate -d"
   end
 
-  task :test do
-    gems.reject! { |g| g =~ /^iudex-brutefuzzy/ }
-    Rake::Task[ :multi ].invoke( 'test' )
+  task :test_pre do
+    gems_a.each do |dir|
+      Dir.chdir( dir ) do
+        puts ">> cd #{dir}"
+        sh "bundle exec rake test gem"
+      end
+    end
   end
+
+  task :test_post do
+    gems_b.each do |dir|
+      Dir.chdir( dir ) do
+        puts ">> cd #{dir}"
+        sh "bundle exec rake test gem"
+      end
+    end
+  end
+
 end
