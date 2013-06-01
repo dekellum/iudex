@@ -44,7 +44,7 @@ class TestServer < MiniTest::Unit::TestCase
   end
 
   def test_index
-    res = Net::HTTP.start( '0.0.0.0', server.port ) do |http|
+    res = Net::HTTP.start( 'localhost', server.port ) do |http|
       http.get( '/index' )
     end
     assert_instance_of( Net::HTTPOK, res )
