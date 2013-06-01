@@ -8,7 +8,7 @@ Gravitext::DevTools.configure do |c|
     h.license = :apache
     h.exclusions += %w[ */config/** www/**/* **/etc/*
                         **/*.html* **/*.xml **/*.dot
-                        */*.gemspec **/Gemfile* ]
+                        */*.gemspec **/Gemfile* .travis.yml ]
   end
 
 end

@@ -2,10 +2,11 @@
 
 * http://iudex.gravitext.com
 * http://github.com/dekellum/iudex
+* Travis CI: {<img src="https://travis-ci.org/dekellum/iudex.png" />}[https://travis-ci.org/dekellum/iudex]
 
 == Description
 
-Iudex provides general purpose and extensible web feed aggregation and
+Iūdex provides general purpose and extensible web feed aggregation and
 web crawling facilities.
 
 See the documentation included in the www/ directory or online at
