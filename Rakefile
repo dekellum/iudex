@@ -113,7 +113,7 @@ namespace :travis do
   end
 
   task :migrate do
-    sh "bundle exec iudex-da/bin/iudex-migrate -d"
+    sh "ruby iudex-da/bin/iudex-migrate -d"
   end
 
   task :test do
