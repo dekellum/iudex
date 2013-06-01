@@ -10,4 +10,4 @@ matrix:
       jdk: openjdk7
     - rvm: jruby-1.6.8 --1.9
       jdk: oraclejdk7
-script: bundle exec rake travis:run
+script: rake travis:run
