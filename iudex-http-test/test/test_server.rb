@@ -45,6 +45,8 @@ class TestServer < MiniTest::Unit::TestCase
 
   def test_index
     res = Net::HTTP.start( '127.0.0.1', server.port ) do |http|
+      http.open_timeout = 8.0
+      http.read_timeout = 5.0
       http.get( '/index' )
     end
     assert_instance_of( Net::HTTPOK, res )
