@@ -147,7 +147,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     bouncy-castle-java (1.5.0147)
-    builder (3.2.1)
+    builder (3.2.2)
     fishwife (1.5.1-java)
       rack (~> 1.5.2)
       rjack-jetty (~> 9.0.0, >= 9.0.0.5)
@@ -209,7 +209,7 @@ GEM
       rdoc (~> 3.12)
       rjack-maven (~> 3.0.4)
     rjack-xerces (2.9.1.0-java)
-    sequel (3.47.0)
+    sequel (3.48.0)
     sinatra (1.4.2)
       rack (~> 1.5, >= 1.5.2)
       rack-protection (~> 1.4)
