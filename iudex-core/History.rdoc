@@ -8,6 +8,15 @@
 * VisitManager.doWaitOnGeneration default true as this is a safety
   requirement when replacing the queue. When not replacing the queue
   no wait occurs.
+* Add VisitQueue.maxAccessTotal and associated waiting to avoid over
+  committing to too many concurrent HTML requests when using an
+  asynchronous HTTP client and many independent domains are
+  available. By default there is no limit, but recommended to set this
+  to some multiple of the VisitManager threads.  For an example of the
+  problem this avoids: full HTML parsing can saturate a single CPU
+  and will cause some number of, say, 600 concurrent HTTP requests to
+  timeout given insufficient CPU/threads to handle pending reads into
+  memory.
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 
