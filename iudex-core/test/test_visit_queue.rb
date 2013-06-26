@@ -248,10 +248,38 @@ class TestVisitQueue < MiniTest::Unit::TestCase
                  %w[   h2 c 2.0 ] ]
 
     p = 0
+    concurs = []
     expected.each do |o|
       assert_equal( o, acquire_order, p += 1 )
+      concurs << @visit_q.acquired_count
     end
 
+    assert_operator( 2, :<, concurs.max )
+    assert_queue_empty
+  end
+
+  def test_max_access_total_2
+    @visit_q.default_max_access_per_host = 999
+    @visit_q.max_access_total = 2
+    add_common_orders
+
+    expected = [ %w[   h3 a 3.2 ],
+                 %w[   h2 a 2.2 ],
+                 %w[   h1 a 1.2 ],
+                 %w[   h3 b 3.1 ],
+                 %w[ w.h2 b 2.1 ],
+                 %w[   h1 b 1.1 ],
+                 %w[ m.h3 c 3.0 ],
+                 %w[   h2 c 2.0 ] ]
+
+    p = 0
+    concurs = []
+    expected.each do |o|
+      assert_equal( o, acquire_order, p += 1 )
+      concurs << @visit_q.acquired_count
+    end
+
+    assert_equal( 2, concurs.max )
     assert_queue_empty
   end
 
