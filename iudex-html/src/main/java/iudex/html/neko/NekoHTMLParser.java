@@ -63,14 +63,17 @@ public class NekoHTMLParser
     public final Element parse( ContentSource content )
         throws SAXException, IOException
     {
-        Element root = null;
-        try {
-            root = parseInner( expand( content ) );
+        content = expand( content );
+        WrongEncoding last = null;
+        for( int attempt = 0; attempt < 2; ++attempt ) {
+            try {
+                return parseInner( content );
+            }
+            catch( WrongEncoding wenc ) {
+                last = wenc;
+            }
         }
-        catch( WrongEncoding wenc ) {
-            root = parseInner( content );
-        }
-        return root;
+        throw new SAXException( last );
     }
 
     private ContentSource expand( ContentSource content )
@@ -204,14 +207,14 @@ public class NekoHTMLParser
 
                     String ctype = attributes.getValue( "content" );
                     if( ctype != null ) {
-                        throwOnContentTypeChange( ctype );
+                        checkContentType( ctype );
                     }
                 }
                 else {
                     // Check for HTML5 style <meta charset="">
                     String charset = attributes.getValue( "charset" );
                     if( charset != null ) {
-                        throwOnCharsetChange( charset.trim() );
+                        _metaCharset = charset.trim();
                     }
                 }
             }
@@ -232,15 +235,16 @@ public class NekoHTMLParser
             }
         }
 
-        private void throwOnContentTypeChange( String type )
+        private void checkContentType( String type )
         {
             ContentType ctype = ContentType.parse( type );
-            throwOnCharsetChange( ctype.charset() );
+            _metaCharset = ctype.charset();
         }
 
-        private void throwOnCharsetChange( String charset )
+        private void throwOnCharsetChange()
         {
-            Charset newEnc = Charsets.lookup( charset );
+            Charset newEnc = null;
+            if( _metaCharset != null ) newEnc = Charsets.lookup( _metaCharset );
             if( newEnc != null ) {
                 newEnc = Charsets.expand( newEnc );
 
@@ -255,6 +259,8 @@ public class NekoHTMLParser
         @Override
         public void endElement( String iri, String localName, String qName )
         {
+            if( _current.tag() == HTML.HEAD ) throwOnCharsetChange();
+
             if( _skipDepth > 0 ) {
                 --_skipDepth;
             }
@@ -340,8 +346,8 @@ public class NekoHTMLParser
         private final Element _root = new Element( HTML.DIV );
         private Element _current = _root;
         private ResizableCharBuffer _buffer = null;
-
         private int _skipDepth = 0;
+        private String _metaCharset = null;
     }
 
     private boolean _parseAsFragment = false;
