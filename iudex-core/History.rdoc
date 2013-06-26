@@ -1,13 +1,13 @@
 === 1.4.0 (TBD)
-* Work order reservation and experimental concurrent (no discard) work
+* Work order reservation and experimental concurrent (no replace) work
   polling support:
   * Add WorkPollStrategy.discard hook in support of un-reserving a
     replaced VisitQueue.
   * VisitManager and GenericWorkPollStrategy changes for discard and
     support of false shouldReplaceQueue
-* VisitManager.doWaitOnGeneration default true for default no reserve,
-  mandatory discard case. Configuration suggestion: set false when
-  also setting (iudex-da 1.4) WorkPoller.do_reserve.
+* VisitManager.doWaitOnGeneration default true as this is a safety
+  requirement when replacing the queue. When not replacing the queue
+  no wait occurs.
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 
