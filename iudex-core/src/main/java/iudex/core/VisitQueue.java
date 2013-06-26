@@ -50,6 +50,16 @@ public class VisitQueue implements VisitCounter
         _defaultMaxAccessPerHost = defaultMaxAccessPerHost;
     }
 
+    public int maxAccessTotal()
+    {
+        return _maxAccessTotal;
+    }
+
+    public void setMaxAccessTotal( int maxAccessTotal )
+    {
+        _maxAccessTotal = maxAccessTotal;
+    }
+
     public synchronized void configureHost( String host,
                                             int minHostDelay,
                                             int maxAccessCount )
@@ -92,8 +102,9 @@ public class VisitQueue implements VisitCounter
         newQ._defaultMinHostDelay     = _defaultMinHostDelay;
         newQ._defaultMaxAccessPerHost = _defaultMaxAccessPerHost;
         newQ._typedDomainKeys         = _typedDomainKeys;
+        newQ._maxAccessTotal          = _maxAccessTotal;
 
-        //Very important to deep copy the host queues
+        //Very important to deep clone the host queues
         for( HostQueue hq : _hosts.values() ) {
             newQ._hosts.put( hq.key(), hq.clone() );
         }
@@ -190,6 +201,7 @@ public class VisitQueue implements VisitCounter
         if( queue.release() && ( queue.size() > 0 ) ) addSleep( queue );
 
         checkRemove( queue );
+        notifyAll();
     }
 
     protected DomainKey orderKey( UniMap order )
@@ -280,17 +292,21 @@ public class VisitQueue implements VisitCounter
     {
         long now = System.currentTimeMillis();
         HostQueue ready = null;
-        while( ( ( ready = _readyHosts.poll() ) == null ) &&
-               ( maxWait > 0 ) ) {
+        wait_loop: while( ready == null && maxWait > 0 ) {
             HostQueue next = null;
-            while( ( next = _sleepHosts.peek() ) != null ) {
-                if( ( now - next.nextVisit() ) >= 0 ) {
-                    addReady( _sleepHosts.remove() );
+            if( _acquiredCount < _maxAccessTotal ) {
+                ready = _readyHosts.poll();
+                if( ready == null ) {
+                    while( ( next = _sleepHosts.peek() ) != null ) {
+                        if( ( now - next.nextVisit() ) >= 0 ) {
+                            addReady( _sleepHosts.remove() );
+                        }
+                        else break;
+                    }
+                    if( ! _readyHosts.isEmpty() ) continue wait_loop;
                 }
-                else break;
             }
-            if( _readyHosts.isEmpty() ) {
-
+            if( ready == null ) {
                 long delay = maxWait;
                 if( next != null ) {
                     delay = Math.min( next.nextVisit() - now + 1, maxWait );
@@ -301,6 +317,7 @@ public class VisitQueue implements VisitCounter
                 now = nextNow;
             }
         }
+
         if( ready != null ) ready.setLastTake( now );
         return ready;
     }
@@ -321,6 +338,7 @@ public class VisitQueue implements VisitCounter
     {
         if( queue.isAvailable() && ( queue.size() > 0 ) ) {
             addSleep( queue );
+            notifyAll();
         }
     }
 
@@ -374,7 +392,6 @@ public class VisitQueue implements VisitCounter
         }
 
         _sleepHosts.add( queue );
-        notifyAll();
     }
 
     private void checkAdd( HostQueue queue )
@@ -393,6 +410,7 @@ public class VisitQueue implements VisitCounter
 
     private int _defaultMinHostDelay     = 500; //ms
     private int _defaultMaxAccessPerHost =   1;
+    private int _maxAccessTotal = Integer.MAX_VALUE;
 
     private int _orderCount = 0;
     private int _acquiredCount = 0;

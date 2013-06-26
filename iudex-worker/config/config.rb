@@ -22,6 +22,7 @@ Iudex.configure do |c|
   end
 
   c.setup_visit_queue do |q|
+    q.max_access_total = threads * 8
     q.config(                             :rate =>  5.0, :cons => 1 )
     q.config( :domain => "gravitext.com", :rate => 10.0, :cons => 2 )
   end
