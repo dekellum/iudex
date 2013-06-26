@@ -4,6 +4,7 @@
   conditially include handling of reserved, instance fields based on
   set (by Agent) WorkPoller reserve?, instance properties as configured.
 * Add config example of WorkPoller do_reserve and instance settings.
+* Add VisitQueue.max_access_total config eaxample.
 * Update config_jetty_http.rb sample for client 1.4.0 (jetty 9.x)
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
