@@ -48,8 +48,24 @@ HTML
     assert_doc( alt, parse( alt, "UTF-8" ) )
   end
 
+  def test_charset_missing
+    alt = HTML_META.sub( /; charset=utf-8/, '' )
+    assert_doc( alt, parse( alt, "UTF-8" ) )
+  end
+
   def test_meta_charset_rerun
     alt = HTML_META.sub( /<meta .*\/>/, '<meta charset="utf-8"/>' )
+    assert_doc( alt, parse( alt, "ISO-8859-1" ) )
+  end
+
+  def test_meta_charset_conflict
+    alt = HTML_META.sub( /(<head>)/, '<head><meta charset="ISO-8859-1"/>' )
+    assert_doc( alt, parse( alt, "ISO-8859-1" ) )
+  end
+
+  def test_meta_charset_conflict_2
+    alt = HTML_META.sub( /utf-8/, 'latin1' )
+    alt = HTML_META.sub( /(<\/head>)/, '<meta charset="UTF-8"/></head>' )
     assert_doc( alt, parse( alt, "ISO-8859-1" ) )
   end
 
