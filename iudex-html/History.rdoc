@@ -1,4 +1,7 @@
 === 1.4.0 (TBD)
+* Fix meta-tag charset parse restart handling for case of empty
+  charset and conflicting/multiple combinations of Content-Type or
+  charset meta.
 * Upgrade to nekohtml ~> 1.9.18
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
