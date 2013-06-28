@@ -157,6 +157,7 @@ public class NekoHTMLParser
     {
         private WrongEncoding( Charset newEncoding )
         {
+            super( newEncoding.name() );
             _newEncoding = newEncoding;
         }
         public Charset newEncoding()
@@ -241,7 +242,7 @@ public class NekoHTMLParser
             _metaCharset = ctype.charset();
         }
 
-        private void throwOnCharsetChange()
+        private void throwOnCharsetChange() throws WrongEncoding
         {
             Charset newEnc = null;
             if( _metaCharset != null ) newEnc = Charsets.lookup( _metaCharset );
@@ -259,12 +260,11 @@ public class NekoHTMLParser
         @Override
         public void endElement( String iri, String localName, String qName )
         {
-            if( _current.tag() == HTML.HEAD ) throwOnCharsetChange();
-
             if( _skipDepth > 0 ) {
                 --_skipDepth;
             }
             else {
+                if( _current.tag() == HTML.HEAD ) throwOnCharsetChange();
                 bufferToChars();
                 _current = _current.parent();
             }
