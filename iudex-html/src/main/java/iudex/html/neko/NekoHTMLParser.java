@@ -260,12 +260,11 @@ public class NekoHTMLParser
         @Override
         public void endElement( String iri, String localName, String qName )
         {
-            if( _current.tag() == HTML.HEAD ) throwOnCharsetChange();
-
             if( _skipDepth > 0 ) {
                 --_skipDepth;
             }
             else {
+                if( _current.tag() == HTML.HEAD ) throwOnCharsetChange();
                 bufferToChars();
                 _current = _current.parent();
             }
