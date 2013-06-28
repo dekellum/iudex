@@ -22,6 +22,7 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 
 class TestHTMLParser < MiniTest::Unit::TestCase
   include HTMLTestHelper
+  import 'iudex.util.Charsets'
 
   HTML_META = <<HTML
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -67,6 +68,27 @@ HTML
     alt = HTML_META.sub( /utf-8/, 'latin1' )
     alt = HTML_META.sub( /(<\/head>)/, '<meta charset="UTF-8"/></head>' )
     assert_doc( alt, parse( alt, "ISO-8859-1" ) )
+  end
+
+  HTML_META_2 = <<HTML
+<!DOCTYPE html>
+<head>
+<title>Page with skipped head tags</title>
+<meta name="description" content="">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="../js/swfobject.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+ <p>Iudex test.</p>
+</body>
+</html>
+HTML
+
+  def test_charset_conflict_3
+    src = source( HTML_META_2, "Windows-1252" )
+    src.set_default_encoding( Charsets::UTF_8, 0.10 )
+    assert( HTMLUtils::parse( src ) )
   end
 
   HTML_SKIP_TAGS = <<HTML
