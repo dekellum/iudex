@@ -55,7 +55,7 @@ module Iudex::HTTP::Test
     end
 
     def self.running_standalone?
-      res = Net::HTTP.start( 'localhost', Server::DEFAULT_PORT ) do |http|
+      res = Net::HTTP.start( '127.0.0.1', Server::DEFAULT_PORT ) do |http|
         http.open_timeout = 0.5
         http.read_timeout = 1.0
         http.get( '/index' )

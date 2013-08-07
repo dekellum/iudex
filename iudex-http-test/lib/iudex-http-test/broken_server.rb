@@ -30,7 +30,7 @@ module Iudex::HTTP::Test
     end
 
     def start
-      @server = TCPServer.new( @port )
+      @server = TCPServer.new( '127.0.0.1', @port )
     end
 
     def accept
