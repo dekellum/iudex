@@ -124,7 +124,7 @@ namespace :travis do
     gems_a.each do |dir|
       Dir.chdir( dir ) do
         puts ">> cd #{dir}"
-        sh "bundle exec rake test"
+        sh "rake test"
       end
     end
   end
@@ -133,7 +133,7 @@ namespace :travis do
     gems_b.each do |dir|
       Dir.chdir( dir ) do
         puts ">> cd #{dir}"
-        sh "bundle exec rake test"
+        sh "rake test"
       end
     end
   end
