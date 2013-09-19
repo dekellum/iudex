@@ -40,12 +40,8 @@ task :server => [ :dot ] do
   load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 
-DEST = "pica:~/public_html/iudex/"
-
-task :diff => [ :gen ]  do
-  sh "rsync -n -rc -i _site/ #{DEST}"
-end
-
+desc "Upload to Amazon S3 (gravitext.com, Oregon)"
 task :publish => [ :gen ] do
-  sh "rsync -rc -i _site/ #{DEST}"
+  sh "s3cmd -P -M sync --exclude '*.css' _site/ s3://iudex.gravitext.com/"
+  sh "s3cmd -P -m text/css sync _site/css/ s3://iudex.gravitext.com/css/"
 end
