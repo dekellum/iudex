@@ -288,8 +288,9 @@ code {
 }
 
 pre code {
-    border: none;
-    white-space: inherit;
+    border: 0px none;
+    padding: 0em;
+    white-space: pre;
 }
 
 /* Footer: */

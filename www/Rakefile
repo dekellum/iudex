@@ -29,14 +29,14 @@ end
 desc "Run Jekyll to generate files"
 task :gen => [ :dot ] do
   require 'jekyll'
-  ARGV.clear
+  ARGV.replace( %w[ build ] )
   load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 
 desc "Run auto-regenerating Jekyll server"
 task :server => [ :dot ] do
   require 'jekyll'
-  ARGV.replace( %w[ --auto --server ] )
+  ARGV.replace( %w[ serve --watch ] )
   load Gem.bin_path( 'jekyll', 'jekyll' )
 end
 

@@ -1,13 +1,11 @@
 destination: ./_site
 exclude    : [ 'Rakefile', 'Gemfile', 'Gemfile.lock' ]
-auto:        false
 lsi:         false
-server_port: 4000
+port:        4000
 pygments:    false
 markdown:    kramdown
 permalink:   date
 kramdown:
-# toc_levels: 2..2
   use_coderay: true
   coderay:
     coderay_line_numbers:
