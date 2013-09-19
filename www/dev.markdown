@@ -108,7 +108,7 @@ end
   braces
 * Use Unix-style line endings
 * Avoid the meaning free `get` prefix for getters (jruby doesn't
-  care.)  Use `set` is still appropriate for setters.
+  care.)  Use `set` for setters.
 * Prefix member variables with '_' and use getters for external
   access.
 * General class order is `public` to `private` (and thus member

@@ -30,7 +30,7 @@ features/advantages:
 A Human/machine readable header used for first record (offset zero)
 and each subsequent record:
 
-    Magic  rlength tt meta rqst resp
+    Magic rlength  tt meta rqst resp
     BARC1 FFFFFFFF HC FFFF FFFF FFFF(CRLF)
     CRLF
 
