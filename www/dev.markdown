@@ -31,7 +31,7 @@ scan to PDF and email) before merging any contributions:
   IudexBinScript` or similar to contain any required `include(s)`,
   locals. This may seem a bit strange, but it is valid and purposeful:
 
-~~~~
+~~~~ ruby
 module IudexBinScript
 
   require 'rjack-logback'
@@ -43,7 +43,6 @@ module IudexBinScript
   #...
 end
 ~~~~
-{:lang="ruby"}
 
 ### Ruby Style
 
@@ -63,7 +62,7 @@ end
 * Use empty lines to break up a long method into logical
   paragraphs. Then consider moving these paragraphs to new methods.
 
-~~~~
+~~~~ ruby
   def adjust( map )
 
     priority = @factors.inject( @constant ) do | p, (w,func) |
@@ -79,7 +78,6 @@ end
     [ priority, delta ]
   end
 ~~~~
-{:lang="ruby"}
 
 ## Java Code
 
@@ -110,7 +108,7 @@ end
   braces
 * Use Unix-style line endings
 * Avoid the meaning free `get` prefix for getters (jruby doesn't
-  care.)  Use `set` is still appropriate for setters.
+  care.)  Use `set` for setters.
 * Prefix member variables with '_' and use getters for external
   access.
 * General class order is `public` to `private` (and thus member
