@@ -45,10 +45,15 @@ module TestHTTPMocks
     def initialize
       super()
       @status = 200
+      @request_headers = []
+    end
+
+    def addRequestHeader( h )
+      @request_headers << h
     end
 
     def requestHeaders
-      [ ]
+      @request_headers
     end
 
     def responseHeaders
@@ -114,6 +119,7 @@ module TestHTTPMocks
 end
 
 class TestContentFetcher < MiniTest::Unit::TestCase
+  include Iudex::HTTP
   include Iudex::Core
   include Iudex::Core::Filters
   include Iudex::Filter::Core
@@ -135,7 +141,22 @@ class TestContentFetcher < MiniTest::Unit::TestCase
       assert_equal( DEFAULT_URL, out.url.to_s )
       assert_equal( 200, out.status )
       assert_equal( WEAK_ETAG, out.etag )
+      assert_equal( "User-Agent", out.request_headers.first.name )
       assert( out.source )
+    end
+  end
+
+  def test_dynamic_request_headers
+    inp = create_content
+    inp.request_headers = [ Header.new( "Dynamic", "value" ),
+                            Header.new( "User-Agent", "override" ) ]
+    fetch( inp ) do |out|
+      hhash = out.request_headers.inject( {} ) do |m,h|
+        m[ h.name ] = h.value
+        m
+      end
+      assert_equal( { "Dynamic" => "value",
+                      "User-Agent" => "override" }, hhash )
     end
   end
 
@@ -182,6 +203,7 @@ class TestContentFetcher < MiniTest::Unit::TestCase
     cf = ContentFetcher.new( client,
                              counter,
                              FilterChain.new( "test-rec", [ rec ] ) )
+    cf.request_headers = [ Header.new( "User-Agent", "default" ) ]
     cf.filter( content )
   end
 
