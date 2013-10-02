@@ -69,17 +69,22 @@ class TestAgent < MiniTest::Unit::TestCase
     Iudex.send( :remove_const, :AsyncHTTPClient )
   end
 
+  class TestBadness < StandardError
+  end
+
   def test_agent_graceful_shutdown_on_fcf_error
     Hooker.add( [ :iudex, :filter_factory ] ) do |fcf|
       def fcf.filters
         super
-        raise "Test Badness in FCF"
+        raise TestBadness, "Test Badness in FCF"
       end
     end
 
     agent = Agent.new
-    agent.run
-    pass # returns
+    agent.raise_on_run = true
+    assert_raises( TestBadness ) do
+      agent.run
+    end
   end
 
   def assert_agent
