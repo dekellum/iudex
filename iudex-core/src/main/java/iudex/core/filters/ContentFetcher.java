@@ -119,10 +119,23 @@ public class ContentFetcher implements AsyncFilterContainer
                 Headers.createDateHeader( "If-Modified-Since", lastVisit ) );
         }
         // FIXME: Use recorded LAST_SUCCESS_VISIT
-        // (i.e. last actual fetch for lastVisit )or Last-Modified from
+        // (i.e. last actual fetch for lastVisit) or Last-Modified from
         // last success stored?
 
-        session.addRequestHeaders( _fixedRequestHeaders );
+        // REQUEST_HEADERS may be added to input content and override same
+        // named statically set "fixed" headers.
+        List<Header> headers = content.get( REQUEST_HEADERS );
+        if( headers != null ) {
+            for( Header f: _fixedRequestHeaders ) {
+                if( Headers.getFirst( headers, f.name().toString() ) == null ) {
+                    session.addRequestHeader( f );
+                }
+            }
+            session.addRequestHeaders( headers );
+        }
+        else {
+            session.addRequestHeaders( _fixedRequestHeaders );
+        }
 
         session.setMaxContentLength( _maxContentLength );
         session.setAcceptedContentTypes( _acceptedContentTypes );
