@@ -1,5 +1,8 @@
 === 1.4.0 (TBD)
 * Add Agent.raise_on_run flag for testing
+* Ensure executor/VisitManager shutdown on failed Agent.run_safe (for
+  example on filter chain factory errors.) Jetty 9 uses executor
+  threads at startup so this is now important.
 * FilterChainFactory.last_visit_setter and page/feed keys extended to
   conditially include handling of reserved, instance fields based on
   set (by Agent) WorkPoller reserve?, instance properties as configured.
