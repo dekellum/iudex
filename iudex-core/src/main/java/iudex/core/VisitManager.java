@@ -307,9 +307,9 @@ public class VisitManager
         throws InterruptedException
     {
         if( !fromVM ) {
-            _log.debug( "Removing shutdown Hook" );
             synchronized( this ) {
                 if( _shutdownHook != null ) {
+                    _log.debug( "Removing shutdown Hook" );
                     Runtime.getRuntime().removeShutdownHook( _shutdownHook );
                     _shutdownHook = null;
                 }

@@ -123,7 +123,8 @@ module Iudex
           Hooker.log_not_applied # All hooks should be used by now
 
           vexec.start
-          vexec.join # Run until interrupted
+          veref, vexec = vexec, nil
+          veref.join # Run until interrupted
         end # fcf closes
 
       rescue => e
@@ -135,6 +136,12 @@ module Iudex
       ensure
         hclient.close if hclient && hclient.respond_to?( :close )
         @http_manager.shutdown if @http_manager
+
+        # Jetty 9 for example, uses executor thread on start, so
+        # executor shutdown is required for early termination
+        # (i.e. when fcf.filter raises)
+        vexec.shutdown if vexec
+
         dsf.close if dsf
       end
 
