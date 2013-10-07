@@ -36,7 +36,7 @@ public class DomainTest
         assertEquals( "google.com", rld(          "google.com" ) );
         assertEquals( null,         rld(                 "com" ) );
 
-        assertEquals( "some.gov.ar", rld( "www.some.gov.ar" ) );
+        assertEquals( "gov.ar",      rld( "www.some.gov.ar" ) );
         assertEquals( "nacion.ar",   rld(   "www.nacion.ar" ) );
 
         assertEquals( null, rld( "." ) );
