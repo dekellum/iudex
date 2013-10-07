@@ -17,6 +17,10 @@
   and will cause some number of, say, 600 concurrent HTTP requests to
   timeout given insufficient CPU/threads to handle pending reads into
   memory.
+* Add pre-set, dynamic REQUEST_HEADERS support to ContentFetcher. Any
+  request headers found here override the staticly set headers at
+  initialization.
+* Update TLDSets based on upstream 06c405ba54b3 2013-09-17
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 
