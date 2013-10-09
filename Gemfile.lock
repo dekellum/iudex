@@ -46,7 +46,7 @@ PATH
   specs:
     iudex-char-detector (1.4.0-java)
       iudex-core (~> 1.4.0)
-      rjack-icu (~> 4.50.1)
+      rjack-icu (~> 4.51.2)
 
 PATH
   remote: iudex-core
@@ -182,7 +182,7 @@ GEM
     rjack-httpclient-3 (3.1.7-java)
       rjack-commons-codec (~> 1.4)
       rjack-slf4j (>= 1.6.5, < 1.8)
-    rjack-icu (4.50.1.0-java)
+    rjack-icu (4.51.2.0-java)
     rjack-jdbc-postgres (9.2.1003.0)
     rjack-jdom (1.1.0.2-java)
     rjack-jetty (9.0.6.0-java)

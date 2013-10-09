@@ -1,5 +1,5 @@
 === 1.4.0 (TBD)
-* Upgrade to icu4j ~> (4.)50.1
+* Upgrade to icu4j ~> (4.)51.2
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade to minitest ~> 4.6.2 (dev)
 
