@@ -10,7 +10,7 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'rjack-protobuf',         '~> 2.4.1'
+  s.depend 'rjack-protobuf',         '~> 2.5.0'
   s.depend 'minitest',               '~> 4.7.4',     :dev
 
   s.maven_strategy = :no_assembly

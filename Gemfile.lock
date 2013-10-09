@@ -28,7 +28,7 @@ PATH
   remote: iudex-brutefuzzy-protobuf
   specs:
     iudex-brutefuzzy-protobuf (1.4.0-java)
-      rjack-protobuf (~> 2.4.1)
+      rjack-protobuf (~> 2.5.0)
 
 PATH
   remote: iudex-brutefuzzy-service
@@ -196,7 +196,7 @@ GEM
     rjack-nekohtml (1.9.18.0-java)
       rjack-xerces (~> 2.9.1)
     rjack-netty (3.6.3.0-java)
-    rjack-protobuf (2.4.1.0-java)
+    rjack-protobuf (2.5.0.0-java)
     rjack-qpid-client (0.18.1-java)
       rjack-jms (>= 1.0.0, < 1.2)
       rjack-slf4j (>= 1.6.5, < 1.8)
