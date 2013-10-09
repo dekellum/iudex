@@ -39,7 +39,7 @@ PATH
       iudex-simhash (~> 1.4.0)
       rjack-jms (~> 1.1.0)
       rjack-logback (~> 1.5)
-      rjack-qpid-client (>= 0.14.1, < 0.19)
+      rjack-qpid-client (>= 0.14.1, < 0.25)
 
 PATH
   remote: iudex-char-detector
@@ -197,7 +197,7 @@ GEM
       rjack-xerces (~> 2.9.1)
     rjack-netty (3.6.3.0-java)
     rjack-protobuf (2.5.0.0-java)
-    rjack-qpid-client (0.18.1-java)
+    rjack-qpid-client (0.24.0-java)
       rjack-jms (>= 1.0.0, < 1.2)
       rjack-slf4j (>= 1.6.5, < 1.8)
     rjack-rome (1.0.2-java)
