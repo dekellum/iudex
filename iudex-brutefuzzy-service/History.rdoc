@@ -1,7 +1,7 @@
-=== 1.4.0 (TBD)
+=== 1.4.0 (2013-10-29)
 * Upgrade to iudex-* ~> 1.4.0 dependencies
 * Upgrade/expand to qpid-client [0.14.1,0.24]
-* Upgrade to minitest ~> 4.6.2 (dev)
+* Upgrade to minitest ~> 4.7.4 (dev)
 
 === 1.3.0 (2012-11-8)
 * Upgrade/narrow to qpid-client [0.14.1,0.19)

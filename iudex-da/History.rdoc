@@ -1,4 +1,4 @@
-=== 1.4.0 (TBD)
+=== 1.4.0 (2013-10-29)
 * Add experimental WorkPoller.do_reserve support, which utilizes
   PostgreSQL 9.1+ writable Common Table Expressions (CTEs) to
   efficiently(?) set a reserved column and instance (identifier) on
@@ -24,7 +24,7 @@
 * Upgrade to dbutils ~> 1.5.0, rjack-jdbc-postgres ~> 9.2.1002,
   sequel ~> 3.46 (but not upcoming 4.x)
 * Upgrade to iudex-* ~> 1.4.0 dependencies
-* Upgrade to minitest ~> 4.6.2 (dev)
+* Upgrade to minitest ~> 4.7.4 (dev)
 
 === 1.3.3 (2012-11-8)
 * FactoryHelper.create_update_filter now prefers an options Hash
