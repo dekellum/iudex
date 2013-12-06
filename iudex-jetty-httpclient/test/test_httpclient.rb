@@ -386,7 +386,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /EofException|ClosedChannelException/i, x.class.name )
+        assert_match( /EofException|ClosedChannelException/i,
+                      x.class.name, x.to_string )
       end
     end
 
@@ -417,7 +418,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /EofException|ClosedChannelException/i, x.class.name )
+        assert_match( /EofException|ClosedChannelException/i,
+                      x.class.name, x.to_string )
       end
     end
 
