@@ -146,7 +146,6 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    bouncy-castle-java (1.5.0147)
     builder (3.2.2)
     fishwife (1.5.1-java)
       rack (~> 1.5.2)
@@ -157,8 +156,6 @@ GEM
     gravitext-xmlprod (1.7.0-java)
       gravitext-util (~> 1.7.0)
     hooker (1.0.1)
-    jruby-openssl (0.8.10)
-      bouncy-castle-java (>= 1.5.0147)
     json (1.8.1-java)
     markaby (0.7.2)
       builder (>= 2.0.0)
@@ -203,8 +200,7 @@ GEM
     rjack-rome (1.0.2-java)
       rjack-jdom (~> 1.1.0)
     rjack-slf4j (1.7.5.0-java)
-    rjack-tarpit (2.0.3-java)
-      jruby-openssl (~> 0.8.1)
+    rjack-tarpit (2.1.0-java)
       rake (>= 0.9.2.2, < 11)
       rdoc (>= 3.12, < 5)
       rjack-maven (~> 3.0.4)
@@ -240,4 +236,4 @@ DEPENDENCIES
   minitest (~> 4.7.4)
   rack-test (~> 0.6.2)
   rjack-logback (~> 1.5)
-  rjack-tarpit (~> 2.0)
+  rjack-tarpit (~> 2.1)
