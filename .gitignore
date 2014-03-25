@@ -1,11 +1,9 @@
 .classpath
 .project
 .settings
-/target
-*/target
-/doc
-*/doc
-*/pkg
+target/
+doc/
+pkg/
 *~
 */lib/**/*.jar
 .bundle

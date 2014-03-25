@@ -1,7 +1,0 @@
-# -*- ruby -*-
-
-require 'rubygems'
-require 'bundler/setup'
-require 'rjack-tarpit'
-
-RJack::TarPit.new( 'iudex' ).define_tasks

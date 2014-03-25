@@ -2,17 +2,10 @@
 
 source 'https://rubygems.org'
 
-gems = %w[ iudex-filter iudex-http iudex-http-test
-           iudex-barc
-           iudex-core
-           iudex-httpclient-3 iudex-jetty-httpclient iudex-async-httpclient
-           iudex-html iudex-char-detector
-           iudex-simhash iudex-rome iudex-da
-           iudex-worker
-           iudex-brutefuzzy-protobuf
-           iudex-brutefuzzy-service
-           iudex ]
+gemspec :name => 'iudex'
 
-gems.each do |gname|
-  gemspec :path => gname, :name => gname
+gem 'rdoc', '~> 4.0.1'
+
+group :test do
+  gem 'rack-test', '~> 0.6.2'
 end

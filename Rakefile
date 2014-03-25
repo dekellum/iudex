@@ -1,13 +1,20 @@
 # -*- mode: ruby; coding: utf-8 -*-
 
+require 'rubygems'
+require 'bundler/setup'
+require 'rjack-tarpit'
+
+namespace :uber do
+  RJack::TarPit.new( 'iudex' ).define_tasks
+end
+
 gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
            iudex-core iudex-httpclient-3 iudex-jetty-httpclient
            iudex-async-httpclient
            iudex-char-detector
            iudex-html iudex-simhash iudex-rome iudex-da
            iudex-worker
-           iudex-brutefuzzy-protobuf iudex-brutefuzzy-service
-           iudex ]
+           iudex-brutefuzzy-protobuf iudex-brutefuzzy-service ]
 
 subtasks = %w[ clean install_deps test gem docs tag install push ]
 
