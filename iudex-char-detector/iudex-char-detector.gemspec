@@ -17,4 +17,6 @@ RJack::TarPit.specify do |s|
   s.depend 'rjack-logback',         '~> 1.5',       :dev
 
   s.maven_strategy = :no_assembly
+  s.required_ruby_version = '>= 1.8.7'
+  s.license = 'Apache-2.0'
 end

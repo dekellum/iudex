@@ -19,4 +19,6 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-http-test',          '~> 1.4.0', :dev
   s.maven_strategy = :none
   s.platform = :java
+  s.required_ruby_version = '>= 1.8.7'
+  s.license = 'Apache-2.0'
 end
