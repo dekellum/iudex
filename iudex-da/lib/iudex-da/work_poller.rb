@@ -171,6 +171,12 @@ module Iudex::DA
     # (Default: TRANSACTION_REPEATABLE_READ (4))
     attr_accessor :isolation_level
 
+    # URLS table explicit lock mode (String) for work polling,
+    # i.e. 'EXCLUSIVE'. Try this if deadlocks/contention are otherwise causing work
+    # poll starvation or excessive retries.
+    # (Default: nil -> implicit locking via isolation level only)
+    attr_accessor :lock_mode
+
     def initialize( data_source, mapper )
       super()
 
@@ -277,6 +283,7 @@ module Iudex::DA
         r.priority_adjusted = aged_priority?
         r.max_retries = max_retries
         r.isolation_level = isolation_level
+        r.lock_mode = lock_mode if lock_mode
       end
     end
 

@@ -20,6 +20,7 @@ import iudex.core.ContentKeys;
 import iudex.core.VisitURL;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -77,6 +78,16 @@ public class ContentReader
     }
 
     /**
+     * Set PostgreSQL explicit LOCK compatible mode for the Urls
+     * table. Currently this only used by selectWithRetry, but it may
+     * extended to other methods in the future.
+     */
+    public void setLockMode( String mode )
+    {
+        _lockMode = mode;
+    }
+
+    /**
      * Read map's URL and update map if found.
      */
     public void read( UniMap map ) throws SQLException
@@ -117,6 +128,7 @@ public class ContentReader
             retry: while( true ) {
                 try {
                     ++tries;
+                    lock( conn );
                     QueryRunner runner = new QueryRunner( _dsource );
                     results = runner.query( conn, query, new MapHandler() );
                     conn.commit();
@@ -194,6 +206,21 @@ public class ContentReader
         }
         finally {
             if( conn != null ) conn.close();
+        }
+    }
+
+    protected void lock( Connection conn ) throws SQLException
+    {
+        if( _lockMode != null ) {
+            PreparedStatement stmt = null;
+            try {
+                String lock = "LOCK TABLE urls IN " + _lockMode + " MODE;";
+                stmt = conn.prepareStatement( lock );
+                stmt.executeUpdate();
+            }
+            finally {
+                if( stmt != null ) stmt.close();
+            }
         }
     }
 
@@ -295,6 +322,7 @@ public class ContentReader
 
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
     private int _maxRetries = 3;
+    private String _lockMode = null;
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }
