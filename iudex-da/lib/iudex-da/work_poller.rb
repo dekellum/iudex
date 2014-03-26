@@ -166,6 +166,11 @@ module Iudex::DA
     # Max-retries not including the initial try (Default: 10)
     attr_accessor :max_retries
 
+    # The transaction isolation level to use for work polling
+    # See {java.sql.Connection constants}[http://docs.oracle.com/javase/7/docs/api/constant-values.html#java.sql.Connection.TRANSACTION_READ_COMMITTED]
+    # (Default: TRANSACTION_REPEATABLE_READ (4))
+    attr_accessor :isolation_level
+
     def initialize( data_source, mapper )
       super()
 
@@ -182,7 +187,7 @@ module Iudex::DA
       @max_reserved_time_s = nil
       @last_none_reserved  = Time.now
       @max_retries        = 10
-
+      @isolation_level    = 4
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
 
@@ -271,6 +276,7 @@ module Iudex::DA
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
         r.max_retries = max_retries
+        r.isolation_level = isolation_level
       end
     end
 
