@@ -228,7 +228,8 @@ module Iudex::DA
 
     # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
-      visit_queue.add_all( poll( visit_queue.order_count ) )
+      res = poll( visit_queue.order_count )
+      visit_queue.add_all( res ) if res
     rescue SQLException => x
       @log.error( "On poll: ", x )
     end
