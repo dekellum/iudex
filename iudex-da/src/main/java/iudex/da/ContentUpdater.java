@@ -114,6 +114,9 @@ public class ContentUpdater
                 log().info( "Update succeeded only after {} attempts", tries );
             }
         }
+        catch( InterruptedException x ) {
+            Thread.currentThread().interrupt();
+        }
         finally {
             if( conn != null ) conn.close();
         }
@@ -149,6 +152,9 @@ public class ContentUpdater
             if( tries > 1 ) {
                 log().info( "Update succeeded only after {} attempts", tries );
             }
+        }
+        catch( InterruptedException x ) {
+            Thread.currentThread().interrupt();
         }
         finally {
             if( conn != null ) conn.close();

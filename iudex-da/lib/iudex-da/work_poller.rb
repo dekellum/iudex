@@ -58,7 +58,8 @@ module Iudex::DA
     alias :max_host_urls= :max_domain_urls=
 
     # The limit of urls to obtain in a single poll (across all
-    # domains) (default: 50_000)
+    # domains). May be overridden by #domain_union=
+    # (default: 50_000)
     attr_accessor :max_urls
 
     # A secondary limit on the number of urls to consider, taking the
@@ -148,13 +149,13 @@ module Iudex::DA
     #         unconfigured domains.
     #
     # :max:: The maximum number of visit urls to obtain in one poll
-    #        (instead of the top level #max_urls.) A zero max_urls
-    #        value excludes this domain/type (efficiently).
+    #        (instead of the top level #max_urls.) A zero value
+    #        efficiently excludes this domain/type.
     #
     # Also a [ domain, max ] alternative syntax is currently supported
     # but deprecated.
     #
-    attr_accessor :domain_union
+    attr_reader :domain_union
 
     # An array containing a zero-based position and a total number of
     # evenly divided segments within the range of possible uhash
@@ -162,6 +163,25 @@ module Iudex::DA
     # will be polled. Note that the uhash is independent of domain,
     # being a hash on the entire URL. (default: nil, off)
     attr_accessor :uhash_slice
+
+    # Max-retries not including the initial try (Default: 10)
+    attr_accessor :max_retries
+
+    # The transaction isolation level to use for work polling
+    # See {java.sql.Connection constants}[http://docs.oracle.com/javase/7/docs/api/constant-values.html#java.sql.Connection.TRANSACTION_READ_COMMITTED]
+    # (Default: TRANSACTION_REPEATABLE_READ (4))
+    attr_accessor :isolation_level
+
+    # URLS table explicit lock mode (String) for work polling,
+    # i.e. 'EXCLUSIVE'. Try this if deadlocks/contention are otherwise causing work
+    # poll starvation or excessive retries.
+    # (Default: nil -> implicit locking via isolation level only)
+    attr_accessor :lock_mode
+
+    # Maximum first-retry back-off delay in seconds (Float). Actual
+    # delay is a random value from 0..(value * 2^tries) for each
+    # retry.  Default: 0.0 : no delay
+    attr_accessor :backoff
 
     def initialize( data_source, mapper )
       super()
@@ -178,6 +198,9 @@ module Iudex::DA
       @max_discard_ratio  = 2.0/3.0
       @max_reserved_time_s = nil
       @last_none_reserved  = Time.now
+      @max_retries        = 10
+      @isolation_level    = 4
+      @backoff            = 0.0
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
@@ -205,7 +228,8 @@ module Iudex::DA
 
     # Override GenericWorkPollStrategy
     def pollWorkImpl( visit_queue )
-      visit_queue.add_all( poll( visit_queue.order_count ) )
+      res = poll( visit_queue.order_count )
+      visit_queue.add_all( res ) if res
     rescue SQLException => x
       @log.error( "On poll: ", x )
     end
@@ -266,7 +290,10 @@ module Iudex::DA
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
-        r.max_retries = 10
+        r.max_retries = max_retries
+        r.isolation_level = isolation_level
+        r.lock_mode = lock_mode if lock_mode
+        r.backoff = ( backoff * 1_000 ).round if backoff > 0.0
       end
     end
 
@@ -275,8 +302,11 @@ module Iudex::DA
         args = args.flatten.dup
         opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
         opts[ :domain ] ||= args.shift
-        opts[ :max ]    ||= args.shift
+        opts[ :max ]    ||= args.shift || @max_urls
         opts
+      end
+      @max_urls = @domain_union.inject( 0 ) do |m,r|
+        m + r[:max]
       end
     end
 
@@ -301,13 +331,8 @@ module Iudex::DA
         subqueries = []
         @domain_union.each do | opts |
           opts = opts.dup
-          if opts[ :max ]
-            opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
-                             max_urls.to_f ).floor
-          else
-            opts[ :max ] = ( max_urls - current_urls )
-          end
-
+          opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
+                           max_urls.to_f ).floor
           next if opts[ :max ] == 0
 
           c = criteria.dup

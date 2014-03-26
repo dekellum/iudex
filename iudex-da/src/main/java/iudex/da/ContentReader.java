@@ -20,10 +20,12 @@ import iudex.core.ContentKeys;
 import iudex.core.VisitURL;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.sql.DataSource;
 
@@ -77,6 +79,26 @@ public class ContentReader
     }
 
     /**
+     * Set PostgreSQL explicit LOCK compatible mode for the Urls
+     * table. Currently this only used by selectWithRetry, but it may
+     * extended to other methods in the future.
+     */
+    public void setLockMode( String mode )
+    {
+        _lockMode = mode;
+    }
+
+    /**
+     * Set maximum first-retry back-off delay in milliseconds. Actual
+     * delay is a random value from 0..(value * 2^tries) for each
+     * retry.  Default: 0 : no delay
+     */
+    public void setBackoff( int milliseconds )
+    {
+        _backoff = milliseconds;
+    }
+
+    /**
      * Read map's URL and update map if found.
      */
     public void read( UniMap map ) throws SQLException
@@ -105,7 +127,7 @@ public class ContentReader
     }
 
     public List<UniMap> selectWithRetry( String query )
-        throws SQLException
+        throws SQLException, InterruptedException
     {
         Connection conn = dataSource().getConnection();
         try {
@@ -117,6 +139,7 @@ public class ContentReader
             retry: while( true ) {
                 try {
                     ++tries;
+                    lock( conn );
                     QueryRunner runner = new QueryRunner( _dsource );
                     results = runner.query( conn, query, new MapHandler() );
                     conn.commit();
@@ -135,6 +158,10 @@ public class ContentReader
                 _log.info( "Query succeeded only after {} attempts", tries );
             }
             return results;
+        }
+        catch( InterruptedException x ) {
+            Thread.currentThread().interrupt();
+            return null;
         }
         finally {
             if( conn != null ) conn.close();
@@ -192,8 +219,27 @@ public class ContentReader
             }
             return count;
         }
+        catch( InterruptedException x ) {
+            Thread.currentThread().interrupt();
+            return 0;
+        }
         finally {
             if( conn != null ) conn.close();
+        }
+    }
+
+    protected void lock( Connection conn ) throws SQLException
+    {
+        if( _lockMode != null ) {
+            PreparedStatement stmt = null;
+            try {
+                String lock = "LOCK TABLE urls IN " + _lockMode + " MODE;";
+                stmt = conn.prepareStatement( lock );
+                stmt.executeUpdate();
+            }
+            finally {
+                if( stmt != null ) stmt.close();
+            }
         }
     }
 
@@ -203,6 +249,7 @@ public class ContentReader
      * any state before a retry.
      */
     protected boolean handleError( int tries, SQLException x )
+        throws InterruptedException
     {
         if( tries <= _maxRetries ) {
             SQLException s = x;
@@ -213,8 +260,14 @@ public class ContentReader
                 if( ( state != null ) &&
                     ( state.equals( "23505" ) ||
                       state.startsWith( "40" ) ) ) {
-                    _log.debug( "Retry {} after: ({}) {}",
-                                tries, state, s.getMessage() );
+                    int delay = 0;
+                    if( _backoff > 0 ) {
+                        delay = _random.nextInt( _backoff * (1 << (tries-1)) );
+                        Thread.sleep( delay );
+                    }
+
+                    _log.debug( "Retry {} after: {}ms, ({}) {}",
+                                tries, delay, state, s.getMessage() );
                     return true;
                 }
                 s = s.getNextException();
@@ -295,6 +348,10 @@ public class ContentReader
 
     private int _isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
     private int _maxRetries = 3;
+    private String _lockMode = null;
+
+    private int _backoff = 0;
+    private Random _random = new Random();
 
     private final Logger _log = LoggerFactory.getLogger( getClass() );
 }

@@ -143,6 +143,7 @@ public class UpdateFilter implements FilterContainer
 
         @Override
         protected boolean handleError( int tries, SQLException x )
+            throws InterruptedException
         {
             boolean retry = super.handleError( tries, x );
             if( retry ) ( (UpdateTransformer) transformer() ).reset();
