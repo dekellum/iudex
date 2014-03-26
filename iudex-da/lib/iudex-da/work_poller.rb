@@ -58,7 +58,8 @@ module Iudex::DA
     alias :max_host_urls= :max_domain_urls=
 
     # The limit of urls to obtain in a single poll (across all
-    # domains) (default: 50_000)
+    # domains). May be overridden by #domain_union=
+    # (default: 50_000)
     attr_accessor :max_urls
 
     # A secondary limit on the number of urls to consider, taking the
@@ -148,13 +149,13 @@ module Iudex::DA
     #         unconfigured domains.
     #
     # :max:: The maximum number of visit urls to obtain in one poll
-    #        (instead of the top level #max_urls.) A zero max_urls
-    #        value excludes this domain/type (efficiently).
+    #        (instead of the top level #max_urls.) A zero value
+    #        efficiently excludes this domain/type.
     #
     # Also a [ domain, max ] alternative syntax is currently supported
     # but deprecated.
     #
-    attr_accessor :domain_union
+    attr_reader :domain_union
 
     # An array containing a zero-based position and a total number of
     # evenly divided segments within the range of possible uhash
@@ -300,8 +301,11 @@ module Iudex::DA
         args = args.flatten.dup
         opts = args.last.is_a?( Hash ) ? args.pop.dup : {}
         opts[ :domain ] ||= args.shift
-        opts[ :max ]    ||= args.shift
+        opts[ :max ]    ||= args.shift || @max_urls
         opts
+      end
+      @max_urls = @domain_union.inject( 0 ) do |m,r|
+        m + r[:max]
       end
     end
 
@@ -326,13 +330,8 @@ module Iudex::DA
         subqueries = []
         @domain_union.each do | opts |
           opts = opts.dup
-          if opts[ :max ]
-            opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
-                             max_urls.to_f ).floor
-          else
-            opts[ :max ] = ( max_urls - current_urls )
-          end
-
+          opts[ :max ] = ( opts[ :max ] * ( max_urls - current_urls ) /
+                           max_urls.to_f ).floor
           next if opts[ :max ] == 0
 
           c = criteria.dup
