@@ -163,6 +163,9 @@ module Iudex::DA
     # being a hash on the entire URL. (default: nil, off)
     attr_accessor :uhash_slice
 
+    # Max-retries not including the initial try (Default: 10)
+    attr_accessor :max_retries
+
     def initialize( data_source, mapper )
       super()
 
@@ -178,6 +181,7 @@ module Iudex::DA
       @max_discard_ratio  = 2.0/3.0
       @max_reserved_time_s = nil
       @last_none_reserved  = Time.now
+      @max_retries        = 10
 
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
@@ -266,7 +270,7 @@ module Iudex::DA
     def reader
       @reader ||= ContentReader.new( @data_source, @mapper ).tap do |r|
         r.priority_adjusted = aged_priority?
-        r.max_retries = 10
+        r.max_retries = max_retries
       end
     end
 
