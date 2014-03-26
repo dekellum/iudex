@@ -177,6 +177,11 @@ module Iudex::DA
     # (Default: nil -> implicit locking via isolation level only)
     attr_accessor :lock_mode
 
+    # Maximum first-retry back-off delay in seconds (Float). Actual
+    # delay is a random value from 0..(value * 2^tries) for each
+    # retry.  Default: 0.0 : no delay
+    attr_accessor :backoff
+
     def initialize( data_source, mapper )
       super()
 
@@ -194,6 +199,8 @@ module Iudex::DA
       @last_none_reserved  = Time.now
       @max_retries        = 10
       @isolation_level    = 4
+      @backoff            = 0.0
+
       @age_coef_1         = 0.2
       @age_coef_2         = 0.1
 
@@ -284,6 +291,7 @@ module Iudex::DA
         r.max_retries = max_retries
         r.isolation_level = isolation_level
         r.lock_mode = lock_mode if lock_mode
+        r.backoff = ( backoff * 1_000 ).round if backoff > 0.0
       end
     end
 
