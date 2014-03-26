@@ -1,12 +1,12 @@
 PATH
   remote: .
   specs:
-    iudex (1.4.0-java)
-      iudex-async-httpclient (~> 1.4.0)
-      iudex-brutefuzzy-service (~> 1.4.0)
-      iudex-httpclient-3 (~> 1.4.0)
-      iudex-jetty-httpclient (~> 1.4.0)
-      iudex-worker (~> 1.4.0)
+    iudex (1.5.0-java)
+      iudex-async-httpclient (>= 1.4.0, < 1.7)
+      iudex-brutefuzzy-service (>= 1.4.0, < 1.7)
+      iudex-httpclient-3 (>= 1.4.0, < 1.7)
+      iudex-jetty-httpclient (>= 1.4.0, < 1.7)
+      iudex-worker (>= 1.4.0, < 1.7)
     iudex-async-httpclient (1.4.0-java)
       hooker (~> 1.0.0)
       iudex-http (~> 1.4.0)
@@ -70,13 +70,13 @@ PATH
     iudex-simhash (1.4.0-java)
       iudex-core (~> 1.4.0)
       iudex-html (~> 1.4.0)
-    iudex-worker (1.4.0-java)
-      iudex-char-detector (~> 1.4.0)
-      iudex-core (~> 1.4.0)
-      iudex-da (~> 1.4.0)
-      iudex-html (~> 1.4.0)
-      iudex-rome (~> 1.4.0)
-      iudex-simhash (~> 1.4.0)
+    iudex-worker (1.5.0-java)
+      iudex-char-detector (>= 1.4.0, < 1.7)
+      iudex-core (>= 1.4.0, < 1.7)
+      iudex-da (>= 1.4.0, < 1.7)
+      iudex-html (>= 1.4.0, < 1.7)
+      iudex-rome (>= 1.4.0, < 1.7)
+      iudex-simhash (>= 1.4.0, < 1.7)
       rjack-logback (~> 1.5)
 
 GEM
@@ -153,7 +153,7 @@ PLATFORMS
 
 DEPENDENCIES
   iudex!
-  iudex-http-test (~> 1.4.0)
+  iudex-http-test (>= 1.4.0, < 1.7)
   rack-test (~> 0.6.2)
   rdoc (~> 4.0.1)
   rjack-tarpit (~> 2.1)

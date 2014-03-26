@@ -1,3 +1,5 @@
+=== 1.5.0 (TBD)
+
 === 1.4.0 (2013-10-29)
 * Add Agent.raise_on_run flag for testing
 * Ensure executor/VisitManager shutdown on failed Agent.run_safe (for
