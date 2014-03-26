@@ -20,7 +20,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-core</artifactId>
-      <version>[1.4.0,1.4.999)</version>
+      <version>[1.4.0,1.7)</version>
     </dependency>
 
     <dependency>
