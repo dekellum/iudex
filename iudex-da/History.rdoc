@@ -1,4 +1,18 @@
 === 1.5.0 (TBD)
+Note: this release is as this time considered experimental or an "alpha"
+by comparison to 1.4.0
+* Upgrade to jdbc-postgres ~> 9.3.1100 (also tested 9.3.1101)
+* Upgrade to sequel ~> 4.8.0
+* Expand to >= 1.4.0, < 1.7 iudex-core dependency
+* Add WorkPoller.isolation_level accessor
+* Add WorkPoller.max_retries accessor
+* Auto-compute WorkPoller max_urls from set domain_union
+* Add exponential backoff delay option to ContentReader.handleError
+  retries, setter in WorkPoller
+* Add explicit LOCK mode option to URLs table in ContentReader, setter
+  in WorkPoller
+* Add null check to WorkPoller select_with_retry call (may occur when
+  retries exhausted).
 
 === 1.4.0 (2013-10-29)
 * Add experimental WorkPoller.do_reserve support, which utilizes
