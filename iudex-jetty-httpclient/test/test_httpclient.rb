@@ -367,6 +367,12 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_early_close
+    13.times do
+      one_test_early_close
+    end
+  end
+
+  def one_test_early_close
     bs = BrokenServer.new
     bs.start
 
@@ -386,7 +392,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /EofException|ClosedChannelException/i, x.class.name )
+        assert_match( /EofException|ClosedChannelException|HttpResponseException/i,
+                      x.class.name, x.to_string )
       end
     end
 
@@ -417,7 +424,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /EofException|ClosedChannelException/i, x.class.name )
+        assert_match( /EofException|ClosedChannelException|HttpResponseException/i,
+                      x.class.name, x.to_string )
       end
     end
 
