@@ -1,4 +1,4 @@
-=== 1.5.0 (TBD)
+=== 1.5.0 (2014-3-27)
 Note: this release and other iudex 1.5.0 upgrades are at this time
 considered experimental or an "alpha" by comparison to 1.4.0
 
