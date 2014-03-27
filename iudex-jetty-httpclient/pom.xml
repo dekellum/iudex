@@ -5,7 +5,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-jetty-httpclient</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.0</version>
+  <version>1.5.0</version>
   <name>Iudex Jetty HTTP Client Adaptor</name>
 
   <parent>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-http</artifactId>
-      <version>[1.4.0,1.4.999)</version>
+      <version>[1.4.0,1.7)</version>
     </dependency>
 
     <dependency>
