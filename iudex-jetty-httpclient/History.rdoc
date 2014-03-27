@@ -1,4 +1,8 @@
 === 1.5.0 (TBD)
+Note: this release is at this time considered experimental or an "alpha"
+by comparison to 1.4.0
+* Expand to >= 1.4.0, < 1.7 iudex dependencies
+* Upgrade (mandatory) to rjack-jetty ~> 9.1.0 (java compile-time changes)
 
 === 1.4.0 (2013-10-29)
 * Upgrade to rjack-jetty >= 9.0.0.5, < 9.1. This is a major
