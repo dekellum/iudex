@@ -1,6 +1,7 @@
 === 1.5.0 (TBD)
-Note: this release and iudex dependencies are at this time considered
-experimental or an "alpha" by comparison to 1.4.0
+Note: this release and other iudex 1.5.0 upgrades are at this time
+considered experimental or an "alpha" by comparison to 1.4.0
+
 * Expand to >= 1.4.0, < 1.7 iudex-* dependencies.
 
 === 1.4.0 (2013-10-29)
