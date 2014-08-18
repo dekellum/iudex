@@ -126,7 +126,7 @@ GEM
     rjack-logback (1.7.0-java)
       rjack-slf4j (>= 1.6.5, < 1.8)
     rjack-maven (3.0.5.0-java)
-    rjack-nekohtml (1.9.20.0-java)
+    rjack-nekohtml (1.9.21.0-java)
       rjack-xerces (>= 2.10.0, < 2.12)
     rjack-netty (3.6.8.0-java)
     rjack-protobuf (2.5.0.0-java)
