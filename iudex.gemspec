@@ -14,9 +14,9 @@ RJack::TarPit.specify do |s|
   s.depend 'iudex-httpclient-3',       '>= 1.4.0', '< 1.7'
   s.depend 'iudex-jetty-httpclient',   '>= 1.4.0', '< 1.7'
   s.depend 'iudex-async-httpclient',   '>= 1.4.0', '< 1.7'
-  s.depend 'iudex-brutefuzzy-service', '>= 1.4.0', '< 1.7'
 
   s.depend 'iudex-http-test',          '>= 1.4.0', '< 1.7', :dev
+
   s.maven_strategy = :none
   s.platform = :java
   s.required_ruby_version = '>= 1.8.7'
