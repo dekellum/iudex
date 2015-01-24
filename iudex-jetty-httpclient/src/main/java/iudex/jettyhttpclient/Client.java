@@ -36,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpResponseException;
@@ -208,7 +209,7 @@ public class Client
 
         void execute( ResponseHandler handler )
         {
-            _handler = handler;
+            _handler.set( handler );
 
             Request req = _client.newRequest( url() );
             switch( method() ) {
@@ -354,9 +355,9 @@ public class Client
 
         private void complete()
         {
-            ResponseHandler handler = _handler;
+            ResponseHandler handler = _handler.getAndSet( null );
+
             if( handler != null ) {
-                _handler = null;
                 handler.sessionCompleted( this );
                 _log.debug( "after sessionCompleted, notifying" );
                 _latch.countDown();
@@ -370,7 +371,7 @@ public class Client
         {
             if( t instanceof Exception ) {
 
-                if( _handler == null ) {
+                if( _handler.get() == null ) {
                     if( ! (t instanceof AsynchronousCloseException ) ) {
                         _log.warn( "Exception (already handled): {}",
                                    t.toString() );
@@ -459,7 +460,8 @@ public class Client
             return req;
         }
 
-        private ResponseHandler _handler = null;
+        private AtomicReference<ResponseHandler> _handler =
+            new AtomicReference<ResponseHandler>();
         private List<Header> _requestedHeaders = new ArrayList<Header>( 8 );
         private int _statusCode = STATUS_UNKNOWN;
         private String _statusText = null;
