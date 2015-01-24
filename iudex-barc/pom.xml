@@ -5,7 +5,7 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-barc</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <name>Iudex Basic ARChive Format</name>
 
   <parent>

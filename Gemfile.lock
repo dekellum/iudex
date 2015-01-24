@@ -11,7 +11,7 @@ PATH
       hooker (~> 1.0.0)
       iudex-http (~> 1.4.0)
       rjack-async-httpclient (~> 1.7.11)
-    iudex-barc (1.4.0-java)
+    iudex-barc (1.4.1-java)
       gravitext-util (~> 1.7.0)
       iudex-http (~> 1.4.0)
       rjack-slf4j (~> 1.7.0)
