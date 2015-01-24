@@ -1,4 +1,6 @@
 === 1.4.1 (TBD)
+* Make iudex-http-record more lenient and generally usable: increase
+  timeouts, max content length, and broaden accept types.
 
 === 1.4.0 (2013-10-29)
 * Upgrade to minitest ~> 4.7.4 (dev)
