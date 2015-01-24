@@ -32,4 +32,4 @@ test/test_migrate.rb
 test/test_pool_factory.rb
 test/test_url_model.rb
 test/test_work_poller.rb
-lib/iudex-da/iudex-da-1.5.0.jar
+lib/iudex-da/iudex-da-1.5.1.jar

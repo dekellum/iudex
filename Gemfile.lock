@@ -34,7 +34,7 @@ PATH
       iudex-filter (~> 1.4.0)
       iudex-http (~> 1.4.0)
       rjack-slf4j (~> 1.7.0)
-    iudex-da (1.5.0-java)
+    iudex-da (1.5.1-java)
       iudex-core (>= 1.4.0, < 1.7)
       rjack-commons-dbcp (~> 1.4.0)
       rjack-commons-dbutils (~> 1.5.0)
