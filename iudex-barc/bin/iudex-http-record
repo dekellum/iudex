@@ -109,7 +109,8 @@ module IudexBinScript
     end
 
     def accept_types
-      "application/xhtml+xml,text/html,application/xml;q=0.9,text/*;q=0.8"
+      ( "application/xhtml+xml,text/html,application/xml;q=0.9," +
+        "text/*;q=0.8,*/*;q=0.1" )
     end
 
   end
