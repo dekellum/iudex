@@ -1,4 +1,5 @@
 === 1.5.1 (TBD)
+* Broaden to sequel ~> 4.8 (tested with 4.18.0).
 
 === 1.5.0 (2014-3-27)
 Note: this release is at this time considered experimental or an "alpha"
