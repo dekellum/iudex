@@ -50,11 +50,12 @@ module IudexBinScript
 
       mgr = Iudex::HTTPClient3.create_manager
       mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 8 )
-      mgr.client_params.connection_manager_timeout = 10_000 #ms
-      mgr.client_params.so_timeout = 20_000 #ms
+      mgr.client_params.connection_manager_timeout = 30_000 #ms
+      mgr.client_params.so_timeout = 90_000 #ms
       mgr.start
 
       hclient = HTTPClient3.new( mgr.client )
+      hclient.max_content_length = 200*1024*1024
 
       barc_file = Iudex::BARC::BARCFile.new( java.io.File.new( @barc_name ) )
       barc_file.truncate if @barc_name == './record.barc'
@@ -108,7 +109,8 @@ module IudexBinScript
     end
 
     def accept_types
-      "application/xhtml+xml,text/html,application/xml;q=0.9,text/*;q=0.8"
+      ( "application/xhtml+xml,text/html,application/xml;q=0.9," +
+        "text/*;q=0.8,*/*;q=0.1" )
     end
 
   end
