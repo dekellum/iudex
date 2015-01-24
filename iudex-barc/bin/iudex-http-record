@@ -50,8 +50,8 @@ module IudexBinScript
 
       mgr = Iudex::HTTPClient3.create_manager
       mgr.client_params.set_int_parameter( "http.protocol.max-redirects", 8 )
-      mgr.client_params.connection_manager_timeout = 10_000 #ms
-      mgr.client_params.so_timeout = 20_000 #ms
+      mgr.client_params.connection_manager_timeout = 30_000 #ms
+      mgr.client_params.so_timeout = 90_000 #ms
       mgr.start
 
       hclient = HTTPClient3.new( mgr.client )
