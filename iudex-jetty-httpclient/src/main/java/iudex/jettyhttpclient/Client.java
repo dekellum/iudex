@@ -227,6 +227,7 @@ public class Client
             }
 
             req.onRequestHeaders( this );
+            req.onResponseContent( this );
 
             if( _timeout > 0 ) {
                 req.timeout( _timeout, TimeUnit.MILLISECONDS );
