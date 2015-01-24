@@ -92,7 +92,7 @@ GEM
     gravitext-xmlprod (1.7.0-java)
       gravitext-util (~> 1.7.0)
     hooker (1.0.1)
-    json (1.8.1-java)
+    json (1.8.2-java)
     markaby (0.7.2)
       builder (>= 2.0.0)
     minitest (4.7.5)
@@ -101,7 +101,7 @@ GEM
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
-    rake (10.3.2)
+    rake (10.4.2)
     rdoc (4.0.1)
       json (~> 1.4)
     rjack-async-httpclient (1.7.24.0-java)
