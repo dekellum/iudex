@@ -334,7 +334,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /(EofException|bad response|ClosedChannelException)/i,
+        assert_match( /(EofException|bad response|ClosedChannelException|AsynchronousCloseException)/i,
                       x.to_string )
         assert_equal( -1, s.status_code )
       end
@@ -356,7 +356,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
-        assert_match( /EofException|ClosedChannelException/i, x.class.name )
+        assert_match( /EofException|ClosedChannelException|AsynchronousCloseException/i, x.class.name )
       end
     end
 
@@ -587,7 +587,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       if b
         b.call( s, x )
       else
-        flunk "Handler called twice!"
+        @failure = "Handler called twice!"
       end
     rescue NativeException => x
       @failure = x.cause
