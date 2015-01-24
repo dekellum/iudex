@@ -227,6 +227,7 @@ public class Client
             }
 
             req.onRequestHeaders( this );
+            req.onResponseHeaders( this );
             req.onResponseContent( this );
 
             if( _timeout > 0 ) {
