@@ -7,4 +7,4 @@ lib/iudex-jetty-httpclient/base.rb
 lib/iudex-jetty-httpclient.rb
 test/setup.rb
 test/test_httpclient.rb
-lib/iudex-jetty-httpclient/iudex-jetty-httpclient-1.5.0.jar
+lib/iudex-jetty-httpclient/iudex-jetty-httpclient-1.6.0.jar
