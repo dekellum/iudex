@@ -136,7 +136,7 @@ public class UpdateFilter implements FilterContainer
             setIsolationLevel( _isolationLevel );
             setMaxRetries( _maxRetries );
             setUpdateReferences( _updateRefFilter != null &&
-                                 _newRefFilter != null );
+                                 _newRefFilter != null ); //FIXME: Why both required?
             setUpdateReferer( _refererFilter != null );
             setUpdateContent( _contentFilter != null );
         }
