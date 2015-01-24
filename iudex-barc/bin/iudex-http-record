@@ -55,6 +55,7 @@ module IudexBinScript
       mgr.start
 
       hclient = HTTPClient3.new( mgr.client )
+      hclient.max_content_length = 200*1024*1024
 
       barc_file = Iudex::BARC::BARCFile.new( java.io.File.new( @barc_name ) )
       barc_file.truncate if @barc_name == './record.barc'
