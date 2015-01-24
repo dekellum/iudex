@@ -587,7 +587,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       if b
         b.call( s, x )
       else
-        flunk "Handler called twice!"
+        @failure = "Handler called twice!"
       end
     rescue NativeException => x
       @failure = x.cause
