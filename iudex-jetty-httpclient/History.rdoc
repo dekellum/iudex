@@ -1,4 +1,4 @@
-=== 1.6.0 (TBD)
+=== 1.6.0 (2015-1-25)
 Note: this release is at this time considered experimental or "alpha"
 by comparison to 1.5 or 1.4
 * Upgrade to rjack-jetty ~> 9.2.2. Java compile-time changes are
