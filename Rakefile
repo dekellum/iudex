@@ -13,8 +13,7 @@ gems = %w[ iudex-filter iudex-http iudex-http-test iudex-barc
            iudex-async-httpclient
            iudex-char-detector
            iudex-html iudex-simhash iudex-rome iudex-da
-           iudex-worker
-           iudex-brutefuzzy-protobuf iudex-brutefuzzy-service ]
+           iudex-worker ]
 
 subtasks = %w[ clean install_deps test gem docs tag install push ]
 
