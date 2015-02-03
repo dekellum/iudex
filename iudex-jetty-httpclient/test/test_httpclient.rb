@@ -22,7 +22,6 @@ require 'iudex-http-test/helper'
 require 'iudex-http-test/broken_server'
 
 require 'iudex-jetty-httpclient'
-require 'thread'
 require 'cgi'
 require 'uri'
 
@@ -328,8 +327,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.write "FU Stinky\r\n" }
+    sthread = bs.accept_thread do |sock|
+      sock.write "FU Stinky\r\n"
     end
 
     with_new_client do |client|
@@ -350,8 +349,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.close }
+    sthread = bs.accept_thread do |sock|
+      sock.close
     end
 
     with_new_client do |client|
@@ -376,18 +375,16 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept do |sock|
-        sock.write "HTTP/1.1 200 OK\r\n"
-        sock.write "Content-Type: text/plain\r\n"
-        sock.write "Transfer-Encoding: chunked\r\n"
-        sock.write "\r\n"
-        sock.write "FF3DF\r\n"
-        sock.write "An incomplete chunk"
-        sock.write "An incomplete chunk"
-        sock.write "An incomplete chunk"
-        sock.close
-      end
+    sthread = bs.accept_thread do |sock|
+      sock.write "HTTP/1.1 200 OK\r\n"
+      sock.write "Content-Type: text/plain\r\n"
+      sock.write "Transfer-Encoding: chunked\r\n"
+      sock.write "\r\n"
+      sock.write "FF3DF\r\n"
+      sock.write "An incomplete chunk"
+      sock.write "An incomplete chunk"
+      sock.write "An incomplete chunk"
+      sock.close
     end
 
     with_new_client do |client|
@@ -407,19 +404,17 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept do |sock|
-        sock.write "HTTP/1.1 302 Found\r\n"
-        sock.write "Location: http://localhost:54929/no-exist\r\n"
-        sock.write "Content-Type: text/plain\r\n"
-        sock.write "Transfer-Encoding: chunked\r\n"
-        sock.write "\r\n"
-        sock.write "FF3DF\r\n"
-        sock.write "An incomplete chunk"
-        sock.write "An incomplete chunk"
-        sock.write "An incomplete chunk"
-        sock.close
-      end
+    sthread = bs.accept_thread do |sock|
+      sock.write "HTTP/1.1 302 Found\r\n"
+      sock.write "Location: http://localhost:54929/no-exist\r\n"
+      sock.write "Content-Type: text/plain\r\n"
+      sock.write "Transfer-Encoding: chunked\r\n"
+      sock.write "\r\n"
+      sock.write "FF3DF\r\n"
+      sock.write "An incomplete chunk"
+      sock.write "An incomplete chunk"
+      sock.write "An incomplete chunk"
+      sock.close
     end
 
     with_new_client do |client|
