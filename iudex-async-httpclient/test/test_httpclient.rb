@@ -23,7 +23,6 @@ require 'iudex-http-test/helper'
 require 'iudex-http-test/broken_server'
 
 require 'iudex-async-httpclient'
-require 'thread'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -244,9 +243,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.write "FU Stinky\r\n" }
-    end
+    sthread = bs.accept_thread { |sock| sock.write "FU Stinky\r\n" }
 
     #FIXME: IllegalArgumentException on bad HTTP response line?
     with_new_client do |client|
@@ -265,9 +262,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.close }
-    end
+    sthread = bs.accept_thread { |sock| sock.close }
 
     with_new_client( :connection_timeout_in_ms => 100,
                      :request_timeout_in_ms    => 100 ) do |client|
