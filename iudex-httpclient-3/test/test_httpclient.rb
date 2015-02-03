@@ -24,8 +24,6 @@ require 'iudex-httpclient-3'
 require 'iudex-http-test/helper'
 require 'iudex-http-test/broken_server'
 
-require 'thread'
-
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
   include Iudex::HTTP
@@ -248,9 +246,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.write "FU Stinky\r\n" }
-    end
+    sthread = bs.accept_thread { |sock| sock.write "FU Stinky\r\n" }
 
     #FIXME: SocketTimeoutException on bad HTTP response line?
     with_new_client do |client|
@@ -269,9 +265,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.close }
-    end
+    sthread = bs.accept_thread { |sock| sock.close }
 
     with_new_client do |client|
       with_session_handler( client, "http://localhost:19293/" ) do |s,x|
