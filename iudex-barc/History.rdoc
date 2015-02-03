@@ -1,3 +1,5 @@
+=== 1.7.0 (TBD)
+
 === 1.4.1 (2015-1-25)
 * Make iudex-http-record more lenient and generally usable: increase
   timeouts, max content length, and broaden accept types.

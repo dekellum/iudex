@@ -5,13 +5,13 @@
   <groupId>iudex</groupId>
   <artifactId>iudex-httpclient-3</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.0</version>
+  <version>1.7.0</version>
   <name>Iudex HTTP Client 3</name>
 
   <parent>
     <groupId>iudex</groupId>
     <artifactId>iudex-parent</artifactId>
-    <version>1.4.0</version>
+    <version>1.7.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>iudex</groupId>
       <artifactId>iudex-http</artifactId>
-      <version>[1.4.0,1.4.999)</version>
+      <version>[1.7.0,1.999)</version>
     </dependency>
 
     <dependency>

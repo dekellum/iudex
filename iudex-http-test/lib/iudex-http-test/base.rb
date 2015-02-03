@@ -17,7 +17,7 @@
 module Iudex
   module HTTP
     module Test
-      VERSION = '1.4.0'
+      VERSION = '1.7.0'
     end
   end
 end

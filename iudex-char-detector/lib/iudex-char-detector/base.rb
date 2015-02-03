@@ -16,6 +16,6 @@
 
 module Iudex
   module CharDetector
-    VERSION = '1.4.0'
+    VERSION = '1.7.0'
   end
 end

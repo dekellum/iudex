@@ -16,7 +16,7 @@
 
 module Iudex
   module ROME
-    VERSION = '1.4.0'
+    VERSION = '1.7.0'
 
     LIB_DIR = File.dirname( __FILE__ ) # :nodoc:
   end

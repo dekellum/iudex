@@ -16,7 +16,7 @@
 
 module Iudex
   module BARC
-    VERSION = '1.4.1'
+    VERSION = '1.7.0'
 
     LIB_DIR = File.dirname( __FILE__ ) # :nodoc:
   end

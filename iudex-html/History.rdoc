@@ -1,3 +1,5 @@
+=== 1.7.0 (TBD)
+
 === 1.4.0 (2013-10-29)
 * Fix meta-tag charset parse restart handling for case of empty
   charset and conflicting/multiple combinations of Content-Type or

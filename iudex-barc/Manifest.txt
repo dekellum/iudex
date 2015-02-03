@@ -7,4 +7,4 @@ bin/iudex-barc
 bin/iudex-http-record
 lib/iudex-barc/base.rb
 lib/iudex-barc.rb
-lib/iudex-barc/iudex-barc-1.4.1.jar
+lib/iudex-barc/iudex-barc-1.7.0.jar

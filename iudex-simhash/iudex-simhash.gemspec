@@ -10,8 +10,8 @@ RJack::TarPit.specify do |s|
 
   s.add_developer( 'David Kellum', 'dek-oss@gravitext.com' )
 
-  s.depend 'iudex-core',            '~> 1.4.0'
-  s.depend 'iudex-html',            '~> 1.4.0'
+  s.depend 'iudex-core',            '~> 1.7'
+  s.depend 'iudex-html',            '~> 1.7'
 
   s.depend 'minitest',              '~> 4.7.4',     :dev
   s.depend 'rjack-logback',         '~> 1.5',       :dev

@@ -1,3 +1,5 @@
+=== 1.7.0 (TBD)
+
 === 1.4.0 (2013-10-29)
 * Work order reservation and experimental concurrent (no replace) work
   polling support:

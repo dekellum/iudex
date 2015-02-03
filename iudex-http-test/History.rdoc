@@ -1,3 +1,5 @@
+=== 1.7.0 (TBD)
+
 === 1.4.0 (2013-10-29)
 * Add /slow streaming output test path
 * Add rescue, log of EPIPE from BrokenServer.accept
