@@ -26,7 +26,8 @@ public abstract class HTTPSession implements Closeable
 {
     public static enum Method {
         GET,
-        HEAD
+        HEAD,
+        POST
     }
 
     /**
