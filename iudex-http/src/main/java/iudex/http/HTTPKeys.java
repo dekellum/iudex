@@ -34,4 +34,10 @@ public class HTTPKeys
 
     public static final Key<CharSequence> ETAG =
         UniMap.KEY_SPACE.create( "etag", CharSequence.class );
+
+    public static final Key<HTTPSession.Method> HTTP_METHOD =
+        UniMap.KEY_SPACE.create( "http_method", HTTPSession.Method.class );
+
+    public static final Key<RequestContent> REQUEST_CONTENT =
+        UniMap.KEY_SPACE.create( "request_content", RequestContent.class );
 }
