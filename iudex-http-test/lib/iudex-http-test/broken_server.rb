@@ -16,6 +16,7 @@
 
 require 'iudex-http-test/base'
 
+require 'thread'
 require 'socket'
 
 module Iudex::HTTP::Test
@@ -31,6 +32,13 @@ module Iudex::HTTP::Test
 
     def start
       @server = TCPServer.new( @port )
+    end
+
+    def accept_thread( &block )
+      Thread.new do
+        java.lang.Thread::currentThread.name = 'accept' # for logging
+        accept( &block )
+      end
     end
 
     def accept

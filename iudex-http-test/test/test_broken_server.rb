@@ -21,7 +21,6 @@ require File.join( File.dirname( __FILE__ ), "setup" )
 
 require 'iudex-http-test/broken_server'
 require 'net/http'
-require 'thread'
 
 class TestBrokenServer < MiniTest::Unit::TestCase
   include Iudex::HTTP::Test
@@ -36,16 +35,14 @@ class TestBrokenServer < MiniTest::Unit::TestCase
   def test_fake_http
     bs = BrokenServer.new
     bs.start
-    sthread = Thread.new do
-      bs.accept do |sock|
-        content = "body"
+    sthread = bs.accept_thread do |sock|
+      content = "body"
 
-        sock.write "HTTP/1.0 200 OK\r\n"
-        sock.write "Content-Length: #{ content.length }\r\n"
-        sock.write "Connection: close\r\n"
-        sock.write "\r\n"
-        sock.write content
-      end
+      sock.write "HTTP/1.0 200 OK\r\n"
+      sock.write "Content-Length: #{ content.length }\r\n"
+      sock.write "Connection: close\r\n"
+      sock.write "\r\n"
+      sock.write content
     end
 
     res = Net::HTTP.start( 'localhost', bs.port ) do |http|
