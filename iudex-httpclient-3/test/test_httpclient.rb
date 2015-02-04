@@ -309,7 +309,23 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def with_session_handler( client, uri, headers = {}, &block )
+  def test_post
+    with_new_client do |client|
+      smod = Proc.new do |s|
+        s.method = HTTPSession::Method::POST
+        s.requestContent =
+          RequestContent.new( "a=1+2&b=3".to_java_bytes,
+                              "application/x-www-form-urlencoded" )
+      end
+      with_session_handler( client, "/post_to", {}, smod ) do |s,x|
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
+        assert_equal( %Q[{"a"=>"1 2", "b"=>"3"}], s.response_stream.to_io.read )
+      end
+    end
+  end
+
+  def with_session_handler( client, uri, headers = {}, smod = nil, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
@@ -317,6 +333,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
     end
 
+    smod.call( session ) if smod
     handler = TestHandler.new( &block )
     client.request( session, handler )
 

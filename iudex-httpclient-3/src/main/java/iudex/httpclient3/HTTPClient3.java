@@ -34,8 +34,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.RedirectException;
 import org.apache.commons.httpclient.StatusLine;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.*;
 
 import com.gravitext.util.ResizableByteBuffer;
 
@@ -148,11 +147,32 @@ public class HTTPClient3 implements HTTPClient
         void execute( ResponseHandler handler )
         {
             try {
-                if( method() == Method.GET ) {
+                switch( method() ) {
+                case GET:
                     _httpMethod = new GetMethod( url() );
-                }
-                else if( method() == Method.HEAD ) {
+                    break;
+                case HEAD:
                     _httpMethod = new HeadMethod( url() );
+                    break;
+                case POST:
+                    PostMethod m = new PostMethod( url() );
+
+                    if( requestContent() == null ) {
+                        throw new IllegalArgumentException(
+                          "HTTPSession.requestContent required for POST method" );
+                    }
+                    ByteBuffer b = requestContent().content();
+                    // FIXME: Sad copy due to unsupported ByteBuffer
+                    byte[] bb = new byte[ b.remaining() ];
+                    b.get( bb );
+                    m.setRequestEntity( new ByteArrayRequestEntity(
+                                          bb, requestContent().type() ) );
+
+                    _httpMethod = m;
+                    break;
+                default:
+                    throw new IllegalArgumentException( "Unsupported: " +
+                                                        method() );
                 }
 
                 for( Header h : _requestedHeaders ) {
