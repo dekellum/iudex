@@ -1,4 +1,5 @@
 === 1.7.0 (TBD)
+* Upgrade to icu4j ~> (4.)53
 
 === 1.4.0 (2013-10-29)
 * Upgrade to icu4j ~> (4.)51.2
