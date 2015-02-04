@@ -144,6 +144,10 @@ module Iudex::HTTP::Test
                  :type => 'application/atom+xml' )
     end
 
+    post '/post_to' do
+      params.inspect
+    end
+
     get '/env' do
       request.inspect
     end
