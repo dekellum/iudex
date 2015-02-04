@@ -16,7 +16,7 @@ PATH
       rjack-slf4j (~> 1.7.0)
     iudex-char-detector (1.7.0-java)
       iudex-core (~> 1.7)
-      rjack-icu (~> 4.53.0)
+      rjack-icu (~> 4.53)
     iudex-core (1.7.0-java)
       gravitext-util (~> 1.7.0)
       hooker (~> 1.0.0)
