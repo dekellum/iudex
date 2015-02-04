@@ -1,4 +1,5 @@
 === 1.7.0 (TBD)
+* Add BrokenServer.accept_thread with name for logging
 
 === 1.4.0 (2013-10-29)
 * Add /slow streaming output test path
