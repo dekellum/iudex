@@ -54,7 +54,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
 
   def test_custom_executor
 
-    executor = ThreadPoolExecutor.new( 1, 10,
+    executor = ThreadPoolExecutor.new( 8, 8,
                                        10, TimeUnit::SECONDS,
                                        ArrayBlockingQueue.new( 20 ) )
 
