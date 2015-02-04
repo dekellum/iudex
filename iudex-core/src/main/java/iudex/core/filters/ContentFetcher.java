@@ -30,6 +30,7 @@ import iudex.http.HTTPSession;
 import iudex.http.Header;
 import iudex.http.Headers;
 import iudex.http.ResponseHandler;
+import iudex.http.RequestContent;
 import iudex.util.Charsets;
 
 import java.nio.ByteBuffer;
@@ -104,8 +105,17 @@ public class ContentFetcher implements AsyncFilterContainer
     public boolean filter( UniMap content )
     {
         HTTPSession session = _client.createSession();
-        session.setMethod( HTTPSession.Method.GET );
         session.setUrl( content.get( URL ).toString() );
+
+        HTTPSession.Method method = content.get( HTTP_METHOD );
+        if( method != null ) {
+            session.setMethod( method );
+        }
+
+        RequestContent reqContent = content.get( REQUEST_CONTENT );
+        if( reqContent != null ) {
+            session.setRequestContent( reqContent );
+        }
 
         CharSequence etag = content.get( ETAG );
         if( etag != null ) {

@@ -26,7 +26,8 @@ public abstract class HTTPSession implements Closeable
 {
     public static enum Method {
         GET,
-        HEAD
+        HEAD,
+        POST
     }
 
     /**
@@ -111,6 +112,16 @@ public abstract class HTTPSession implements Closeable
         _method = method;
     }
 
+    public void setRequestContent( RequestContent content )
+    {
+        _requestContent = content;
+    }
+
+    public RequestContent requestContent()
+    {
+        return _requestContent;
+    }
+
     public abstract void addRequestHeader( Header header );
 
     public void addRequestHeaders( List<Header> headers )
@@ -186,6 +197,7 @@ public abstract class HTTPSession implements Closeable
 
     private String _url;
     private Method _method = Method.GET;
+    private RequestContent _requestContent = null;
     private Exception _error;
 
     private ContentTypeSet _acceptedContentTypes = ContentTypeSet.ANY;

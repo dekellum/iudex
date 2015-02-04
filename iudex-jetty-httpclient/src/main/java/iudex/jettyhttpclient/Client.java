@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpResponseException;
 import org.eclipse.jetty.client.api.*;
+import org.eclipse.jetty.client.util.ByteBufferContentProvider;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.util.Fields;
@@ -218,6 +219,18 @@ public class Client
                 break;
             case HEAD:
                 req.method( HttpMethod.HEAD );
+                break;
+            case POST:
+                req.method( HttpMethod.POST );
+
+                if( requestContent() == null ) {
+                    throw new IllegalArgumentException(
+                        "HTTPSession.requestContent required for POST method" );
+                }
+                req.content(
+                    new ByteBufferContentProvider(requestContent().type(),
+                                                  requestContent().content()) );
+
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported: " + method());

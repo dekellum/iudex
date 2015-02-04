@@ -23,7 +23,6 @@ require 'iudex-http-test/helper'
 require 'iudex-http-test/broken_server'
 
 require 'iudex-async-httpclient'
-require 'thread'
 
 class TestHTTPClient < MiniTest::Unit::TestCase
   include Iudex
@@ -244,9 +243,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.write "FU Stinky\r\n" }
-    end
+    sthread = bs.accept_thread { |sock| sock.write "FU Stinky\r\n" }
 
     #FIXME: IllegalArgumentException on bad HTTP response line?
     with_new_client do |client|
@@ -265,9 +262,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     bs = BrokenServer.new
     bs.start
 
-    sthread = Thread.new do
-      bs.accept { |sock| sock.close }
-    end
+    sthread = bs.accept_thread { |sock| sock.close }
 
     with_new_client( :connection_timeout_in_ms => 100,
                      :request_timeout_in_ms    => 100 ) do |client|
@@ -347,13 +342,31 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
-  def with_session_handler( client, uri, wait = true, headers = {}, &block )
+  def test_post
+    with_new_client do |client|
+      smod = Proc.new do |s|
+        s.method = HTTPSession::Method::POST
+        s.requestContent =
+          RequestContent.new( "a=1+2&b=3".to_java_bytes,
+                              "application/x-www-form-urlencoded" )
+      end
+      with_session_handler( client, "/post_to", true, {}, smod ) do |s,x|
+        output_bomb( s ) unless s.status_code == 200
+        assert_equal( 200, s.status_code, "see bomb.out" )
+        assert_equal( %Q[{"a"=>"1 2", "b"=>"3"}], s.response_stream.to_io.read )
+      end
+    end
+  end
+
+  def with_session_handler( client, uri, wait = true,
+                            headers = {}, smod = nil, &block )
     session = client.create_session
     uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
     end
+    smod.call( session ) if smod
     handler = TestHandler.new( &block )
     client.request( session, handler )
     if wait

@@ -170,13 +170,27 @@ public class Client implements HTTPClient, Closeable
 
             BoundRequestBuilder rb = null;
 
-            if( method() == Method.GET ) {
+            switch( method() ) {
+            case GET:
                 rb = _client.prepareGet( url() );
-            }
-            else if( method() == Method.HEAD ) {
+                break;
+            case HEAD:
                 rb = _client.prepareHead( url() );
-            }
-            else {
+                break;
+            case POST:
+                rb = _client.preparePost( url() );
+                if( requestContent() == null ) {
+                    throw new IllegalArgumentException(
+                        "HTTPSession.requestContent required for POST method" );
+                }
+                ByteBuffer b = requestContent().content();
+                // FIXME: Sad copy due to unsupported ByteBuffer
+                byte[] bb = new byte[ b.remaining() ];
+                b.get( bb );
+                rb.setBody( bb );
+                rb.setHeader( "Content-Type", requestContent().type() );
+                break;
+            default:
                 throw new UnsupportedOperationException(
                     "Unsupported Method." + method() );
             }
