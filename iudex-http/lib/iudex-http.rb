@@ -34,6 +34,7 @@ module Iudex
     import "iudex.http.Header"
     import "iudex.http.Headers"
     import "iudex.http.ResponseHandler"
+    import "iudex.http.RequestContent"
 
   end
 end
