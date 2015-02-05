@@ -1,5 +1,6 @@
 === 1.7.0 (TBD)
-* Add POST method and request content support.
+* Upgrade to iudex-* ~> 1.7 dependencies
+* Add POST method and request content support
 
 === 1.6.0 (2015-1-25)
 * Upgrade to rjack-jetty ~> 9.2.2. Java compile-time changes are

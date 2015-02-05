@@ -1,9 +1,7 @@
 === 1.7.0 (TBD)
+* Upgrade to iudex-* ~> 1.7 dependencies
 
 === 1.5.0 (2014-3-27)
-Note: this release and other iudex 1.5.0 upgrades are at this time
-considered experimental or an "alpha" by comparison to 1.4.0
-
 * Expand to >= 1.4.0, < 1.7 iudex-* dependencies.
 
 === 1.4.0 (2013-10-29)

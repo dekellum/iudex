@@ -1,6 +1,7 @@
 === 1.7.0 (TBD)
-* Add POST method and request content support.
+* Upgrade to iudex-* ~> 1.7 dependencies
 * Upgrade to async-httpclient ~> 1.8.5 (tested through 1.8.15)
+* Add POST method and request content support.
 
 === 1.4.0 (2013-10-29)
 * Upgrade to async-httpclient ~> 1.7.11
