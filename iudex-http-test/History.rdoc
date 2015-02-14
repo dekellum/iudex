@@ -1,5 +1,7 @@
 === 1.7.0 (TBD)
 * Add BrokenServer.accept_thread with name for logging
+* Add /post_to test path
+* Broaden/upgrade to fishwife ~> 1.7 (supports jetty 9.2.x)
 
 === 1.4.0 (2013-10-29)
 * Add /slow streaming output test path
