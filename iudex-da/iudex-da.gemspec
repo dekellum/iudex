@@ -12,7 +12,7 @@ RJack::TarPit.specify do |s|
 
   s.depend 'iudex-core',                          '~> 1.7'
   s.depend 'sequel',                              '~> 4.8'
-  s.depend 'rjack-jdbc-postgres',                 '~> 9.3.1100'
+  s.depend 'rjack-jdbc-postgres',                 '~> 9.3'
   s.depend 'rjack-commons-dbcp',                  '~> 1.4.0'
   s.depend 'rjack-commons-dbutils',               '~> 1.5.0'
 

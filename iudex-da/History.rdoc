@@ -1,5 +1,7 @@
 === 1.7.0 (TBD)
 * Upgrade to iudex-* ~> 1.7 dependencies
+* Broaden to jdbc-postgres ~> 9.3 (tested with 9.3.1103 and 9.4.1200).
+  build java against 9.3.1103 (jdbc 4.1, java 1.7+ required)
 
 === 1.5.1 (2015-1-25)
 * Broaden to sequel ~> 4.8 (tested with 4.18.0).
