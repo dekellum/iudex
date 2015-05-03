@@ -1,5 +1,7 @@
 === 1.7.0 (TBD)
 * Upgrade to iudex-* ~> 1.7 dependencies
+* Upgrade/expand to rjack-jetty >= 9.2.7, < 9.4 (tested with 9.2.10,
+  9.3.0.0, M2 pre-release)
 * Add POST method and request content support
 
 === 1.6.0 (2015-1-25)
