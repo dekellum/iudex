@@ -1,4 +1,4 @@
-=== 1.7.0 (TBD)
+=== 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
 * Add HTTP_METHOD and REQUEST_CONTENT support to ContentFetcher
 

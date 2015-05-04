@@ -1,4 +1,4 @@
-=== 1.7.0 (TBD)
+=== 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
 * Upgrade to icu4j ~> (4.)53
 

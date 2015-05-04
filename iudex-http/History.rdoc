@@ -1,4 +1,4 @@
-=== 1.7.0 (TBD)
+=== 1.7.0 (2015-5-3)
 * Add HTTPSession.METHOD.POST, RequestContent, and associated keys.
 
 === 1.4.0 (2013-10-29)
