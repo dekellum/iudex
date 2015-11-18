@@ -108,7 +108,7 @@ GEM
     rjack-icu (4.54.1.1-java)
     rjack-jdbc-postgres (9.4.1200.0)
     rjack-jdom (1.1.0.2-java)
-    rjack-jetty (9.2.13.0-java)
+    rjack-jetty (9.2.14.0-java)
     rjack-logback (1.7.2-java)
       rjack-slf4j (>= 1.6.5, < 1.8)
     rjack-maven (3.0.5.0-java)
