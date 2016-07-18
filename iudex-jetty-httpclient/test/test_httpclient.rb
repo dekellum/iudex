@@ -136,6 +136,15 @@ class TestHTTPClient < MiniTest::Unit::TestCase
     end
   end
 
+  def test_https_special
+    with_new_client do |client|
+      with_session_handler( client,
+                            "https://ecf.scb.uscourts.gov/cgi-bin/rss_outside.pl" ) do |s,x|
+        assert_equal( 200, s.status_code )
+      end
+    end
+  end
+
   def test_local_connection_refused
     with_new_client do |client|
       with_session_handler( client,
@@ -539,7 +548,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   def with_session_handler( client, uri, wait = true,
                             headers = {}, smod = nil, &block )
     session = client.create_session
-    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http:/
+    uri = "http://localhost:#{server.port}#{uri}" unless uri =~ /^http/
     session.url = uri
     headers.each do |k,v|
       session.add_request_header( Java::iudex.http.Header.new( k, v ) )
