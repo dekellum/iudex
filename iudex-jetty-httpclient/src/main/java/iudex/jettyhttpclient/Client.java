@@ -398,7 +398,7 @@ public class Client
                     t = t.getCause();
                 }
                 else if( t instanceof TimeoutException ) {
-                    if( "Total timeout elapsed".equals( t.getMessage() ) ) {
+                    if( t.getMessage().startsWith( "Total timeout " ) ) {
                         _statusCode = TIMEOUT;
                     }
                     else {
