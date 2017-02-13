@@ -41,25 +41,25 @@ class TestFilterBase < MiniTest::Unit::TestCase
     assert_equal( "TestFilter", f.name )
   end
 
+  class TestListener
+    include FilterListener
+
+    attr_accessor :fail
+    def failed( filter, map, x )
+      @fail = [ filter, map, x ]
+    end
+  end
+
   # Filter exception may be raised from Ruby, and is handled as per
   # Java: caught by chain, forwarded to listener as failure
   def test_raise_filter_exception
-
     test_filter = FilterBase.new
     def test_filter.filter( map )
       raise FilterException.new( "Expected" )
     end
 
-    listener = FilterListener.new
-    class << listener
-      attr_accessor :fail
-      def failed( filter, map, x )
-        @fail = [ filter, map, x ]
-      end
-    end
-
     fc = Core::FilterChain.new( "test", [ test_filter ] )
-    fc.listener = listener
+    fc.listener = listener = TestListener.new
 
     map = UniMap.new
     refute( fc.filter( map ) )
