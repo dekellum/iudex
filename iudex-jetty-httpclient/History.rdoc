@@ -1,3 +1,5 @@
+=== 1.7.1 (TBD)
+
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
 * Upgrade/expand to rjack-jetty >= 9.2.7, < 9.4 (tested with 9.2.10,
