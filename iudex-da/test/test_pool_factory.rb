@@ -59,7 +59,7 @@ class TestPoolFactory < MiniTest::Unit::TestCase
     out_domain = nil
     qrun.query( "SELECT * FROM urls WHERE uhash = ?", url.uhash ) do |rs|
       while rs.next
-        out_domain = rs.string( 'domain' )
+        out_domain = rs.get_string( 'domain' )
       end
     end
     assert_equal( url.domain, out_domain )
