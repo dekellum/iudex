@@ -137,7 +137,8 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   end
 
   def test_https_special
-    with_new_client do |client|
+    with_new_client( ssl_context: { exclude_cipher_suites: '',
+                                    trust_all: true } ) do |client|
       with_session_handler( client,
                             "https://ecf.scb.uscourts.gov/cgi-bin/rss_outside.pl" ) do |s,x|
         assert_equal( 200, s.status_code )
