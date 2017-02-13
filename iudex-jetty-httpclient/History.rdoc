@@ -1,4 +1,6 @@
-=== 1.7.1 (TBD)
+=== 1.7.1 (2017-2-13)
+* Relax TimeoutException message test. This is needed for jetty >=
+  9.3.10 but remains backward compatible.
 
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
