@@ -82,7 +82,7 @@ GEM
     gravitext-xmlprod (1.7.0-java)
       gravitext-util (~> 1.7.0)
     hooker (1.0.1)
-    json (1.8.3-java)
+    json (1.8.6-java)
     markaby (0.7.2)
       builder (>= 2.0.0)
     minitest (4.7.5)
@@ -91,7 +91,7 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (11.2.2)
+    rake (11.3.0)
     rdoc (4.0.1)
       json (~> 1.4)
     rjack-async-httpclient (1.8.15.0-java)
@@ -123,7 +123,7 @@ GEM
       rdoc (>= 3.12, < 5)
       rjack-maven (~> 3.0.4)
     rjack-xerces (2.11.0.0-java)
-    sequel (4.36.0)
+    sequel (4.40.0)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -141,4 +141,4 @@ DEPENDENCIES
   rjack-tarpit (~> 2.1)
 
 BUNDLED WITH
-   1.12.5
+   1.13.7
