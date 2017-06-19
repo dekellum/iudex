@@ -53,7 +53,7 @@ PATH
     iudex-jetty-httpclient (1.7.1-java)
       hooker (~> 1.0.0)
       iudex-http (~> 1.7)
-      rjack-jetty (>= 9.2.7, < 9.4)
+      rjack-jetty (>= 9.2.7, < 9.5)
     iudex-rome (1.7.0-java)
       iudex-core (~> 1.7)
       rjack-rome (~> 1.0.2)
