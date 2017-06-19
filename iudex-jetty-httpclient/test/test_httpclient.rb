@@ -58,7 +58,7 @@ class TestHTTPClient < MiniTest::Unit::TestCase
   import 'java.util.concurrent.TimeUnit'
 
   def test_custom_executor
-    executor = ThreadPoolExecutor.new( 3, 10,
+    executor = ThreadPoolExecutor.new( 4, 12,
                                        10, TimeUnit::SECONDS,
                                        ArrayBlockingQueue.new( 10 ) )
     with_new_client( :executor => executor ) do |client|
