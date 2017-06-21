@@ -33,7 +33,7 @@ PATH
     iudex-filter (1.7.0-java)
       gravitext-util (~> 1.7.0)
       rjack-slf4j (~> 1.7.0)
-    iudex-html (1.7.0-java)
+    iudex-html (1.7.1-java)
       gravitext-xmlprod (~> 1.7.0)
       iudex-core (~> 1.7)
       rjack-nekohtml (~> 1.9.18)
