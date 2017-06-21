@@ -73,6 +73,21 @@ public class HTML
 
 % end
 
+    /**
+     * Return existing or add a new Tag by name and with basicAtts and
+     * flags to TAGS.
+     */
+    public static HTMLTag addTag( String name,
+                                  List<Attribute> basicAtts,
+                                  Flag...flags )
+    {
+        HTMLTag exists = TAGS.get( name );
+        if( exists != null ) {
+            return exists;
+        }
+        return tag( name, basicAtts, flags );
+    }
+
     private static HTMLTag tag( String name,
                                 List<Attribute> basicAtts,
                                 Flag...flags )
@@ -80,6 +95,18 @@ public class HTML
         HTMLTag t = new HTMLTag( name, NS_XHTML, basicAtts, flags );
         TAGS.put( t.name(), t );
         return t;
+    }
+
+    /**
+     * Return existing or add a new Attribute by name to ATTRIBUTES.
+     */
+    public static Attribute addAttr( String name )
+    {
+        Attribute exists = ATTRIBUTES.get( name );
+        if( exists != null ) {
+            return exists;
+        }
+        return attr( name );
     }
 
     private static Attribute attr( String name )
