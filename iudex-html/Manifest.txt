@@ -25,4 +25,4 @@ test/test_parse_filter.rb
 test/test_stax_parser.rb
 test/test_tree_walker.rb
 test/test_word_counters.rb
-lib/iudex-html/iudex-html-1.7.0.jar
+lib/iudex-html/iudex-html-1.7.1.jar
