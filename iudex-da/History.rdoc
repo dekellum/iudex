@@ -1,3 +1,5 @@
+=== 1.7.1 (TBD)
+
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
 * Broaden to jdbc-postgres ~> 9.3 (tested with 9.3.1103 and 9.4.1200).
