@@ -1,4 +1,4 @@
-=== 1.7.1 (TBD)
+=== 1.7.1 (2017-7-7)
 * Fix for (jruby 9.x) require relative on build
 * Add HTML.addTag and addAttr methods for application support of
   non-standard tags in the wild.

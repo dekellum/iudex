@@ -1,4 +1,4 @@
-=== 1.7.1 (TBD)
+=== 1.7.1 (2017-7-7)
 * Broaden to jdbc-postgres >= 9.3 (tested with 42.1.1.0)
 * (Test) fix for jruby 9.1.x compatibility
 
