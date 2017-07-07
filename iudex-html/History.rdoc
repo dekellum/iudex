@@ -1,4 +1,7 @@
 === 1.7.1 (TBD)
+* Fix for (jruby 9.x) require relative on build
+* Add HTML.addTag and addAttr methods for application support of
+  non-standard tags in the wild.
 
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
