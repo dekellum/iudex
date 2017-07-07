@@ -1,4 +1,6 @@
 === 1.7.1 (TBD)
+* Broaden to jdbc-postgres >= 9.3 (tested with 42.1.1.0)
+* (Test) fix for jruby 9.1.x compatibility
 
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
