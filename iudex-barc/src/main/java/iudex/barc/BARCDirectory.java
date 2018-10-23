@@ -61,6 +61,20 @@ public final class BARCDirectory implements Closeable
         _targetBARCLength = length;
     }
 
+    /**
+     * Set the maximum number of barc files to keep open before closing the
+     * barc file with the lowest file number.
+     * Default: unlimited
+     * @throws IllegalArgumentException if files is less than 2
+     */
+    public void setMaxOpen( int files )
+    {
+        if( files < 2 ) {
+            throw new IllegalArgumentException( "Invalid setMaxOpen value" );
+        }
+        _maxOpen = files;
+    }
+
     public synchronized WriteSession startWriteSession()
         throws InterruptedException, IOException
     {
@@ -94,6 +108,7 @@ public final class BARCDirectory implements Closeable
             if( bfile != null ) bfile.close();
         }
         _barcs.clear();
+        _openCount = 0;
         _writeFile = null;
         _currentSession = null;
     }
@@ -160,8 +175,11 @@ public final class BARCDirectory implements Closeable
             File bfile = new File( _path, String.format(  "%06d.barc", fnum ) );
             if( create || bfile.exists() ) {
                 barc = new BARCFile( bfile );
+                // close before set to avoid any conflict
+                while( _openCount + 1 > _maxOpen ) closeBarc();
                 while( _barcs.size() <= fnum ) _barcs.add( null );
                 _barcs.set( fnum, barc );
+                ++_openCount;
                 _maxFnum = Math.max( _maxFnum, fnum );
             }
             else {
@@ -169,6 +187,22 @@ public final class BARCDirectory implements Closeable
             }
         }
         return barc;
+    }
+
+    private synchronized void closeBarc()
+        throws IOException
+    {
+        // Close the first (lowest) file.
+        final int end = _barcs.size();
+        for( int i = 0; i < end; ++i ) {
+            BARCFile bfile = _barcs.get( i );
+            if( bfile != null ) {
+                _barcs.set( i, null );
+                bfile.close();
+                --_openCount;
+                break;
+            }
+        }
     }
 
     private void scanBARCFiles()
@@ -198,5 +232,7 @@ public final class BARCDirectory implements Closeable
     private WriteSession _currentSession = null;
 
     private int _maxFnum = -1;
+    private int _openCount = 0;
+    private int _maxOpen = Integer.MAX_VALUE;
     private ArrayList<BARCFile> _barcs = new ArrayList<BARCFile>( 64 );
 }
