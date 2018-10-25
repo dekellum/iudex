@@ -1,3 +1,8 @@
+=== 1.7.1 (TBD)
+* Add BARCDirectory.setMaxOpen number of BARC files to keep open. By
+  default this remains unrestricted.  Setting this as low as 2 files
+  is safe to reduce the number of open file handles when crawling.
+
 === 1.7.0 (2015-5-3)
 * Upgrade to iudex-* ~> 1.7 dependencies
 
